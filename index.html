@@ -53,11 +53,7 @@
     box-shadow: inset -6px 0 10px rgba(0,0,0,0.6);
   }
   
-    .spring {
-    position: absolute;
-    bottom: calc(32vh - 80px);
-    left: 10%;
-    height: 160px;
+    $1 calc(32vh - 60px);$2 120px;
     width: auto;
     z-index: 2;
     pointer-events: none;
@@ -67,12 +63,7 @@
     transition: opacity 0.4s linear;
   }
 
-  .actor {
-    position: absolute;
-    bottom: 32vh;
-    left: 50%;
-    width: 240px;
-    height: 160px;
+  $1 180px;$2 120px;
     transform: translate(-50%, 0);
     z-index: 2;
     pointer-events: none;
@@ -213,9 +204,9 @@
 
     let lastFrame = performance.now();
 
-    // Γεωμετρία ελατηρίου
-    const L0_px = 380;          // μήκος ηρεμίας spring.png (px)
-    const skaterBindOffset = 20; // επιπλέον "δέσιμο" αριστερά
+    // Γεωμετρία ελατηρίου / σκειτερ
+    const L0_px = 285;          // μήκος ηρεμίας spring.png (px) μετά το scale ~75%
+    const skaterWidthPx = 180;  // πλάτος skater.png στην οθόνη // επιπλέον "δέσιμο" αριστερά
 
     function anchorX(){
       // Δεξί άκρο αριστερής κουρτίνας: πλάτος 18% ⇒ άκρη στο 18%
@@ -229,20 +220,21 @@
       // σταθερό άκρο ελατηρίου (δεξί άκρο αριστερής κουρτίνας)
       const ax = anchorX();
 
-      // θέση του skater ως ταλαντωτής
-      const skaterX = ax + L0_px + A_px * Math.sin(omega * t);
+      // ο ταλαντωτής είναι το ΚΕΝΤΡΟ του skater
+      const restPlusDisp = L0_px + A_px * Math.sin(omega * t);
+      const skaterCenterX = ax + restPlusDisp;
 
-      // μήκος ελατηρίου = από το σταθερό άκρο μέχρι τον skater
-      const distance = skaterX - ax;
+      // το ελεύθερο άκρο του ελατηρίου πρέπει να φτάνει στο κέντρο του skater
+      const distance = skaterCenterX - ax;
       const scale = distance / L0_px;
 
-      // ενημέρωση ελατηρίου (τεντώνει/συσπειρώνεται οριζόντια γύρω από το αγκυρωμένο άκρο)
+      // ενημέρωση ελατηρίου
       springEl.style.left = ax + 'px';
       springEl.style.transform = `scaleX(${scale})`;
 
-      // ενημέρωση skater (δεμένος στο άκρο του ελατηρίου)
+      // τοποθέτηση skater ώστε το ΚΕΝΤΡΟ του να είναι εκεί
       actor.style.transform = 'none';
-      actor.style.left = (skaterX - skaterBindOffset) + 'px';
+      actor.style.left = (skaterCenterX - skaterWidthPx/2) + 'px';
 
       requestAnimationFrame(animate);
     }
