@@ -48,21 +48,21 @@
   .mechanics-layer{ position:absolute; inset:0; z-index:2; pointer-events:none; }
   .spring-wrap{
     position:absolute;
-    /* τοποθέτηση «επιπέδου ταλάντωσης» */
-    left:8vw;                    /* σημείο αγκύρωσης αριστερού άκρου */
-    bottom:14vh;                 /* ύψος σκηνής/δάπεδο */
-    height:110px;                /* (σταθερό) ύψος του ελατηρίου */
+    left:8vw;
+    bottom:calc(14vh + 30px);   /* +30px πιο πάνω */
+    height:110px;
     display:flex; align-items:center;
   }
   .spring-img{
     height:100%;
-    transform-origin:left center;   /* κρατάμε σταθερό το αριστερό άκρο */
+    transform-origin:left center;   /* αριστερό άκρο σταθερό */
     image-rendering:auto;
     filter:drop-shadow(0 4px 6px rgba(0,0,0,.55));
     will-change:transform;
   }
   .skater{
-    position:absolute; bottom:calc(14vh - 4px);  /* ελαφρύ «πάτημα» στο δάπεδο */
+    position:absolute; 
+    bottom:calc(14vh + 30px - 4px); /* +30px πιο πάνω (ίδιο επίπεδο με spring) */
     width:160px; height:auto;
     filter:drop-shadow(0 6px 10px rgba(0,0,0,.6));
     will-change:transform,left;
@@ -93,12 +93,12 @@
 
     <!-- Μηχανική σκηνή -->
     <div class="mechanics-layer">
-      <!-- Ελατήριο: το αριστερό άκρο μένει αγκυρωμένο, αλλάζει μόνο το πλάτος -->
+      <!-- Ελατήριο: αριστερό άκρο σταθερό, αλλάζει μόνο το πλάτος -->
       <div class="spring-wrap" id="springWrap">
         <img id="springImg" class="spring-img" src="spring.png" alt="Ελατήριο"/>
       </div>
-      <!-- Σκειτερ: δεμένος στο δεξί άκρο του ελατηρίου -->
-      <img id="skater" class="skater" src="scater.png" alt="Σκειτερ"/>
+      <!-- Skater: δεμένος στο δεξί άκρο του ελατηρίου -->
+      <img id="skater" class="skater" src="skater.png" alt="Skater"/>
     </div>
 
     <div class="viewers" aria-hidden="true">
@@ -109,21 +109,21 @@
   </div>
 
 <script>
-  // --- Παράμετροι φυσικής ---
+  // --- Φυσική ---
   const m   = 70;     // kg
   const T   = 6.0;    // s
-  const A_m = 3.0;    // m (πλάτος)
+  const A_m = 3.0;    // m
   const omega = 2*Math.PI / T;
-  const D = Math.round(m * omega * omega);         // N/m
-  const E_mech = 0.5 * D * A_m * A_m;              // J
+  const D = Math.round(m * omega * omega);   // N/m
+  const E_mech = 0.5 * D * A_m * A_m;        // J
 
   // --- Κλίμακα & γεωμετρία εικόνων ---
-  const pxPerMeter = 50;       // κλίμακα m→px
-  const L0_px = 380;           // μήκος ηρεμίας ελατηρίου (px) — προσαρμόζεις στο δικό σου spring.png
-  const leftAnchorPx = 0;      // επιπλέον offset μέσα στη spring-wrap (συνήθως 0)
-  const skaterAnchorOffset = 80; // οριζ. μετατόπιση ώστε «το σώμα» να κάτσει στο άκρο του ελατηρίου (πείραγμα ανάλογα με scater.png)
+  const pxPerMeter = 50;        // m→px
+  const L0_px = 380;            // μήκος ηρεμίας spring.png (px)
+  const leftAnchorPx = 0;       // offset μέσα στη spring-wrap
+  const skaterAnchorOffset = 80; // «δέσιμο» του skater στο δεξί άκρο
 
-  // --- DOM refs ---
+  // --- DOM ---
   const stage = document.getElementById('stage');
   const startBtn = document.getElementById('startBtn');
   const springWrap = document.getElementById('springWrap');
@@ -139,38 +139,29 @@
   // --- Υπολογισμοί πλάτους/θέσης ---
   let A_px = 0;
   function recalc(){
-    const maxSwing = stage.clientWidth * 0.38; // μην ακουμπάει κουρτίνες
+    const maxSwing = stage.clientWidth * 0.38;
     A_px = Math.min(pxPerMeter * A_m, maxSwing);
-    // το ύψος/θέση έχουν οριστεί σε CSS (spring-wrap bottom/left)
   }
   window.addEventListener('resize', recalc);
   recalc();
 
-  // --- Animation ΑΑΤ ---
-  let t0 = performance.now(), last = t0;
+  // --- ΑΑΤ ---
+  let t0 = performance.now();
   function frame(now){
     const t = (now - t0)/1000;
+    const x = A_px * Math.sin(omega * t);     // οριζόντια απομάκρυνση δεξιού άκρου
+    const L_px = Math.max(40, L0_px + x);     // νέο μήκος ελατηρίου
 
-    // οριζόντια απομάκρυνση (δεξί άκρο & σκειτερ)
-    const x = A_px * Math.sin(omega * t);
-
-    // μήκος ελατηρίου = L0 + x  (επιμήκυνση/συσπείρωση)
-    const L_px = Math.max(40, L0_px + x); // ένα ελάχιστο για ομορφιά
-
-    // scaleX ως προς αριστερό άκρο: κρατά αριστερό fixed
-    const scaleX = L_px / L0_px;
+    const scaleX = L_px / L0_px;              // τέντωμα/συσπείρωση με αριστερό άκρο σταθερό
     springImg.style.transform = `translateX(${leftAnchorPx}px) scaleX(${scaleX})`;
 
-    // θέση σκειτερ στο δεξί άκρο του ελατηρίου
-    const springGlobalLeft = springWrap.getBoundingClientRect().left + window.scrollX;
-    // απλούστερα: σχετική τοποθέτηση μέσα στη σκηνή
     skater.style.left = `calc(8vw + ${L_px - skaterAnchorOffset}px)`; // 8vw = left της spring-wrap
 
     requestAnimationFrame(frame);
   }
   requestAnimationFrame(frame);
 
-  // --- Έναρξη: άνοιγμα κουρτινών ---
+  // --- Κουρτίνες ---
   startBtn.addEventListener('click', ()=>{
     stage.classList.add('open');
     startBtn.style.display = 'none';
