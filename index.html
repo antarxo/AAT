@@ -54,9 +54,9 @@
   }
   .spring {
     position: absolute;
-    bottom: calc(32vh + 30px);
+    bottom: calc(32vh + 82px); /* actor bottom minus μισό ύψος skater (48px) */
     left: 10%;
-    height: 120px;
+    height: 96px; /* 20% μικρότερο από 120px */
     width: auto;
     z-index: 2;
     pointer-events: none;
@@ -68,10 +68,10 @@
 
   .actor {
     position: absolute;
-    bottom: calc(32vh + 90px);
+    bottom: calc(32vh + 130px); /* +40px πιο πάνω από πριν */
     left: 50%;
-    width: 180px;
-    height: 120px;
+    width: 144px;  /* 20% μικρότερο από 180px */
+    height: 96px;  /* 20% μικρότερο από 120px */
     transform: translate(-50%, 0);
     z-index: 2;
     pointer-events: none;
