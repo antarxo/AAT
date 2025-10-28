@@ -17,7 +17,11 @@
     height: 100vh;
     overflow: hidden;
   }
-  .curtain-top, .curtain-upper, .curtain-lower, $1
+    .curtain-top, .curtain-upper, .curtain-lower, .curtain-side {
+    position: absolute;
+    z-index: 3;
+    transition: transform 1.2s cubic-bezier(.2,.9,.2,1), opacity 1s;
+  }
   .curtain-side.left { left: 0; }
   .curtain-side.right { right: 0; }
   .curtain-top {
@@ -50,25 +54,30 @@
   }
   
   /* ελατήριο εικόνα */
-  .spring {
+    .spring {
     position: absolute;
-    bottom: 5%;
+    bottom: calc(5% + 30px);
     left: 10%;
     height: 160px;
     width: auto;
     z-index: 2; /* κάτω από τον skater λόγω DOM σειράς */
     pointer-events: none;
     filter: drop-shadow(0 4px 6px rgba(0,0,0,0.55));
+    transform-origin: left center;
+    opacity: 0;
+    transition: opacity 0.4s linear;
   }
-.actor {
+  .actor {
     position: absolute;
-    bottom: 5%;
+    bottom: calc(5% + 30px);
     left: 50%;
     width: 240px;
     height: 160px;
     transform: translate(-50%, 0);
     z-index: 2;
     pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.4s linear;
   }
   .actor img {
     width: 100%;
@@ -143,7 +152,8 @@
     cursor: pointer;
     box-shadow: 0 0 10px #300;
   }
-  .spring { transform-origin: left center; }
+    .spring { transform-origin: left center; }
+  .open .actor, .open .spring { opacity:1; }
 </style>
 </head>
 <body>
