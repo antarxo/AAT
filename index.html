@@ -1,171 +1,252 @@
 <!DOCTYPE html>
 <html lang="el">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Θεατρική Σκηνή – Spring + Skater</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Θεατρική Σκηνή – Mockup</title>
 <style>
-  :root{ --curtain-speed:1.2s; }
-  body{ margin:0; background:radial-gradient(circle at center,#222 0%,#000 100%); overflow:hidden; font-family:Inter,system-ui,sans-serif; }
-  .stage{ position:relative; width:100vw; height:100vh; overflow:hidden; }
+  body {
+    margin: 0;
+    background: radial-gradient(circle at center, #222 0%, #000 100%);
+    overflow: hidden;
+    font-family: Inter, system-ui, sans-serif;
+  }
+  .stage {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+  }
+  .curtain-top, .curtain-upper, .curtain-lower, .curtain-side {
+    position: absolute;
+    z-index: 3;
+    transition: transform 1.2s cubic-bezier(.2,.9,.2,1), opacity 1s;
+  }
+  .curtain-top {
+    top: 0;
+    width: 100%;
+    height: 28%;
+    background: linear-gradient(to bottom, #230000, #180000);
+    box-shadow: 0 5px 18px rgba(0,0,0,0.8);
+  }
+  .curtain-upper {
+    top: 28%;
+    width: 100%;
+    height: 40%;
+    background: linear-gradient(to bottom, #8b0000, #400000);
+    transform-origin: top;
+  }
+  .curtain-lower {
+    bottom: 0;
+    width: 100%;
+    height: 32%;
+    background: linear-gradient(to top, #7a0000, #300000);
+    transform-origin: bottom;
+  }
+  .curtain-side {
+    top: 0;
+    width: 18%;
+    height: 100%;
+    background: linear-gradient(to right, #300000, #1a0000);
+    box-shadow: inset -6px 0 10px rgba(0,0,0,0.6);
+  }
+  
+  /* ελατήριο εικόνα */
+  .spring {
+    position: absolute;
+    bottom: 5%;
+    left: 10%;
+    height: 160px;
+    width: auto;
+    z-index: 2; /* κάτω από τον skater λόγω DOM σειράς */
+    pointer-events: none;
+    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.55));
+  }
+.actor {
+    position: absolute;
+    bottom: 5%;
+    left: 50%;
+    width: 240px;
+    height: 160px;
+    transform: translate(-50%, 0);
+    z-index: 2;
+    pointer-events: none;
+  }
+  .actor img {
+    width: 100%;
+    height: auto;
+    display: block;
+    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.6));
+  }
 
-  .curtain-top,.curtain-upper,.curtain-lower,.curtain-side{
-    position:absolute; z-index:3;
-    transition:transform var(--curtain-speed) cubic-bezier(.2,.9,.2,1),opacity 1s;
-    will-change:transform,opacity;
+  .viewers {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    gap: 3vw;
+    z-index: 1;
+    padding-bottom: 12px;
   }
-  .curtain-top{ top:0; width:100%; height:28%;
-    background:linear-gradient(to bottom,#230000,#180000); box-shadow:0 5px 18px rgba(0,0,0,.8); }
-  .open .curtain-top{ opacity:.25; }
-  .curtain-upper{ top:28%; width:100%; height:40%;
-    background:linear-gradient(to bottom,#8b0000,#400000); transform-origin:top; }
-  .curtain-lower{ bottom:0; width:100%; height:32%;
-    background:linear-gradient(to top,#7a0000,#300000); transform-origin:bottom; }
-  .curtain-side{ top:0; width:18%; height:100%;
-    background:linear-gradient(to right,#300000,#1a0000); box-shadow:inset -6px 0 10px rgba(0,0,0,.6); }
-  .curtain-side.right{ right:0; background:linear-gradient(to left,#300000,#1a0000); box-shadow:inset 6px 0 10px rgba(0,0,0,.6); }
-  .open .curtain-upper{ transform:translateY(-100%); }
-  .open .curtain-lower{ transform:translateY(100%); }
-  .open .curtain-side.left{ transform:translateX(-100%); }
-  .open .curtain-side.right{ transform:translateX(100%); }
-
-  .signboard{
-    position:absolute; top:-6px; left:50%; transform:translateX(-50%);
-    background:transparent; border:none; border-radius:10px; padding:14px 22px;
-    color:#ddd; font-family:Georgia,serif; text-align:center; z-index:4; line-height:1.6;
-    text-shadow:0 1px 2px rgba(0,0,0,.7);
-  }
-  .signboard h1{ font-size:32px; margin:0; color:#fff; }
-  .signboard h2{ font-size:20px; margin:4px 0 0 0; }
-  .signboard h3{ font-size:18px; margin:4px 0 0 0; color:#ffd27a; }
-
-  .viewers{ position:absolute; bottom:0; width:100%; display:flex; justify-content:center; gap:3vw; z-index:1; padding-bottom:12px; }
-  .viewer{ width:60px; height:100px;
-    background:url('https://upload.wikimedia.org/wikipedia/commons/f/f9/Silhouette_icon.svg') no-repeat center/contain;
-    filter:grayscale(1) brightness(.6); opacity:.75; }
-
-  /* --- Spring + Skater --- */
-  .mechanics-layer{ position:absolute; inset:0; z-index:2; pointer-events:none; }
-  .spring-wrap{
-    position:absolute;
-    left:8vw;
-    bottom:calc(14vh + 30px);   /* +30px πιο πάνω */
-    height:110px;
-    display:flex; align-items:center;
-  }
-  .spring-img{
-    height:100%;
-    transform-origin:left center;   /* αριστερό άκρο σταθερό */
-    image-rendering:auto;
-    filter:drop-shadow(0 4px 6px rgba(0,0,0,.55));
-    will-change:transform;
-  }
-  .skater{
-    position:absolute; 
-    bottom:calc(14vh + 30px - 4px); /* +30px πιο πάνω (ίδιο επίπεδο με spring) */
-    width:160px; height:auto;
-    filter:drop-shadow(0 6px 10px rgba(0,0,0,.6));
-    will-change:transform,left;
-    pointer-events:none;
+  .viewer {
+    width: 60px;
+    height: 100px;
+    background: url('https://upload.wikimedia.org/wikipedia/commons/f/f9/Silhouette_icon.svg') no-repeat center/contain;
+    filter: grayscale(1) brightness(0.6);
+    opacity: 0.75;
   }
 
-  .start-btn{
-    position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
-    z-index:5; background:#700; color:#fff; border:none; border-radius:8px;
-    padding:12px 24px; font-size:18px; cursor:pointer; box-shadow:0 0 10px #300;
+  .signboard {
+    position: absolute;
+    top: -6px; /* ανέβηκε 20px πιο ψηλά */
+    left: 50%;
+    transform: translateX(-50%);
+    background: transparent; /* πλήρως διαφανές φόντο */
+    border: none;
+    border-radius: 10px;
+    padding: 14px 22px;
+    color: #ddd;
+    font-family: 'Georgia', serif;
+    text-align: center;
+    z-index: 4;
+    line-height: 1.6;
   }
-  .start-btn:active{ transform:translate(-50%,-50%) scale(.98); }
+  .signboard h1 {
+    font-size: 32px;
+    margin: 0;
+    color: #fff;
+  }
+  .signboard h2 {
+    font-size: 20px;
+    margin: 4px 0 0 0;
+  }
+  .signboard h3 {
+    font-size: 18px;
+    margin: 4px 0 0 0;
+    color: #ffd27a;
+  }
+
+  .open .curtain-upper { transform: translateY(-100%); }
+  .open .curtain-lower { transform: translateY(100%); }
+
+  .start-btn {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 5;
+    background: #700;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 24px;
+    font-size: 18px;
+    cursor: pointer;
+    box-shadow: 0 0 10px #300;
+  }
+  .spring { transform-origin: left center; }
 </style>
 </head>
 <body>
-  <div class="stage" id="stage" aria-label="Θεατρική σκηνή">
+  <div class="stage" id="stage">
     <div class="curtain-top"></div>
     <div class="curtain-upper"></div>
     <div class="curtain-lower"></div>
     <div class="curtain-side left"></div>
     <div class="curtain-side right"></div>
 
-    <div class="signboard" aria-live="polite">
+    <div class="signboard">
       <h1>Πράξη 1</h1>
       <h2>m₁ = 70 kg, D₁ = 77 N/m</h2>
       <h3>Εμηχ = 347 J</h3>
     </div>
 
-    <!-- Μηχανική σκηνή -->
-    <div class="mechanics-layer">
-      <!-- Ελατήριο: αριστερό άκρο σταθερό, αλλάζει μόνο το πλάτος -->
-      <div class="spring-wrap" id="springWrap">
-        <img id="springImg" class="spring-img" src="spring.png" alt="Ελατήριο"/>
-      </div>
-      <!-- Skater: δεμένος στο δεξί άκρο του ελατηρίου -->
-      <img id="skater" class="skater" src="skater.png" alt="Skater"/>
+    <!-- Ελατήριο (μόνο εικόνα) -->
+    <img id="spring" class="spring" src="spring.png" alt="ελατήριο">
+
+    <div class="actor" id="actor">
+      <img src="skater.png" alt="Skater">
     </div>
 
-    <div class="viewers" aria-hidden="true">
-      <div class="viewer"></div><div class="viewer"></div><div class="viewer"></div><div class="viewer"></div><div class="viewer"></div>
+    <div class="viewers">
+      <div class="viewer" data-idx="0"></div>
+      <div class="viewer" data-idx="1"></div>
+      <div class="viewer" data-idx="2"></div>
+      <div class="viewer" data-idx="3"></div>
+      <div class="viewer" data-idx="4"></div>
     </div>
 
-    <button class="start-btn" id="startBtn" aria-label="Έναρξη παράστασης">Έναρξη</button>
+    <button class="start-btn" id="startBtn">Έναρξη</button>
   </div>
 
-<script>
-  // --- Φυσική ---
-  const m   = 70;     // kg
-  const T   = 6.0;    // s
-  const A_m = 3.0;    // m
-  const omega = 2*Math.PI / T;
-  const D = Math.round(m * omega * omega);   // N/m
-  const E_mech = 0.5 * D * A_m * A_m;        // J
+  <script>
+    const m = 70;
+    const T = 6.0;
+    const A_m = 3.0;
+    const omega = 2*Math.PI / T;
+    const D = Math.round(m * omega * omega);
+    const E_mech = 0.5 * D * A_m * A_m;
 
-  // --- Κλίμακα & γεωμετρία εικόνων ---
-  const pxPerMeter = 50;        // m→px
-  const L0_px = 380;            // μήκος ηρεμίας spring.png (px)
-  const leftAnchorPx = 0;       // offset μέσα στη spring-wrap
-  const skaterAnchorOffset = 80; // «δέσιμο» του skater στο δεξί άκρο
+    const pxPerMeter = 50;
+    let A_px = pxPerMeter * A_m;
 
-  // --- DOM ---
-  const stage = document.getElementById('stage');
-  const startBtn = document.getElementById('startBtn');
-  const springWrap = document.getElementById('springWrap');
-  const springImg = document.getElementById('springImg');
-  const skater = document.getElementById('skater');
+    document.addEventListener('DOMContentLoaded', ()=>{
+      const h2 = document.querySelector('.signboard h2');
+      const h3 = document.querySelector('.signboard h3');
+      h2.textContent = `m₁ = ${m} kg, D₁ = ${D} N/m`;
+      h3.textContent = `Εμηχ = ${Math.round(E_mech)} J`;
+    });
 
-  // --- Πινακίδα ---
-  document.addEventListener('DOMContentLoaded', ()=>{
-    document.querySelector('.signboard h2').textContent = `m₁ = ${m} kg, D₁ = ${D} N/m`;
-    document.querySelector('.signboard h3').textContent = `Εμηχ = ${Math.round(E_mech)} J`;
-  });
+    let t0 = performance.now();
+    const actor = document.getElementById('actor');
+    const stage = document.getElementById('stage');
+    const startBtn = document.getElementById('startBtn');
+    const springEl = document.getElementById('spring');
 
-  // --- Υπολογισμοί πλάτους/θέσης ---
-  let A_px = 0;
-  function recalc(){
-    const maxSwing = stage.clientWidth * 0.38;
-    A_px = Math.min(pxPerMeter * A_m, maxSwing);
-  }
-  window.addEventListener('resize', recalc);
-  recalc();
+    let lastFrame = performance.now();
 
-  // --- ΑΑΤ ---
-  let t0 = performance.now();
-  function frame(now){
-    const t = (now - t0)/1000;
-    const x = A_px * Math.sin(omega * t);     // οριζόντια απομάκρυνση δεξιού άκρου
-    const L_px = Math.max(40, L0_px + x);     // νέο μήκος ελατηρίου
+    // Γεωμετρία ελατηρίου
+    const L0_px = 380;          // μήκος ηρεμίας spring.png (px)
+    const skaterBindOffset = 20; // επιπλέον "δέσιμο" αριστερά
 
-    const scaleX = L_px / L0_px;              // τέντωμα/συσπείρωση με αριστερό άκρο σταθερό
-    springImg.style.transform = `translateX(${leftAnchorPx}px) scaleX(${scaleX})`;
+    function anchorX(){
+      // Δεξί άκρο αριστερής κουρτίνας: πλάτος 18% ⇒ άκρη στο 18%
+      return stage.clientWidth * 0.18;
+    }
 
-    skater.style.left = `calc(8vw + ${L_px - skaterAnchorOffset}px)`; // 8vw = left της spring-wrap
+    function animate(now){
+      const dt = (now - lastFrame)/1000; lastFrame = now;
+      const t = (now - t0)/1000;
 
-    requestAnimationFrame(frame);
-  }
-  requestAnimationFrame(frame);
+      // ΑΑΤ για το δεξί άκρο του ελατηρίου + skater
+      const x = A_px * Math.sin(omega*t);
+      const L_px = Math.max(40, L0_px + x); // τέντωμα/συσπείρωση γύρω από L0
 
-  // --- Κουρτίνες ---
-  startBtn.addEventListener('click', ()=>{
-    stage.classList.add('open');
-    startBtn.style.display = 'none';
-  });
-</script>
+      // Θέση αγκύρωσης (αριστερό άκρο) στο εσωτερικό χείλος της δεξιάς κουρτίνας
+      const ax = anchorX();
+
+      // Το ελατήριο: αριστερό άκρο σταθερό στο ax και μεγαλώνει προς τα αριστερά
+      // Με "καθρέφτισμα" scaleX(-scale) κρατάμε το αριστερό άκρο fixed και το μήκος αυξάνει προς τα αριστερά
+      const scale = L_px / L0_px;
+      // Αγκύρωση στο δεξί άκρο της αριστερής κουρτίνας (ax) και ανάπτυξη προς τα δεξιά
+      springEl.style.left = ax + 'px';
+      springEl.style.transform = `scaleX(${scale})`;
+
+      // Skater δεμένος στο δεξί άκρο (λίγο πιο μέσα για να φαίνεται «δέσιμο»)
+      // Οπτική θέση = ax + L_px - skaterBindOffset
+      actor.style.transform = 'none';
+      actor.style.left = (ax + (L_px - skaterBindOffset)) + 'px';
+
+      requestAnimationFrame(animate);
+    }
+    }
+    requestAnimationFrame(animate);
+
+    startBtn.addEventListener('click', ()=>{
+      stage.classList.add('open');
+      startBtn.style.display = 'none';
+    });
+  </script>
 </body>
 </html>
