@@ -66,7 +66,20 @@
     transition: opacity 0.4s linear;
   }
 
-  $1
+    .actor {
+    position: absolute;
+    bottom: calc(32vh + 130px); /* skater πιο ψηλά κατά 40 */
+    left: 50%;
+    width: 144px;  /* 20% μικρότερο από 180px */
+    height: 96px;  /* 20% μικρότερο από 120px */
+    transform: translate(-50%, 0);
+    z-index: 2;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.4s linear;
+  }
+
+  
 
   .floor {
     position: absolute;
@@ -171,7 +184,9 @@
     <!-- Ελατήριο (μόνο εικόνα) -->
     <img id="spring" class="spring" src="spring.png" alt="ελατήριο">
 
-    $1
+    <div class="actor" id="actor">
+      <img src="skater.png" alt="Skater">
+    </div>
 
     <div class="floor"></div>
 
