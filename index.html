@@ -17,11 +17,9 @@
     height: 100vh;
     overflow: hidden;
   }
-  .curtain-top, .curtain-upper, .curtain-lower, .curtain-side {
-    position: absolute;
-    z-index: 3;
-    transition: transform 1.2s cubic-bezier(.2,.9,.2,1), opacity 1s;
-  }
+  .curtain-top, .curtain-upper, .curtain-lower, $1
+  .curtain-side.left { left: 0; }
+  .curtain-side.right { right: 0; }
   .curtain-top {
     top: 0;
     width: 100%;
@@ -239,7 +237,6 @@
       actor.style.left = (ax + (L_px - skaterBindOffset)) + 'px';
 
       requestAnimationFrame(animate);
-    }
     }
     requestAnimationFrame(animate);
 
