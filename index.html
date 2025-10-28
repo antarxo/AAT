@@ -232,28 +232,31 @@
         const springRect = springEl.getBoundingClientRect();
         const skRect = actor.getBoundingClientRect();
         if (springRect.width > 0 && skRect.width > 0) {
-          L0_px = springRect.width;          // μήκος ηρεμίας ελατηρίου στην οθόνη
-          skaterWidthPx = skRect.width;      // πλάτος skater στην οθόνη
-          hookOffsetPx = skaterWidthPx / 2;  // προσωρινά: πρόσδεση στο κέντρο του skater
+          L0_px = springRect.width;         // μήκος ηρεμίας ελατηρίου στην οθόνη (όπως φορτώνει)
+          skaterWidthPx = skRect.width;     // πλάτος skater στην οθόνη
+          hookOffsetPx = skaterWidthPx / 2; // προς το παρόν: γάντζος στο κέντρο του skater
         }
       }
 
       if (L0_px && skaterWidthPx) {
-        // σταθερό άκρο ελατηρίου (δεξί άκρο αριστερής κουρτίνας)
+        // σταθερό άκρο ελατηρίου: δεξί άκρο αριστερής κουρτίνας
         const ax = anchorX();
 
-        // θέση ταλάντωσης του ΣΗΜΕΙΟΥ ΠΡΟΣΔΕΣΗΣ (γάντζος)
-        const skaterHookX = ax + L0_px + A_px * Math.sin(omega * t);
+        // κέντρο σκηνής (στόχος: μέση ταλάντωσης να είναι εδώ)
+        const centerX = stage.clientWidth / 2;
 
-        // μήκος ελατηρίου αυτή τη στιγμή
+        // θέση του γάντζου του skater: ταλαντώνεται γύρω από το κέντρο της σκηνής
+        const skaterHookX = centerX + A_px * Math.sin(omega * t);
+
+        // το ελατήριο πρέπει να φτάσει μέχρι αυτό το hook σημείο
         const distance = skaterHookX - ax;
         const scale = distance / L0_px;
 
-        // ενημέρωση ελατηρίου
+        // ενημέρωση ελατηρίου (τεντώνεται/συσπειρώνεται οριζόντια από το ax προς τα δεξιά)
         springEl.style.left = ax + 'px';
         springEl.style.transform = `scaleX(${scale})`;
 
-        // τοποθέτηση skater ώστε ο γάντζος του να κάθεται στο skaterHookX
+        // τοποθέτηση skater ώστε ο γάντζος του να βρίσκεται ακριβώς στο skaterHookX
         actor.style.transform = 'none';
         actor.style.left = (skaterHookX - hookOffsetPx) + 'px';
       }
