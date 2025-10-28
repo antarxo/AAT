@@ -53,19 +53,23 @@
     box-shadow: inset -6px 0 10px rgba(0,0,0,0.6);
   }
   
-  /* ελατήριο εικόνα */
-    $1 calc(32vh - 80px);
+    .spring {
+    position: absolute;
+    bottom: calc(32vh - 80px);
     left: 10%;
     height: 160px;
     width: auto;
-    z-index: 2; /* κάτω από τον skater λόγω DOM σειράς */
+    z-index: 2;
     pointer-events: none;
     filter: drop-shadow(0 4px 6px rgba(0,0,0,0.55));
     transform-origin: left center;
     opacity: 0;
     transition: opacity 0.4s linear;
   }
-  $1 32vh;
+
+  .actor {
+    position: absolute;
+    bottom: 32vh;
     left: 50%;
     width: 240px;
     height: 160px;
@@ -75,6 +79,7 @@
     opacity: 0;
     transition: opacity 0.4s linear;
   }
+
   .actor img {
     width: 100%;
     height: auto;
@@ -147,9 +152,7 @@
     font-size: 18px;
     cursor: pointer;
     box-shadow: 0 0 10px #300;
-  }
-    .spring { transform-origin: left center; }
-  .open .actor, .open .spring { opacity:1; }
+  }  .open .actor, .open .spring { opacity:1; }
 </style>
 </head>
 <body>
@@ -223,24 +226,23 @@
       const dt = (now - lastFrame)/1000; lastFrame = now;
       const t = (now - t0)/1000;
 
-      // ΑΑΤ για το δεξί άκρο του ελατηρίου + skater
-      const x = A_px * Math.sin(omega*t);
-      const L_px = Math.max(40, L0_px + x); // τέντωμα/συσπείρωση γύρω από L0
-
-      // Θέση αγκύρωσης (αριστερό άκρο) στο εσωτερικό χείλος της δεξιάς κουρτίνας
+      // σταθερό άκρο ελατηρίου (δεξί άκρο αριστερής κουρτίνας)
       const ax = anchorX();
 
-      // Το ελατήριο: αριστερό άκρο σταθερό στο ax και μεγαλώνει προς τα αριστερά
-      // Με "καθρέφτισμα" scaleX(-scale) κρατάμε το αριστερό άκρο fixed και το μήκος αυξάνει προς τα αριστερά
-      const scale = L_px / L0_px;
-      // Αγκύρωση στο δεξί άκρο της αριστερής κουρτίνας (ax) και ανάπτυξη προς τα δεξιά
+      // θέση του skater ως ταλαντωτής
+      const skaterX = ax + L0_px + A_px * Math.sin(omega * t);
+
+      // μήκος ελατηρίου = από το σταθερό άκρο μέχρι τον skater
+      const distance = skaterX - ax;
+      const scale = distance / L0_px;
+
+      // ενημέρωση ελατηρίου (τεντώνει/συσπειρώνεται οριζόντια γύρω από το αγκυρωμένο άκρο)
       springEl.style.left = ax + 'px';
       springEl.style.transform = `scaleX(${scale})`;
 
-      // Skater δεμένος στο δεξί άκρο (λίγο πιο μέσα για να φαίνεται «δέσιμο»)
-      // Οπτική θέση = ax + L_px - skaterBindOffset
+      // ενημέρωση skater (δεμένος στο άκρο του ελατηρίου)
       actor.style.transform = 'none';
-      actor.style.left = (ax + (L_px - skaterBindOffset)) + 'px';
+      actor.style.left = (skaterX - skaterBindOffset) + 'px';
 
       requestAnimationFrame(animate);
     }
