@@ -66,17 +66,17 @@
     transition: opacity 0.4s linear;
   }
 
-  .actor {
+  $1
+
+  .floor {
     position: absolute;
-    bottom: calc(32vh + 130px); /* +40px πιο πάνω από πριν */
-    left: 50%;
-    width: 144px;  /* 20% μικρότερο από 180px */
-    height: 96px;  /* 20% μικρότερο από 120px */
-    transform: translate(-50%, 0);
-    z-index: 2;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: #888;
+    bottom: calc(32vh + 130px - 1px);
+    z-index: 1;
     pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.4s linear;
   }
 
   .actor img {
@@ -171,9 +171,9 @@
     <!-- Ελατήριο (μόνο εικόνα) -->
     <img id="spring" class="spring" src="spring.png" alt="ελατήριο">
 
-    <div class="actor" id="actor">
-      <img src="skater.png" alt="Skater">
-    </div>
+    $1
+
+    <div class="floor"></div>
 
     <div class="viewers">
       <div class="viewer" data-idx="0"></div>
