@@ -215,7 +215,8 @@
 
     // Γεωμετρία ελατηρίου / σκειτερ
     const L0_px = 285;          // μήκος ηρεμίας spring.png (px) μετά το scale ~75%
-    const skaterWidthPx = 180;  // πλάτος skater.png στην οθόνη // επιπλέον "δέσιμο" αριστερά
+    const skaterWidthPx = 180;  // πλάτος skater.png στην οθόνη
+    const hookOffsetPx = skaterWidthPx / 2; // σημείο πρόσδεσης (γάντζος) μέσα στον skater, προς το παρόν το κέντρο
 
     function anchorX(){
       // Δεξί άκρο αριστερής κουρτίνας: πλάτος 18% ⇒ άκρη στο 18%
@@ -229,21 +230,20 @@
       // σταθερό άκρο ελατηρίου (δεξί άκρο αριστερής κουρτίνας)
       const ax = anchorX();
 
-      // ο ταλαντωτής είναι το ΚΕΝΤΡΟ του skater
-      const restPlusDisp = L0_px + A_px * Math.sin(omega * t);
-      const skaterCenterX = ax + restPlusDisp;
+      // θέση ταλάντωσης του ΣΗΜΕΙΟΥ ΠΡΟΣΔΕΣΗΣ (γάντζος πάνω στον skater)
+      const skaterHookX = ax + L0_px + A_px * Math.sin(omega * t);
 
-      // το ελεύθερο άκρο του ελατηρίου πρέπει να φτάνει στο κέντρο του skater
-      const distance = skaterCenterX - ax;
+      // το ελατήριο πρέπει να φτάσει ακριβώς μέχρι εκεί
+      const distance = skaterHookX - ax;
       const scale = distance / L0_px;
 
-      // ενημέρωση ελατηρίου
+      // ενημέρωση ελατηρίου (τεντώνεται/συσπειρώνεται οριζόντια)
       springEl.style.left = ax + 'px';
       springEl.style.transform = `scaleX(${scale})`;
 
-      // τοποθέτηση skater ώστε το ΚΕΝΤΡΟ του να είναι εκεί
+      // τοποθέτηση skater ώστε ο γάντζος του να κάθεται στο skaterHookX
       actor.style.transform = 'none';
-      actor.style.left = (skaterCenterX - skaterWidthPx/2) + 'px';
+      actor.style.left = (skaterHookX - hookOffsetPx) + 'px';
 
       requestAnimationFrame(animate);
     }
