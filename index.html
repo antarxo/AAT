@@ -53,7 +53,11 @@
     box-shadow: inset -6px 0 10px rgba(0,0,0,0.6);
   }
   
-    $1 calc(32vh - 60px);$2 120px;
+      .spring {
+    position: absolute;
+    bottom: calc(32vh - 60px);
+    left: 10%;
+    height: 120px;
     width: auto;
     z-index: 2;
     pointer-events: none;
@@ -63,7 +67,12 @@
     transition: opacity 0.4s linear;
   }
 
-  $1 180px;$2 120px;
+  .actor {
+    position: absolute;
+    bottom: 32vh;
+    left: 50%;
+    width: 180px;
+    height: 120px;
     transform: translate(-50%, 0);
     z-index: 2;
     pointer-events: none;
