@@ -94,15 +94,16 @@
 
   
 
-  .floor {
+  $1
+  .audience {
     position: absolute;
     left: 0;
+    bottom: 0;
     width: 100%;
-    height: 2px;
-    background: #888;
-    bottom: calc(32vh - 8px);
-    z-index: 20;
+    height: auto;
+    z-index: 150;
     pointer-events: none;
+    display: block;
   }
   .actor img {
     width: 100%;
@@ -201,6 +202,8 @@
     </div>
 
     <div class="floor"></div>
+
+    <img class="audience" src="koino.png" alt="κοινό">
 
     <div class="viewers">
       <div class="viewer" data-idx="0"></div>
