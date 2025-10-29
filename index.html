@@ -210,7 +210,7 @@
     position: absolute;
     right: 2%;
     top: 10px; /* πάνω μέρος της δεξιάς πλαϊνής κουρτίνας */
-    width: 150px;
+    width: 16%; /* αξιοποιεί σχεδόν όλο το πλάτος της δεξιάς κουρτίνας */
     max-height: 30vh;
     overflow: auto;
     background: rgba(0,0,0,0.4);
@@ -221,6 +221,31 @@
     font-size: 12px;
     line-height: 1.4;
     z-index: 40;
+  }
+  .measurements table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .measurements thead {
+    position: sticky;
+    top: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 1;
+  }
+  .measurements th {
+    font-weight: 600;
+    font-size: 11px;
+    border-bottom: 1px solid rgba(255,255,255,0.3);
+    text-align: left;
+    padding: 2px 4px;
+    color: #ffd27a;
+    white-space: nowrap;
+  }
+  .measurements td {
+    font-size: 11px;
+    padding: 2px 4px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    white-space: nowrap;
   }
   .measurements h4 {
     margin: 0 0 4px 0;
@@ -502,7 +527,19 @@
 
     <div class="laws"><h4>Νόμοι</h4><ol id="lawsList"></ol></div>
 
-    <div class="measurements"><h4>μετρήσεις</h4><ul id="measList"></ul></div>
+    <div class="measurements">
+      <h4>μετρήσεις</h4>
+      <table class="meas-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>t (s)</th>
+            <th>x (m)</th>
+          </tr>
+        </thead>
+        <tbody id="measBody"></tbody>
+      </table>
+    </div>
 
     <div class="ruler" id="ruler"></div>
 
@@ -580,14 +617,17 @@
     const btnPlay  = document.getElementById('btnPlay');
     const countdownOverlay = document.getElementById('countdownOverlay');
     const countdownTimerEl = document.getElementById('countdownTimer');
-    const measListEl = document.getElementById('measList');
+    const measBodyEl = document.getElementById('measBody');
     const measBoxEl = document.querySelector('.measurements');
 
     let countdownRunning = false;
 
+    // κατάσταση πίνακα μετρήσεων
+    let measRowCounter = 0;
+
     // δειγματοληψία μετρήσεων x(t)
     let lastSampleObsTime = -Infinity;
-    const sampleInterval = 0.25; // s μεταξύ διαδοχικών καταγραφών
+    const sampleInterval = 0.25; // s μεταξύ διαδοχικών καταγραφών // s μεταξύ διαδοχικών καταγραφών
 
 
     // χρόνος φυσικού συστήματος
@@ -663,26 +703,43 @@
       return stage.clientWidth * 0.18;
     }
 
-    function logMeasurement(tObs, xMeters){
-      // Καταγραφή μετρήσεων χρόνου-θέσης στο πλαίσιο "μετρήσεις"
-      if (!obsStarted) return;
-      if (mode === 'pause') return;
-      if (tObs - lastSampleObsTime < sampleInterval) return;
-      lastSampleObsTime = tObs;
+    function appendMeasurementRow(tObs, xMeters){
+      // πρόσθεσε νέα γραμμή στον πίνακα μετρήσεων (#, t, x)
+      if (!measBodyEl) return;
 
-      if (!measListEl) return;
+      measRowCounter += 1;
 
-      const tStr = tObs.toFixed(2);
-      const xStr = (xMeters >= 0 ? '+' + xMeters.toFixed(2) : xMeters.toFixed(2));
+      const tr = document.createElement('tr');
 
-      const li = document.createElement('li');
-      li.textContent = `t = ${tStr} s, x = ${xStr} m`;
-      measListEl.appendChild(li);
+      const tdIdx = document.createElement('td');
+      tdIdx.textContent = measRowCounter;
 
-      // scroll ώστε να φαίνεται πάντα η πιο πρόσφατη μέτρηση
+      const tdT = document.createElement('td');
+      tdT.textContent = tObs.toFixed(2);
+
+      const tdX = document.createElement('td');
+      tdX.textContent = (xMeters >= 0 ? '+' + xMeters.toFixed(2) : xMeters.toFixed(2));
+
+      tr.appendChild(tdIdx);
+      tr.appendChild(tdT);
+      tr.appendChild(tdX);
+
+      measBodyEl.appendChild(tr);
+
       if (measBoxEl){
         measBoxEl.scrollTop = measBoxEl.scrollHeight;
       }
+    }
+
+    function logMeasurement(tObs, xMeters){
+      // Αυτόματη δειγματοληψία σε πραγματικό χρόνο
+      if (!obsStarted) return;
+      if (mode === 'pause') return;
+
+      if (tObs - lastSampleObsTime < sampleInterval) return;
+      lastSampleObsTime = tObs;
+
+      appendMeasurementRow(tObs, xMeters);
     }
 
     function animate(now){
@@ -817,7 +874,29 @@
       if (!obsStarted){
         obsStarted = true;
         obsStartPlaybackOffset = playbackTime;
+
+        // αρχική μέτρηση: σειρά #1 στο t = 0.00 s
+        const centerX = stage.clientWidth / 2;
+        const skaterHookX0 = centerX + A_px * Math.sin(omega * playbackTime);
+        const x0_m = (skaterHookX0 - centerX) / pxPerMeter;
+
+        appendMeasurementRow(0, x0_m);
       }
+
+      // κάνε ορατό τον δείκτη θέσης μόνο τώρα
+      if (markerEl){
+        markerEl.style.opacity = '1';
+      }
+    } m, φ₀ = ${phi0deg.toFixed(1)}°`;
+          measListEl.appendChild(li0);
+        }
+      }
+
+      // κάνε ορατό τον δείκτη θέσης μόνο τώρα
+      if (markerEl){
+        markerEl.style.opacity = '1';
+      }
+    }
 
       // κάνε ορατό τον δείκτη θέσης μόνο τώρα
       if (markerEl){
