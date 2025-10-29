@@ -311,6 +311,8 @@
     transform: translateX(-50%);
     pointer-events: none;
     z-index: 65; /* πάνω από ruler και skater για να φαίνεται */
+    opacity: 0;              /* κρυφό πριν την έναρξη */
+    transition: opacity .3s; /* θα εμφανιστεί ομαλά */
   }
 
   .marker-line {
@@ -727,6 +729,11 @@
       if (!obsStarted){
         obsStarted = true;
         obsStartPlaybackOffset = playbackTime;
+      }
+
+      // κάνε ορατό τον δείκτη θέσης μόνο μετά την έναρξη
+      if (markerEl){
+        markerEl.style.opacity = '1';
       }
     });
   </script>
