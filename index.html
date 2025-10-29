@@ -262,9 +262,7 @@
     padding-left: 20px;
   }
 
-  .ruler {
-    position: absolute;
-    bottom: calc(32vh - 8px + 4px); /* λίγο πάνω από το πάτωμα, ώστε να φαίνεται πάνω από το floor και όχι πίσω από το κοινό */
+  $1 calc(32vh - 8px + 1px); /* λίγο πάνω από το πάτωμα, ώστε να φαίνεται πάνω από το floor και όχι πίσω από το κοινό */
     /* left και width ορίζονται από JS ώστε να ταιριάζουν στο άνοιγμα σκηνής */
     height: 24px;
     font-size: 10px;
@@ -303,9 +301,7 @@
   }
 
   /* δείκτης θέσης (αντιπρόσωπος του σκειτερ) */
-  .marker {
-    position: absolute;
-    bottom: calc(32vh - 8px + 4px); /* ίδια βάση με τον ruler */
+  $1 calc(32vh - 8px + 1px); /* ίδια βάση με τον ruler */
     width: 0;
     height: 80px; /* ύψος κάθετης γραμμής προς τα πάνω */
     transform: translateX(-50%);
