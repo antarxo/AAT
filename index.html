@@ -388,6 +388,48 @@
     background: rgba(255,255,255,0.2);
   }
 
+  /* countdown overlay πριν το άνοιγμα της αυλαίας */
+  .countdown-overlay {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.6);
+    color: #fff;
+    display: none; /* γίνεται flex όταν πατήσει Έναρξη */
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    z-index: 300;
+    pointer-events: none;
+    font-family: Inter, system-ui, sans-serif;
+  }
+
+  .countdown-box {
+    max-width: 80%;
+  }
+
+  .countdown-main {
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #fff;
+  }
+
+  .countdown-sub {
+    font-size: 14px;
+    color: #ffd27a;
+    margin-bottom: 16px;
+  }
+
+  .countdown-timer {
+    font-family: "Courier New", monospace;
+    font-size: 40px;
+    font-weight: 700;
+    color: #fff;
+  }
+
   @media (max-width: 600px) {
     .actor {
       bottom: calc(32vh + 40px);
@@ -477,6 +519,14 @@
       <button id="btnPlay" title="κανονικά">▶</button>
     </div>
 
+    <div class="countdown-overlay" id="countdownOverlay">
+      <div class="countdown-box">
+        <div class="countdown-main">Η παράσταση αρχίζει...</div>
+        <div class="countdown-sub">ώρα να χρησιμοποιήσετε χαρτί και μολύβι!</div>
+        <div class="countdown-timer" id="countdownTimer">5</div>
+      </div>
+    </div>
+
     <!-- Ελατήριο (μόνο εικόνα) -->
     <img id="spring" class="spring" src="spring.png" alt="ελατήριο">
 
@@ -528,6 +578,9 @@
     const btnPause = document.getElementById('btnPause');
     const btnSlow  = document.getElementById('btnSlow');
     const btnPlay  = document.getElementById('btnPlay');
+    const countdownOverlay = document.getElementById('countdownOverlay');
+    const countdownTimerEl = document.getElementById('countdownTimer');
+    let countdownRunning = false;
 
     // χρόνος φυσικού συστήματος
     let t0 = performance.now();          // φυσικός χρόνος της ταλάντωσης (τρέχει μόνος του από πριν)
@@ -721,20 +774,56 @@
       });
     }
 
-    // έναρξη παράστασης
-    startBtn.addEventListener('click', ()=>{
+    // βοηθητικό: ξεκινά η παρατήρηση μετά το countdown
+    function beginObservationAfterCountdown(){
       stage.classList.add('open');
-      startBtn.style.display = 'none';
 
       if (!obsStarted){
         obsStarted = true;
         obsStartPlaybackOffset = playbackTime;
       }
 
-      // κάνε ορατό τον δείκτη θέσης μόνο μετά την έναρξη
+      // κάνε ορατό τον δείκτη θέσης μόνο τώρα
       if (markerEl){
         markerEl.style.opacity = '1';
       }
+    }
+
+    // countdown πριν την έναρξη
+    function startShowCountdown(){
+      if (countdownRunning) return;
+      countdownRunning = true;
+
+      // κρύβουμε αμέσως το κουμπί Έναρξη
+      startBtn.style.display = 'none';
+
+      if (countdownOverlay){
+        countdownOverlay.style.display = 'flex';
+      }
+
+      let remaining = 5;
+      if (countdownTimerEl){
+        countdownTimerEl.textContent = remaining;
+      }
+
+      const tick = setInterval(()=>{
+        remaining -= 1;
+        if (remaining >= 0 && countdownTimerEl){
+          countdownTimerEl.textContent = remaining;
+        }
+        if (remaining < 0){
+          clearInterval(tick);
+          if (countdownOverlay){
+            countdownOverlay.style.display = 'none';
+          }
+          beginObservationAfterCountdown();
+        }
+      },1000);
+    }
+
+    // έναρξη παράστασης (πατάει ο θεατής)
+    startBtn.addEventListener('click', ()=>{
+      startShowCountdown();
     });
   </script>
 </body>
