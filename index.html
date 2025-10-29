@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="el">
+<html lang=\"el\">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset=\"UTF-8\">
+<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">
 <title>Θεατρική Σκηνή – Mockup</title>
 <style>
   body {
@@ -199,7 +199,7 @@
     color: #fff;
     padding: 6px 10px;
     font-size: 16px; /* λίγο μεγαλύτερη γραμματοσειρά */
-    font-family: "Courier New", monospace;
+    font-family: \"Courier New\", monospace;
     border-radius: 6px;
     border: 1px solid rgba(255,255,255,0.3);
     z-index: 40;
@@ -296,7 +296,7 @@
     /* left και width ορίζονται από JS ώστε να ταιριάζουν στο άνοιγμα σκηνής */
     height: 24px;
     font-size: 10px;
-    font-family: "Courier New", monospace;
+    font-family: \"Courier New\", monospace;
     color: #aaa;
     pointer-events: none;
     z-index: 60; /* πιο ψηλά για να φαίνεται καθαρά */
@@ -369,20 +369,49 @@
 
   .thought-bubble {
     position: absolute;
-    bottom: 120px;
-    left: 50%;
-    transform: translateX(-50%);
-    max-width: 200px;
-    background: rgba(255,255,255,0.9);
+    max-width: 220px;
+    background: rgba(255,255,255,0.92);
     color: #000;
     font-size: 12px;
     line-height: 1.4;
-    padding: 6px 8px;
-    border-radius: 8px;
+    padding: 8px 10px 10px 10px;
+    border-radius: 10px;
     border: 1px solid rgba(0,0,0,0.4);
-    z-index: 40;
+    box-shadow: 0 6px 12px rgba(0,0,0,0.4);
+    z-index: 140;
     pointer-events: none;
+    opacity: 0;           /* για fade in/out */
+    display: none;        /* δεν φαίνεται μέχρι να το δείξουμε */
+    transition: opacity .3s ease;
   }
+  .thought-bubble.active { opacity: 1; }
+  .thought-bubble.closing { opacity: 0; }
+  .thought-bubble .tail {
+    position: absolute;
+    left: 50%;
+    bottom: -8px;
+    transform: translateX(-50%);
+    width: 0; height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-top: 10px solid rgba(255,255,255,0.92);
+    filter: drop-shadow(0 2px 2px rgba(0,0,0,0.4));
+  }
+  .thought-bubble .checkmark {
+    position: absolute;
+    top: -8px; right: -8px;
+    background: #2ecc71; /* πράσινο = έγινε αποδεκτή */
+    color: #fff;
+    font-size: 11px;
+    line-height: 1;
+    border-radius: 50%;
+    border: 1px solid rgba(0,0,0,0.4);
+    width: 18px; height: 18px;
+    display: none;        /* εμφανίζεται στο τέλος */
+    align-items: center; justify-content: center;
+    font-family: system-ui, sans-serif; font-weight: 600;
+  }
+  .thought-bubble.checked .checkmark { display: flex; }
 
   /* control panel τύπου μαγνητοφώνου */
   .controls {
@@ -452,7 +481,7 @@
   }
 
   .countdown-timer {
-    font-family: "Courier New", monospace;
+    font-family: \"Courier New\", monospace;
     font-size: 40px;
     font-weight: 700;
     color: #fff;
@@ -513,27 +542,27 @@
 </style>
 </head>
 <body>
-  <div class="stage" id="stage">
-    <div class="curtain-top"></div>
-    <div class="curtain-upper"></div>
-    <div class="curtain-lower"></div>
-    <div class="curtain-side left"></div>
-    <div class="curtain-side right"></div>
+  <div class=\"stage\" id=\"stage\">
+    <div class=\"curtain-top\"></div>
+    <div class=\"curtain-upper\"></div>
+    <div class=\"curtain-lower\"></div>
+    <div class=\"curtain-side left\"></div>
+    <div class=\"curtain-side right\"></div>
 
-    <div class="signboard">
+    <div class=\"signboard\">
       <h1>Πράξη 1</h1>
-      <h2 class="mass-line">m₁ = 70 kg</h2>
-      <h2 class="k-line">D₁ = 77 N/m</h2>
+      <h2 class=\"mass-line\">m₁ = 70 kg</h2>
+      <h2 class=\"k-line\">D₁ = 77 N/m</h2>
       <h3>Εμηχ = 347 J</h3>
     </div>
 
-    <div class="clock" id="clock">t = 0.00 s</div>
+    <div class=\"clock\" id=\"clock\">t = 0.00 s</div>
 
-    <div class="laws"><h4>Νόμοι</h4><ol id="lawsList"></ol></div>
+    <div class=\"laws\"><h4>Νόμοι</h4><ol id=\"lawsList\"></ol></div>
 
-    <div class="measurements">
+    <div class=\"measurements\">
       <h4>μετρήσεις</h4>
-      <table class="meas-table">
+      <table class=\"meas-table\">
         <thead>
           <tr>
             <th>#</th>
@@ -541,401 +570,61 @@
             <th>x (m)</th>
           </tr>
         </thead>
-        <tbody id="measBody"></tbody>
+        <tbody id=\"measBody\"></tbody>
       </table>
     </div>
 
-    <div class="ruler" id="ruler"></div>
+    <div class=\"ruler\" id=\"ruler\"></div>
 
-    <div class="marker" id="marker">
-      <div class="marker-line"></div>
-      <div class="marker-tip"></div>
+    <div class=\"marker\" id=\"marker\">
+      <div class=\"marker-line\"></div>
+      <div class=\"marker-tip\"></div>
     </div>
 
-    <div class="thought-bubble" id="bubble0">Η κίνηση είναι πήγαινε-έλα σε ευθεία.</div>
-
-    <div class="controls" id="controls">
-      <button id="btnPause" title="παύση">⏸</button>
-      <button id="btnSlow" title="αργά">🐌</button>
-      <button id="btnPlay" title="κανονικά">▶</button>
+    <div class=\"thought-bubble\" id=\"bubble0\">
+      <div class=\"text\"></div>
+      <div class=\"checkmark\">✓</div>
+      <div class=\"tail\"></div>
     </div>
 
-    <div class="countdown-overlay" id="countdownOverlay">
-      <div class="countdown-box">
-        <div class="countdown-main">Η παράσταση αρχίζει...</div>
-        <div class="countdown-sub">ώρα να χρησιμοποιήσετε χαρτί και μολύβι!</div>
-        <div class="countdown-timer" id="countdownTimer">5</div>
+    <div class=\"controls\" id=\"controls\">
+      <button id=\"btnPause\" title=\"παύση\">⏸</button>
+      <button id=\"btnSlow\" title=\"αργά\">🐌</button>
+      <button id=\"btnPlay\" title=\"κανονικά\">▶</button>
+    </div>
+
+    <div class=\"countdown-overlay\" id=\"countdownOverlay\">
+      <div class=\"countdown-box\">
+        <div class=\"countdown-main\">Η παράσταση αρχίζει...</div>
+        <div class=\"countdown-sub\">ώρα να χρησιμοποιήσετε χαρτί και μολύβι!</div>
+        <div class=\"countdown-timer\" id=\"countdownTimer\">5</div>
       </div>
     </div>
 
     <!-- Ελατήριο (μόνο εικόνα) -->
-    <img id="spring" class="spring" src="spring.png" alt="ελατήριο">
+    <img id=\"spring\" class=\"spring\" src=\"spring.png\" alt=\"ελατήριο\">
 
-    <div class="actor" id="actor">
-      <img src="skater.png" alt="Skater">
+    <div class=\"actor\" id=\"actor\">
+      <img src=\"skater.png\" alt=\"Skater\">
     </div>
 
-    <div class="floor"></div>
+    <div class=\"floor\"></div>
 
-    <img class="audience" src="koino.png" alt="κοινό">
+    <img class=\"audience\" src=\"koino.png\" alt=\"κοινό\">
 
-    <div class="viewers">
-      <div class="viewer" data-idx="0"></div>
-      <div class="viewer" data-idx="1"></div>
-      <div class="viewer" data-idx="2"></div>
-      <div class="viewer" data-idx="3"></div>
-      <div class="viewer" data-idx="4"></div>
+    <div class=\"viewers\">
+      <div class=\"viewer\" data-idx=\"0\"></div>
+      <div class=\"viewer\" data-idx=\"1\"></div>
+      <div class=\"viewer\" data-idx=\"2\"></div>
+      <div class=\"viewer\" data-idx=\"3\"></div>
+      <div class=\"viewer\" data-idx=\"4\"></div>
     </div>
 
-    <button class="start-btn" id="startBtn">Έναρξη</button>
+    <button class=\"start-btn\" id=\"startBtn\">Έναρξη</button>
   </div>
 
   <script>
-    const m = 70;
-    const T = 6.0;
-    const A_m = 3.0;
-    const omega = 2*Math.PI / T;
-    const D = Math.round(m * omega * omega);
-    const E_mech = 0.5 * D * A_m * A_m;
-
-    const pxPerMeter = 50;
-    let A_px = pxPerMeter * A_m;
-
-    document.addEventListener('DOMContentLoaded', ()=>{
-      const massLine = document.querySelector('.signboard .mass-line');
-      const kLine = document.querySelector('.signboard .k-line');
-      const energyLine = document.querySelector('.signboard h3');
-      if (massLine) { massLine.textContent = `m₁ = ${m} kg`; }
-      if (kLine) { kLine.textContent = `D₁ = ${D} N/m`; }
-      if (energyLine) { energyLine.textContent = `Εμηχ = ${Math.round(E_mech)} J`; }
-    });
-
-    const actor = document.getElementById('actor');
-    const stage = document.getElementById('stage');
-    const startBtn = document.getElementById('startBtn');
-    const springEl = document.getElementById('spring');
-    const clockEl = document.getElementById('clock');
-    const rulerEl = document.getElementById('ruler');
-    const markerEl = document.getElementById('marker');
-    const bubbleEl = document.getElementById('bubble0');
-    const btnPause = document.getElementById('btnPause');
-    const btnSlow  = document.getElementById('btnSlow');
-    const btnPlay  = document.getElementById('btnPlay');
-    const countdownOverlay = document.getElementById('countdownOverlay');
-    const countdownTimerEl = document.getElementById('countdownTimer');
-    const measBodyEl = document.getElementById('measBody');
-    const measBoxEl = document.querySelector('.measurements');
-    const lawsEl = document.querySelector('.laws');
-
-    let countdownRunning = false;
-
-    // κατάσταση πίνακα μετρήσεων
-    let measRowCounter = 0;
-
-    // δειγματοληψία μετρήσεων x(t)
-    let lastSampleObsTime = -Infinity;
-    const sampleInterval = 0.25; // s μεταξύ διαδοχικών καταγραφών // s μεταξύ διαδοχικών καταγραφών
-
-
-    // χρόνος φυσικού συστήματος
-    let t0 = performance.now();          // φυσικός χρόνος της ταλάντωσης (τρέχει μόνος του από πριν)
-    let lastFrame = performance.now();   // τελευταίο frame σε πραγματικό χρόνο
-
-    // χρόνος που "παίζεται" στη σκηνή (αυτόν βλέπει το κοινό)
-    let playbackTime = 0;                // σε s, αυτός κινεί τον skater
-    let mode = 'run';                    // 'run' = κανονικά, 'pause' = παγωμένο, 'slow' = αργή κίνηση
-    const slowFactor = 0.15;             // 0.15 => ~7x πιο αργή κίνηση
-
-    // clock παρατήρησης
-    let obsStarted = false;              // έχουν ανοίξει οι κουρτίνες;
-    let obsStartPlaybackOffset = 0;      // τιμή playbackTime τη στιγμή που ξεκίνησαν να παρατηρούν
-
-    // ruler state
-    let lastRulerW = 0;
-
-    function updateRuler() {
-      if (!rulerEl) return;
-
-      // άνοιγμα σκηνής μεταξύ των πλαϊνών κουρτινών: 18% έως 82%
-      const baseLeft = stage.clientWidth * 0.18;   // pixel θέση όπου τελειώνει η αριστερή κουρτίνα
-      const usableW  = stage.clientWidth * 0.64;   // πλάτος ανοιχτής σκηνής
-
-      // αν δεν άλλαξε το πλάτος δεν ξαναχτίζουμε
-      if (Math.abs(usableW - lastRulerW) < 1) {
-        return;
-      }
-      lastRulerW = usableW;
-
-      // τοποθέτηση/διάσταση μετροταινίας
-      rulerEl.style.left = baseLeft + 'px';
-      rulerEl.style.width = usableW + 'px';
-
-      // καθάρισε προηγούμενα ticks
-      rulerEl.innerHTML = '';
-
-      // κέντρο σκηνής = θέση ισορροπίας (x=0)
-      const centerX = stage.clientWidth / 2;
-
-      // μετρητές σε μέτρα γύρω από το 0. Α μας είναι ~3 m, οπότε -3..+3 καλύπτει όλη την κίνηση
-      const minMeters = -3;
-      const maxMeters = 3;
-
-      for (let mTick = minMeters; mTick <= maxMeters; mTick++) {
-        const xPx = centerX + mTick * pxPerMeter; // θέση αυτού του μέτρου σε pixels
-        const rel = xPx - baseLeft;               // σχετική θέση μέσα στον ruler
-
-        // tick γραμμή
-        const tickDiv = document.createElement('div');
-        tickDiv.className = 'tick';
-        tickDiv.style.left = rel + 'px';
-        rulerEl.appendChild(tickDiv);
-
-        // ετικέτα
-        const labelDiv = document.createElement('div');
-        labelDiv.className = 'tick-label';
-        const signText = (mTick === 0) ? '0' : (mTick > 0 ? '+'+mTick : ''+mTick);
-        labelDiv.textContent = signText + ' m';
-        labelDiv.style.left = rel + 'px';
-        rulerEl.appendChild(labelDiv);
-      }
-    }
-
-    // Γεωμετρία ελατηρίου / skater
-    let L0_px;          // πραγματικό μήκος ηρεμίας του spring.png (px) όπως αποδίδεται στη σκηνή
-    let skaterWidthPx;  // πραγματικό πλάτος του skater στη σκηνή (px)
-    let hookOffsetPx;   // pixel πρόσδεσης μέσα στον skater (προς το παρόν το κέντρο)
-
-    function anchorX(){
-      // Δεξί άκρο αριστερής κουρτίνας: πλάτος 18% ⇒ άκρη στο 18%
-      return stage.clientWidth * 0.18;
-    }
-
-    function appendMeasurementRow(tObs, xMeters){
-      // πρόσθεσε νέα γραμμή στον πίνακα μετρήσεων (#, t, x)
-      if (!measBodyEl) return;
-
-      measRowCounter += 1;
-
-      const tr = document.createElement('tr');
-
-      const tdIdx = document.createElement('td');
-      tdIdx.textContent = measRowCounter;
-
-      const tdT = document.createElement('td');
-      tdT.textContent = tObs.toFixed(2);
-
-      const tdX = document.createElement('td');
-      tdX.textContent = (xMeters >= 0 ? '+' + xMeters.toFixed(2) : xMeters.toFixed(2));
-
-      tr.appendChild(tdIdx);
-      tr.appendChild(tdT);
-      tr.appendChild(tdX);
-
-      measBodyEl.appendChild(tr);
-
-      if (measBoxEl){
-        measBoxEl.scrollTop = measBoxEl.scrollHeight;
-      }
-    }
-
-    function logMeasurement(tObs, xMeters){
-      // Αυτόματη δειγματοληψία σε πραγματικό χρόνο
-      if (!obsStarted) return;
-      if (mode === 'pause') return;
-
-      if (tObs - lastSampleObsTime < sampleInterval) return;
-      lastSampleObsTime = tObs;
-
-      appendMeasurementRow(tObs, xMeters);
-    }
-
-    function animate(now){
-      const realDt = (now - lastFrame)/1000;
-      lastFrame = now;
-
-      // ανανέωση μετροταινίας (σύστημα αναφοράς)
-      updateRuler();
-
-      // φυσικός χρόνος της ταλάντωσης (τρέχει offstage πριν το κοινό ανοίξει τις κουρτίνες)
-      const tPhys = (now - t0)/1000;
-
-      // συγχρονισμός του χρόνου που "παίζεται" στη σκηνή (playbackTime)
-      if (!obsStarted){
-        // πριν το άνοιγμα, απλώς ακολουθούμε τον πραγματικό ταλαντωτή
-        playbackTime = tPhys;
-      } else {
-        // μετά το άνοιγμα, ο ρυθμός εξαρτάται από mode
-        if (mode === 'run'){
-          playbackTime += realDt;
-        } else if (mode === 'slow'){
-          playbackTime += realDt * slowFactor;
-        } else if (mode === 'pause'){
-          // παγωμένο: δεν αυξάνεται
-        }
-      }
-
-      // χρόνος που βλέπουν οι θεαποιοί στο ρολόι
-      let tObs = 0;
-      if (obsStarted){
-        tObs = playbackTime - obsStartPlaybackOffset;
-      }
-      if (clockEl){
-        clockEl.textContent = 't = ' + tObs.toFixed(2) + ' s';
-      }
-
-      // μετρήσεις τρέχουσας γεωμετρίας
-      const springRect = springEl.getBoundingClientRect();
-      const skRect = actor.getBoundingClientRect();
-
-      // κράτα το μήκος ηρεμίας του ελατηρίου ΜΟΝΟ την πρώτη φορά
-      if (!L0_px && springRect.width > 0) {
-        L0_px = springRect.width;
-      }
-
-      // προσαρμόζουμε το πλάτος του skater κάθε frame (responsive)
-      if (skRect.width > 0) {
-        skaterWidthPx = skRect.width;
-        hookOffsetPx = skaterWidthPx / 2; // σημείο πρόσδεσης (προς το παρόν στο κέντρο)
-      }
-
-      if (L0_px) {
-        // σταθερό άκρο ελατηρίου: δεξί άκρο αριστερής κουρτίνας
-        const ax = anchorX();
-        // κέντρο σκηνής = θέση ισορροπίας ταλάντωσης
-        const centerX = stage.clientWidth / 2;
-        // θέση γάντζου skater γύρω από το κέντρο (χρόνος = playbackTime)
-        const skaterHookX = centerX + A_px * Math.sin(omega * playbackTime);
-
-        // ελατήριο τεντώνει ώστε να φτάσει τον γάντζο
-        const distance = skaterHookX - ax;
-        const scale = distance / L0_px;
-        springEl.style.left = ax + 'px';
-        springEl.style.transform = `scaleX(${scale})`;
-
-        // τοποθέτηση skater ώστε ο γάντζος του να κάτσει ακριβώς εκεί
-        actor.style.transform = 'none';
-        actor.style.left = (skaterHookX - hookOffsetPx) + 'px';
-
-        // ενημέρωση δείκτη θέσης (κάθετο βελάκι που ακουμπά τον χάρακα)
-        if (markerEl){
-          markerEl.style.left = skaterHookX + 'px';
-        }
-
-        // υπολογισμός θέσης σε μέτρα από το κέντρο ισορροπίας
-        const xMeters = (skaterHookX - centerX) / pxPerMeter;
-
-        // καταγραφή τρέχουσας μέτρησης στο πλαίσιο "μετρήσεις"
-        logMeasurement(tObs, xMeters);
-      }
-
-      requestAnimationFrame(animate);
-    }
-    requestAnimationFrame(animate);
-
-    // χειρισμός ρυθμού/μπαλόνι
-    function setMode(newMode){
-      mode = newMode;
-      if (btnPause){ btnPause.classList.toggle('active', mode === 'pause'); }
-      if (btnSlow){  btnSlow.classList.toggle('active',  mode === 'slow'); }
-      if (btnPlay){  btnPlay.classList.toggle('active',  mode === 'run'); }
-    }
-
-    // παγώνουμε και εμφανίζουμε bubble (ή αλλάζουμε κείμενο bubble)
-    function pauseForBubble(text){
-      if (bubbleEl){
-        if (text) bubbleEl.textContent = text;
-        bubbleEl.style.display = 'block';
-      }
-      setMode('pause');
-    }
-
-    // κλείνουμε bubble και συνεχίζουμε είτε αργά είτε κανονικά
-    function resumeFromBubble(nextMode='run'){
-      if (bubbleEl){
-        bubbleEl.style.display = 'none';
-      }
-      setMode(nextMode === 'slow' ? 'slow' : 'run');
-    }
-
-    // κουμπιά τύπου μαγνητόφωνο
-    if (btnPause){
-      btnPause.addEventListener('click', ()=>{
-        pauseForBubble(); // παγώνει στη στιγμή, αφήνει το bubble όπως είναι
-      });
-    }
-    if (btnSlow){
-      btnSlow.addEventListener('click', ()=>{
-        resumeFromBubble('slow'); // slow motion
-      });
-    }
-    if (btnPlay){
-      btnPlay.addEventListener('click', ()=>{
-        resumeFromBubble('run'); // κανονική ταχύτητα
-      });
-    }
-
-    // βοηθητικό: ξεκινά η παρατήρηση μετά το countdown
-    function beginObservationAfterCountdown(){
-      stage.classList.add('open');
-
-      if (!obsStarted){
-        obsStarted = true;
-        obsStartPlaybackOffset = playbackTime;
-
-        // αρχική μέτρηση: σειρά #1 στο t = 0.00 s
-        const centerX = stage.clientWidth / 2;
-        const skaterHookX0 = centerX + A_px * Math.sin(omega * playbackTime);
-        const x0_m = (skaterHookX0 - centerX) / pxPerMeter;
-        appendMeasurementRow(0, x0_m);
-      }
-
-      // εμφάνιση εργαλείων παρατήρησης μόλις ξεκινήσει η παρατήρηση
-      if (clockEl){ clockEl.style.display = 'block'; }
-      if (measBoxEl){ measBoxEl.style.display = 'block'; }
-      if (lawsEl){ lawsEl.style.display = 'block'; }
-
-      // κάνε ορατό τον δείκτη θέσης μόνο τώρα
-      if (markerEl){
-        markerEl.style.opacity = '1';
-      }
-    }
-
-    // countdown πριν την έναρξη
-    function startShowCountdown(){
-      if (countdownRunning) return;
-      countdownRunning = true;
-
-      // κρύβουμε αμέσως το κουμπί Έναρξη
-      startBtn.style.display = 'none';
-
-      if (countdownOverlay){
-        countdownOverlay.style.display = 'flex';
-      }
-
-      let remaining = 5;
-      if (countdownTimerEl){
-        countdownTimerEl.textContent = remaining;
-      }
-
-      const tick = setInterval(()=>{
-        remaining -= 1;
-        if (remaining >= 0 && countdownTimerEl){
-          countdownTimerEl.textContent = remaining;
-        }
-        if (remaining < 0){
-          clearInterval(tick);
-          if (countdownOverlay){
-            countdownOverlay.style.display = 'none';
-          }
-          beginObservationAfterCountdown();
-        }
-      },1000);
-    }
-
-    // έναρξη παράστασης (πατάει ο θεατής)
-    startBtn.addEventListener('click', ()=>{
-      startShowCountdown();
-    });
+TextIOWrapper
   </script>
 </body>
 </html>
