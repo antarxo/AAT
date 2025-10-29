@@ -378,7 +378,7 @@
     border-radius: 10px;
     border: 1px solid rgba(0,0,0,0.4);
     box-shadow: 0 6px 12px rgba(0,0,0,0.4);
-    z-index: 140;
+    z-index: 240;
     pointer-events: none;
     opacity: 0;           /* για fade in/out */
     display: none;        /* δεν φαίνεται μέχρι να το δείξουμε */
@@ -667,8 +667,8 @@
       { viewer: 0, text: 'Μοιάζει με ΑΑΤ. Για να δούμε…', lawAdd: null },
       { viewer: 4, text: 'Αν είναι ΑΑΤ, τότε x(t)=A·ημ(ωt+φ₀).', lawAdd: 'x(t) = A·ημ(ωt + φ₀)' }
     ];
-    let currentBeat = 0;
-    let beatArmed = false;
+    $1
+    let bubbleAutoTimer = null;
 
     let countdownRunning = false;
 
@@ -889,32 +889,9 @@
     }
 
     // δείξε bubble πάνω από συγκεκριμένο θεατή και πάγωσε
-    function showThoughtForViewer(viewerIdx, text) {
-      const viewerEl = document.querySelector(`.viewer[data-idx="${viewerIdx}"]`);
-      if (!viewerEl || !bubbleEl) return;
-
-      const txtNode = bubbleEl.querySelector('.text');
-      if (txtNode) txtNode.textContent = text || '';
-
-      bubbleEl.classList.remove('checked');
-      bubbleEl.classList.remove('closing');
-
-      const vRect = viewerEl.getBoundingClientRect();
-      const sRect = stage.getBoundingClientRect();
-
-      const bubbleX = vRect.left + vRect.width/2 - sRect.left;
-      const bubbleY = vRect.top - sRect.top - 60; // ~60px πάνω από κεφάλι
-
-      bubbleEl.style.left = bubbleX + 'px';
-      bubbleEl.style.top  = bubbleY + 'px';
-
-      bubbleEl.style.display = 'block';
-      // force reflow για σωστό transition
-      void bubbleEl.offsetWidth;
-      bubbleEl.classList.add('active');
-
-      setMode('pause');
-    }
+    $1if (bubbleAutoTimer) { clearTimeout(bubbleAutoTimer); bubbleAutoTimer = null; }
+      bubbleAutoTimer = setTimeout(()=>{ resumeFromBubble('run'); }, 3000);
+      }
 
     function triggerNextThought(){
       if (currentBeat >= thoughtScript.length) return;
@@ -947,7 +924,7 @@
     }
 
     // κλείνουμε bubble και συνεχίζουμε είτε αργά είτε κανονικά
-    function resumeFromBubble(nextMode='run'){
+    $1if (bubbleAutoTimer) { clearTimeout(bubbleAutoTimer); bubbleAutoTimer = null; }
       if (bubbleEl){
         // 1) εμφάνισε ✓
         bubbleEl.classList.add('checked');
