@@ -81,7 +81,13 @@
 
   
 
-  $1 calc(32vh + 120px); /* 2px κάτω από τα πόδια του skater */
+  .floor {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: #888;
+    bottom: calc(32vh + 130px - 98px);
     z-index: 1;
     pointer-events: none;
   }
