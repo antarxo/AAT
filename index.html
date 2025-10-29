@@ -667,7 +667,8 @@
       { viewer: 0, text: 'Μοιάζει με ΑΑΤ. Για να δούμε…', lawAdd: null },
       { viewer: 4, text: 'Αν είναι ΑΑΤ, τότε x(t)=A·ημ(ωt+φ₀).', lawAdd: 'x(t) = A·ημ(ωt + φ₀)' }
     ];
-    $1
+    let currentBeat = 0;
+    let beatArmed = false;
     let bubbleAutoTimer = null;
 
     let countdownRunning = false;
@@ -889,9 +890,28 @@
     }
 
     // δείξε bubble πάνω από συγκεκριμένο θεατή και πάγωσε
-    $1if (bubbleAutoTimer) { clearTimeout(bubbleAutoTimer); bubbleAutoTimer = null; }
+    function showThoughtForViewer(viewerIdx, text){
+      const viewerEl = document.querySelector(`.viewer[data-idx="${viewerIdx}"]`);
+      if (!viewerEl || !bubbleEl) return;
+      const txtNode = bubbleEl.querySelector('.text');
+      if (txtNode) txtNode.textContent = text || '';
+
+      // τοποθέτηση bubble πάνω από τον συγκεκριμένο θεατή, σε συντεταγμένες της σκηνής
+      const vRect = viewerEl.getBoundingClientRect();
+      const sRect = stage.getBoundingClientRect();
+      bubbleEl.style.left = (vRect.left + vRect.width/2 - sRect.left) + 'px';
+      bubbleEl.style.top  = (vRect.top  - sRect.top - 60) + 'px';
+
+      bubbleEl.style.display = 'block';
+      void bubbleEl.offsetWidth; // force reflow για transition
+      bubbleEl.classList.add('active');
+
+      setMode('pause');
+
+      // αυτόματο resume σε 3s
+      if (bubbleAutoTimer) { clearTimeout(bubbleAutoTimer); bubbleAutoTimer = null; }
       bubbleAutoTimer = setTimeout(()=>{ resumeFromBubble('run'); }, 3000);
-      }
+    }
 
     function triggerNextThought(){
       if (currentBeat >= thoughtScript.length) return;
@@ -924,15 +944,11 @@
     }
 
     // κλείνουμε bubble και συνεχίζουμε είτε αργά είτε κανονικά
-    $1if (bubbleAutoTimer) { clearTimeout(bubbleAutoTimer); bubbleAutoTimer = null; }
+    function resumeFromBubble(nextMode='run'){
+      if (bubbleAutoTimer) { clearTimeout(bubbleAutoTimer); bubbleAutoTimer = null; }
       if (bubbleEl){
-        // 1) εμφάνισε ✓
         bubbleEl.classList.add('checked');
-        // 2) μικρή παύση να φανεί το check, μετά fade out
-        setTimeout(()=>{
-          bubbleEl.classList.add('closing');
-        }, 200);
-        // 3) καθάρισε τελείως το bubble
+        setTimeout(()=>{ bubbleEl.classList.add('closing'); }, 200);
         setTimeout(()=>{
           bubbleEl.classList.remove('active');
           bubbleEl.style.display = 'none';
