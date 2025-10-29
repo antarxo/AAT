@@ -79,7 +79,7 @@
     transition: opacity 0.4s linear;
   }
 
-    .actor {
+  .actor {
     position: absolute;
     bottom: calc(32vh + 130px);
     left: 50%;
@@ -91,8 +91,6 @@
     opacity: 0;
     transition: opacity 0.4s linear;
   }
-
-  
 
   .floor {
     position: absolute;
@@ -115,6 +113,7 @@
     pointer-events: none;
     display: block;
   }
+
   .actor img {
     width: 100%;
     height: auto;
@@ -187,7 +186,115 @@
     font-size: 18px;
     cursor: pointer;
     box-shadow: 0 0 10px #300;
-  }  .open .actor, .open .spring { opacity:1; }
+  }
+
+  .open .actor, .open .spring { opacity:1; }
+
+  /* overlay elements */
+  .clock {
+    position: absolute;
+    top: 10px;
+    right: 2%;
+    background: rgba(0,0,0,0.5);
+    color: #fff;
+    padding: 6px 10px;
+    font-size: 14px;
+    font-family: "Courier New", monospace;
+    border-radius: 6px;
+    border: 1px solid rgba(255,255,255,0.3);
+    z-index: 40;
+    pointer-events: none;
+  }
+
+  .measurements {
+    position: absolute;
+    right: 2%;
+    bottom: 20%;
+    width: 150px;
+    max-height: 30vh;
+    overflow: auto;
+    background: rgba(0,0,0,0.4);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 8px;
+    padding: 6px 8px;
+    font-size: 12px;
+    line-height: 1.4;
+    z-index: 40;
+  }
+  .measurements h4 {
+    margin: 0 0 4px 0;
+    font-size: 12px;
+    color: #ffd27a;
+    font-family: 'Georgia', serif;
+    text-align: center;
+  }
+  .measurements ul {
+    margin: 0;
+    padding-left: 16px;
+  }
+
+  .laws {
+    position: absolute;
+    left: 2%;
+    bottom: 20%;
+    width: 160px;
+    max-height: 30vh;
+    overflow: auto;
+    background: rgba(20,0,0,0.6);
+    color: #fff;
+    border: 1px solid rgba(255,200,200,0.3);
+    border-radius: 8px;
+    padding: 6px 8px;
+    font-size: 12px;
+    line-height: 1.4;
+    z-index: 40;
+  }
+  .laws h4 {
+    margin: 0 0 4px 0;
+    font-size: 12px;
+    color: #ff8080;
+    font-family: 'Georgia', serif;
+    text-align: center;
+  }
+  .laws ol {
+    margin: 0;
+    padding-left: 20px;
+  }
+
+  .ruler {
+    position: absolute;
+    left: 18%;
+    bottom: calc(32vh - 8px - 18px);
+    width: 64%;
+    height: 18px;
+    font-size: 10px;
+    font-family: "Courier New", monospace;
+    color: #aaa;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    pointer-events: none;
+    z-index: 25;
+  }
+
+  .thought-bubble {
+    position: absolute;
+    bottom: 120px;
+    left: 50%;
+    transform: translateX(-50%);
+    max-width: 200px;
+    background: rgba(255,255,255,0.9);
+    color: #000;
+    font-size: 12px;
+    line-height: 1.4;
+    padding: 6px 8px;
+    border-radius: 8px;
+    border: 1px solid rgba(0,0,0,0.4);
+    z-index: 40;
+    pointer-events: none;
+  }
+
   @media (max-width: 600px) {
     .actor {
       bottom: calc(32vh + 40px);
@@ -223,6 +330,7 @@
     .signboard h2 { font-size: 14px; }
     .signboard h3 { font-size: 12px; }
   }
+
   @media (max-height: 500px) and (orientation: landscape) {
     .actor {
       bottom: calc(32vh + 30px);
@@ -234,14 +342,6 @@
 
     .spring {
       bottom: calc(32vh + 7px);
-      left: 10%;
-      height: 46px;
-      width: auto;
-    }
-  }
-
-    .spring {
-      bottom: calc(32vh - 6px);
       left: 10%;
       height: 46px;
       width: auto;
@@ -262,6 +362,16 @@
       <h2>m₁ = 70 kg, D₁ = 77 N/m</h2>
       <h3>Εμηχ = 347 J</h3>
     </div>
+
+    <div class="clock" id="clock">t = 0.00 s</div>
+
+    <div class="laws"><h4>Νόμοι</h4><ol id="lawsList"></ol></div>
+
+    <div class="measurements"><h4>μετρήσεις</h4><ul id="measList"></ul></div>
+
+    <div class="ruler" id="ruler"></div>
+
+    <div class="thought-bubble" id="bubble0">Η κίνηση είναι πήγαινε-έλα σε ευθεία.</div>
 
     <!-- Ελατήριο (μόνο εικόνα) -->
     <img id="spring" class="spring" src="spring.png" alt="ελατήριο">
@@ -308,6 +418,9 @@
     const stage = document.getElementById('stage');
     const startBtn = document.getElementById('startBtn');
     const springEl = document.getElementById('spring');
+    const clockEl = document.getElementById('clock');
+
+    let obsStart = null;
 
     let lastFrame = performance.now();
 
@@ -323,7 +436,18 @@
 
     function animate(now){
       const dt = (now - lastFrame)/1000; lastFrame = now;
-      const t = (now - t0)/1000;
+
+      // φυσικός χρόνος της ταλάντωσης (τρέχει από πριν μπουν οι θεατές)
+      const tPhys = (now - t0)/1000;
+
+      // χρόνος παρατήρησης των θεατών (ξεκινά στο click "Έναρξη")
+      let tObs = 0;
+      if (obsStart){
+        tObs = (now - obsStart)/1000;
+      }
+      if (clockEl){
+        clockEl.textContent = 't = ' + tObs.toFixed(2) + ' s';
+      }
 
       // μετρήσεις τρέχουσας γεωμετρίας
       const springRect = springEl.getBoundingClientRect();
@@ -346,7 +470,7 @@
         // κέντρο σκηνής = θέση ισορροπίας ταλάντωσης
         const centerX = stage.clientWidth / 2;
         // θέση γάντζου skater γύρω από το κέντρο
-        const skaterHookX = centerX + A_px * Math.sin(omega * t);
+        const skaterHookX = centerX + A_px * Math.sin(omega * tPhys);
 
         // ελατήριο τεντώνει ώστε να φτάσει τον γάντζο
         const distance = skaterHookX - ax;
@@ -366,6 +490,9 @@
     startBtn.addEventListener('click', ()=>{
       stage.classList.add('open');
       startBtn.style.display = 'none';
+      if (!obsStart){
+        obsStart = performance.now();
+      }
     });
   </script>
 </body>
