@@ -223,6 +223,22 @@
     .signboard h2 { font-size: 14px; }
     .signboard h3 { font-size: 12px; }
   }
+  @media (max-height: 500px) and (orientation: landscape) {
+    .actor {
+      bottom: calc(32vh + 20px);
+      left: 50%;
+      width: 70px;
+      height: 46px;
+      transform: translate(-50%, 0);
+    }
+
+    .spring {
+      bottom: calc(32vh - 6px);
+      left: 10%;
+      height: 46px;
+      width: auto;
+    }
+  }
 </style>
 </head>
 <body>
