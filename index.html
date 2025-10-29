@@ -227,6 +227,41 @@
       font-size: 12px;
     }
   }
+  @media (max-width: 600px) {
+    /* Ρύθμιση για κινητό: κατέβασμα skater ώστε να μην βγαίνει από τη σκηνή */
+    .actor {
+      bottom: calc(32vh + 40px);
+      width: 100px;
+      height: 66px;
+    }
+    /* Ελατήριο χαμηλότερα και στη μέση του skater */
+    .spring {
+      bottom: calc(32vh + 7px);
+      height: 66px;
+    }
+    /* Κοινό ορατό και μικρότερο ύψος για να χωράει */
+    .audience {
+      left: 18%;
+      bottom: 0;
+      width: 64%;
+      height: 40px;
+      z-index: 150;
+      pointer-events: none;
+      display: block;
+    }
+    .signboard {
+      padding: 8px 12px;
+    }
+    .signboard h1 {
+      font-size: 20px;
+    }
+    .signboard h2 {
+      font-size: 14px;
+    }
+    .signboard h3 {
+      font-size: 12px;
+    }
+  }
 </style>
 </head>
 <body>
@@ -305,36 +340,29 @@
       const dt = (now - lastFrame)/1000; lastFrame = now;
       const t = (now - t0)/1000;
 
-      // αρχικοποίηση γεωμετρίας μετά το layout ώστε να πάρουμε ΠΡΑΓΜΑΤΙΚΑ px από τις εικόνες
-      if (!L0_px || !skaterWidthPx) {
-        const springRect = springEl.getBoundingClientRect();
-        const skRect = actor.getBoundingClientRect();
-        if (springRect.width > 0 && skRect.width > 0) {
-          L0_px = springRect.width;         // μήκος ηρεμίας ελατηρίου στην οθόνη (όπως φορτώνει)
-          skaterWidthPx = skRect.width;     // πλάτος skater στην οθόνη
-          hookOffsetPx = skaterWidthPx / 2; // προς το παρόν: γάντζος στο κέντρο του skater
-        }
-      }
+      // μετρήσεις σε κάθε frame ώστε να δουλεύει και σε mobile breakpoints
+      const springRect = springEl.getBoundingClientRect();
+      const skRect = actor.getBoundingClientRect();
 
-      if (L0_px && skaterWidthPx) {
-        // σταθερό άκρο ελατηρίου: δεξί άκρο αριστερής κουρτίνας
+      if (springRect.width > 0 && skRect.width > 0) {
+        L0_px = springRect.width;        // τρέχον μήκος ηρεμίας ελατηρίου (scaled)
+        skaterWidthPx = skRect.width;    // τρέχον πλάτος skater (scaled)
+        hookOffsetPx = skaterWidthPx / 2; // προσωρινά δέσιμο στο κέντρο
+
+        // άκρο κουρτίνας (σταθερό άκρο ελατηρίου)
         const ax = anchorX();
-
-        // κέντρο σκηνής (στόχος: μέση ταλάντωσης να είναι εδώ)
+        // κέντρο σκηνής = σημείο ισορροπίας της ταλάντωσης
         const centerX = stage.clientWidth / 2;
-
-        // θέση του γάντζου του skater: ταλαντώνεται γύρω από το κέντρο της σκηνής
+        // θέση γάντζου skater γύρω από το κέντρο
         const skaterHookX = centerX + A_px * Math.sin(omega * t);
 
-        // το ελατήριο πρέπει να φτάσει μέχρι αυτό το hook σημείο
+        // προσαρμογή ελατηρίου για να φτάσει τον γάντζο
         const distance = skaterHookX - ax;
         const scale = distance / L0_px;
-
-        // ενημέρωση ελατηρίου (τεντώνεται/συσπειρώνεται οριζόντια από το ax προς τα δεξιά)
         springEl.style.left = ax + 'px';
         springEl.style.transform = `scaleX(${scale})`;
 
-        // τοποθέτηση skater ώστε ο γάντζος του να βρίσκεται ακριβώς στο skaterHookX
+        // τοποθέτηση skater ώστε ο γάντζος του να κάτσει εκεί
         actor.style.transform = 'none';
         actor.style.left = (skaterHookX - hookOffsetPx) + 'px';
       }
