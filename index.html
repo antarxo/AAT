@@ -219,8 +219,8 @@
     border: 1px solid rgba(255,255,255,0.2);
     border-radius: 8px;
     padding: 6px 8px;
-    font-size: 12px;
-    line-height: 1.4;
+    font-size: 16px;
+    line-height: 1.5;
     z-index: 40;
     display: none; /* δεν φαίνεται πριν το t=0 */
   }
@@ -273,8 +273,8 @@
     border: 1px solid rgba(255,200,200,0.3);
     border-radius: 8px;
     padding: 6px 8px;
-    font-size: 12px;
-    line-height: 1.4;
+    font-size: 16px;
+    line-height: 1.5;
     z-index: 40;
     display: none; /* δεν φαίνεται πριν το t=0 */
   }
@@ -289,6 +289,27 @@
     margin: 0;
     padding-left: 20px;
   }
+
+  /* Πλαίσιο εμφάνισης παραμέτρων πάνω δεξιά στην πάνω κουρτίνα */
+  .params-box {
+    position: absolute;
+    top: 8px;
+    right: 3%;
+    z-index: 45;
+    background: rgba(0,0,0,0.5);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.25);
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-size: 12px;
+    line-height: 1.4;
+    display: none;
+  }
+  .params-box h4 { margin: 0 0 4px 0; font-size: 12px; color: #ffd27a; font-family: 'Georgia', serif; }
+  .params-box .param { white-space: nowrap; }
+
+  /* Καμβάς διαγράμματος x-t κάτω από τον πίνακα τιμών */
+  #xtCanvas { display: none; margin-top: 6px; background: rgba(0,0,0,0.2); border:1px solid rgba(255,255,255,0.2); border-radius:6px; }
 
   .ruler {
     position: absolute;
@@ -369,12 +390,12 @@
 
   .thought-bubble {
     position: absolute;
-    max-width: 220px;
+    max-width: 320px;
     background: rgba(255,255,255,0.92);
     color: #000;
-    font-size: 12px;
-    line-height: 1.4;
-    padding: 8px 10px 10px 10px;
+    font-size: 16px;
+    line-height: 1.5;
+    padding: 12px 14px 14px 14px;
     border-radius: 10px;
     border: 1px solid rgba(0,0,0,0.4);
     box-shadow: 0 6px 12px rgba(0,0,0,0.4);
@@ -556,22 +577,20 @@
       <h3>Εμηχ = 347 J</h3>
     </div>
 
+    <div class="params-box" id="paramsBox">
+      <h4>Παράμετροι</h4>
+      <div class="param" id="paramA"></div>
+      <div class="param" id="paramT"></div>
+      <div class="param" id="paramW"></div>
+      <div class="param" id="paramPhi"></div>
+    </div>
+
     <div class="clock" id="clock">t = 0.00 s</div>
 
     <div class="laws"><h4>Νόμοι</h4><ol id="lawsList"></ol></div>
 
-    <div class="measurements">
-      <h4>μετρήσεις</h4>
-      <table class="meas-table">
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>t (s)</th>
-            <th>x (m)</th>
-          </tr>
-        </thead>
-        <tbody id="measBody"></tbody>
-      </table>
+    $1
+      <canvas id="xtCanvas" width="260" height="140"></canvas>
     </div>
 
     <div class="ruler" id="ruler"></div>
@@ -662,14 +681,30 @@
 
     // σενάριο σκέψεων (demo)
     const thoughtScript = [
-      { viewer: 1, text: 'Η κίνηση είναι πήγαινε-έλα σε ευθεία.', lawAdd: null },
-      { viewer: 3, text: 'Φαίνεται να επαναλαμβάνεται ⇒ περιοδική.', lawAdd: null },
-      { viewer: 0, text: 'Μοιάζει με ΑΑΤ. Για να δούμε…', lawAdd: null },
-      { viewer: 4, text: 'Αν είναι ΑΑΤ, τότε x(t)=A·ημ(ωt+φ₀).', lawAdd: 'x(t) = A·ημ(ωt + φ₀)' }
+      { kind:'bubble', at: 1.0,  viewer:1, duration:3, text:'η κίνηση είναι ευθύγραμμη παλινδρομική!' },
+      { kind:'bubble', at: 3.8,  viewer:3, duration:3, text:'… και επαναλαμβανόμενη-περιοδική, άρα ταλάντωση!' },
+      { kind:'bubble', at: 6.6,  viewer:0, duration:3, text:'Μήπως είναι Απλή Αρμονική Ταλάντωση;' },
+      { kind:'bubble', at: 9.4,  viewer:4, duration:3, text:'… αν είναι Α.Α.Τ. τότε οι τιμές που μετράμε πρέπει να επαληθεύουν την χ=Αημ(ωt+φ₀)!' },
+      { kind:'bubble', at: 12.2, viewer:2, duration:3, text:'Να κάνουμε διάγραμμα x–t, αυτό θα δείξει!' },
+      { kind:'graph',  at: 15.0 },
+      { kind:'bubble', at: 17.5, viewer:1, duration:3, text:'Πραγματικά είναι ΑΑΤ με Α=… Τ=… ω=… και φ₀=… — ένα το κρατούμενο!', onShow:'params' },
+      { kind:'law',    at: 21.0, lawText: 'x(t) = A·ημ(ωt + φ₀)' },
+      { kind:'law',    at: 23.0, lawText: 'v(t) = ωA·συν(ωt + φ₀)' },
+      { kind:'law',    at: 25.0, lawText: 'a(t) = −ω²A·ημ(ωt + φ₀)' },
+      { kind:'law',    at: 27.0, lawText: 'a = −ω²·x' },
+      { kind:'close',  at: 30.0 }
     ];
-    let currentBeat = 0;
-    let beatArmed = false;
+    let nextThoughtIdx = 0;        // δείκτης στο επόμενο event του timeline
+    let isBubbleActive = false;     // true όταν ένα bubble είναι ανοιχτό
     let bubbleAutoTimer = null;
+
+    // refs για διάγραμμα & παράμετρους
+    const xtCanvas = document.getElementById('xtCanvas');
+    const paramsBoxEl = document.getElementById('paramsBox');
+    const paramAEl = document.getElementById('paramA');
+    const paramTEl = document.getElementById('paramT');
+    const paramWEl = document.getElementById('paramW');
+    const paramPhiEl = document.getElementById('paramPhi');
 
     let countdownRunning = false;
 
@@ -792,10 +827,7 @@
       appendMeasurementRow(tObs, xMeters);
 
       // demo trigger: μόλις έχουμε 4 γραμμές, ρίξε την 1η σκέψη μία και καλή
-      if (measRowCounter >= 4 && !beatArmed) {
-        beatArmed = true;
-        triggerNextThought();
-      }
+      /* Τα bubbles πλέον πυροδοτούνται από timeline (tObs), όχι από πλήθος μετρήσεων. */
     }
 
     function animate(now){
@@ -828,8 +860,16 @@
       if (obsStarted){
         tObs = playbackTime - obsStartPlaybackOffset;
       }
-      if (clockEl){
-        clockEl.textContent = 't = ' + tObs.toFixed(2) + ' s';
+      if (clockEl){ clockEl.textContent = 't = ' + tObs.toFixed(2) + ' s'; }
+
+      // timeline: εκτέλεση γεγονότων κατά tObs
+      if (obsStarted && nextThoughtIdx < thoughtScript.length && !isBubbleActive){
+        const th = thoughtScript[nextThoughtIdx];
+        if (tObs >= th.at){
+          handleTimelineEvent(th);
+          nextThoughtIdx += 1;
+        }
+      }
       }
 
       // μετρήσεις τρέχουσας γεωμετρίας
@@ -884,32 +924,46 @@
     // χειρισμός ρυθμού/μπαλόνι (μόνο toggle κλάσεων)
     function setMode(newMode){
       mode = newMode;
-      if (btnPause){ btnPause.classList.toggle('active', mode === 'pause'); }
+      if (btnPause){
+      btnPause.addEventListener('click', ()=>{
+        // toggle παύσης του ρολογιού/κίνησης — ΔΕΝ πυροδοτεί bubbles
+        setMode(mode === 'pause' ? 'run' : 'pause');
+      });
+    }
       if (btnSlow){  btnSlow.classList.toggle('active',  mode === 'slow'); }
       if (btnPlay){  btnPlay.classList.toggle('active',  mode === 'run'); }
     }
 
     // δείξε bubble πάνω από συγκεκριμένο θεατή και πάγωσε
-    function showThoughtForViewer(viewerIdx, text){
+    function showThoughtForViewer(viewerIdx, text, durationSecs = 3, lawAdd = null){
       const viewerEl = document.querySelector(`.viewer[data-idx="${viewerIdx}"]`);
       if (!viewerEl || !bubbleEl) return;
+
       const txtNode = bubbleEl.querySelector('.text');
       if (txtNode) txtNode.textContent = text || '';
 
-      // τοποθέτηση bubble πάνω από τον συγκεκριμένο θεατή, σε συντεταγμένες της σκηνής
+      // ενημέρωση Νόμων (αν ζητηθεί)
+      if (lawAdd){
+        const lawsList = document.getElementById('lawsList');
+        if (lawsList){ const li = document.createElement('li'); li.textContent = lawAdd; lawsList.appendChild(li); }
+      }
+
       const vRect = viewerEl.getBoundingClientRect();
       const sRect = stage.getBoundingClientRect();
       bubbleEl.style.left = (vRect.left + vRect.width/2 - sRect.left) + 'px';
-      bubbleEl.style.top  = (vRect.top  - sRect.top - 60) + 'px';
+      bubbleEl.style.top  = (vRect.top  - sRect.top - 70) + 'px'; // λίγο ψηλότερα τώρα
 
       bubbleEl.style.display = 'block';
-      void bubbleEl.offsetWidth; // force reflow για transition
+      void bubbleEl.offsetWidth; // force reflow
       bubbleEl.classList.add('active');
 
+      isBubbleActive = true;
       setMode('pause');
 
-      // αυτόματο resume σε 3s
+      // αυτόματο resume μετά από durationSecs
       if (bubbleAutoTimer) { clearTimeout(bubbleAutoTimer); bubbleAutoTimer = null; }
+      bubbleAutoTimer = setTimeout(()=>{ resumeFromBubble('run'); }, Math.max(0.5, durationSecs) * 1000);
+    }
       bubbleAutoTimer = setTimeout(()=>{ resumeFromBubble('run'); }, 3000);
     }
 
@@ -954,9 +1008,81 @@
           bubbleEl.style.display = 'none';
           bubbleEl.classList.remove('checked');
           bubbleEl.classList.remove('closing');
+          isBubbleActive = false;
         }, 800);
+      } else {
+        isBubbleActive = false;
       }
       setMode(nextMode === 'slow' ? 'slow' : 'run');
+    }
+
+    function addLaw(txt){
+      const lawsList = document.getElementById('lawsList');
+      if (!lawsList) return;
+      const li = document.createElement('li');
+      li.textContent = txt;
+      lawsList.appendChild(li);
+    }
+
+    function showComputedParams(){
+      if (!paramsBoxEl) return;
+      const A = A_m; // m
+      const TT = T;  // s
+      const WW = omega; // rad/s
+      let phi0 = (omega * obsStartPlaybackOffset) * 180/Math.PI; // deg
+      phi0 = ((phi0 % 360) + 360) % 360;
+      paramAEl.textContent   = `A = ${A.toFixed(2)} m`;
+      paramTEl.textContent   = `T = ${TT.toFixed(2)} s`;
+      paramWEl.textContent   = `ω = ${WW.toFixed(3)} rad/s`;
+      paramPhiEl.textContent = `φ₀ = ${phi0.toFixed(1)}°`;
+      paramsBoxEl.style.display = 'block';
+    }
+
+    function showXTGraph(){
+      if (!xtCanvas) return;
+      const ctx = xtCanvas.getContext('2d');
+      const W = xtCanvas.width, H = xtCanvas.height;
+      ctx.clearRect(0,0,W,H);
+      // άξονες
+      ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+      ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(30, H/2); ctx.lineTo(W-10, H/2); ctx.stroke(); // άξονας t
+      ctx.beginPath(); ctx.moveTo(30, 10); ctx.lineTo(30, H-10); ctx.stroke(); // άξονας x
+      // κλίμακα
+      const Amp = A_m; // m
+      const scaleY = (H/2 - 12) / Amp;
+      // σχεδίαση x(t) για 0..T
+      ctx.strokeStyle = '#ffd27a';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      const N = 200;
+      for (let i=0;i<=N;i++){
+        const tloc = (i/N) * T; // 0..T
+        const x = Amp * Math.sin(omega * (tloc + obsStartPlaybackOffset));
+        const xx = 30 + (W-40) * (tloc / T);
+        const yy = H/2 - x * scaleY;
+        if (i===0) ctx.moveTo(xx,yy); else ctx.lineTo(xx,yy);
+      }
+      ctx.stroke();
+      xtCanvas.style.display = 'block';
+    }
+
+    function closeCurtains(){
+      stage.classList.remove('open');
+      setMode('pause');
+    }
+
+    function handleTimelineEvent(th){
+      if (th.kind === 'bubble'){
+        if (th.onShow === 'params') showComputedParams();
+        showThoughtForViewer(th.viewer, th.text, th.duration ?? 3, null);
+      } else if (th.kind === 'graph'){
+        showXTGraph();
+      } else if (th.kind === 'law'){
+        addLaw(th.lawText);
+      } else if (th.kind === 'close'){
+        closeCurtains();
+      }
     }
 
     // κουμπιά τύπου μαγνητόφωνο (μοναδικοί listeners)
