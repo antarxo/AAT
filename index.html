@@ -18,9 +18,12 @@
     overflow: hidden;
   }
     .curtain-top, .curtain-upper, .curtain-lower, .curtain-side {
-    position: absolute;
-    z-index: 3;
-    transition: transform 1.2s cubic-bezier(.2,.9,.2,1), opacity 1s;
+    top: 0;
+    width: 18%;
+    height: 100%;
+    background: linear-gradient(to right, #300000, #1a0000);
+    box-shadow: inset -6px 0 10px rgba(0,0,0,0.6);
+    z-index: 14;
   }
   .curtain-side.left { left: 0; }
   .curtain-side.right { right: 0; }
