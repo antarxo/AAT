@@ -264,14 +264,14 @@
 
   .ruler {
     position: absolute;
-    bottom: calc(32vh - 8px - 24px);
-    /* το left και το width θα ρυθμίζονται δυναμικά από JS ώστε να ταιριάζουν με το άνοιγμα σκηνής (μετροταινία) */
+    bottom: calc(32vh - 8px + 4px); /* λίγο πάνω από το πάτωμα, ώστε να φαίνεται πάνω από το floor και όχι πίσω από το κοινό */
+    /* left και width ορίζονται από JS ώστε να ταιριάζουν στο άνοιγμα σκηνής */
     height: 24px;
     font-size: 10px;
     font-family: "Courier New", monospace;
     color: #aaa;
     pointer-events: none;
-    z-index: 25;
+    z-index: 60; /* πιο ψηλά για να φαίνεται καθαρά */
   }
 
   /* βασική γραμμή της μετροταινίας για να φαίνεται καθαρά */
@@ -300,6 +300,41 @@
     font-size: 10px;
     color: #aaa;
     white-space: nowrap;
+  }
+
+  /* δείκτης θέσης (αντιπρόσωπος του σκειτερ) */
+  .marker {
+    position: absolute;
+    bottom: calc(32vh - 8px + 4px); /* ίδια βάση με τον ruler */
+    width: 0;
+    height: 80px; /* ύψος κάθετης γραμμής προς τα πάνω */
+    transform: translateX(-50%);
+    pointer-events: none;
+    z-index: 65; /* πάνω από ruler και skater για να φαίνεται */
+  }
+
+  .marker-line {
+    position: absolute;
+    left: 50%;
+    bottom: 8px; /* αφήνουμε λίγο χώρο για την αιχμή */
+    width: 2px;
+    height: 70px;
+    background: #ffd27a;
+    box-shadow: 0 0 4px rgba(255,210,122,0.8);
+    transform: translateX(-50%);
+  }
+
+  .marker-tip {
+    position: absolute;
+    left: 50%;
+    bottom: 0;
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 8px solid #ffd27a; /* αιχμή προς τα κάτω, ακουμπά στο χάρακα */
+    filter: drop-shadow(0 0 2px rgba(255,210,122,0.8));
+    transform: translateX(-50%);
   }
 
   .thought-bubble {
@@ -427,6 +462,11 @@
 
     <div class="ruler" id="ruler"></div>
 
+    <div class="marker" id="marker">
+      <div class="marker-line"></div>
+      <div class="marker-tip"></div>
+    </div>
+
     <div class="thought-bubble" id="bubble0">Η κίνηση είναι πήγαινε-έλα σε ευθεία.</div>
 
     <div class="controls" id="controls">
@@ -481,6 +521,7 @@
     const springEl = document.getElementById('spring');
     const clockEl = document.getElementById('clock');
     const rulerEl = document.getElementById('ruler');
+    const markerEl = document.getElementById('marker');
     const bubbleEl = document.getElementById('bubble0');
     const btnPause = document.getElementById('btnPause');
     const btnSlow  = document.getElementById('btnSlow');
@@ -625,6 +666,11 @@
         // τοποθέτηση skater ώστε ο γάντζος του να κάτσει ακριβώς εκεί
         actor.style.transform = 'none';
         actor.style.left = (skaterHookX - hookOffsetPx) + 'px';
+
+        // ενημέρωση δείκτη θέσης (κάθετο βελάκι που ακουμπά τον χάρακα)
+        if (markerEl){
+          markerEl.style.left = skaterHookX + 'px';
+        }
       }
 
       requestAnimationFrame(animate);
