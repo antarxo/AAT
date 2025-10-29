@@ -194,22 +194,23 @@
   .clock {
     position: absolute;
     top: 10px;
-    right: 20%; /* δεξιό τμήμα της πάνω κουρτίνας, όχι μέσα στην πλαϊνή */
+    right: 2%; /* ίδια γωνία με τους πίνακες δεξιά */
     background: rgba(0,0,0,0.5);
     color: #fff;
     padding: 6px 10px;
-    font-size: 14px;
+    font-size: 16px; /* λίγο μεγαλύτερη γραμματοσειρά */
     font-family: "Courier New", monospace;
     border-radius: 6px;
     border: 1px solid rgba(255,255,255,0.3);
     z-index: 40;
     pointer-events: none;
+    display: none; /* δεν φαίνεται πριν το t=0 */
   }
 
   .measurements {
     position: absolute;
     right: 2%;
-    top: 10px; /* πάνω μέρος της δεξιάς πλαϊνής κουρτίνας */
+    top: 50px; /* κάτω από το χρονόμετρο */
     width: 16%; /* αξιοποιεί σχεδόν όλο το πλάτος της δεξιάς κουρτίνας */
     max-height: 30vh;
     overflow: auto;
@@ -221,6 +222,7 @@
     font-size: 12px;
     line-height: 1.4;
     z-index: 40;
+    display: none; /* δεν φαίνεται πριν το t=0 */
   }
   .measurements table {
     width: 100%;
@@ -274,6 +276,7 @@
     font-size: 12px;
     line-height: 1.4;
     z-index: 40;
+    display: none; /* δεν φαίνεται πριν το t=0 */
   }
   .laws h4 {
     margin: 0 0 4px 0;
@@ -519,7 +522,8 @@
 
     <div class="signboard">
       <h1>Πράξη 1</h1>
-      <h2>m₁ = 70 kg, D₁ = 77 N/m</h2>
+      <h2 class="mass-line">m₁ = 70 kg</h2>
+      <h2 class="k-line">D₁ = 77 N/m</h2>
       <h3>Εμηχ = 347 J</h3>
     </div>
 
@@ -598,10 +602,12 @@
     let A_px = pxPerMeter * A_m;
 
     document.addEventListener('DOMContentLoaded', ()=>{
-      const h2 = document.querySelector('.signboard h2');
-      const h3 = document.querySelector('.signboard h3');
-      h2.textContent = `m₁ = ${m} kg, D₁ = ${D} N/m`;
-      h3.textContent = `Εμηχ = ${Math.round(E_mech)} J`;
+      const massLine = document.querySelector('.signboard .mass-line');
+      const kLine = document.querySelector('.signboard .k-line');
+      const energyLine = document.querySelector('.signboard h3');
+      if (massLine) { massLine.textContent = `m₁ = ${m} kg`; }
+      if (kLine) { kLine.textContent = `D₁ = ${D} N/m`; }
+      if (energyLine) { energyLine.textContent = `Εμηχ = ${Math.round(E_mech)} J`; }
     });
 
     const actor = document.getElementById('actor');
@@ -619,6 +625,7 @@
     const countdownTimerEl = document.getElementById('countdownTimer');
     const measBodyEl = document.getElementById('measBody');
     const measBoxEl = document.querySelector('.measurements');
+    const lawsEl = document.querySelector('.laws');
 
     let countdownRunning = false;
 
@@ -879,24 +886,13 @@
         const centerX = stage.clientWidth / 2;
         const skaterHookX0 = centerX + A_px * Math.sin(omega * playbackTime);
         const x0_m = (skaterHookX0 - centerX) / pxPerMeter;
-
         appendMeasurementRow(0, x0_m);
       }
 
-      // κάνε ορατό τον δείκτη θέσης μόνο τώρα
-      if (markerEl){
-        markerEl.style.opacity = '1';
-      }
-    } m, φ₀ = ${phi0deg.toFixed(1)}°`;
-          measListEl.appendChild(li0);
-        }
-      }
-
-      // κάνε ορατό τον δείκτη θέσης μόνο τώρα
-      if (markerEl){
-        markerEl.style.opacity = '1';
-      }
-    }
+      // εμφάνιση εργαλείων παρατήρησης μόλις ξεκινήσει η παρατήρηση
+      if (clockEl){ clockEl.style.display = 'block'; }
+      if (measBoxEl){ measBoxEl.style.display = 'block'; }
+      if (lawsEl){ lawsEl.style.display = 'block'; }
 
       // κάνε ορατό τον δείκτη θέσης μόνο τώρα
       if (markerEl){
