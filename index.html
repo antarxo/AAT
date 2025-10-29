@@ -580,7 +580,15 @@
     const btnPlay  = document.getElementById('btnPlay');
     const countdownOverlay = document.getElementById('countdownOverlay');
     const countdownTimerEl = document.getElementById('countdownTimer');
+    const measListEl = document.getElementById('measList');
+    const measBoxEl = document.querySelector('.measurements');
+
     let countdownRunning = false;
+
+    // δειγματοληψία μετρήσεων x(t)
+    let lastSampleObsTime = -Infinity;
+    const sampleInterval = 0.25; // s μεταξύ διαδοχικών καταγραφών
+
 
     // χρόνος φυσικού συστήματος
     let t0 = performance.now();          // φυσικός χρόνος της ταλάντωσης (τρέχει μόνος του από πριν)
@@ -655,6 +663,28 @@
       return stage.clientWidth * 0.18;
     }
 
+    function logMeasurement(tObs, xMeters){
+      // Καταγραφή μετρήσεων χρόνου-θέσης στο πλαίσιο "μετρήσεις"
+      if (!obsStarted) return;
+      if (mode === 'pause') return;
+      if (tObs - lastSampleObsTime < sampleInterval) return;
+      lastSampleObsTime = tObs;
+
+      if (!measListEl) return;
+
+      const tStr = tObs.toFixed(2);
+      const xStr = (xMeters >= 0 ? '+' + xMeters.toFixed(2) : xMeters.toFixed(2));
+
+      const li = document.createElement('li');
+      li.textContent = `t = ${tStr} s, x = ${xStr} m`;
+      measListEl.appendChild(li);
+
+      // scroll ώστε να φαίνεται πάντα η πιο πρόσφατη μέτρηση
+      if (measBoxEl){
+        measBoxEl.scrollTop = measBoxEl.scrollHeight;
+      }
+    }
+
     function animate(now){
       const realDt = (now - lastFrame)/1000;
       lastFrame = now;
@@ -726,6 +756,12 @@
         if (markerEl){
           markerEl.style.left = skaterHookX + 'px';
         }
+
+        // υπολογισμός θέσης σε μέτρα από το κέντρο ισορροπίας
+        const xMeters = (skaterHookX - centerX) / pxPerMeter;
+
+        // καταγραφή τρέχουσας μέτρησης στο πλαίσιο "μετρήσεις"
+        logMeasurement(tObs, xMeters);
       }
 
       requestAnimationFrame(animate);
