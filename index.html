@@ -264,18 +264,31 @@
 
   .ruler {
     position: absolute;
-    left: 18%;
-    bottom: calc(32vh - 8px - 18px);
-    width: 64%;
-    height: 18px;
+    bottom: calc(32vh - 8px - 24px);
+    /* το left και το width θα ρυθμίζονται δυναμικά από JS ώστε να ταιριάζουν με το άνοιγμα σκηνής (μετροταινία) */
+    height: 24px;
     font-size: 10px;
     font-family: "Courier New", monospace;
     color: #aaa;
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
     pointer-events: none;
     z-index: 25;
+  }
+
+  .tick {
+    position: absolute;
+    bottom: 0;
+    width: 1px;
+    height: 10px;
+    background: #aaa;
+  }
+
+  .tick-label {
+    position: absolute;
+    bottom: 12px;
+    transform: translateX(-50%);
+    font-size: 10px;
+    color: #aaa;
+    white-space: nowrap;
   }
 
   .thought-bubble {
@@ -293,6 +306,38 @@
     border: 1px solid rgba(0,0,0,0.4);
     z-index: 40;
     pointer-events: none;
+  }
+
+  /* control panel τύπου μαγνητοφώνου */
+  .controls {
+    position: absolute;
+    bottom: calc(32vh + 10px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.6);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 8px;
+    padding: 6px 8px;
+    display: flex;
+    gap: 8px;
+    z-index: 100;
+  }
+
+  .controls button {
+    background: none;
+    border: 0;
+    color: #fff;
+    font-size: 16px;
+    line-height: 1;
+    cursor: pointer;
+    min-width: 32px;
+    min-height: 32px;
+    border-radius: 4px;
+    padding: 4px 6px;
+  }
+
+  .controls button.active {
+    background: rgba(255,255,255,0.2);
   }
 
   @media (max-width: 600px) {
@@ -373,6 +418,12 @@
 
     <div class="thought-bubble" id="bubble0">Η κίνηση είναι πήγαινε-έλα σε ευθεία.</div>
 
+    <div class="controls" id="controls">
+      <button id="btnPause" title="παύση">⏸</button>
+      <button id="btnSlow" title="αργά">🐌</button>
+      <button id="btnPlay" title="κανονικά">▶</button>
+    </div>
+
     <!-- Ελατήριο (μόνο εικόνα) -->
     <img id="spring" class="spring" src="spring.png" alt="ελατήριο">
 
@@ -413,16 +464,79 @@
       h3.textContent = `Εμηχ = ${Math.round(E_mech)} J`;
     });
 
-    let t0 = performance.now();
     const actor = document.getElementById('actor');
     const stage = document.getElementById('stage');
     const startBtn = document.getElementById('startBtn');
     const springEl = document.getElementById('spring');
     const clockEl = document.getElementById('clock');
+    const rulerEl = document.getElementById('ruler');
+    const bubbleEl = document.getElementById('bubble0');
+    const btnPause = document.getElementById('btnPause');
+    const btnSlow  = document.getElementById('btnSlow');
+    const btnPlay  = document.getElementById('btnPlay');
 
-    let obsStart = null;
+    // χρόνος φυσικού συστήματος
+    let t0 = performance.now();          // φυσικός χρόνος της ταλάντωσης (τρέχει μόνος του από πριν)
+    let lastFrame = performance.now();   // τελευταίο frame σε πραγματικό χρόνο
 
-    let lastFrame = performance.now();
+    // χρόνος που "παίζεται" στη σκηνή (αυτόν βλέπει το κοινό)
+    let playbackTime = 0;                // σε s, αυτός κινεί τον skater
+    let mode = 'run';                    // 'run' = κανονικά, 'pause' = παγωμένο, 'slow' = αργή κίνηση
+    const slowFactor = 0.15;             // 0.15 => ~7x πιο αργή κίνηση
+
+    // clock παρατήρησης
+    let obsStarted = false;              // έχουν ανοίξει οι κουρτίνες;
+    let obsStartPlaybackOffset = 0;      // τιμή playbackTime τη στιγμή που ξεκίνησαν να παρατηρούν
+
+    // ruler state
+    let lastRulerW = 0;
+
+    function updateRuler() {
+      if (!rulerEl) return;
+
+      // άνοιγμα σκηνής μεταξύ των πλαϊνών κουρτινών: 18% έως 82%
+      const baseLeft = stage.clientWidth * 0.18;   // pixel θέση όπου τελειώνει η αριστερή κουρτίνα
+      const usableW  = stage.clientWidth * 0.64;   // πλάτος ανοιχτής σκηνής
+
+      // αν δεν άλλαξε το πλάτος δεν ξαναχτίζουμε
+      if (Math.abs(usableW - lastRulerW) < 1) {
+        return;
+      }
+      lastRulerW = usableW;
+
+      // τοποθέτηση/διάσταση μετροταινίας
+      rulerEl.style.left = baseLeft + 'px';
+      rulerEl.style.width = usableW + 'px';
+
+      // καθάρισε προηγούμενα ticks
+      rulerEl.innerHTML = '';
+
+      // κέντρο σκηνής = θέση ισορροπίας (x=0)
+      const centerX = stage.clientWidth / 2;
+
+      // μετρητές σε μέτρα γύρω από το 0. Α μας είναι ~3 m, οπότε -3..+3 καλύπτει όλη την κίνηση
+      const minMeters = -3;
+      const maxMeters = 3;
+
+      for (let mTick = minMeters; mTick <= maxMeters; mTick++) {
+        const xPx = centerX + mTick * pxPerMeter; // θέση αυτού του μέτρου σε pixels
+        const rel = xPx - baseLeft;               // σχετική θέση μέσα στον ruler
+
+        // tick γραμμή
+        const tickDiv = document.createElement('div');
+        tickDiv.className = 'tick';
+        tickDiv.style.left = rel + 'px';
+        rulerEl.appendChild(tickDiv);
+
+        // ετικέτα
+        const labelDiv = document.createElement('div');
+        labelDiv.className = 'tick-label';
+        const signText = (mTick === 0) ? '0' : (mTick > 0 ? '+'+mTick : ''+mTick);
+        labelDiv.textContent = signText + ' m';
+        labelDiv.style.left = rel + 'px';
+        rulerEl.appendChild(labelDiv);
+      }
+    }
 
     // Γεωμετρία ελατηρίου / skater
     let L0_px;          // πραγματικό μήκος ηρεμίας του spring.png (px) όπως αποδίδεται στη σκηνή
@@ -435,15 +549,34 @@
     }
 
     function animate(now){
-      const dt = (now - lastFrame)/1000; lastFrame = now;
+      const realDt = (now - lastFrame)/1000;
+      lastFrame = now;
 
-      // φυσικός χρόνος της ταλάντωσης (τρέχει από πριν μπουν οι θεατές)
+      // ανανέωση μετροταινίας (σύστημα αναφοράς)
+      updateRuler();
+
+      // φυσικός χρόνος της ταλάντωσης (τρέχει offstage πριν το κοινό ανοίξει τις κουρτίνες)
       const tPhys = (now - t0)/1000;
 
-      // χρόνος παρατήρησης των θεατών (ξεκινά στο click "Έναρξη")
+      // συγχρονισμός του χρόνου που "παίζεται" στη σκηνή (playbackTime)
+      if (!obsStarted){
+        // πριν το άνοιγμα, απλώς ακολουθούμε τον πραγματικό ταλαντωτή
+        playbackTime = tPhys;
+      } else {
+        // μετά το άνοιγμα, ο ρυθμός εξαρτάται από mode
+        if (mode === 'run'){
+          playbackTime += realDt;
+        } else if (mode === 'slow'){
+          playbackTime += realDt * slowFactor;
+        } else if (mode === 'pause'){
+          // παγωμένο: δεν αυξάνεται
+        }
+      }
+
+      // χρόνος που βλέπουν οι θεαποιοί στο ρολόι
       let tObs = 0;
-      if (obsStart){
-        tObs = (now - obsStart)/1000;
+      if (obsStarted){
+        tObs = playbackTime - obsStartPlaybackOffset;
       }
       if (clockEl){
         clockEl.textContent = 't = ' + tObs.toFixed(2) + ' s';
@@ -469,8 +602,8 @@
         const ax = anchorX();
         // κέντρο σκηνής = θέση ισορροπίας ταλάντωσης
         const centerX = stage.clientWidth / 2;
-        // θέση γάντζου skater γύρω από το κέντρο
-        const skaterHookX = centerX + A_px * Math.sin(omega * tPhys);
+        // θέση γάντζου skater γύρω από το κέντρο (χρόνος = playbackTime)
+        const skaterHookX = centerX + A_px * Math.sin(omega * playbackTime);
 
         // ελατήριο τεντώνει ώστε να φτάσει τον γάντζο
         const distance = skaterHookX - ax;
@@ -487,11 +620,56 @@
     }
     requestAnimationFrame(animate);
 
+    // χειρισμός ρυθμού/μπαλόνι
+    function setMode(newMode){
+      mode = newMode;
+      if (btnPause){ btnPause.classList.toggle('active', mode === 'pause'); }
+      if (btnSlow){  btnSlow.classList.toggle('active',  mode === 'slow'); }
+      if (btnPlay){  btnPlay.classList.toggle('active',  mode === 'run'); }
+    }
+
+    // παγώνουμε και εμφανίζουμε bubble (ή αλλάζουμε κείμενο bubble)
+    function pauseForBubble(text){
+      if (bubbleEl){
+        if (text) bubbleEl.textContent = text;
+        bubbleEl.style.display = 'block';
+      }
+      setMode('pause');
+    }
+
+    // κλείνουμε bubble και συνεχίζουμε είτε αργά είτε κανονικά
+    function resumeFromBubble(nextMode='run'){
+      if (bubbleEl){
+        bubbleEl.style.display = 'none';
+      }
+      setMode(nextMode === 'slow' ? 'slow' : 'run');
+    }
+
+    // κουμπιά τύπου μαγνητόφωνο
+    if (btnPause){
+      btnPause.addEventListener('click', ()=>{
+        pauseForBubble(); // παγώνει στη στιγμή, αφήνει το bubble όπως είναι
+      });
+    }
+    if (btnSlow){
+      btnSlow.addEventListener('click', ()=>{
+        resumeFromBubble('slow'); // slow motion
+      });
+    }
+    if (btnPlay){
+      btnPlay.addEventListener('click', ()=>{
+        resumeFromBubble('run'); // κανονική ταχύτητα
+      });
+    }
+
+    // έναρξη παράστασης
     startBtn.addEventListener('click', ()=>{
       stage.classList.add('open');
       startBtn.style.display = 'none';
-      if (!obsStart){
-        obsStart = performance.now();
+
+      if (!obsStarted){
+        obsStarted = true;
+        obsStartPlaybackOffset = playbackTime;
       }
     });
   </script>
