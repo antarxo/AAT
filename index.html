@@ -188,6 +188,45 @@
     cursor: pointer;
     box-shadow: 0 0 10px #300;
   }  .open .actor, .open .spring { opacity:1; }
+  @media (max-width: 600px) {
+    .actor {
+      bottom: calc(32vh + 80px);
+      left: 50%;
+      width: 100px;
+      height: 66px;
+      transform: translate(-50%, 0);
+      z-index: 10;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.4s linear;
+    }
+
+    .spring {
+      bottom: calc(32vh + 47px);
+      left: 10%;
+      height: 66px;
+      width: auto;
+      z-index: 5;
+      pointer-events: none;
+      filter: drop-shadow(0 4px 6px rgba(0,0,0,0.55));
+      transform-origin: left center;
+      opacity: 0;
+      transition: opacity 0.4s linear;
+    }
+
+    .signboard {
+      padding: 8px 12px;
+    }
+    .signboard h1 {
+      font-size: 20px;
+    }
+    .signboard h2 {
+      font-size: 14px;
+    }
+    .signboard h3 {
+      font-size: 12px;
+    }
+  }
 </style>
 </head>
 <body>
