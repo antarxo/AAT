@@ -98,6 +98,42 @@
     .actor { bottom: calc(32vh + 30px); left: 50%; width: 70px; height: 46px; transform: translate(-50%, 0); }
     .spring{ bottom: calc(32vh + 7px); left: 10%; height: 46px; width: auto; }
   }
+  
+  /* Start button (visible & above curtains) */
+  .start-btn {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 100;
+    background: #700;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 24px;
+    font-size: 18px;
+    cursor: pointer;
+    box-shadow: 0 0 10px #300;
+  }
+
+  /* Viewers (silhouettes) for bubble anchoring */
+  .viewers {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    gap: 3vw;
+    z-index: 1;
+    padding-bottom: 12px;
+  }
+  .viewer {
+    width: 60px;
+    height: 100px;
+    background: url('https://upload.wikimedia.org/wikipedia/commons/f/f9/Silhouette_icon.svg') no-repeat center/contain;
+    filter: grayscale(1) brightness(0.6);
+    opacity: 0.75;
+  }
 </style>
 </head>
 <body>
