@@ -13,26 +13,12 @@
     position: absolute; z-index: 30;
     transition: transform 1.2s cubic-bezier(.2,.9,.2,1), opacity 1s;
   }
-  .curtain-top {
-    top: 0; left: 0; width: 100%;
-    height: calc(28% - 30px);
-    background: linear-gradient(to bottom, #230000, #180000);
-    box-shadow: 0 5px 18px rgba(0,0,0,0.8);
-  }
-  .curtain-upper {
-    top: calc(28% - 30px); left: 0; width: 100%;
-    height: calc(40% + 30px);
-    background: linear-gradient(to bottom, #8b0000, #400000);
-    transform-origin: top;
-  }
-  .curtain-lower {
-    bottom: 0; left: 0; width: 100%; height: 32%;
-    background: linear-gradient(to top, #7a0000, #300000);
-    transform-origin: bottom;
-  }
-  .curtain-side { top: 0; width: 18%; height: 100%; z-index: 60; }
-  .curtain-side.left  { left: 0;  background: linear-gradient(to right, #300000, #1a0000); box-shadow: inset -6px 0 10px rgba(0,0,0,0.6); }
-  .curtain-side.right { right: 0; background: linear-gradient(to left,  #300000, #1a0000); box-shadow: inset  6px 0 10px rgba(0,0,0,0.6); }
+  .curtain-top { top:0; left:0; width:100%; height:calc(28% - 30px); background:linear-gradient(to bottom,#230000,#180000); box-shadow:0 5px 18px rgba(0,0,0,0.8); }
+  .curtain-upper { top:calc(28% - 30px); left:0; width:100%; height:calc(40% + 30px); background:linear-gradient(to bottom,#8b0000,#400000); transform-origin: top; }
+  .curtain-lower { bottom:0; left:0; width:100%; height:32%; background:linear-gradient(to top,#7a0000,#300000); transform-origin: bottom; }
+  .curtain-side { top:0; width:18%; height:100%; z-index:60; }
+  .curtain-side.left  { left:0;  background:linear-gradient(to right,#300000,#1a0000); box-shadow: inset -6px 0 10px rgba(0,0,0,0.6); }
+  .curtain-side.right { right:0; background:linear-gradient(to left, #300000,#1a0000); box-shadow: inset  6px 0 10px rgba(0,0,0,0.6); }
 
   /* Άνοιγμα σκηνής: η πάνω ανεβαίνει +30px */
   .open .curtain-upper { transform: translateY(calc(-100% - 30px)); }
@@ -41,89 +27,89 @@
   .closed-show-actors .actor, .closed-show-actors .spring { opacity: 1 !important; }
 
   /* Skater / Spring / Πάτωμα */
-  .spring { position: absolute; bottom: calc(32vh + 82px); left: 10%; height: 96px; width: auto; z-index: 5; pointer-events: none; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.55)); transform-origin: left center; opacity: 0; transition: opacity 0.4s linear; }
-  .actor  { position: absolute; bottom: calc(32vh + 130px); left: 50%; width: 144px; height: 96px; transform: translate(-50%, 0); z-index: 10; pointer-events: none; opacity: 0; transition: opacity 0.4s linear; }
-  .actor img { width: 100%; height: auto; display: block; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.6)); }
-  .floor  { position: absolute; left: 0; bottom: calc(32vh - 8px); width: 100%; height: 2px; background: #888; z-index: 50; pointer-events: none; }
+  .spring { position:absolute; bottom:calc(32vh + 82px); left:10%; height:96px; width:auto; z-index:5; pointer-events:none; filter:drop-shadow(0 4px 6px rgba(0,0,0,0.55)); transform-origin:left center; opacity:0; transition:opacity .4s linear; }
+  .actor  { position:absolute; bottom:calc(32vh + 130px); left:50%; width:144px; height:96px; transform:translate(-50%,0); z-index:10; pointer-events:none; opacity:0; transition:opacity .4s linear; }
+  .actor img { width:100%; height:auto; display:block; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.6)); }
+  .floor  { position:absolute; left:0; bottom:calc(32vh - 8px); width:100%; height:2px; background:#888; z-index:50; pointer-events:none; }
   .open .actor, .open .spring { opacity: 1; }
 
   /* Κοινό */
-  .audience { position: absolute; left: 18%; bottom: 0; width: 64%; height: auto; z-index: 150; pointer-events: none; display: block; }
+  .audience { position:absolute; left:18%; bottom:0; width:64%; height:auto; z-index:150; pointer-events:none; display:block; }
 
   /* Ταμπέλα τίτλου */
-  .signboard { position: absolute; top: -6px; left: 50%; transform: translateX(-50%); background: transparent; border: none; border-radius: 10px; padding: 14px 22px; color: #ddd; font-family: 'Georgia', serif; text-align: center; z-index: 40; line-height: 1.35; }
-  .signboard h1 { font-size: 32px; margin: 0; color: #fff; }
-  .signboard h2 { font-size: 20px; margin: 2px 0 0 0; }
-  .signboard h3 { font-size: 18px; margin: 2px 0 0 0; color: #ffd27a; }
+  .signboard { position:absolute; top:-6px; left:50%; transform:translateX(-50%); background:transparent; border:none; border-radius:10px; padding:14px 22px; color:#ddd; font-family:'Georgia',serif; text-align:center; z-index:40; line-height:1.35; }
+  .signboard h1 { font-size:32px; margin:0; color:#fff; }
+  .signboard h2 { font-size:20px; margin:2px 0 0 0; }
+  .signboard h3 { font-size:18px; margin:2px 0 0 0; color:#ffd27a; }
 
-  /* >>> overlays ΠΑΝΩ από πλαϊνές κουρτίνες (z-index > 60) <<< */
-  .clock       { position: absolute; top: 10px; left: calc(82vw + 9vw); transform: translateX(-50%); background: rgba(0,0,0,0.5); color: #fff; padding: 6px 10px; font-size: 16px; font-family: "Courier New", monospace; border-radius: 6px; border: 1px solid rgba(255,255,255,0.3); z-index: 90; pointer-events: none; display: none; }
-  .measure-box { position: absolute; left: calc(82vw + 9vw); transform: translateX(-50%); top: 54px; width: calc(18vw - 16px); z-index: 90; background: rgba(0,0,0,0.45); color: #fff; border: 1px solid rgba(255,255,255,0.25); border-radius: 8px; padding: 6px 8px; display: none; height: 50vh; overflow-y: auto; }
-  .laws        { position: absolute; left: 2%; top: 10px; width: 16%; max-height: 30vh; overflow: auto; background: rgba(20,0,0,0.6); color: #fff; border: 1px solid rgba(255,200,200,0.3); border-radius: 8px; padding: 6px 8px; font-size: 16px; line-height: 1.5; z-index: 90; display: none; }
-  .params-box  { position: absolute; top: 8px; z-index: 95; background: rgba(0,0,0,0.5); color: #fff; border: 1px solid rgba(255,255,255,0.25); border-radius: 8px; padding: 6px 10px; font-size: 12px; line-height: 1.4; display: none; }
-  #xtCanvas    { position: absolute; display: none; background: rgba(0,0,0,0.2); border:1px solid rgba(255,255,255,0.2); border-radius:6px; z-index: 92; pointer-events: none; }
+  /* >>> overlays ΠΑΝΩ από το κοινό (z-index >150) <<< */
+  .clock       { position:absolute; top:10px; left:calc(82vw + 9vw); transform:translateX(-50%); background:rgba(0,0,0,0.5); color:#fff; padding:6px 10px; font-size:16px; font-family:"Courier New",monospace; border-radius:6px; border:1px solid rgba(255,255,255,0.3); z-index:165; pointer-events:none; display:none; }
+  .measure-box { position:absolute; left:calc(82vw + 9vw); transform:translateX(-50%); top:54px; width:calc(18vw - 16px); z-index:162; background:rgba(0,0,0,0.45); color:#fff; border:1px solid rgba(255,255,255,0.25); border-radius:8px; padding:6px 8px; display:none; height:50vh; overflow-y:auto; }
+  .laws        { position:absolute; left:2%; top:10px; width:16%; max-height:30vh; overflow:auto; background:rgba(20,0,0,0.6); color:#fff; border:1px solid rgba(255,200,200,0.3); border-radius:8px; padding:6px 8px; font-size:16px; line-height:1.5; z-index:160; display:none; }
+  .params-box  { position:absolute; top:8px; z-index:168; background:rgba(0,0,0,0.5); color:#fff; border:1px solid rgba(255,255,255,0.25); border-radius:8px; padding:6px 10px; font-size:12px; line-height:1.4; display:none; }
+  #xtCanvas    { position:absolute; display:none; background:rgba(0,0,0,0.2); border:1px solid rgba(255,255,255,0.2); border-radius:6px; z-index:161; pointer-events:none; }
 
-  .laws h4 { margin: 0 0 4px 0; font-size: 12px; color: #ff8080; font-family: 'Georgia', serif; text-align: center; }
-  .measure-box .mb-title { font-size: 14px; margin-bottom: 4px; color: #ffd27a; text-align: center; font-family: 'Georgia', serif; }
-  .measure-box table { width: 100%; border-collapse: collapse; font-size: 12px; }
-  .measure-box th, .measure-box td { border-bottom: 1px solid rgba(255,255,255,0.2); padding: 2px 4px; text-align: right; }
-  .measure-box th:first-child, .measure-box td:first-child { text-align: center; }
+  .laws h4 { margin:0 0 4px 0; font-size:12px; color:#ff8080; font-family:'Georgia',serif; text-align:center; }
+  .measure-box .mb-title { font-size:14px; margin-bottom:4px; color:#ffd27a; text-align:center; font-family:'Georgia',serif; }
+  .measure-box table { width:100%; border-collapse:collapse; font-size:12px; }
+  .measure-box th, .measure-box td { border-bottom:1px solid rgba(255,255,255,0.2); padding:2px 4px; text-align:right; }
+  .measure-box th:first-child, .measure-box td:first-child { text-align:center; }
 
   /* Χάρακας & δείκτης */
-  .ruler { position: absolute; bottom: calc(32vh - 8px + 1px); height: 24px; font-size: 10px; font-family: "Courier New", monospace; color: #aaa; pointer-events: none; z-index: 170; }
-  .ruler::before { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 1px; background: #aaa; }
-  .tick { position: absolute; bottom: 0; width: 1px; height: 10px; background: #aaa; }
-  .tick-label { position: absolute; bottom: 12px; transform: translateX(-50%); font-size: 10px; color: #aaa; white-space: nowrap; }
-  .marker { position: absolute; bottom: calc(32vh - 8px + 1px); width: 0; height: 80px; transform: translateX(-50%); pointer-events: none; z-index: 175; opacity: 0; transition: opacity .3s; }
-  .marker-line { position: absolute; left: 50%; bottom: 8px; width: 2px; height: 70px; background: #ffd27a; box-shadow: 0 0 4px rgba(255,210,122,0.8); transform: translateX(-50%); }
-  .marker-tip  { position: absolute; left: 50%; bottom: 0; width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 8px solid #ffd27a; filter: drop-shadow(0 0 2px rgba(255,210,122,0.8)); transform: translateX(-50%); }
+  .ruler { position:absolute; bottom:calc(32vh - 8px + 1px); height:24px; font-size:10px; font-family:"Courier New",monospace; color:#aaa; pointer-events:none; z-index:170; }
+  .ruler::before { content:''; position:absolute; left:0; right:0; bottom:0; height:1px; background:#aaa; }
+  .tick { position:absolute; bottom:0; width:1px; height:10px; background:#aaa; }
+  .tick-label { position:absolute; bottom:12px; transform:translateX(-50%); font-size:10px; color:#aaa; white-space:nowrap; }
+  .marker { position:absolute; bottom:calc(32vh - 8px + 1px); width:0; height:80px; transform:translateX(-50%); pointer-events:none; z-index:175; opacity:0; transition:opacity .3s; }
+  .marker-line { position:absolute; left:50%; bottom:8px; width:2px; height:70px; background:#ffd27a; box-shadow:0 0 4px rgba(255,210,122,0.8); transform:translateX(-50%); }
+  .marker-tip  { position:absolute; left:50%; bottom:0; width:0; height:0; border-left:6px solid transparent; border-right:6px solid transparent; border-top:8px solid #ffd27a; filter:drop-shadow(0 2px 2px rgba(255,210,122,0.8)); transform:translateX(-50%); }
 
   /* Bubble */
-  .thought-bubble { position: absolute; max-width: 420px; background: rgba(255,255,255,0.93); color: #000; font-size: 20px; line-height: 1.65; padding: 14px 16px 16px; border-radius: 10px; border: 1px solid rgba(0,0,0,0.4); box-shadow: 0 6px 12px rgba(0,0,0,0.4); z-index: 240; pointer-events: none; opacity: 0; display: none; transition: opacity .3s ease; }
-  .thought-bubble.active { opacity: 1; }
-  .thought-bubble.closing { opacity: 0; }
-  .thought-bubble .tail { position: absolute; left: 50%; bottom: -8px; transform: translateX(-50%); width: 0; height: 0; border-left: 8px solid transparent; border-right: 8px solid transparent; border-top: 10px solid rgba(255,255,255,0.92); filter: drop-shadow(0 2px 2px rgba(0,0,0,0.4)); }
-  .thought-bubble .checkmark { position: absolute; top: -8px; right: -8px; background: #2ecc71; color: #fff; font-size: 11px; line-height: 1; border-radius: 50%; border: 1px solid rgba(0,0,0,0.4); width: 18px; height: 18px; display: none; align-items: center; justify-content: center; font-family: system-ui, sans-serif; font-weight: 600; }
-  .thought-bubble.checked .checkmark { display: flex; }
+  .thought-bubble { position:absolute; max-width:420px; background:rgba(255,255,255,0.93); color:#000; font-size:20px; line-height:1.65; padding:14px 16px 16px; border-radius:10px; border:1px solid rgba(0,0,0,0.4); box-shadow:0 6px 12px rgba(0,0,0,0.4); z-index:240; pointer-events:none; opacity:0; display:none; transition:opacity .3s ease; }
+  .thought-bubble.active { opacity:1; }
+  .thought-bubble.closing { opacity:0; }
+  .thought-bubble .tail { position:absolute; left:50%; bottom:-8px; transform:translateX(-50%); width:0; height:0; border-left:8px solid transparent; border-right:8px solid transparent; border-top:10px solid rgba(255,255,255,0.92); filter:drop-shadow(0 2px 2px rgba(0,0,0,0.4)); }
+  .thought-bubble .checkmark { position:absolute; top:-8px; right:-8px; background:#2ecc71; color:#fff; font-size:11px; line-height:1; border-radius:50%; border:1px solid rgba(0,0,0,0.4); width:18px; height:18px; display:none; align-items:center; justify-content:center; font-family:system-ui,sans-serif; font-weight:600; }
+  .thought-bubble.checked .checkmark { display:flex; }
 
   /* Κοντρόλς */
-  .controls { position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 6px 8px; display: flex; gap: 8px; z-index: 200; }
-  .controls button { background: none; border: 0; color: #fff; font-size: 16px; line-height: 1; cursor: pointer; min-width: 32px; min-height: 32px; border-radius: 4px; padding: 4px 6px; }
-  .controls button.active { background: rgba(255,255,255,0.2); }
+  .controls { position:absolute; bottom:12px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.6); border:1px solid rgba(255,255,255,0.2); border-radius:8px; padding:6px 8px; display:flex; gap:8px; z-index:200; }
+  .controls button { background:none; border:0; color:#fff; font-size:16px; line-height:1; cursor:pointer; min-width:32px; min-height:32px; border-radius:4px; padding:4px 6px; }
+  .controls button.active { background:rgba(255,255,255,0.2); }
 
-  /* Ρυθμίσεις (υπάρχουν ήδη, δεν αλλάζω κάτι εδώ) */
-  .settings { position: absolute; bottom: 56px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.7); color:#fff; border:1px solid rgba(255,255,255,0.2); border-radius:10px; padding:10px 12px; z-index:210; display:none; min-width: 320px; }
-  .settings h5 { margin: 0 0 6px 0; font-size: 14px; color:#ffd27a; text-align:center; font-family: 'Georgia', serif; }
+  /* Ρυθμίσεις */
+  .settings { position:absolute; bottom:56px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.7); color:#fff; border:1px solid rgba(255,255,255,0.2); border-radius:10px; padding:10px 12px; z-index:210; display:none; min-width:320px; }
+  .settings h5 { margin:0 0 6px 0; font-size:14px; color:#ffd27a; text-align:center; font-family:'Georgia',serif; }
   .settings .row { display:flex; align-items:center; gap:10px; margin:6px 0; }
-  .settings label { flex: 0 0 170px; font-size: 12px; color:#ddd; }
+  .settings label { flex:0 0 170px; font-size:12px; color:#ddd; }
   .settings input[type=range]{ flex:1; }
-  .settings .val { width:60px; text-align:right; font-family:"Courier New", monospace; }
+  .settings .val { width:60px; text-align:right; font-family:"Courier New",monospace; }
 
   /* Countdown + Start */
-  .countdown-overlay { position: absolute; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); color: #fff; display: none; align-items: center; justify-content: center; text-align: center; z-index: 300; pointer-events: none; font-family: Inter, system-ui, sans-serif; }
-  .countdown-box { max-width: 80%; }
-  .countdown-main { font-size: 24px; font-weight: 600; margin-bottom: 8px; color: #fff; }
-  .countdown-sub  { font-size: 14px; color: #ffd27a; margin-bottom: 16px; }
-  .countdown-timer{ font-family: "Courier New", monospace; font-size: 40px; font-weight: 700; color: #fff; }
-  .start-btn { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 100; background: #700; color: #fff; border: none; border-radius: 8px; padding: 12px 24px; font-size: 18px; cursor: pointer; box-shadow: 0 0 10px #300; }
+  .countdown-overlay { position:absolute; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.6); color:#fff; display:none; align-items:center; justify-content:center; text-align:center; z-index:300; pointer-events:none; font-family:Inter,system-ui,sans-serif; }
+  .countdown-box { max-width:80%; }
+  .countdown-main { font-size:24px; font-weight:600; margin-bottom:8px; color:#fff; }
+  .countdown-sub  { font-size:14px; color:#ffd27a; margin-bottom:16px; }
+  .countdown-timer{ font-family:"Courier New",monospace; font-size:40px; font-weight:700; color:#fff; }
+  .start-btn { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); z-index:100; background:#700; color:#fff; border:none; border-radius:8px; padding:12px 24px; font-size:18px; cursor:pointer; box-shadow:0 0 10px #300; }
 
-  /* Θεατές */
-  .viewers { position: absolute; bottom: 0; width: 100%; display: flex; justify-content: center; gap: 3vw; z-index: 1; padding-bottom: 12px; }
-  .viewer { width: 60px; height: 100px; background: url('https://upload.wikimedia.org/wikipedia/commons/f/f9/Silhouette_icon.svg') no-repeat center/contain; filter: grayscale(1) brightness(0.6); opacity: 0.75; }
+  /* Θεατές anchors */
+  .viewers { position:absolute; bottom:0; width:100%; display:flex; justify-content:center; gap:3vw; z-index:1; padding-bottom:12px; }
+  .viewer { width:60px; height:100px; background:url('https://upload.wikimedia.org/wikipedia/commons/f/f9/Silhouette_icon.svg') no-repeat center/contain; filter:grayscale(1) brightness(0.6); opacity:0.75; }
 
-  /* Responsive (ίδια με πριν) */
+  /* Responsive (ίδια λογική) */
   @media (max-width: 600px) {
-    .actor { bottom: calc(32vh + 40px); left: 50%; width: 100px; height: 66px; transform: translate(-50%, 0); }
-    .spring{ bottom: calc(32vh + 7px); left: 10%; height: 66px; width: auto; }
-    .audience{ left: 18%; bottom: 0; width: 64%; height: 40px; }
-    .signboard{ padding: 8px 12px; }
-    .signboard h1 { font-size: 20px; }
-    .signboard h2 { font-size: 14px; }
-    .signboard h3 { font-size: 12px; }
+    .actor { bottom:calc(32vh + 40px); left:50%; width:100px; height:66px; transform:translate(-50%,0); }
+    .spring{ bottom:calc(32vh + 7px); left:10%; height:66px; width:auto; }
+    .audience{ left:18%; bottom:0; width:64%; height:40px; }
+    .signboard{ padding:8px 12px; }
+    .signboard h1 { font-size:20px; }
+    .signboard h2 { font-size:14px; }
+    .signboard h3 { font-size:12px; }
   }
   @media (max-height: 500px) and (orientation: landscape) {
-    .actor { bottom: calc(32vh + 30px); left: 50%; width: 70px; height: 46px; transform: translate(-50%, 0); }
-    .spring{ bottom: calc(32vh + 7px); left: 10%; height: 46px; width: auto; }
+    .actor { bottom:calc(32vh + 30px); left:50%; width:70px; height:46px; transform:translate(-50%,0); }
+    .spring{ bottom:calc(32vh + 7px); left:10%; height:46px; width:auto; }
   }
 </style>
 </head>
@@ -142,7 +128,7 @@
       <h3>Εμηχ = 347 J</h3>
     </div>
 
-    <!-- A, ω, φ0 (πάνω-δεξιά στην κεντρική) -->
+    <!-- A, ω, φ0 (πάνω-δεξιά της ΚΕΝΤΡΙΚΗΣ) -->
     <div class="params-box" id="paramsBox">
       <div class="param" id="paramA"></div>
       <div class="param" id="paramW"></div>
@@ -272,7 +258,7 @@
   const measureBox = document.getElementById('measureBox');
   const measureTBody = document.getElementById('measureTBody');
 
-  /* Ρυθμίσεις ροής (sliders) */
+  /* Ρυθμίσεις ροής */
   const DEFAULT_FIRST_MUL = 1.1;
   let firstThoughtMul = parseFloat(slFirst.value);
   let timelineScale   = parseFloat(slScale.value);
@@ -283,10 +269,7 @@
   slScale.addEventListener('input', ()=>{ timelineScale = parseFloat(slScale.value);   valScale.textContent = `${timelineScale.toFixed(1)}×`; });
   slDur.addEventListener('input',   ()=>{ bubbleDurationSec = parseFloat(slDur.value); valDur.textContent = `${bubbleDurationSec.toFixed(1)}s`; });
   slSlow.addEventListener('input',  ()=>{ slowFactor = parseFloat(slSlow.value);       valSlow.textContent = `${slowFactor.toFixed(2)}×`; });
-
-  if (btnSettings) btnSettings.addEventListener('click', ()=>{
-    settingsPanel.style.display = (settingsPanel.style.display==='block' ? 'none' : 'block');
-  });
+  btnSettings.addEventListener('click', ()=>{ settingsPanel.style.display = (settingsPanel.style.display==='block'?'none':'block'); });
 
   /* Timeline (σε πολλαπλάσια Τ) */
   const thoughtScript = [
@@ -316,7 +299,7 @@
   /* Μετρήσεις */
   let lastSampleObsTime = -Infinity; const sampleInterval = 0.25; // s
 
-  /* Ruler */
+  /* Ruler: από −7 έως +7 m */
   let lastRulerW = 0;
   function updateRuler(){
     const baseLeft = stage.clientWidth * 0.18;
@@ -327,16 +310,17 @@
     rulerEl.style.width = usableW + 'px';
     rulerEl.innerHTML = '';
     const centerX = stage.clientWidth / 2;
-    for (let mTick = -3; mTick <= 3; mTick++){
+    for (let mTick = -7; mTick <= 7; mTick++){
       const xPx = centerX + mTick * pxPerMeter;
       const rel = xPx - baseLeft;
-      const tickDiv = document.createElement('div'); tickDiv.className = 'tick'; tickDiv.style.left = rel + 'px'; rulerEl.appendChild(tickDiv);
-      const labelDiv = document.createElement('div'); labelDiv.className = 'tick-label';
-      labelDiv.textContent = (mTick===0? '0' : (mTick>0? '+'+mTick : ''+mTick)) + ' m';
-      labelDiv.style.left = rel + 'px'; rulerEl.appendChild(labelDiv);
+      const tDiv = document.createElement('div'); tDiv.className='tick'; tDiv.style.left = rel + 'px'; rulerEl.appendChild(tDiv);
+      const lbl  = document.createElement('div'); lbl.className='tick-label';
+      lbl.textContent = (mTick===0? '0' : (mTick>0? '+'+mTick : ''+mTick)) + ' m';
+      lbl.style.left = rel + 'px'; rulerEl.appendChild(lbl);
     }
   }
 
+  /* Δεξιά κουρτίνα layout + params box */
   function positionRightPanel(){
     const W = stage.clientWidth, H = stage.clientHeight;
     const curtainLeft = W * 0.82, curtainW = W * 0.18, centerX = curtainLeft + curtainW/2;
@@ -590,7 +574,7 @@
     if (miss.length) console.error('Λείπουν στοιχεία:', miss.join(', ')); else console.log('Self-check OK');
   })();
 
-  // ξεκίνα
+  // go
   requestAnimationFrame(animate);
 </script>
 </body>
