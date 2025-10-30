@@ -34,25 +34,15 @@
   .curtain-side.left  { left: 0;  background: linear-gradient(to right, #300000, #1a0000); box-shadow: inset -6px 0 10px rgba(0,0,0,0.6); }
   .curtain-side.right { right: 0; background: linear-gradient(to left,  #300000, #1a0000); box-shadow: inset  6px 0 10px rgba(0,0,0,0.6); }
 
-  /* Άνοιγμα σκηνής: η πάνω ανεβαίνει 30px παραπάνω */
+  /* Άνοιγμα σκηνής: η πάνω ανεβαίνει +30px */
   .open .curtain-upper { transform: translateY(calc(-100% - 30px)); }
   .open .curtain-lower { transform: translateY(100%); }
 
-  /* Ειδική κλάση: μετά το κλείσιμο, ο skater & το ελατήριο φαίνονται πίσω από τις κλειστές */
   .closed-show-actors .actor, .closed-show-actors .spring { opacity: 1 !important; }
 
   /* Skater / Spring / Πάτωμα */
-  .spring {
-    position: absolute; bottom: calc(32vh + 82px); left: 10%;
-    height: 96px; width: auto; z-index: 5; pointer-events: none;
-    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.55));
-    transform-origin: left center; opacity: 0; transition: opacity 0.4s linear;
-  }
-  .actor  {
-    position: absolute; bottom: calc(32vh + 130px); left: 50%;
-    width: 144px; height: 96px; transform: translate(-50%, 0);
-    z-index: 10; pointer-events: none; opacity: 0; transition: opacity 0.4s linear;
-  }
+  .spring { position: absolute; bottom: calc(32vh + 82px); left: 10%; height: 96px; width: auto; z-index: 5; pointer-events: none; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.55)); transform-origin: left center; opacity: 0; transition: opacity 0.4s linear; }
+  .actor  { position: absolute; bottom: calc(32vh + 130px); left: 50%; width: 144px; height: 96px; transform: translate(-50%, 0); z-index: 10; pointer-events: none; opacity: 0; transition: opacity 0.4s linear; }
   .actor img { width: 100%; height: auto; display: block; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.6)); }
   .floor  { position: absolute; left: 0; bottom: calc(32vh - 8px); width: 100%; height: 2px; background: #888; z-index: 50; pointer-events: none; }
   .open .actor, .open .spring { opacity: 1; }
@@ -69,12 +59,12 @@
   /* Ρολόι δεξιά επάνω (δεξιά κουρτίνα) */
   .clock { position: absolute; top: 10px; left: calc(82vw + 9vw); transform: translateX(-50%); background: rgba(0,0,0,0.5); color: #fff; padding: 6px 10px; font-size: 16px; font-family: "Courier New", monospace; border-radius: 6px; border: 1px solid rgba(255,255,255,0.3); z-index: 40; pointer-events: none; display: none; }
 
-  /* Πίνακας Νόμων (αριστερή κουρτίνα) – πλατύτερος */
+  /* Πίνακας Νόμων */
   .laws { position: absolute; left: 2%; top: 10px; width: 16%; max-height: 30vh; overflow: auto; background: rgba(20,0,0,0.6); color: #fff; border: 1px solid rgba(255,200,200,0.3); border-radius: 8px; padding: 6px 8px; font-size: 16px; line-height: 1.5; z-index: 40; display: none; }
   .laws h4 { margin: 0 0 4px 0; font-size: 12px; color: #ff8080; font-family: 'Georgia', serif; text-align: center; }
   .laws ol { margin: 0; padding-left: 20px; }
 
-  /* Κουτί A, ω, φ0 στην ΠΑΝΩ (κεντρική) κουρτίνα – χωρίς τίτλο */
+  /* Κουτί A, ω, φ0 (χωρίς τίτλο) πάνω-δεξιά στην κεντρική */
   .params-box { position: absolute; top: 8px; z-index: 45; background: rgba(0,0,0,0.5); color: #fff; border: 1px solid rgba(255,255,255,0.25); border-radius: 8px; padding: 6px 10px; font-size: 12px; line-height: 1.4; display: none; }
   .params-box .param { white-space: nowrap; }
 
@@ -97,8 +87,8 @@
   .marker-line { position: absolute; left: 50%; bottom: 8px; width: 2px; height: 70px; background: #ffd27a; box-shadow: 0 0 4px rgba(255,210,122,0.8); transform: translateX(-50%); }
   .marker-tip  { position: absolute; left: 50%; bottom: 0; width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 8px solid #ffd27a; filter: drop-shadow(0 0 2px rgba(255,210,122,0.8)); transform: translateX(-50%); }
 
-  /* Bubbles */
-  .thought-bubble { position: absolute; max-width: 360px; background: rgba(255,255,255,0.92); color: #000; font-size: 18px; line-height: 1.6; padding: 12px 14px 14px 14px; border-radius: 10px; border: 1px solid rgba(0,0,0,0.4); box-shadow: 0 6px 12px rgba(0,0,0,0.4); z-index: 240; pointer-events: none; opacity: 0; display: none; transition: opacity .3s ease; }
+  /* Bubble */
+  .thought-bubble { position: absolute; max-width: 420px; background: rgba(255,255,255,0.93); color: #000; font-size: 20px; line-height: 1.65; padding: 14px 16px 16px; border-radius: 10px; border: 1px solid rgba(0,0,0,0.4); box-shadow: 0 6px 12px rgba(0,0,0,0.4); z-index: 240; pointer-events: none; opacity: 0; display: none; transition: opacity .3s ease; }
   .thought-bubble.active { opacity: 1; }
   .thought-bubble.closing { opacity: 0; }
   .thought-bubble .tail { position: absolute; left: 50%; bottom: -8px; transform: translateX(-50%); width: 0; height: 0; border-left: 8px solid transparent; border-right: 8px solid transparent; border-top: 10px solid rgba(255,255,255,0.92); filter: drop-shadow(0 2px 2px rgba(0,0,0,0.4)); }
@@ -110,6 +100,14 @@
   .controls button { background: none; border: 0; color: #fff; font-size: 16px; line-height: 1; cursor: pointer; min-width: 32px; min-height: 32px; border-radius: 4px; padding: 4px 6px; }
   .controls button.active { background: rgba(255,255,255,0.2); }
 
+  /* Ρυθμίσεις */
+  .settings { position: absolute; bottom: 56px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.7); color:#fff; border:1px solid rgba(255,255,255,0.2); border-radius:10px; padding:10px 12px; z-index:210; display:none; min-width: 320px; }
+  .settings h5 { margin: 0 0 6px 0; font-size: 14px; color:#ffd27a; text-align:center; font-family: 'Georgia', serif; }
+  .settings .row { display:flex; align-items:center; gap:10px; margin:6px 0; }
+  .settings label { flex: 0 0 170px; font-size: 12px; color:#ddd; }
+  .settings input[type=range]{ flex:1; }
+  .settings .val { width:60px; text-align:right; font-family:"Courier New", monospace; }
+
   /* Countdown */
   .countdown-overlay { position: absolute; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); color: #fff; display: none; align-items: center; justify-content: center; text-align: center; z-index: 300; pointer-events: none; font-family: Inter, system-ui, sans-serif; }
   .countdown-box { max-width: 80%; }
@@ -118,17 +116,13 @@
   .countdown-timer{ font-family: "Courier New", monospace; font-size: 40px; font-weight: 700; color: #fff; }
 
   /* Κουμπί Έναρξη */
-  .start-btn {
-    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-    z-index: 100; background: #700; color: #fff; border: none; border-radius: 8px;
-    padding: 12px 24px; font-size: 18px; cursor: pointer; box-shadow: 0 0 10px #300;
-  }
+  .start-btn { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 100; background: #700; color: #fff; border: none; border-radius: 8px; padding: 12px 24px; font-size: 18px; cursor: pointer; box-shadow: 0 0 10px #300; }
 
-  /* Θεατές (anchors για bubbles) */
+  /* Θεατές για bubbles */
   .viewers { position: absolute; bottom: 0; width: 100%; display: flex; justify-content: center; gap: 3vw; z-index: 1; padding-bottom: 12px; }
   .viewer { width: 60px; height: 100px; background: url('https://upload.wikimedia.org/wikipedia/commons/f/f9/Silhouette_icon.svg') no-repeat center/contain; filter: grayscale(1) brightness(0.6); opacity: 0.75; }
 
-  /* Responsive προσαρμογές */
+  /* Responsive */
   @media (max-width: 600px) {
     .actor { bottom: calc(32vh + 40px); left: 50%; width: 100px; height: 66px; transform: translate(-50%, 0); }
     .spring{ bottom: calc(32vh + 7px); left: 10%; height: 66px; width: auto; }
@@ -159,16 +153,15 @@
       <h3>Εμηχ = 347 J</h3>
     </div>
 
-    <!-- Κουτί A, ω, φ0 (πάνω-δεξιά της κεντρικής κουρτίνας) -->
+    <!-- A, ω, φ0 -->
     <div class="params-box" id="paramsBox">
       <div class="param" id="paramA"></div>
       <div class="param" id="paramW"></div>
       <div class="param" id="paramPhi"></div>
     </div>
 
-    <!-- Ρολόι + Μετρήσεις + Διάγραμμα στη δεξιά κουρτίνα -->
+    <!-- Δεξιά κουρτίνα: ρολόι, μετρήσεις, γράφημα -->
     <div class="clock" id="clock">t = 0.00 s</div>
-
     <div class="measure-box" id="measureBox" style="display:none;">
       <div class="mb-title">Μετρήσεις</div>
       <table class="mb-table">
@@ -176,43 +169,58 @@
         <tbody id="measureTBody"></tbody>
       </table>
     </div>
-
     <canvas id="xtCanvas" width="260" height="140"></canvas>
 
+    <!-- Νόμοι -->
     <div class="laws"><h4>Νόμοι</h4><ol id="lawsList"></ol></div>
 
+    <!-- Σύστημα αναφοράς -->
     <div class="ruler" id="ruler"></div>
+    <div class="marker" id="marker"><div class="marker-line"></div><div class="marker-tip"></div></div>
 
-    <div class="marker" id="marker">
-      <div class="marker-line"></div>
-      <div class="marker-tip"></div>
-    </div>
+    <!-- Bubbles -->
+    <div class="thought-bubble" id="bubble0"><div class="text"></div><div class="checkmark">✓</div><div class="tail"></div></div>
 
-    <div class="thought-bubble" id="bubble0">
-      <div class="text"></div>
-      <div class="checkmark">✓</div>
-      <div class="tail"></div>
-    </div>
-
+    <!-- Κοντρόλς -->
     <div class="controls" id="controls">
       <button id="btnPause" title="παύση">⏸</button>
       <button id="btnSlow"  title="αργά">🐌</button>
       <button id="btnPlay"  title="κανονικά">▶</button>
+      <button id="btnSettings" title="ρυθμίσεις">⚙️</button>
     </div>
 
-    <div class="countdown-overlay" id="countdownOverlay">
-      <div class="countdown-box">
-        <div class="countdown-main">Η παράσταση αρχίζει...</div>
-        <div class="countdown-sub">ώρα να χρησιμοποιήσετε χαρτί και μολύβι!</div>
-        <div class="countdown-timer" id="countdownTimer">5</div>
+    <!-- Ρυθμίσεις -->
+    <div class="settings" id="settingsPanel">
+      <h5>Ρυθμίσεις ροής</h5>
+      <div class="row">
+        <label for="slFirst">Έναρξη σκέψεων (k·T):</label>
+        <input id="slFirst" type="range" min="1.0" max="2.5" step="0.1" value="1.1">
+        <div class="val" id="valFirst">1.1·T</div>
+      </div>
+      <div class="row">
+        <label for="slScale">Κλίμακα ροής (×):</label>
+        <input id="slScale" type="range" min="1.0" max="2.0" step="0.1" value="1.0">
+        <div class="val" id="valScale">1.0×</div>
+      </div>
+      <div class="row">
+        <label for="slDur">Διάρκεια σκέψης (s):</label>
+        <input id="slDur" type="range" min="2" max="8" step="0.5" value="3">
+        <div class="val" id="valDur">3.0s</div>
+      </div>
+      <div class="row">
+        <label for="slSlow">Αργή κίνηση (×):</label>
+        <input id="slSlow" type="range" min="0.05" max="0.50" step="0.05" value="0.15">
+        <div class="val" id="valSlow">0.15×</div>
       </div>
     </div>
 
+    <!-- Εικόνες & Πάτωμα & Κοινό -->
     <img id="spring" class="spring" src="spring.png" alt="ελατήριο">
     <div class="actor" id="actor"><img src="skater.png" alt="Skater"></div>
     <div class="floor"></div>
     <img class="audience" src="koino.png" alt="κοινό">
 
+    <!-- Anchors θεατών -->
     <div class="viewers">
       <div class="viewer" data-idx="0"></div>
       <div class="viewer" data-idx="1"></div>
@@ -222,6 +230,15 @@
     </div>
 
     <button class="start-btn" id="startBtn">Έναρξη</button>
+
+    <!-- Countdown -->
+    <div class="countdown-overlay" id="countdownOverlay">
+      <div class="countdown-box">
+        <div class="countdown-main">Η παράσταση αρχίζει...</div>
+        <div class="countdown-sub">ώρα να χρησιμοποιήσετε χαρτί και μολύβι!</div>
+        <div class="countdown-timer" id="countdownTimer">5</div>
+      </div>
+    </div>
   </div>
 
 <script>
@@ -237,12 +254,9 @@
   let A_px = pxPerMeter * A_m;
 
   document.addEventListener('DOMContentLoaded', ()=>{
-    const massLine = document.querySelector('.signboard .mass-line');
-    const kLine = document.querySelector('.signboard .k-line');
-    const energyLine = document.querySelector('.signboard h3');
-    if (massLine) massLine.textContent = `m₁ = ${m} kg`;
-    if (kLine)   kLine.textContent   = `D₁ = ${D} N/m`;
-    if (energyLine) energyLine.textContent = `Εμηχ = ${Math.round(E_mech)} J`;
+    document.querySelector('.signboard .mass-line').textContent = `m₁ = ${m} kg`;
+    document.querySelector('.signboard .k-line').textContent   = `D₁ = ${D} N/m`;
+    document.querySelector('.signboard h3').textContent = `Εμηχ = ${Math.round(E_mech)} J`;
   });
 
   /* DOM refs */
@@ -257,6 +271,12 @@
   const btnPause = document.getElementById('btnPause');
   const btnSlow  = document.getElementById('btnSlow');
   const btnPlay  = document.getElementById('btnPlay');
+  const btnSettings = document.getElementById('btnSettings');
+  const settingsPanel = document.getElementById('settingsPanel');
+  const slFirst = document.getElementById('slFirst'), valFirst = document.getElementById('valFirst');
+  const slScale = document.getElementById('slScale'), valScale = document.getElementById('valScale');
+  const slDur = document.getElementById('slDur'),   valDur = document.getElementById('valDur');
+  const slSlow = document.getElementById('slSlow'), valSlow = document.getElementById('valSlow');
   const countdownOverlay = document.getElementById('countdownOverlay');
   const countdownTimerEl = document.getElementById('countdownTimer');
   const xtCanvas = document.getElementById('xtCanvas');
@@ -268,23 +288,39 @@
   const measureBox = document.getElementById('measureBox');
   const measureTBody = document.getElementById('measureTBody');
 
-  /* Timeline (ατάκες) */
+  /* Ρυθμίσεις ροής (με sliders) */
+  const DEFAULT_FIRST_MUL = 1.1;
+  let firstThoughtMul = parseFloat(slFirst.value);        // k·T
+  let timelineScale   = parseFloat(slScale.value);        // ×
+  let bubbleDurationSec = parseFloat(slDur.value);        // s
+  let slowFactor      = parseFloat(slSlow.value);         // ×
+
+  slFirst.addEventListener('input', ()=>{ firstThoughtMul = parseFloat(slFirst.value); valFirst.textContent = `${firstThoughtMul.toFixed(1)}·T`; });
+  slScale.addEventListener('input', ()=>{ timelineScale = parseFloat(slScale.value);   valScale.textContent = `${timelineScale.toFixed(1)}×`; });
+  slDur.addEventListener('input',   ()=>{ bubbleDurationSec = parseFloat(slDur.value); valDur.textContent = `${bubbleDurationSec.toFixed(1)}s`; });
+  slSlow.addEventListener('input',  ()=>{ slowFactor = parseFloat(slSlow.value);       valSlow.textContent = `${slowFactor.toFixed(2)}×`; });
+
+  if (btnSettings) btnSettings.addEventListener('click', ()=>{
+    settingsPanel.style.display = (settingsPanel.style.display==='block' ? 'none' : 'block');
+  });
+
+  /* Timeline (σε πολλαπλάσια Τ) — πιο άνετη ροή */
   const thoughtScript = [
-    { kind:'bubble', at: 1.0,  viewer:1, duration:3, text:'η κίνηση είναι ευθύγραμμη παλινδρομική!' },
-    { kind:'bubble', at: 3.6,  viewer:3, duration:3, text:'… και επαναλαμβανόμενη-περιοδική, άρα ταλάντωση!' },
-    { kind:'bubble', at: 6.2,  viewer:0, duration:3, text:'Μήπως είναι Απλή Αρμονική Ταλάντωση;' },
-    { kind:'bubble', at: 8.8,  viewer:4, duration:3, text:'… αν είναι Α.Α.Τ. τότε οι τιμές που μετράμε πρέπει να επαληθεύουν την χ=Αημ(ωt+φ₀)!' },
-    { kind:'bubble', at: 11.4, viewer:2, duration:2.5, text:'Να κάνουμε διάγραμμα x–t, αυτό θα δείξει!' },
-    { kind:'graph',  at: 14.5 },
-    { kind:'bubble', at: 16.8, viewer:1, duration:3, dynamic:'params' },
-    { kind:'law',    at: 18.4, lawText: 'x(t) = A·ημ(ωt + φ₀)' },  // ο 1ος νόμος
-    { kind:'bubble', at: 20.6, viewer:0, duration:2.5, text:'Επομένως η ταχύτητα δίνεται από τον νόμο υ=ωA·συν(ωt+φ₀)!' },
-    { kind:'law',    at: 22.0, lawText: 'v(t) = ωA·συν(ωt + φ₀)' },
-    { kind:'bubble', at: 23.8, viewer:4, duration:2.5, text:'…και η επιτάχυνση από τον τύπο a = −ω²A·ημ(ωt+φ₀)!' },
-    { kind:'law',    at: 25.2, lawText: 'a(t) = −ω²A·ημ(ωt + φ₀)' },
-    { kind:'bubble', at: 26.8, viewer:2, duration:2.5, text:'Αλλά η σχέση (1) περιέχεται στην (3), δηλαδή a = −ω²·x!' },
-    { kind:'law',    at: 28.2, lawText: 'a = −ω²·x' },
-    { kind:'close',  at: 31.2 }
+    { kind:'bubble', atT: 1.1, viewer:1, text:'η κίνηση είναι ευθύγραμμη παλινδρομική!' },
+    { kind:'bubble', atT: 2.1, viewer:3, text:'… και επαναλαμβανόμενη-περιοδική, άρα ταλάντωση!' },
+    { kind:'bubble', atT: 3.0, viewer:0, text:'Μήπως είναι Απλή Αρμονική Ταλάντωση;' },
+    { kind:'bubble', atT: 3.8, viewer:4, text:'… αν είναι Α.Α.Τ. τότε οι τιμές που μετράμε πρέπει να επαληθεύουν την χ=Αημ(ωt+φ₀)!' },
+    { kind:'bubble', atT: 4.6, viewer:2, text:'Να κάνουμε διάγραμμα x–t, αυτό θα δείξει!' },
+    { kind:'graph',  atT: 5.2 },
+    { kind:'bubble', atT: 5.9, viewer:1, dynamic:'params' },
+    { kind:'law',    atT: 6.2, lawText: 'x(t) = A·ημ(ωt + φ₀)' },
+    { kind:'bubble', atT: 6.9, viewer:0, text:'Επομένως η ταχύτητα δίνεται από τον νόμο υ=ωA·συν(ωt+φ₀)!' },
+    { kind:'law',    atT: 7.2, lawText: 'v(t) = ωA·συν(ωt + φ₀)' },
+    { kind:'bubble', atT: 7.9, viewer:4, text:'…και η επιτάχυνση από τον τύπο a = −ω²A·ημ(ωt+φ₀)!' },
+    { kind:'law',    atT: 8.2, lawText: 'a(t) = −ω²A·ημ(ωt + φ₀)' },
+    { kind:'bubble', atT: 8.9, viewer:2, text:'Αλλά η σχέση (1) περιέχεται στην (3), δηλαδή a = −ω²·x!' },
+    { kind:'law',    atT: 9.2, lawText: 'a = −ω²·x' },
+    { kind:'close',  atT: 10.2 }
   ];
   let nextThoughtIdx = 0, isBubbleActive = false, bubbleAutoTimer = null;
   let measureRowIdx = 0;
@@ -292,7 +328,6 @@
   /* Ρολόι & play state */
   let t0 = performance.now(), lastFrame = performance.now();
   let playbackTime = 0, mode = 'run', obsStarted = false, obsStartPlaybackOffset = 0;
-  const slowFactor = 0.15;
 
   /* Μετρήσεις */
   let lastSampleObsTime = -Infinity; const sampleInterval = 0.25; // s
@@ -301,8 +336,8 @@
   let lastRulerW = 0;
   function updateRuler(){
     if (!rulerEl) return;
-    const baseLeft = stage.clientWidth * 0.18; // δεξί άκρο αριστερής κουρτίνας
-    const usableW  = stage.clientWidth * 0.64; // άνοιγμα σκηνής
+    const baseLeft = stage.clientWidth * 0.18;
+    const usableW  = stage.clientWidth * 0.64;
     if (Math.abs(usableW - lastRulerW) < 1) return;
     lastRulerW = usableW;
     rulerEl.style.left = baseLeft + 'px';
@@ -318,15 +353,14 @@
     }
   }
 
-  /* Τοποθέτηση δεξιού πάνελ (ρολόι, πίνακας, διάγραμμα) + params box πάνω-δεξιά κεντρικής */
+  /* Δεξιά κουρτίνα layout + params box */
   function positionRightPanel(){
     const W = stage.clientWidth, H = stage.clientHeight;
-    // δεξιά κουρτίνα
     const curtainLeft = W * 0.82, curtainW = W * 0.18, centerX = curtainLeft + curtainW/2;
     if (clockEl){ clockEl.style.left = centerX + 'px'; }
     if (measureBox){
       measureBox.style.left = centerX + 'px';
-      const topAfterClock = 10 + 34; // περίπου ύψος ρολογιού
+      const topAfterClock = 10 + 34;
       measureBox.style.top = (topAfterClock + 10) + 'px';
       const halfH = Math.floor(H * 0.5);
       measureBox.style.height = halfH + 'px';
@@ -347,10 +381,9 @@
       xtCanvas.height = Math.floor(h);
       xtCanvas.style.transform = 'translateX(-50%)';
     }
-    // params box στην κεντρική (δεξιά άκρη της κεντρικής)
     if (paramsBoxEl){
-      const centerLeft = W * 0.18, centerW = W * 0.64; // κεντρική σκηνή
-      const rightEdge = centerLeft + centerW - 10; // 10px «μέσα»
+      const centerLeft = W * 0.18, centerW = W * 0.64;
+      const rightEdge = centerLeft + centerW - 10;
       paramsBoxEl.style.left = rightEdge + 'px';
       paramsBoxEl.style.transform = 'translateX(-100%)';
     }
@@ -363,10 +396,7 @@
     if (tObs - lastSampleObsTime < sampleInterval) return; lastSampleObsTime = tObs;
     if (!measureTBody) return;
     const tr = document.createElement('tr');
-    const c1 = document.createElement('td'); c1.textContent = (++measureRowIdx).toString();
-    const c2 = document.createElement('td'); c2.textContent = tObs.toFixed(2);
-    const c3 = document.createElement('td'); c3.textContent = xMeters.toFixed(2);
-    tr.appendChild(c1); tr.appendChild(c2); tr.appendChild(c3);
+    tr.innerHTML = `<td>${(++measureRowIdx)}</td><td>${tObs.toFixed(2)}</td><td>${xMeters.toFixed(2)}</td>`;
     measureTBody.appendChild(tr);
     try { tr.scrollIntoView({block:'end'}); } catch(e) {}
     try { if (measureBox) measureBox.scrollTop = measureBox.scrollHeight; } catch(e) {}
@@ -374,6 +404,7 @@
 
   /* Γεωμετρία ελατηρίου / skater (δέσιμο) */
   let L0_px; let skaterWidthPx; let hookOffsetPx;
+
   function animate(now){
     const realDt = (now - lastFrame)/1000; lastFrame = now;
     positionRightPanel();
@@ -390,10 +421,13 @@
     let tObs = 0; if (obsStarted){ tObs = playbackTime - obsStartPlaybackOffset; }
     if (clockEl){ clockEl.textContent = 't = ' + tObs.toFixed(2) + ' s'; }
 
-    // timeline
+    // timeline με κλίμακα + μετατόπιση πρώτου bubble
     if (obsStarted && !isBubbleActive && nextThoughtIdx < thoughtScript.length){
       const th = thoughtScript[nextThoughtIdx];
-      if (tObs >= th.at){ handleTimelineEvent(th); nextThoughtIdx += 1; }
+      const shiftMul = (firstThoughtMul - DEFAULT_FIRST_MUL);
+      const baseMul = (th.atT ?? 0);
+      const eventAtSec = (baseMul + shiftMul) * T * timelineScale;
+      if (tObs >= eventAtSec){ handleTimelineEvent(th); nextThoughtIdx += 1; }
     }
 
     // μέτρηση γεωμετρίας εικόνων
@@ -428,20 +462,22 @@
     if (btnPlay) btnPlay.classList.toggle('active', mode==='run');
   }
 
-  function showThoughtForViewer(viewerIdx, text, durationSecs=3){
+  function showThoughtForViewer(viewerIdx, text, durationSecs){
     const viewerEl = document.querySelector(`.viewer[data-idx="${viewerIdx}"]`);
     if (!viewerEl || !bubbleEl) return;
-    const txtNode = bubbleEl.querySelector('.text'); if (txtNode) txtNode.textContent = text || '';
+    bubbleEl.querySelector('.text').textContent = text || '';
     const vRect = viewerEl.getBoundingClientRect(); const sRect = stage.getBoundingClientRect();
-    const extraX = (viewerIdx - 2) * 90 + 60; // διασπορά δεξιότερα
+    const extraX = (viewerIdx - 2) * 90 + 60;
     let leftPx = (vRect.left + vRect.width/2 - sRect.left) + extraX;
     leftPx = Math.min(stage.clientWidth - 40, Math.max(40, leftPx));
     bubbleEl.style.left = leftPx + 'px';
     bubbleEl.style.top  = (vRect.top  - sRect.top - 70) + 'px';
     bubbleEl.style.display = 'block'; void bubbleEl.offsetWidth;
     bubbleEl.classList.add('active'); isBubbleActive = true; setMode('slow');
+
+    const dur = (typeof durationSecs === 'number' ? durationSecs : bubbleDurationSec);
     if (bubbleAutoTimer) { clearTimeout(bubbleAutoTimer); bubbleAutoTimer = null; }
-    bubbleAutoTimer = setTimeout(()=>{ resumeFromBubble('run'); }, Math.max(0.5, durationSecs) * 1000);
+    bubbleAutoTimer = setTimeout(()=>{ resumeFromBubble('run'); }, Math.max(0.5, dur) * 1000);
   }
   function resumeFromBubble(nextMode='run'){
     if (bubbleAutoTimer) { clearTimeout(bubbleAutoTimer); bubbleAutoTimer = null; }
@@ -475,26 +511,21 @@
 
   function showXTGraph(){
     if (!xtCanvas) return;
-    positionRightPanel(); // συγχρονισμός διάστασης πριν ζωγραφίσω
+    positionRightPanel();
     const ctx = xtCanvas.getContext('2d');
     const W = xtCanvas.width, H = xtCanvas.height;
     ctx.clearRect(0,0,W,H);
 
-    // άξονες
     ctx.strokeStyle = 'rgba(255,255,255,0.6)'; ctx.lineWidth = 1;
-    // t-axis
     ctx.beginPath(); ctx.moveTo(30, H/2); ctx.lineTo(W-10, H/2); ctx.stroke();
-    // x-axis
     ctx.beginPath(); ctx.moveTo(30, 10); ctx.lineTo(30, H-10); ctx.stroke();
 
-    // labels
     ctx.fillStyle = '#ffffff'; ctx.font = '12px Inter,system-ui';
     ctx.fillText('x (m)', 6, 16);
     ctx.fillText('t (s)', W-40, H/2 - 6);
 
     const Amp = A_m; const scaleY = (H/2 - 18) / Amp;
 
-    // +A, -A με σκέτους αριθμούς
     ctx.setLineDash([4,3]); ctx.strokeStyle = 'rgba(255,255,255,0.35)';
     ctx.beginPath(); ctx.moveTo(30, H/2 - Amp*scaleY); ctx.lineTo(W-10, H/2 - Amp*scaleY); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(30, H/2 + Amp*scaleY); ctx.lineTo(W-10, H/2 + Amp*scaleY); ctx.stroke();
@@ -502,7 +533,6 @@
     ctx.fillText(Amp.toFixed(2), 34, H/2 - Amp*scaleY - 4);
     ctx.fillText((-Amp).toFixed(2), 38, H/2 + Amp*scaleY + 12);
 
-    // κάθετος δείκτης στο T (τέλος ενός Τ)
     const xT = 30 + (W-40);
     ctx.setLineDash([2,2]); ctx.strokeStyle = 'rgba(255,255,255,0.45)';
     ctx.beginPath(); ctx.moveTo(xT, 10); ctx.lineTo(xT, H-10); ctx.stroke();
@@ -511,7 +541,6 @@
     ctx.fillText(T.toFixed(2), xT, H/2 + 18);
     ctx.textAlign = 'left';
 
-    // καμπύλη x(t) για ένα T
     ctx.strokeStyle = '#ffd27a'; ctx.lineWidth = 2; ctx.beginPath();
     const N = 240;
     for (let i=0;i<=N;i++){
@@ -530,7 +559,7 @@
     stage.classList.remove('open');
     stage.classList.add('closed-show-actors');
     if (markerEl){ markerEl.style.opacity = '0'; } // δείκτης κρυφός
-    setMode('run'); // mD συνεχίζει «σαν να μη συνέβη τίποτα»
+    setMode('run'); // mD συνεχίζει πίσω από τις κουρτίνες
   }
 
   function handleTimelineEvent(th){
@@ -540,13 +569,13 @@
         const phi0deg = ((omega * obsStartPlaybackOffset) * 180/Math.PI + 360) % 360;
         text = `Πραγματικά είναι ΑΑΤ με Α=${A_m.toFixed(2)}  ω=${omega.toFixed(3)} και φ₀=${phi0deg.toFixed(1)}° — ένα το κρατούμενο!`;
       }
-      showThoughtForViewer(th.viewer, text, th.duration ?? 3);
+      showThoughtForViewer(th.viewer, text, /*duration*/ bubbleDurationSec);
     } else if (th.kind === 'graph'){
       showXTGraph(); showCurtainParams();
     } else if (th.kind === 'law'){
       addLaw(th.lawText);
     } else if (th.kind === 'close'){
-      setTimeout(closeCurtains, 3000); // μικρό delay 3s πριν κλείσουν
+      setTimeout(closeCurtains, 3000);
     }
   }
 
@@ -583,7 +612,7 @@
 
   // Self-check
   (function(){
-    const must = {stage, actor, springEl, startBtn, clockEl, rulerEl, markerEl, bubbleEl, btnPause, btnSlow, btnPlay, xtCanvas, paramsBoxEl};
+    const must = {stage, actor, springEl, startBtn, clockEl, rulerEl, markerEl, bubbleEl, btnPause, btnSlow, btnPlay, btnSettings, settingsPanel, xtCanvas, paramsBoxEl};
     const miss = Object.entries(must).filter(([k,v]) => !v).map(([k])=>k);
     if (miss.length) console.error('Λείπουν στοιχεία:', miss.join(', '));
     else console.log('Self-check OK');
