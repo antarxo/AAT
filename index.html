@@ -341,7 +341,6 @@
       xtCanvas.style.transform = 'translateX(-50%)';
     }
   }
-  }
 
   // Γεωμετρία ελατηρίου / skater
   let L0_px; let skaterWidthPx; let hookOffsetPx;
@@ -457,12 +456,6 @@
     ctx.stroke();
 
     xtCanvas.style.display = 'block';
-  } m`, 40, 16);
-    ctx.fillText(`T = ${T.toFixed(2)} s`, 140, 16);
-    // καμπύλη x(t)
-    const Amp = A_m; const scaleY = (H/2 - 18) / Amp; ctx.strokeStyle = '#ffd27a'; ctx.lineWidth = 2; ctx.beginPath();
-    const N = 200; for (let i=0;i<=N;i++){ const tloc = (i/N) * T; const x = Amp * Math.sin(omega * (tloc + obsStartPlaybackOffset)); const xx = 30 + (W-40) * (tloc / T); const yy = H/2 - x * scaleY; if (i===0) ctx.moveTo(xx,yy); else ctx.lineTo(xx,yy); }
-    ctx.stroke(); xtCanvas.style.display = 'block';
   }
 
   // Ζητούμενο #1: στο κλείσιμο κρύψε τον δείκτη, συνέχισε mD, κράτα ορατά skater/spring πίσω από τις κλειστές κουρτίνες
@@ -489,9 +482,6 @@
     if (markerEl){ markerEl.style.opacity = '1'; }
     positionRightPanel();
   }
-    if (clockEl){ clockEl.style.display = 'block'; }
-    if (lawsEl){  lawsEl.style.display  = 'block'; }
-    if (markerEl){ markerEl.style.opacity = '1'; }
   }
   function startShowCountdown(){
     startBtn.style.display = 'none'; if (countdownOverlay){ countdownOverlay.style.display = 'flex'; }
