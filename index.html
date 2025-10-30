@@ -42,44 +42,46 @@
   .signboard h3 { font-size:18px; margin:2px 0 0 0; color:#ffd27a; }
 
   /* overlays ΠΑΝΩ από το κοινό (z-index >150) */
-  .clock       { position:absolute; top:10px; left:calc(82vw + 9vw); transform:translateX(-50%); background:rgba(0,0,0,0.5); color:#fff; padding:6px 10px; font-size:16px; font-family:"Courier New",monospace; border-radius:6px; border:1px solid rgba(255,255,255,0.3); z-index:165; pointer-events:none; display:none; }
-  .measure-box { position:absolute; left:calc(82vw + 9vw); transform:translateX(-50%); top:54px; width:calc(18vw - 16px); z-index:162; background:rgba(0,0,0,0.45); color:#fff; border:1px solid rgba(255,255,255,0.25); border-radius:8px; padding:6px 8px; display:none; height:50vh; overflow-y:auto; }
-  .laws        { position:absolute; left:2%; top:10px; width:16%; max-height:30vh; overflow:auto; background:rgba(20,0,0,0.6); color:#fff; border:1px solid rgba(255,200,200,0.3); border-radius:8px; padding:6px 8px; font-size:16px; line-height:1.5; z-index:160; display:none; }
-  .params-box  { position:absolute; top:8px; z-index:168; background:rgba(0,0,0,0.5); color:#fff; border:1px solid rgba(255,255,255,0.25); border-radius:8px; padding:6px 10px; font-size:12px; line-height:1.4; display:none; }
+  .clock       { position:absolute; top:10px; left:calc(82vw + 9vw); transform:translateX(-50%); background:rgba(0,0,0,0.5); color:#fff; padding:6px 10px; font-size:16px; font-family:"Courier New",monospace; border-radius:6px; border:1px solid rgba(255,255,255,0.3); z-index:265; pointer-events:none; display:none; }
+  .measure-box { position:absolute; left:calc(82vw + 9vw); transform:translateX(-50%); top:54px; width:calc(18vw - 16px); z-index:262; background:rgba(0,0,0,0.45); color:#fff; border:1px solid rgba(255,255,255,0.25); border-radius:8px; padding:6px 8px; display:none; height:50vh; overflow-y:auto; }
+  .laws        { position:absolute; left:2%; top:10px; width:16%; max-height:30vh; overflow:auto; background:rgba(20,0,0,0.6); color:#fff; border:1px solid rgba(255,200,200,0.3); border-radius:8px; padding:6px 8px; font-size:16px; line-height:1.5; z-index:260; display:none; }
+  .params-box  { position:absolute; top:8px; z-index:268; background:rgba(0,0,0,0.5); color:#fff; border:1px solid rgba(255,255,255,0.25); border-radius:8px; padding:6px 10px; font-size:12px; line-height:1.4; display:none; }
 
-  /* Γράφημα x–t (το έκανα να «γεμίζει» το υπόλοιπο) */
-  #xtCanvas    { position:absolute; display:none; background:rgba(0,0,0,0.2); border:1px solid rgba(255,255,255,0.2); border-radius:6px; z-index:166; pointer-events:none; }
+  /* Γράφημα x–t (z-index ↑) */
+  #xtCanvas    { position:absolute; display:none; background:rgba(0,0,0,0.2); border:1px solid rgba(255,255,255,0.2); border-radius:6px; z-index:266; pointer-events:none; }
 
   .laws h4 { margin:0 0 4px 0; font-size:12px; color:#ff8080; font-family:'Georgia',serif; text-align:center; }
-  .measure-box .mb-title { font-size:14px; margin-bottom:4px; color:#ffd27a; text-align:center; font-family:'Georgia',serif; }
-  .measure-box table { width:100%; border-collapse:collapse; font-size:12px; }
+
+  /* Sticky headers για τον πίνακα μετρήσεων */
+  .measure-box table { width:100%; border-collapse:separate; border-spacing:0; font-size:12px; }
+  .measure-box thead th { position: sticky; top: 0; background: rgba(0,0,0,0.65); z-index:1; }
   .measure-box th, .measure-box td { border-bottom:1px solid rgba(255,255,255,0.2); padding:2px 4px; text-align:right; }
   .measure-box th:first-child, .measure-box td:first-child { text-align:center; }
 
   /* Χάρακας & δείκτης */
-  .ruler { position:absolute; bottom:calc(32vh - 8px + 1px); height:24px; font-size:10px; font-family:"Courier New",monospace; color:#aaa; pointer-events:none; z-index:170; }
+  .ruler { position:absolute; bottom:calc(32vh - 8px + 1px); height:24px; font-size:10px; font-family:"Courier New",monospace; color:#aaa; pointer-events:none; z-index:270; }
   .ruler::before { content:''; position:absolute; left:0; right:0; bottom:0; height:1px; background:#aaa; }
   .tick { position:absolute; bottom:0; width:1px; height:10px; background:#aaa; }
   .tick-label { position:absolute; bottom:12px; transform:translateX(-50%); font-size:10px; color:#aaa; white-space:nowrap; }
-  .marker { position:absolute; bottom:calc(32vh - 8px + 1px); width:0; height:80px; transform:translateX(-50%); pointer-events:none; z-index:175; opacity:0; transition:opacity .3s; }
+  .marker { position:absolute; bottom:calc(32vh - 8px + 1px); width:0; height:80px; transform:translateX(-50%); pointer-events:none; z-index:275; opacity:0; transition:opacity .3s; }
   .marker-line { position:absolute; left:50%; bottom:8px; width:2px; height:70px; background:#ffd27a; box-shadow:0 0 4px rgba(255,210,122,0.8); transform:translateX(-50%); }
   .marker-tip  { position:absolute; left:50%; bottom:0; width:0; height:0; border-left:6px solid transparent; border-right:6px solid transparent; border-top:8px solid #ffd27a; filter:drop-shadow(0 2px 2px rgba(255,210,122,0.8)); transform:translateX(-50%); }
 
-  /* Bubble */
-  .thought-bubble { position:absolute; max-width:420px; background:rgba(255,255,255,0.93); color:#000; font-size:20px; line-height:1.65; padding:14px 16px 16px; border-radius:10px; border:1px solid rgba(0,0,0,0.4); box-shadow:0 6px 12px rgba(0,0,0,0.4); z-index:240; pointer-events:none; opacity:0; display:none; transition:opacity .3s ease; }
+  /* Bubble (dotted + ελαφρώς πιο διάφανο) */
+  .thought-bubble { position:absolute; max-width:420px; background:rgba(255,255,255,0.85); color:#000; font-size:20px; line-height:1.65; padding:14px 16px 16px; border-radius:10px; border:2px dotted rgba(0,0,0,0.5); box-shadow:0 6px 12px rgba(0,0,0,0.4); z-index:340; pointer-events:none; opacity:0; display:none; transition:opacity .3s ease; }
   .thought-bubble.active { opacity:1; }
   .thought-bubble.closing { opacity:0; }
-  .thought-bubble .tail { position:absolute; left:50%; bottom:-8px; transform:translateX(-50%); width:0; height:0; border-left:8px solid transparent; border-right:8px solid transparent; border-top:10px solid rgba(255,255,255,0.92); filter:drop-shadow(0 2px 2px rgba(0,0,0,0.4)); }
+  .thought-bubble .tail { position:absolute; left:50%; bottom:-10px; transform:translateX(-50%); width:0; height:0; border-left:8px solid transparent; border-right:8px solid transparent; border-top:10px solid rgba(255,255,255,0.85); filter:drop-shadow(0 2px 2px rgba(0,0,0,0.4)); }
   .thought-bubble .checkmark { position:absolute; top:-8px; right:-8px; background:#2ecc71; color:#fff; font-size:11px; line-height:1; border-radius:50%; border:1px solid rgba(0,0,0,0.4); width:18px; height:18px; display:none; align-items:center; justify-content:center; font-family:system-ui,sans-serif; font-weight:600; }
   .thought-bubble.checked .checkmark { display:flex; }
 
   /* Κοντρόλς */
-  .controls { position:absolute; bottom:12px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.6); border:1px solid rgba(255,255,255,0.2); border-radius:8px; padding:6px 8px; display:flex; gap:8px; z-index:200; }
+  .controls { position:absolute; bottom:12px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.6); border:1px solid rgba(255,255,255,0.2); border-radius:8px; padding:6px 8px; display:flex; gap:8px; z-index:300; }
   .controls button { background:none; border:0; color:#fff; font-size:16px; line-height:1; cursor:pointer; min-width:32px; min-height:32px; border-radius:4px; padding:4px 6px; }
   .controls button.active { background:rgba(255,255,255,0.2); }
 
   /* Ρυθμίσεις */
-  .settings { position:absolute; bottom:56px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.7); color:#fff; border:1px solid rgba(255,255,255,0.2); border-radius:10px; padding:10px 12px; z-index:210; display:none; min-width:320px; }
+  .settings { position:absolute; bottom:56px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.7); color:#fff; border:1px solid rgba(255,255,255,0.2); border-radius:10px; padding:10px 12px; z-index:310; display:none; min-width:320px; }
   .settings h5 { margin:0 0 6px 0; font-size:14px; color:#ffd27a; text-align:center; font-family:'Georgia',serif; }
   .settings .row { display:flex; align-items:center; gap:10px; margin:6px 0; }
   .settings label { flex:0 0 170px; font-size:12px; color:#ddd; }
@@ -87,12 +89,12 @@
   .settings .val { width:60px; text-align:right; font-family:"Courier New",monospace; }
 
   /* Countdown + Start */
-  .countdown-overlay { position:absolute; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.6); color:#fff; display:none; align-items:center; justify-content:center; text-align:center; z-index:300; pointer-events:none; font-family:Inter,system-ui,sans-serif; }
+  .countdown-overlay { position:absolute; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.6); color:#fff; display:none; align-items:center; justify-content:center; text-align:center; z-index:400; pointer-events:none; font-family:Inter,system-ui,sans-serif; }
   .countdown-box { max-width:80%; }
   .countdown-main { font-size:24px; font-weight:600; margin-bottom:8px; color:#fff; }
   .countdown-sub  { font-size:14px; color:#ffd27a; margin-bottom:16px; }
   .countdown-timer{ font-family:"Courier New",monospace; font-size:40px; font-weight:700; color:#fff; }
-  .start-btn { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); z-index:100; background:#700; color:#fff; border:none; border-radius:8px; padding:12px 24px; font-size:18px; cursor:pointer; box-shadow:0 0 10px #300; }
+  .start-btn { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); z-index:350; background:#700; color:#fff; border:none; border-radius:8px; padding:12px 24px; font-size:18px; cursor:pointer; box-shadow:0 0 10px #300; }
 
   /* Θεατές anchors */
   .viewers { position:absolute; bottom:0; width:100%; display:flex; justify-content:center; gap:3vw; z-index:1; padding-bottom:12px; }
@@ -271,19 +273,19 @@
   slSlow.addEventListener('input',  ()=>{ slowFactor = parseFloat(slSlow.value);       valSlow.textContent = `${slowFactor.toFixed(2)}×`; });
   btnSettings.addEventListener('click', ()=>{ settingsPanel.style.display = (settingsPanel.style.display==='block'?'none':'block'); });
 
-  /* Timeline */
+  /* Timeline (λιγότεροι πολύ δεξιά: indices 0..3) */
   const thoughtScript = [
     { kind:'bubble', atT: 1.1, viewer:1, text:'η κίνηση είναι ευθύγραμμη παλινδρομική!' },
-    { kind:'bubble', atT: 2.1, viewer:3, text:'… και επαναλαμβανόμενη-περιοδική, άρα ταλάντωση!' },
+    { kind:'bubble', atT: 2.1, viewer:2, text:'… και επαναλαμβανόμενη-περιοδική, άρα ταλάντωση!' },
     { kind:'bubble', atT: 3.0, viewer:0, text:'Μήπως είναι Απλή Αρμονική Ταλάντωση;' },
-    { kind:'bubble', atT: 3.8, viewer:4, text:'… αν είναι Α.Α.Τ. τότε οι τιμές που μετράμε πρέπει να επαληθεύουν την χ=Αημ(ωt+φ₀)!' },
-    { kind:'bubble', atT: 4.6, viewer:2, text:'Να κάνουμε διάγραμμα x–t, αυτό θα δείξει!' },
+    { kind:'bubble', atT: 3.8, viewer:3, text:'… αν είναι Α.Α.Τ. τότε οι τιμές που μετράμε πρέπει να επαληθεύουν την χ=Αημ(ωt+φ₀)!' },
+    { kind:'bubble', atT: 4.6, viewer:1, text:'Να κάνουμε διάγραμμα x–t, αυτό θα δείξει!' },
     { kind:'graph',  atT: 5.2 },
-    { kind:'bubble', atT: 5.9, viewer:1, dynamic:'params' },
+    { kind:'bubble', atT: 5.9, viewer:2, dynamic:'params' },
     { kind:'law',    atT: 6.2, lawText: 'x(t) = A·ημ(ωt + φ₀)' },
     { kind:'bubble', atT: 6.9, viewer:0, text:'Επομένως η ταχύτητα δίνεται από τον νόμο υ=ωA·συν(ωt+φ₀)!' },
     { kind:'law',    atT: 7.2, lawText: 'v(t) = ωA·συν(ωt + φ₀)' },
-    { kind:'bubble', atT: 7.9, viewer:4, text:'…και η επιτάχυνση από τον τύπο a = −ω²A·ημ(ωt+φ₀)!' },
+    { kind:'bubble', atT: 7.9, viewer:3, text:'…και η επιτάχυνση από τον τύπο a = −ω²A·ημ(ωt+φ₀)!' },
     { kind:'law',    atT: 8.2, lawText: 'a(t) = −ω²A·ημ(ωt + φ₀)' },
     { kind:'bubble', atT: 8.9, viewer:2, text:'Αλλά η σχέση (1) περιέχεται στην (3), δηλαδή a = −ω²·x!' },
     { kind:'law',    atT: 9.2, lawText: 'a = −ω²·x' },
@@ -321,6 +323,7 @@
   }
 
   /* Layout δεξιάς κουρτίνας + γράφημα */
+  let graphEnabled = false;
   function positionRightPanel(){
     const W = stage.clientWidth, H = stage.clientHeight;
     const curtainLeft = W * 0.82, curtainW = W * 0.18, centerX = curtainLeft + curtainW/2;
@@ -339,7 +342,6 @@
     }
 
     if (xtCanvas){
-      // ΧΡΗΣΙΜΟΠΟΙΩ ΠΡΑΓΜΑΤΙΚΕΣ ΔΙΑΣΤΑΣΕΙΣ ΤΟΥ measureBox για να μην ξεχειλίζει
       const mTop = measureBox.offsetTop || 54;
       const mHeight = measureBox.offsetHeight || Math.floor(H*0.5);
       const xTop = mTop + mHeight + 8;
@@ -353,6 +355,8 @@
       xtCanvas.width  = Math.floor(w);
       xtCanvas.height = Math.floor(availH);
       xtCanvas.style.transform = 'translateX(-50%)';
+
+      if (graphEnabled) showXTGraph(); // redraw σε resize
     }
 
     if (paramsBoxEl){
@@ -437,11 +441,11 @@
     if (!viewerEl) return;
     bubbleEl.querySelector('.text').textContent = text || '';
     const vRect = viewerEl.getBoundingClientRect(); const sRect = stage.getBoundingClientRect();
-    const extraX = (viewerIdx - 2) * 90 + 60;
+    const extraX = (viewerIdx - 2) * 80 + 40; // λίγο λιγότερη μετατόπιση δεξιά
     let leftPx = (vRect.left + vRect.width/2 - sRect.left) + extraX;
     leftPx = Math.min(stage.clientWidth - 40, Math.max(40, leftPx));
     bubbleEl.style.left = leftPx + 'px';
-    bubbleEl.style.top  = (vRect.top  - sRect.top - 70) + 'px';
+    bubbleEl.style.top  = (vRect.top  - sRect.top - 76) + 'px';
     bubbleEl.style.display = 'block'; void bubbleEl.offsetWidth;
     bubbleEl.classList.add('active'); isBubbleActive = true; setMode('slow');
 
@@ -476,21 +480,22 @@
   }
 
   function showXTGraph(){
-    positionRightPanel();
     const ctx = xtCanvas.getContext('2d');
     const W = xtCanvas.width, H = xtCanvas.height;
     ctx.clearRect(0,0,W,H);
 
+    // Άξονες
     ctx.strokeStyle = 'rgba(255,255,255,0.6)'; ctx.lineWidth = 1;
     ctx.beginPath(); ctx.moveTo(30, H/2); ctx.lineTo(W-10, H/2); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(30, 10); ctx.lineTo(30, H-10); ctx.stroke();
 
+    // Labels
     ctx.fillStyle = '#ffffff'; ctx.font = '12px Inter,system-ui';
     ctx.fillText('x (m)', 6, 16);
     ctx.fillText('t (s)', W-40, H/2 - 6);
 
+    // A & T
     const Amp = A_m; const scaleY = (H/2 - 18) / Amp;
-
     ctx.setLineDash([4,3]); ctx.strokeStyle = 'rgba(255,255,255,0.35)';
     ctx.beginPath(); ctx.moveTo(30, H/2 - Amp*scaleY); ctx.lineTo(W-10, H/2 - Amp*scaleY); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(30, H/2 + Amp*scaleY); ctx.lineTo(W-10, H/2 + Amp*scaleY); ctx.stroke();
@@ -506,6 +511,7 @@
     ctx.fillText(T.toFixed(2), xT, H/2 + 18);
     ctx.textAlign = 'left';
 
+    // Καμπύλη
     ctx.strokeStyle = '#ffd27a'; ctx.lineWidth = 2; ctx.beginPath();
     const N = 240;
     for (let i=0;i<=N;i++){
@@ -536,7 +542,9 @@
       }
       showThoughtForViewer(th.viewer, text, bubbleDurationSec);
     } else if (th.kind === 'graph'){
-      showXTGraph(); showCurtainParams();
+      graphEnabled = true;
+      showXTGraph();
+      showCurtainParams();
     } else if (th.kind === 'law'){
       addLaw(th.lawText);
     } else if (th.kind === 'close'){
