@@ -41,7 +41,7 @@
   .signboard h3 { font-size: 18px; margin: 4px 0 0 0; color: #ffd27a; }
 
   /* Ρολόι δεξιά επάνω */
-  .clock { position: absolute; top: 10px; right: 2%; background: rgba(0,0,0,0.5); color: #fff; padding: 6px 10px; font-size: 16px; font-family: "Courier New", monospace; border-radius: 6px; border: 1px solid rgba(255,255,255,0.3); z-index: 40; pointer-events: none; display: none; }
+  .clock { position: absolute; top: 10px; left: calc(82vw + 9vw); transform: translateX(-50%); background: rgba(0,0,0,0.5); color: #fff; padding: 6px 10px; font-size: 16px; font-family: "Courier New", monospace; border-radius: 6px; border: 1px solid rgba(255,255,255,0.3); z-index: 40; pointer-events: none; display: none; }
 
   /* Πίνακας Νόμων – ΠΛΑΤΥΤΕΡΟΣ */
   .laws { position: absolute; left: 2%; top: 10px; width: 16%; max-height: 30vh; overflow: auto; background: rgba(20,0,0,0.6); color: #fff; border: 1px solid rgba(255,200,200,0.3); border-radius: 8px; padding: 6px 8px; font-size: 16px; line-height: 1.5; z-index: 40; display: none; }
@@ -49,12 +49,12 @@
   .laws ol { margin: 0; padding-left: 20px; }
 
   /* Κουτί παραμέτρων πάνω δεξιά (επάνω κουρτίνα) */
-  .params-box { position: absolute; top: 8px; right: 3%; z-index: 45; background: rgba(0,0,0,0.5); color: #fff; border: 1px solid rgba(255,255,255,0.25); border-radius: 8px; padding: 6px 10px; font-size: 12px; line-height: 1.4; display: none; }
+  .params-box { position: absolute; top: 8px; right: 22%; z-index: 45; background: rgba(0,0,0,0.5); color: #fff; border: 1px solid rgba(255,255,255,0.25); border-radius: 8px; padding: 6px 10px; font-size: 12px; line-height: 1.4; display: none; }
   .params-box h4 { margin: 0 0 4px 0; font-size: 12px; color: #ffd27a; font-family: 'Georgia', serif; }
   .params-box .param { white-space: nowrap; }
 
   /* Καμβάς διαγράμματος x–t */
-  #xtCanvas { position: absolute; right: 2%; top: 200px; width: 260px; height: 140px; display: none; background: rgba(0,0,0,0.2); border:1px solid rgba(255,255,255,0.2); border-radius:6px; z-index: 40; }
+  #xtCanvas { position: absolute; display: none; background: rgba(0,0,0,0.2); border:1px solid rgba(255,255,255,0.2); border-radius:6px; z-index: 40; }
 
   /* Χάρακας & δείκτης */
   .ruler { position: absolute; bottom: calc(32vh - 8px + 1px); height: 24px; font-size: 10px; font-family: "Courier New", monospace; color: #aaa; pointer-events: none; z-index: 170; }
@@ -134,6 +134,12 @@
     filter: grayscale(1) brightness(0.6);
     opacity: 0.75;
   }
+  /* Πίνακας Μετρήσεων (δεξιά κουρτίνα) */
+  .measure-box { position: absolute; left: calc(82vw + 9vw); transform: translateX(-50%); top: 54px; width: calc(18vw - 16px); z-index: 40; background: rgba(0,0,0,0.45); color: #fff; border: 1px solid rgba(255,255,255,0.25); border-radius: 8px; padding: 6px 8px; display: none; }
+  .measure-box .mb-title { font-size: 14px; margin-bottom: 4px; color: #ffd27a; text-align: center; font-family: 'Georgia', serif; }
+  .measure-box table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .measure-box th, .measure-box td { border-bottom: 1px solid rgba(255,255,255,0.2); padding: 2px 4px; text-align: right; }
+  .measure-box th:first-child, .measure-box td:first-child { text-align: center; }
 </style>
 </head>
 <body>
@@ -159,6 +165,14 @@
     </div>
 
     <div class="clock" id="clock">t = 0.00 s</div>
+
+    <div class="measure-box" id="measureBox" style="display:none;">
+      <div class="mb-title">Μετρήσεις</div>
+      <table class="mb-table">
+        <thead><tr><th>α/α</th><th>t (s)</th><th>x (m)</th></tr></thead>
+        <tbody id="measureTBody"></tbody>
+      </table>
+    </div>
 
     <div class="laws"><h4>Νόμοι</h4><ol id="lawsList"></ol></div>
     <canvas id="xtCanvas" width="260" height="140"></canvas>
@@ -249,23 +263,32 @@
   const paramWEl = document.getElementById('paramW');
   const paramPhiEl = document.getElementById('paramPhi');
   const lawsEl = document.querySelector('.laws');
+  const measureBox = document.getElementById('measureBox');
+  const measureTBody = document.getElementById('measureTBody');
 
   // Timeline – οι ατάκες σου
   const thoughtScript = [
     { kind:'bubble', at: 1.0,  viewer:1, duration:3, text:'η κίνηση είναι ευθύγραμμη παλινδρομική!' },
-    { kind:'bubble', at: 3.8,  viewer:3, duration:3, text:'… και επαναλαμβανόμενη-περιοδική, άρα ταλάντωση!' },
-    { kind:'bubble', at: 6.6,  viewer:0, duration:3, text:'Μήπως είναι Απλή Αρμονική Ταλάντωση;' },
-    { kind:'bubble', at: 9.4,  viewer:4, duration:3, text:'… αν είναι Α.Α.Τ. τότε οι τιμές που μετράμε πρέπει να επαληθεύουν την χ=Αημ(ωt+φ₀)!' },
-    { kind:'bubble', at: 12.2, viewer:2, duration:3, text:'Να κάνουμε διάγραμμα x–t, αυτό θα δείξει!' },
-    { kind:'graph',  at: 15.0 },
-    { kind:'bubble', at: 17.5, viewer:1, duration:3, text:'Πραγματικά είναι ΑΑΤ με Α=… Τ=… ω=… και φ₀=… — ένα το κρατούμενο!' },
-    { kind:'law',    at: 21.0, lawText: 'x(t) = A·ημ(ωt + φ₀)' },
-    { kind:'law',    at: 23.0, lawText: 'v(t) = ωA·συν(ωt + φ₀)' },
-    { kind:'law',    at: 25.0, lawText: 'a(t) = −ω²A·ημ(ωt + φ₀)' },
-    { kind:'law',    at: 27.0, lawText: 'a = −ω²·x' },
-    { kind:'close',  at: 30.0 }
+    { kind:'bubble', at: 3.6,  viewer:3, duration:3, text:'… και επαναλαμβανόμενη-περιοδική, άρα ταλάντωση!' },
+    { kind:'bubble', at: 6.2,  viewer:0, duration:3, text:'Μήπως είναι Απλή Αρμονική Ταλάντωση;' },
+    { kind:'bubble', at: 8.8,  viewer:4, duration:3, text:'… αν είναι Α.Α.Τ. τότε οι τιμές που μετράμε πρέπει να επαληθεύουν την χ=Αημ(ωt+φ₀)!' },
+    { kind:'bubble', at: 11.4, viewer:2, duration:2.5, text:'Να κάνουμε διάγραμμα x–t, αυτό θα δείξει!' },
+    { kind:'graph',  at: 14.5 },
+    { kind:'bubble', at: 16.8, viewer:1, duration:3, text:'Πραγματικά είναι ΑΑΤ με Α=[τιμή]  ω=[τιμή] και φ₀=[τιμή] — ένα το κρατούμενο!' },
+
+    { kind:'bubble', at: 20.6, viewer:0, duration:2.5, text:'Επομένως η ταχύτητα δίνεται από τον νόμο υ=ωA·συν(ωt+φ₀)!' },
+    { kind:'law',    at: 22.0, lawText: 'v(t) = ωA·συν(ωt + φ₀)' },
+
+    { kind:'bubble', at: 23.8, viewer:4, duration:2.5, text:'…και η επιτάχυνση από τον τύπο a = −ω²A·ημ(ωt+φ₀)!' },
+    { kind:'law',    at: 25.2, lawText: 'a(t) = −ω²A·ημ(ωt + φ₀)' },
+
+    { kind:'bubble', at: 26.8, viewer:2, duration:2.5, text:'Αλλά η σχέση (1) περιέχεται στην (3), δηλαδή a = −ω²·x!' },
+    { kind:'law',    at: 28.2, lawText: 'a = −ω²·x' },
+
+    { kind:'close',  at: 31.2 }
   ];
   let nextThoughtIdx = 0; let isBubbleActive = false; let bubbleAutoTimer = null;
+  let measureRowIdx = 0;
 
   // Μετρήσεις – sample ελέγχου (αν αργότερα επαναφέρουμε πίνακα)
   let lastSampleObsTime = -Infinity; const sampleInterval = 0.25; // s
@@ -294,14 +317,49 @@
     }
   }
 
+  function positionRightPanel(){
+    const curtainLeft = stage.clientWidth * 0.82; const curtainW = stage.clientWidth * 0.18; const centerX = curtainLeft + curtainW/2;
+    if (clockEl){ clockEl.style.left = centerX + 'px'; }
+    if (measureBox){
+      measureBox.style.left = centerX + 'px';
+      const topAfterClock = 10 + 34; // clock top + approx height
+      measureBox.style.top = (topAfterClock + 10) + 'px';
+      measureBox.style.width = Math.max(160, curtainW - 16) + 'px';
+    }
+    if (xtCanvas){
+      const mbottom = measureBox ? (parseFloat(measureBox.style.top)||54) + (measureBox.offsetHeight||140) : 200;
+      const xTop = mbottom + 10;
+      xtCanvas.style.left = centerX + 'px';
+      xtCanvas.style.top  = xTop + 'px';
+      const w = Math.max(160, (measureBox ? measureBox.offsetWidth : (curtainW - 16)));
+      const h = Math.max(120, Math.min(240, stage.clientHeight * 0.22));
+      xtCanvas.style.width = w + 'px';
+      xtCanvas.style.height = h + 'px';
+      // Sync canvas internal size to CSS size for crisp lines
+      xtCanvas.width = Math.floor(w);
+      xtCanvas.height = Math.floor(h);
+      xtCanvas.style.transform = 'translateX(-50%)';
+    }
+  }
+  }
+
   // Γεωμετρία ελατηρίου / skater
   let L0_px; let skaterWidthPx; let hookOffsetPx;
   function anchorX(){ return stage.clientWidth * 0.18; }
 
-  function logMeasurement(tObs, xMeters){ if (!obsStarted) return; if (mode==='pause') return; if (tObs - lastSampleObsTime < sampleInterval) return; lastSampleObsTime = tObs; /* append rows αν χρειαστεί */ }
+  function logMeasurement(tObs, xMeters){
+    if (!obsStarted) return; if (mode==='pause') return; if (tObs - lastSampleObsTime < sampleInterval) return; lastSampleObsTime = tObs;
+    if (!measureTBody) return;
+    const tr = document.createElement('tr');
+    const c1 = document.createElement('td'); c1.textContent = (++measureRowIdx).toString();
+    const c2 = document.createElement('td'); c2.textContent = tObs.toFixed(2);
+    const c3 = document.createElement('td'); c3.textContent = xMeters.toFixed(2);
+    tr.appendChild(c1); tr.appendChild(c2); tr.appendChild(c3);
+    measureTBody.appendChild(tr);
+  }
 
   function animate(now){
-    const realDt = (now - lastFrame)/1000; lastFrame = now;
+    const realDt = (now - lastFrame)/1000; lastFrame = now; positionRightPanel();
     updateRuler();
     const tPhys = (now - t0)/1000;
     if (!obsStarted){ playbackTime = tPhys; } else { if (mode==='run') playbackTime += realDt; else if (mode==='slow') playbackTime += realDt * slowFactor; }
@@ -332,9 +390,12 @@
     const viewerEl = document.querySelector(`.viewer[data-idx="${viewerIdx}"]`); if (!viewerEl || !bubbleEl) return;
     const txtNode = bubbleEl.querySelector('.text'); if (txtNode) txtNode.textContent = text || '';
     const vRect = viewerEl.getBoundingClientRect(); const sRect = stage.getBoundingClientRect();
-    bubbleEl.style.left = (vRect.left + vRect.width/2 - sRect.left) + 'px';
+    const extraX = (viewerIdx - 2) * 90 + 60; // διασπορά δεξιότερα
+    let leftPx = (vRect.left + vRect.width/2 - sRect.left) + extraX;
+    leftPx = Math.min(stage.clientWidth - 40, Math.max(40, leftPx));
+    bubbleEl.style.left = leftPx + 'px';
     bubbleEl.style.top  = (vRect.top  - sRect.top - 70) + 'px';
-    bubbleEl.style.display = 'block'; void bubbleEl.offsetWidth; bubbleEl.classList.add('active'); isBubbleActive = true; setMode('pause');
+    bubbleEl.style.display = 'block'; void bubbleEl.offsetWidth; bubbleEl.classList.add('active'); isBubbleActive = true; setMode('slow');
     if (bubbleAutoTimer) { clearTimeout(bubbleAutoTimer); bubbleAutoTimer = null; }
     bubbleAutoTimer = setTimeout(()=>{ resumeFromBubble('run'); }, Math.max(0.5, durationSecs) * 1000);
   }
@@ -360,14 +421,43 @@
   function showXTGraph(){
     if (!xtCanvas) return; const ctx = xtCanvas.getContext('2d'); const W = xtCanvas.width, H = xtCanvas.height; ctx.clearRect(0,0,W,H);
     // άξονες
-    ctx.strokeStyle = 'rgba(255,255,255,0.5)'; ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(30, H/2); ctx.lineTo(W-10, H/2); ctx.stroke(); // t-axis
-    ctx.beginPath(); ctx.moveTo(30, 10);  ctx.lineTo(30,  H-10); ctx.stroke(); // x-axis
+    ctx.strokeStyle = 'rgba(255,255,255,0.6)'; ctx.lineWidth = 1;
+    // t-axis
+    ctx.beginPath(); ctx.moveTo(30, H/2); ctx.lineTo(W-10, H/2); ctx.stroke();
+    // x-axis
+    ctx.beginPath(); ctx.moveTo(30, 10); ctx.lineTo(30, H-10); ctx.stroke();
     // labels
     ctx.fillStyle = '#ffffff'; ctx.font = '12px Inter,system-ui';
     ctx.fillText('x (m)', 6, 16);
     ctx.fillText('t (s)', W-40, H/2 - 6);
-    ctx.fillText(`A = ${A_m.toFixed(2)} m`, 40, 16);
+
+    const Amp = A_m; const scaleY = (H/2 - 18) / Amp;
+    // οριζ. γραμμές +A και -A με αριθμό μόνο
+    ctx.setLineDash([4,3]); ctx.strokeStyle = 'rgba(255,255,255,0.35)';
+    // +A
+    ctx.beginPath(); ctx.moveTo(30, H/2 - Amp*scaleY); ctx.lineTo(W-10, H/2 - Amp*scaleY); ctx.stroke();
+    // -A
+    ctx.beginPath(); ctx.moveTo(30, H/2 + Amp*scaleY); ctx.lineTo(W-10, H/2 + Amp*scaleY); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillText(Amp.toFixed(2), 34, H/2 - Amp*scaleY - 4);
+    ctx.fillText((-Amp).toFixed(2), 38, H/2 + Amp*scaleY + 12);
+
+    // κάθετος δείκτης στο T με αριθμό μόνο
+    const xT = 30 + (W-40);
+    ctx.setLineDash([2,2]); ctx.strokeStyle = 'rgba(255,255,255,0.45)';
+    ctx.beginPath(); ctx.moveTo(xT, 10); ctx.lineTo(xT, H-10); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.textAlign = 'center';
+    ctx.fillText(T.toFixed(2), xT, H/2 + 18);
+    ctx.textAlign = 'left';
+
+    // καμπύλη x(t) σε ένα Τ
+    ctx.strokeStyle = '#ffd27a'; ctx.lineWidth = 2; ctx.beginPath();
+    const N = 240; for (let i=0;i<=N;i++){ const tloc = (i/N) * T; const x = Amp * Math.sin(omega * (tloc + obsStartPlaybackOffset)); const xx = 30 + (W-40) * (tloc / T); const yy = H/2 - x * scaleY; if (i===0) ctx.moveTo(xx,yy); else ctx.lineTo(xx,yy); }
+    ctx.stroke();
+
+    xtCanvas.style.display = 'block';
+  } m`, 40, 16);
     ctx.fillText(`T = ${T.toFixed(2)} s`, 140, 16);
     // καμπύλη x(t)
     const Amp = A_m; const scaleY = (H/2 - 18) / Amp; ctx.strokeStyle = '#ffd27a'; ctx.lineWidth = 2; ctx.beginPath();
@@ -393,6 +483,12 @@
   function beginObservationAfterCountdown(){
     stage.classList.add('open');
     if (!obsStarted){ obsStarted = true; obsStartPlaybackOffset = playbackTime; }
+    if (clockEl){ clockEl.style.display = 'block'; }
+    if (lawsEl){  lawsEl.style.display  = 'block'; }
+    if (measureBox){ measureBox.style.display = 'block'; }
+    if (markerEl){ markerEl.style.opacity = '1'; }
+    positionRightPanel();
+  }
     if (clockEl){ clockEl.style.display = 'block'; }
     if (lawsEl){  lawsEl.style.display  = 'block'; }
     if (markerEl){ markerEl.style.opacity = '1'; }
