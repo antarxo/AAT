@@ -20,7 +20,6 @@
   .curtain-side.left  { left:0;  background:linear-gradient(to right,#300000,#1a0000); box-shadow: inset -6px 0 10px rgba(0,0,0,0.6); }
   .curtain-side.right { right:0; background:linear-gradient(to left, #300000,#1a0000); box-shadow: inset  6px 0 10px rgba(0,0,0,0.6); }
 
-  /* Άνοιγμα σκηνής: η πάνω ανεβαίνει +30px */
   .open .curtain-upper { transform: translateY(calc(-100% - 30px)); }
   .open .curtain-lower { transform: translateY(100%); }
 
@@ -42,12 +41,14 @@
   .signboard h2 { font-size:20px; margin:2px 0 0 0; }
   .signboard h3 { font-size:18px; margin:2px 0 0 0; color:#ffd27a; }
 
-  /* >>> overlays ΠΑΝΩ από το κοινό (z-index >150) <<< */
+  /* overlays ΠΑΝΩ από το κοινό (z-index >150) */
   .clock       { position:absolute; top:10px; left:calc(82vw + 9vw); transform:translateX(-50%); background:rgba(0,0,0,0.5); color:#fff; padding:6px 10px; font-size:16px; font-family:"Courier New",monospace; border-radius:6px; border:1px solid rgba(255,255,255,0.3); z-index:165; pointer-events:none; display:none; }
   .measure-box { position:absolute; left:calc(82vw + 9vw); transform:translateX(-50%); top:54px; width:calc(18vw - 16px); z-index:162; background:rgba(0,0,0,0.45); color:#fff; border:1px solid rgba(255,255,255,0.25); border-radius:8px; padding:6px 8px; display:none; height:50vh; overflow-y:auto; }
   .laws        { position:absolute; left:2%; top:10px; width:16%; max-height:30vh; overflow:auto; background:rgba(20,0,0,0.6); color:#fff; border:1px solid rgba(255,200,200,0.3); border-radius:8px; padding:6px 8px; font-size:16px; line-height:1.5; z-index:160; display:none; }
   .params-box  { position:absolute; top:8px; z-index:168; background:rgba(0,0,0,0.5); color:#fff; border:1px solid rgba(255,255,255,0.25); border-radius:8px; padding:6px 10px; font-size:12px; line-height:1.4; display:none; }
-  #xtCanvas    { position:absolute; display:none; background:rgba(0,0,0,0.2); border:1px solid rgba(255,255,255,0.2); border-radius:6px; z-index:161; pointer-events:none; }
+
+  /* Γράφημα x–t (το έκανα να «γεμίζει» το υπόλοιπο) */
+  #xtCanvas    { position:absolute; display:none; background:rgba(0,0,0,0.2); border:1px solid rgba(255,255,255,0.2); border-radius:6px; z-index:166; pointer-events:none; }
 
   .laws h4 { margin:0 0 4px 0; font-size:12px; color:#ff8080; font-family:'Georgia',serif; text-align:center; }
   .measure-box .mb-title { font-size:14px; margin-bottom:4px; color:#ffd27a; text-align:center; font-family:'Georgia',serif; }
@@ -97,7 +98,6 @@
   .viewers { position:absolute; bottom:0; width:100%; display:flex; justify-content:center; gap:3vw; z-index:1; padding-bottom:12px; }
   .viewer { width:60px; height:100px; background:url('https://upload.wikimedia.org/wikipedia/commons/f/f9/Silhouette_icon.svg') no-repeat center/contain; filter:grayscale(1) brightness(0.6); opacity:0.75; }
 
-  /* Responsive (ίδια λογική) */
   @media (max-width: 600px) {
     .actor { bottom:calc(32vh + 40px); left:50%; width:100px; height:66px; transform:translate(-50%,0); }
     .spring{ bottom:calc(32vh + 7px); left:10%; height:66px; width:auto; }
@@ -128,7 +128,7 @@
       <h3>Εμηχ = 347 J</h3>
     </div>
 
-    <!-- A, ω, φ0 (πάνω-δεξιά της ΚΕΝΤΡΙΚΗΣ) -->
+    <!-- A, ω, φ0 -->
     <div class="params-box" id="paramsBox">
       <div class="param" id="paramA"></div>
       <div class="param" id="paramW"></div>
@@ -153,7 +153,7 @@
     <div class="ruler" id="ruler"></div>
     <div class="marker" id="marker"><div class="marker-line"></div><div class="marker-tip"></div></div>
 
-    <!-- Bubbles -->
+    <!-- Bubble -->
     <div class="thought-bubble" id="bubble0"><div class="text"></div><div class="checkmark">✓</div><div class="tail"></div></div>
 
     <!-- Κοντρόλς & Ρυθμίσεις -->
@@ -271,7 +271,7 @@
   slSlow.addEventListener('input',  ()=>{ slowFactor = parseFloat(slSlow.value);       valSlow.textContent = `${slowFactor.toFixed(2)}×`; });
   btnSettings.addEventListener('click', ()=>{ settingsPanel.style.display = (settingsPanel.style.display==='block'?'none':'block'); });
 
-  /* Timeline (σε πολλαπλάσια Τ) */
+  /* Timeline */
   const thoughtScript = [
     { kind:'bubble', atT: 1.1, viewer:1, text:'η κίνηση είναι ευθύγραμμη παλινδρομική!' },
     { kind:'bubble', atT: 2.1, viewer:3, text:'… και επαναλαμβανόμενη-περιοδική, άρα ταλάντωση!' },
@@ -297,9 +297,9 @@
   let playbackTime = 0, mode = 'run', obsStarted = false, obsStartPlaybackOffset = 0;
 
   /* Μετρήσεις */
-  let lastSampleObsTime = -Infinity; const sampleInterval = 0.25; // s
+  let lastSampleObsTime = -Infinity; const sampleInterval = 0.25;
 
-  /* Ruler: από −7 έως +7 m */
+  /* Χάρακας −7…+7 m */
   let lastRulerW = 0;
   function updateRuler(){
     const baseLeft = stage.clientWidth * 0.18;
@@ -320,34 +320,41 @@
     }
   }
 
-  /* Δεξιά κουρτίνα layout + params box */
+  /* Layout δεξιάς κουρτίνας + γράφημα */
   function positionRightPanel(){
     const W = stage.clientWidth, H = stage.clientHeight;
     const curtainLeft = W * 0.82, curtainW = W * 0.18, centerX = curtainLeft + curtainW/2;
+
     if (clockEl){ clockEl.style.left = centerX + 'px'; }
+
     if (measureBox){
       measureBox.style.left = centerX + 'px';
       const topAfterClock = 10 + 34;
-      measureBox.style.top = (topAfterClock + 10) + 'px';
+      const mTop = (topAfterClock + 10);
+      measureBox.style.top = mTop + 'px';
       const halfH = Math.floor(H * 0.5);
       measureBox.style.height = halfH + 'px';
       measureBox.style.overflowY = 'auto';
       measureBox.style.width = Math.max(160, curtainW - 16) + 'px';
     }
+
     if (xtCanvas){
-      const mbottom = measureBox ? (parseFloat(measureBox.style.top)||54) + (parseFloat(measureBox.style.height)||Math.floor(H*0.5)) : 200;
-      const xTop = mbottom + 8;
+      // ΧΡΗΣΙΜΟΠΟΙΩ ΠΡΑΓΜΑΤΙΚΕΣ ΔΙΑΣΤΑΣΕΙΣ ΤΟΥ measureBox για να μην ξεχειλίζει
+      const mTop = measureBox.offsetTop || 54;
+      const mHeight = measureBox.offsetHeight || Math.floor(H*0.5);
+      const xTop = mTop + mHeight + 8;
+      const availH = Math.max(120, H - xTop - 8);
+
       xtCanvas.style.left = centerX + 'px';
       xtCanvas.style.top  = xTop + 'px';
       const w = Math.max(160, (measureBox ? measureBox.offsetWidth : (curtainW - 16)));
-      const halfH = Math.floor(H * 0.5);
-      const h = Math.max(120, halfH - 16);
       xtCanvas.style.width = w + 'px';
-      xtCanvas.style.height = h + 'px';
-      xtCanvas.width = Math.floor(w);
-      xtCanvas.height = Math.floor(h);
+      xtCanvas.style.height = availH + 'px';
+      xtCanvas.width  = Math.floor(w);
+      xtCanvas.height = Math.floor(availH);
       xtCanvas.style.transform = 'translateX(-50%)';
     }
+
     if (paramsBoxEl){
       const centerLeft = W * 0.18, centerW = W * 0.64;
       const rightEdge = centerLeft + centerW - 10;
@@ -357,7 +364,7 @@
   }
   window.addEventListener('resize', positionRightPanel);
 
-  function anchorX(){ return stage.clientWidth * 0.18; } // δεξί άκρο αριστερής κουρτίνας
+  function anchorX(){ return stage.clientWidth * 0.18; }
 
   function logMeasurement(tObs, xMeters){
     if (!obsStarted) return; if (mode==='pause') return;
@@ -377,7 +384,6 @@
     positionRightPanel();
     updateRuler();
 
-    // χρόνος/κατάσταση
     const tPhys = (now - t0)/1000;
     if (!obsStarted){
       playbackTime = tPhys;
@@ -388,7 +394,6 @@
     let tObs = 0; if (obsStarted){ tObs = playbackTime - obsStartPlaybackOffset; }
     clockEl.textContent = 't = ' + tObs.toFixed(2) + ' s';
 
-    // timeline με κλίμακα + shift πρώτου bubble
     if (obsStarted && !isBubbleActive && nextThoughtIdx < thoughtScript.length){
       const th = thoughtScript[nextThoughtIdx];
       const shiftMul = (firstThoughtMul - DEFAULT_FIRST_MUL);
@@ -397,13 +402,11 @@
       if (tObs >= eventAtSec){ handleTimelineEvent(th); nextThoughtIdx += 1; }
     }
 
-    // μέτρηση γεωμετρίας εικόνων
     const springRect = springEl.getBoundingClientRect();
     const skRect = actor.getBoundingClientRect();
     if (!L0_px && springRect.width > 0) { L0_px = springRect.width; }
     if (skRect.width > 0) { skaterWidthPx = skRect.width; hookOffsetPx = skaterWidthPx / 2; }
 
-    // δέσιμο ελατηρίου – skater
     if (L0_px){
       const ax = anchorX();
       const centerX = stage.clientWidth / 2;
@@ -520,7 +523,7 @@
   function closeCurtains(){
     stage.classList.remove('open');
     stage.classList.add('closed-show-actors');
-    markerEl.style.opacity = '0';  // δείκτης κρυφός
+    markerEl.style.opacity = '0';
     setMode('run');
   }
 
@@ -574,7 +577,6 @@
     if (miss.length) console.error('Λείπουν στοιχεία:', miss.join(', ')); else console.log('Self-check OK');
   })();
 
-  // go
   requestAnimationFrame(animate);
 </script>
 </body>
