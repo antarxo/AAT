@@ -10,8 +10,8 @@
 
   /* Κουρτίνες */
   .curtain-top, .curtain-upper, .curtain-lower, .curtain-side { position: absolute; z-index: 30; transition: transform 1.2s cubic-bezier(.2,.9,.2,1), opacity 1s; }
-  .curtain-top { top: 0; left: 0; width: 100%; height: 28%; background: linear-gradient(to bottom, #230000, #180000); box-shadow: 0 5px 18px rgba(0,0,0,0.8); }
-  .curtain-upper { top: 28%; left: 0; width: 100%; height: 40%; background: linear-gradient(to bottom, #8b0000, #400000); transform-origin: top; }
+  .curtain-top { top: 0; left: 0; width: 100%; height: calc(28% - 30px); background: linear-gradient(to bottom, #230000, #180000); box-shadow: 0 5px 18px rgba(0,0,0,0.8); }
+  .curtain-upper { top: calc(28% - 30px); left: 0; width: 100%; height: 40%; background: linear-gradient(to bottom, #8b0000, #400000); transform-origin: top; }
   .curtain-lower { bottom: 0; left: 0; width: 100%; height: 32%; background: linear-gradient(to top, #7a0000, #300000); transform-origin: bottom; }
   .curtain-side { top: 0; width: 18%; height: 100%; }
   .curtain-side.left  { left: 0;  background: linear-gradient(to right, #300000, #1a0000);  box-shadow: inset -6px 0 10px rgba(0,0,0,0.6); }
@@ -35,10 +35,10 @@
   .audience { position: absolute; left: 18%; bottom: 0; width: 64%; height: auto; z-index: 150; pointer-events: none; display: block; }
 
   /* Ταμπέλα */
-  .signboard { position: absolute; top: -6px; left: 50%; transform: translateX(-50%); background: transparent; border: none; border-radius: 10px; padding: 14px 22px; color: #ddd; font-family: 'Georgia', serif; text-align: center; z-index: 40; line-height: 1.6; }
+  .signboard { position: absolute; top: -6px; left: 50%; transform: translateX(-50%); background: transparent; border: none; border-radius: 10px; padding: 14px 22px; color: #ddd; font-family: 'Georgia', serif; text-align: center; z-index: 40; line-height: 1.35; }
   .signboard h1 { font-size: 32px; margin: 0; color: #fff; }
-  .signboard h2 { font-size: 20px; margin: 4px 0 0 0; }
-  .signboard h3 { font-size: 18px; margin: 4px 0 0 0; color: #ffd27a; }
+  .signboard h2 { font-size: 20px; margin: 2px 0 0 0; }
+  .signboard h3 { font-size: 18px; margin: 2px 0 0 0; color: #ffd27a; }
 
   /* Ρολόι δεξιά επάνω */
   .clock { position: absolute; top: 10px; left: calc(82vw + 9vw); transform: translateX(-50%); background: rgba(0,0,0,0.5); color: #fff; padding: 6px 10px; font-size: 16px; font-family: "Courier New", monospace; border-radius: 6px; border: 1px solid rgba(255,255,255,0.3); z-index: 40; pointer-events: none; display: none; }
@@ -135,7 +135,7 @@
     opacity: 0.75;
   }
   /* Πίνακας Μετρήσεων (δεξιά κουρτίνα) */
-  .measure-box { position: absolute; left: calc(82vw + 9vw); transform: translateX(-50%); top: 54px; width: calc(18vw - 16px); z-index: 40; background: rgba(0,0,0,0.45); color: #fff; border: 1px solid rgba(255,255,255,0.25); border-radius: 8px; padding: 6px 8px; display: none; }
+  .measure-box { position: absolute; left: calc(82vw + 9vw); transform: translateX(-50%); top: 54px; width: calc(18vw - 16px); z-index: 40; background: rgba(0,0,0,0.45); color: #fff; border: 1px solid rgba(255,255,255,0.25); border-radius: 8px; padding: 6px 8px; display: none; height: 50vh; overflow-y: auto; }
   .measure-box .mb-title { font-size: 14px; margin-bottom: 4px; color: #ffd27a; text-align: center; font-family: 'Georgia', serif; }
   .measure-box table { width: 100%; border-collapse: collapse; font-size: 12px; }
   .measure-box th, .measure-box td { border-bottom: 1px solid rgba(255,255,255,0.2); padding: 2px 4px; text-align: right; }
@@ -158,7 +158,6 @@
     </div>
 
     <div class="params-box" id="paramsBox">
-      <h4>Παράμετροι</h4>
       <div class="param" id="paramA"></div>
       <div class="param" id="paramW"></div>
       <div class="param" id="paramPhi"></div>
@@ -274,7 +273,8 @@
     { kind:'bubble', at: 8.8,  viewer:4, duration:3, text:'… αν είναι Α.Α.Τ. τότε οι τιμές που μετράμε πρέπει να επαληθεύουν την χ=Αημ(ωt+φ₀)!' },
     { kind:'bubble', at: 11.4, viewer:2, duration:2.5, text:'Να κάνουμε διάγραμμα x–t, αυτό θα δείξει!' },
     { kind:'graph',  at: 14.5 },
-    { kind:'bubble', at: 16.8, viewer:1, duration:3, text:'Πραγματικά είναι ΑΑΤ με Α=[τιμή]  ω=[τιμή] και φ₀=[τιμή] — ένα το κρατούμενο!' },
+    { kind:'bubble', at: 16.8, viewer:1, duration:3, dynamic:'params' },
+    { kind:'law',    at: 18.4, lawText: 'x(t) = A·ημ(ωt + φ₀)' },
 
     { kind:'bubble', at: 20.6, viewer:0, duration:2.5, text:'Επομένως η ταχύτητα δίνεται από τον νόμο υ=ωA·συν(ωt+φ₀)!' },
     { kind:'law',    at: 22.0, lawText: 'v(t) = ωA·συν(ωt + φ₀)' },
@@ -324,6 +324,30 @@
       measureBox.style.left = centerX + 'px';
       const topAfterClock = 10 + 34; // clock top + approx height
       measureBox.style.top = (topAfterClock + 10) + 'px';
+      const halfH = Math.floor(stage.clientHeight * 0.5);
+      measureBox.style.height = halfH + 'px';
+      measureBox.style.overflowY = 'auto';
+      measureBox.style.width = Math.max(160, curtainW - 16) + 'px';
+    }
+    if (xtCanvas){
+      const mbottom = measureBox ? (parseFloat(measureBox.style.top)||54) + (parseFloat(measureBox.style.height)||Math.floor(stage.clientHeight*0.5)) : 200;
+      const xTop = mbottom + 8;
+      xtCanvas.style.left = centerX + 'px';
+      xtCanvas.style.top  = xTop + 'px';
+      const w = Math.max(160, (measureBox ? measureBox.offsetWidth : (curtainW - 16)));
+      const halfH = Math.floor(stage.clientHeight * 0.5);
+      const h = Math.max(120, halfH - 16);
+      xtCanvas.style.width = w + 'px';
+      xtCanvas.style.height = h + 'px';
+      xtCanvas.width = Math.floor(w);
+      xtCanvas.height = Math.floor(h);
+      xtCanvas.style.transform = 'translateX(-50%)';
+    }
+  }
+    if (measureBox){
+      measureBox.style.left = centerX + 'px';
+      const topAfterClock = 10 + 34; // clock top + approx height
+      measureBox.style.top = (topAfterClock + 10) + 'px';
       measureBox.style.width = Math.max(160, curtainW - 16) + 'px';
     }
     if (xtCanvas){
@@ -355,6 +379,8 @@
     const c3 = document.createElement('td'); c3.textContent = xMeters.toFixed(2);
     tr.appendChild(c1); tr.appendChild(c2); tr.appendChild(c3);
     measureTBody.appendChild(tr);
+    try { tr.scrollIntoView({block:'end'}); } catch(e) {}
+    try { if (measureBox) measureBox.scrollTop = measureBox.scrollHeight; } catch(e) {}
   }
 
   function animate(now){
@@ -462,7 +488,18 @@
   function closeCurtains(){ stage.classList.remove('open'); stage.classList.add('closed-show-actors'); if (markerEl){ markerEl.style.opacity = '0'; } setMode('run'); }
 
   function handleTimelineEvent(th){
-    if (th.kind === 'bubble'){ showThoughtForViewer(th.viewer, th.text, th.duration ?? 3); }
+    if (th.kind === 'bubble'){
+      let text = th.text;
+      if (th.dynamic === 'params'){
+        const phi0deg = ((omega * obsStartPlaybackOffset) * 180/Math.PI + 360) % 360;
+        text = `Πραγματικά είναι ΑΑΤ με Α=${A_m.toFixed(2)}  ω=${omega.toFixed(3)} και φ₀=${phi0deg.toFixed(1)}° — ένα το κρατούμενο!`;
+      }
+      showThoughtForViewer(th.viewer, text, th.duration ?? 3);
+    }
+    else if (th.kind === 'graph'){ showXTGraph(); showCurtainParams(); }
+    else if (th.kind === 'law'){ addLaw(th.lawText); }
+    else if (th.kind === 'close'){ closeCurtains(); }
+  }
     else if (th.kind === 'graph'){ showXTGraph(); showCurtainParams(); }
     else if (th.kind === 'law'){ addLaw(th.lawText); }
     else if (th.kind === 'close'){ closeCurtains(); }
