@@ -20,7 +20,9 @@
     background:url('courtin.png') center top/cover no-repeat, linear-gradient(to bottom,#8b0000,#400000);
     transform-origin:top; z-index:160
   }
-  .open .curtain-upper{ transform: translateY(calc(-100% - 60px)); }
+  /* ↓ Μειώσαμε την άνοδο κατά 30px */
+  .open .curtain-upper{ transform: translateY(calc(-100% - 30px)); }
+
   .curtain-side{top:0;height:100%;width:18%;z-index:160}
   .curtain-side.left{left:0;background:linear-gradient(to right,#300000,#1a0000);box-shadow:inset -6px 0 10px rgba(0,0,0,.6)}
   .curtain-side.right{right:0;background:linear-gradient(to left,#300000,#1a0000);box-shadow:inset 6px 0 10px rgba(0,0,0,.6)}
@@ -36,8 +38,8 @@
   /* Κοινό */
   .audience{
     position:absolute;left:18%;bottom:0;width:64%;
-    height:calc(32vh - 8px); /* μέχρι τη γραμμή του χάρακα */
-    object-fit:contain;       /* πλήρως ορατό */
+    height:calc(32vh - 8px);
+    object-fit:contain;
     object-position:bottom center;
     z-index:158;pointer-events:none;filter:contrast(1.05) brightness(.95)
   }
@@ -282,7 +284,7 @@ const i18n = {
   en: { }
 };
 let LANG='gr', firstLawShown=false;
-const langSwitch = document.getElementById('langSwitch'); // << χρειάζεται
+const langSwitch = document.getElementById('langSwitch');
 function setLang(lang){
   LANG=lang;
   document.documentElement.lang = (lang==='en'?'en':'el');
@@ -384,8 +386,8 @@ const thoughtScriptBase=[
 ];
 let thoughtScript=[...thoughtScriptBase];
 let nextThoughtIdx=0;
-let isBubbleActive=false;   // << μοναδική δήλωση
-let bubbleAutoTimer=null;   // << μοναδική δήλωση
+let isBubbleActive=false;
+let bubbleAutoTimer=null;
 let measureRowIdx=0;
 
 /* Ρολόι & play state */
@@ -417,7 +419,7 @@ function updateRuler(){
 }
 
 /* Δεξιά κουρτίνα & x–t γράφημα */
-let graphEnabled=false, uXT=null, pendingGraph=false;  // << μοναδική δήλωση uXT εδώ
+let graphEnabled=false, uXT=null, pendingGraph=false;
 function positionRightPanel(){
   const W=stage.clientWidth, H=stage.clientHeight;
   const curtainLeft=W*0.82, curtainW=W*0.18, centerX=curtainLeft+curtainW/2;
@@ -751,6 +753,11 @@ function drawAX(c){
   const X2=w/2 + x2*gainX, Y2=h/2 - a2*gainA;
   ctx.moveTo(X1,Y1); ctx.lineTo(X2,Y2); ctx.stroke();
 }
+
+/* NEW: ensure* για να εμφανιστούν τα mini γραφήματα όταν πρέπει */
+function ensureVelocityChart(){ if(!vCan){ vCan = makeLawCanvas('lawV'); } drawV(vCan); positionLawCharts(); }
+function ensureAccelerationChart(){ if(!aCan){ aCan = makeLawCanvas('lawA'); } drawA(aCan); positionLawCharts(); }
+function ensureAxChart(){ if(!axCan){ axCan = makeLawCanvas('lawAX'); } drawAX(axCan); positionLawCharts(); }
 
 /* Κλείσιμο αυλαίας + overlay Πράξης 2 */
 function closeCurtainsSequence(){
