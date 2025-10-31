@@ -81,7 +81,6 @@
     font-size:18px; line-height:1.5;
     padding:10px 12px 12px;
     border:2px solid transparent; border-radius:10px;
-    /* τελείες + παύλες: dash 6px, gap 4px, dot 2px, gap 4px */
     border-image: repeating-linear-gradient(90deg,
       rgba(0,0,0,0.6) 0 6px,
       transparent     6px 10px,
@@ -294,7 +293,7 @@
   slSlow.addEventListener('input',  ()=>{ slowFactor = parseFloat(slSlow.value);       valSlow.textContent = `${slowFactor.toFixed(2)}×`; });
   btnSettings.addEventListener('click', ()=>{ settingsPanel.style.display = (settingsPanel.style.display==='block'?'none':'block'); });
 
-  /* Timeline (θεατές 0..4 + μεγαλύτερο lift) */
+  /* Timeline */
   const thoughtScript = [
     { kind:'bubble', atT: 1.1, viewer:1, text:'η κίνηση είναι ευθύγραμμη παλινδρομική!', yOffset:120 },
     { kind:'bubble', atT: 2.1, viewer:2, text:'… και επαναλαμβανόμενη-περιοδική, άρα ταλάντωση!', yOffset:130 },
@@ -407,6 +406,12 @@
   /* Γεωμετρία ελατηρίου / skater (δέσιμο) */
   let L0_px; let skaterWidthPx; let hookOffsetPx;
 
+  function setMode(newMode){
+    mode = newMode;
+    btnSlow.classList.toggle('active', mode==='slow');
+    btnPlay.classList.toggle('active', mode==='run');
+  }
+
   function animate(now){
     const realDt = (now - lastFrame)/1000; lastFrame = now;
     positionRightPanel();
@@ -454,14 +459,8 @@
   }
   requestAnimationFrame(animate);
 
-  function setMode(newMode){
-    mode = newMode;
-    btnSlow.classList.toggle('active', mode==='slow');
-    btnPlay.classList.toggle('active', mode==='run');
-  }
-
   /* Bubbles */
-  const BASE_BUBBLE_LIFT = 96; // λίγο πιο ψηλά από πριν
+  const BASE_BUBBLE_LIFT = 96;
   function showThoughtForViewer(viewerIdx, text, durationSecs, customLift){
     const viewerEl = document.querySelector(`.viewer[data-idx="${viewerIdx}"]`);
     if (!viewerEl) return;
@@ -472,7 +471,7 @@
     leftPx = Math.min(stage.clientWidth - 40, Math.max(40, leftPx));
     const lift = (typeof customLift === 'number' ? customLift : BASE_BUBBLE_LIFT);
     let topPx  = (vRect.top  - sRect.top - lift);
-    topPx = Math.max(10, topPx); // να μη βγει εκτός
+    topPx = Math.max(10, topPx);
     bubbleEl.style.left = leftPx + 'px';
     bubbleEl.style.top  = topPx  + 'px';
     bubbleEl.style.display = 'block'; void bubbleEl.offsetWidth;
@@ -520,9 +519,7 @@
     }
     return [tArr, xArr];
   }
-  function x0Val(){
-    return A_m * Math.sin(omega * (0 + obsStartPlaybackOffset));
-  }
+  function x0Val(){ return A_m * Math.sin(omega * (0 + obsStartPlaybackOffset)); }
 
   let uXT = null; let xData = null;
   function initXTChart(){
@@ -565,19 +562,13 @@
             ctx.textAlign="left"; ctx.textBaseline="bottom"; ctx.fillText(A_m.toFixed(2), x0+4, yA-4);
             ctx.textBaseline="top"; ctx.fillText((-A_m).toFixed(2), x0+4, yAm+4);
             ctx.textAlign="center"; ctx.textBaseline="top"; ctx.fillText(T.toFixed(2), xT, y0+6);
-
             // x0 σημείο + τιμή
             const yx0 = u.valToPos(x0Val(), 'y', true);
-            // σημείο στο (t=0, x0)
             ctx.fillStyle = "#ffd27a";
             ctx.beginPath(); ctx.arc(x0, yx0, 3, 0, Math.PI*2); ctx.fill();
-            // ετικέτα "x₀" δίπλα
             ctx.fillStyle = "#fff"; ctx.font = "12px Inter, system-ui";
-            ctx.textAlign="left"; ctx.textBaseline="middle";
-            ctx.fillText("x₀", x0+6, yx0);
-            // αριθμητική τιμή x0
-            ctx.textAlign="right";
-            ctx.fillText(x0Val().toFixed(2), x0 - 8, yx0);
+            ctx.textAlign="left"; ctx.textBaseline="middle"; ctx.fillText("x₀", x0+6, yx0);
+            ctx.textAlign="right"; ctx.fillText(x0Val().toFixed(2), x0 - 8, yx0);
             ctx.restore();
           }
         ]
@@ -586,11 +577,7 @@
 
     uXT.setData(xData);
   }
-  function drawXTChart(){
-    if (!uXT) return;
-    xData = buildSeriesData();
-    uXT.setData(xData);
-  }
+  function drawXTChart(){ if (uXT){ uXT.setData(buildSeriesData()); } }
   function showXTGraph(){ initXTChart(); drawXTChart(); showCurtainParams(); }
 
   function closeCurtains(){
@@ -618,14 +605,9 @@
   }
 
   /* Κουμπιά */
-  function setMode(newMode){
-    mode = newMode;
-    btnSlow.classList.toggle('active', mode==='slow');
-    btnPlay.classList.toggle('active', mode==='run');
-  }
   btnPause.addEventListener('click', ()=>{ setMode(mode==='pause' ? 'run' : 'pause'); });
   btnSlow .addEventListener('click',  ()=>{ resumeFromBubble('slow'); });
-  btnPlay  .addEventListener('click',  ()=>{ resumeFromBubble('run');  });
+  btnPlay .addEventListener('click',  ()=>{ resumeFromBubble('run');  });
 
   function beginObservationAfterCountdown(){
     stage.classList.add('open');
@@ -643,7 +625,11 @@
     let remaining = 5; countdownTimerEl.textContent = remaining;
     const tick = setInterval(()=>{
       remaining -= 1; countdownTimerEl.textContent = Math.max(0, remaining);
-      if (remaining < 0){ clearInterval(tick); countdownOverlay.style.display = 'none'; beginObservationAfterCountdown(); }
+      if (remaining < 0){
+        clearInterval(tick);
+        countdownOverlay.style.display = 'none';
+        beginObservationAfterCountdown();
+      }
     }, 1000);
   }
   startBtn.addEventListener('click', startShowCountdown);
