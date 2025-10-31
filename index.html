@@ -281,14 +281,14 @@
 
   btnSettings.addEventListener('click',()=>{ settingsPanel.style.display=(settingsPanel.style.display==='block'?'none':'block'); });
 
-  /* Timeline της Πράξης 1 */
+  /* Timeline Πράξης 1 (το γράφημα εμφανίζεται από εδώ) */
   const thoughtScript=[
     {kind:'bubble',atT:1.1,viewer:1,text:'η κίνηση είναι ευθύγραμμη παλινδρομική!',yOffset:120},
     {kind:'bubble',atT:2.1,viewer:2,text:'… και επαναλαμβανόμενη-περιοδική, άρα ταλάντωση!',yOffset:130},
     {kind:'bubble',atT:3.0,viewer:0,text:'Μήπως είναι Απλή Αρμονική Ταλάντωση;',yOffset:140},
     {kind:'bubble',atT:3.8,viewer:3,text:'… αν είναι Α.Α.Τ. τότε οι τιμές που μετράμε πρέπει να επαληθεύουν την χ=Αημ(ωt+φ₀)!',yOffset:120},
     {kind:'bubble',atT:4.6,viewer:4,text:'Να κάνουμε διάγραμμα x–t, αυτό θα δείξει!',yOffset:140,xShift:-140},
-    {kind:'graph', atT:5.2},
+    {kind:'graph', atT:5.2},                         /* ← εδώ εμφανίζεται το γράφημα */
     {kind:'bubble',atT:5.9,viewer:2,dynamic:'params',yOffset:135},
     {kind:'law',   atT:6.2,lawText:'x(t) = A·ημ(ωt + φ₀)'},
     {kind:'bubble',atT:6.9,viewer:0,text:'Επομένως η ταχύτητα δίνεται από τον νόμο υ=ωA·συν(ωt+φ₀)!',yOffset:130},
@@ -331,7 +331,7 @@
   }
 
   /* Layout δεξιάς κουρτίνας & γράφημα */
-  let graphEnabled=false, uXT=null, xData=null, pendingGraph=false, graphFailedOnce=false;
+  let graphEnabled=false, uXT=null, xData=null, pendingGraph=false;
 
   function positionRightPanel(){
     const W=stage.clientWidth, H=stage.clientHeight;
@@ -405,12 +405,13 @@
     if(!obsStarted){ playbackTime=tPhys; }
     else{
       if(mode==='run') playbackTime+=realDt;
-      else if(mode==='slow') playbackTime+=realDt*slowFactor;
+      else if(mode==='slow') playbackTime+=realDt*slowFactor; // 1.00× = χωρίς επιβράδυνση
     }
     let tObs=0; if(obsStarted){ tObs=playbackTime-obsStartPlaybackOffset; }
     clockEl.textContent='t = '+tObs.toFixed(2)+' s';
 
-    if(pendingGraph){
+    // Γράφημα: μόνο όταν έχει έρθει το event graph
+    if(pendingGraph && graphEnabled){
       if(window.uPlot){ try{ ensureXTReady(); pendingGraph=false; }catch(e){ console.error('deferred graph init',e); } }
       else{ renderXTCanvasFallback(); }
     }
@@ -511,22 +512,22 @@
   }
   function x0Val(){ return A_m*Math.sin(omega*(0+obsStartPlaybackOffset)); }
 
-  /* ✅ ΔΙΟΡΘΩΜΕΝΗ: περνάμε data στον constructor */
   function initXTChart(){
     if(uXT) return;
-    if(!window.uPlot){ pendingGraph=true; return; }
+    if(!window.uPlot){ if(graphEnabled){ pendingGraph=true; } return; }
 
     xtChart.style.display='block';
     positionRightPanel();
 
-    let w = Math.floor(xtChart.clientWidth)  || 260;
-    let h = Math.floor(xtChart.clientHeight) || 140;
+    let w=Math.floor(xtChart.clientWidth)||260;
+    let h=Math.floor(xtChart.clientHeight)||140;
 
-    xData = buildSeriesData(); // χτίσε data ΠΡΙΝ
+    /* ΣΩΣΤΟ: Φτιάχνω data πριν τον constructor */
+    xData=buildSeriesData();
 
-    const opts = {
-      width: w, height: h,
-      scales:{ x:{time:false, range:[0,T]}, y:{ range:[-A_m*1.1, A_m*1.1] } },
+    const opts={
+      width:w, height:h,
+      scales:{ x:{time:false, range:[0,T]}, y:{range:[-A_m*1.1, A_m*1.1]} },
       axes:[
         { stroke:"#fff", grid:{show:true, stroke:"rgba(255,255,255,0.25)"},
           values:(u,vals)=>vals.map(v=>v.toFixed(1)+" s"), label:"t (s)", labelSize:18, labelGap:6 },
@@ -559,31 +560,27 @@
       }]}
     };
 
-    uXT = new uPlot(opts, xData, xtChart); // εδώ με data
+    /* Δίνουμε data στον constructor */
+    uXT=new uPlot(opts, xData, xtChart);
   }
-
   function drawXTChart(){ if(uXT){ uXT.setData(buildSeriesData()); } }
 
   function ensureXTReady(){
+    if(!graphEnabled) return; // εμφάνιση μόνο όταν έρθει η στιγμή
     try{
       if(window.uPlot){
         initXTChart();
         if(uXT){ drawXTChart(); showCurtainParams(); }
       }else{
-        pendingGraph = true;
-        renderXTCanvasFallback();
+        if(graphEnabled){ pendingGraph=true; renderXTCanvasFallback(); }
       }
     }catch(e){
-      console.error('ensureXTReady', e);
-      if(!graphFailedOnce){
-        graphFailedOnce = true;
-        renderXTCanvasFallback();
-      }
+      console.error('ensureXTReady',e);
+      if(graphEnabled){ pendingGraph=true; renderXTCanvasFallback(); }
     }
   }
 
-  /* Canvas fallback όταν uPlot λείπει */
-  let fallbackDrawn=false;
+  /* Canvas fallback αν λείπει uPlot */
   function renderXTCanvasFallback(){
     xtChart.style.display='block';
     positionRightPanel();
@@ -628,7 +625,6 @@
     ctx.fillStyle='#ffd27a'; ctx.beginPath(); ctx.arc(x0x+6,x0y,3,0,Math.PI*2); ctx.fill();
     ctx.fillStyle='#fff'; ctx.textAlign='left'; ctx.textBaseline='middle'; ctx.fillText('x₀', x0x+12, x0y);
     ctx.textAlign='right'; ctx.fillText(x0Val().toFixed(2), Math.min(w-6, x0x+56), x0y);
-    fallbackDrawn=true;
   }
 
   function showCurtainsClosing(){
@@ -648,7 +644,8 @@
       }
       showThoughtForViewer(th.viewer,text,bubbleDurationSec,th.yOffset,th.xShift||0);
     }else if(th.kind==='graph'){
-      graphEnabled=true; ensureXTReady();
+      graphEnabled=true;
+      ensureXTReady(); // τώρα δημιουργείται το γράφημα
     }else if(th.kind==='law'){
       addLaw(th.lawText);
     }else if(th.kind==='close'){
@@ -675,8 +672,7 @@
     measureBox.style.display='block';
     markerEl.style.opacity='1';
     positionRightPanel();
-    requestAnimationFrame(()=>{ ensureXTReady(); });
-    setTimeout(()=>{ ensureXTReady(); }, 400);
+    // Δεν στήνουμε γράφημα εδώ (μόνο όταν έρθει το event 'graph')
   }
 
   function startShowCountdown(){
@@ -694,15 +690,18 @@
   }
   startBtn.addEventListener('click', startShowCountdown);
 
+  // Παρατηρητής μεγέθους: αν αλλάξει layout, ξανασχεδίασε γράφημα/fallback
   const ro=new ResizeObserver(()=>{ positionRightPanel(); if(uXT){ drawXTChart(); } else if(document.getElementById('xtFallback')){ drawFallbackOnce(); } });
   ro.observe(stage);
 
+  // Self-check
   (function(){
     const must={stage,actor,springEl,startBtn,clockEl,rulerEl,markerEl,bubbleEl,btnPause,btnSlow,btnPlay,btnSettings,settingsPanel,xtChart,paramsBoxEl,lawsEl,measureBox,actBreak};
     const miss=Object.entries(must).filter(([k,v])=>!v).map(([k])=>k);
     if(miss.length) console.error('Λείπουν στοιχεία:', miss.join(', ')); else console.log('Self-check OK');
   })();
 
+  // Αν σε ~2.5s δεν έχει φορτώσει uPlot και ΕΧΕΙ ζητηθεί γράφημα, δείξε fallback
   setTimeout(()=>{ if(!window.uPlot && graphEnabled){ renderXTCanvasFallback(); } }, 2500);
 </script>
 </body>
