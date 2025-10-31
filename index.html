@@ -12,7 +12,7 @@
   body{margin:0;background:radial-gradient(circle at center,#222 0%,#000 100%);overflow:hidden;font-family:Inter,system-ui,sans-serif}
   .stage{position:relative;width:100vw;height:100vh;overflow:hidden}
 
-  /* Κουρτίνες */
+  /* Κουρτίνες (αποκατεστημένα z-index) */
   .curtain-top,.curtain-upper,.curtain-side{position:absolute;transition:transform 1.2s cubic-bezier(.2,.9,.2,1),opacity 1s}
   .curtain-top{top:0;left:0;width:100%;height:calc(28% - 30px);background:linear-gradient(to bottom,#230000,#180000);box-shadow:0 5px 18px rgba(0,0,0,.8);z-index:40}
   .curtain-upper{top:calc(28% - 30px);left:0;width:100%;height:calc(40% + 30px);background:linear-gradient(to bottom,#8b0000,#400000);transform-origin:top;z-index:16}
@@ -24,7 +24,7 @@
   /* Spotlight */
   .spotlight{position:absolute;inset:0;pointer-events:none;z-index:15;opacity:.25;background:radial-gradient(200px 120px at 50% 50%, rgba(255,255,220,.65), rgba(255,255,220,0) 70%)}
 
-  /* Skater / Spring / Πάτωμα */
+  /* Skater / Spring / Πάτωμα (z-order αποκατεστημένο: floor>actor>spring) */
   .spring{position:absolute;bottom:calc(32vh + 82px);left:10%;height:96px;width:auto;z-index:5;pointer-events:none;filter:drop-shadow(0 4px 6px rgba(0,0,0,.55));transform-origin:left center;opacity:1;display:none}
   .actor{position:absolute;bottom:calc(32vh + 130px);left:50%;width:144px;height:96px;transform:translate(-50%,0);z-index:10;pointer-events:none;opacity:1}
   .actor img{width:100%;height:auto;display:block;filter:drop-shadow(0 4px 6px rgba(0,0,0,.6))}
@@ -39,7 +39,7 @@
   .signboard h2{font-size:18px;margin:2px 0 0 0}
   .signboard h3{font-size:16px;margin:2px 0 0 0;color:#ffd27a}
 
-  /* Δεξιά κουρτίνα: ρολόι, μετρήσεις, γράφημα */
+  /* Δεξιά κουρτίνα: ρολόι, μετρήσεις, γράφημα (πάνω από κουρτίνες) */
   .clock{position:absolute;top:10px;left:calc(82vw + 9vw);transform:translateX(-50%);background:rgba(0,0,0,.5);color:#fff;padding:6px 10px;font-size:16px;font-family:"Courier New",monospace;border-radius:6px;border:1px solid rgba(255,255,255,.3);z-index:265;pointer-events:none;display:none}
   .clock .hint{font-size:10px;color:#ffd27a;opacity:.9;margin-left:6px}
   .measure-box{position:absolute;left:calc(82vw + 9vw);transform:translateX(-50%);top:54px;width:calc(18vw - 16px);z-index:262;background:rgba(0,0,0,.45);color:#fff;border:1px solid rgba(255,255,255,.25);border-radius:8px;padding:6px 8px;display:none;height:50vh;overflow-y:auto}
@@ -62,7 +62,7 @@
   .measure-box th:first-child,.measure-box td:first-child{text-align:center}
   .measure-box tr.new td{background:rgba(255,210,122,.15);transition:background .6s ease}
 
-  /* Χάρακας & δείκτης */
+  /* Χάρακας & δείκτης (χάρακας ορατός εξαρχής) */
   .ruler{position:absolute;bottom:calc(32vh - 8px + 1px);height:24px;font-size:10px;font-family:"Courier New",monospace;color:#aaa;pointer-events:none;z-index:270}
   .ruler::before{content:'';position:absolute;left:0;right:0;bottom:0;height:1px;background:#aaa}
   .tick{position:absolute;bottom:0;width:1px;height:10px;background:#aaa}
@@ -694,7 +694,7 @@ function drawFallbackOnce(){
   ctx.strokeStyle='rgba(255,255,255,0.35)'; ctx.lineWidth=1;
   ctx.beginPath();
   for(let i=0;i<=6;i++){ const x=i*(w/6); ctx.moveTo(x,0); ctx.lineTo(x,h); }
-  for(let j=0;j<=4;j++){ const y=j*(h/4); ctx.moveTo(0,y); ctx.lineTo(w,y); }  <!-- FIXED: j++) -->
+  for(let j=0;j<=4;j++){ const y=j*(h/4); ctx.moveTo(0,y); ctx.lineTo(w,y); } // grid lines
   ctx.stroke();
   ctx.fillStyle='#fff'; ctx.font='12px Inter, system-ui';
   ctx.textAlign='center'; ctx.fillText('t (s)', w/2, h-6);
@@ -846,7 +846,7 @@ function resetShow(){
   clockEl.style.display='none';
   measureBox.style.display='none';
   paramsBoxEl.style.display='none';
-  markerEl.style.opacity='0';
+  markerEl.style.opacity='0';          // δείκτης κρυφός πριν το 0
   bubbleEl.classList.remove('active','checked','closing'); bubbleEl.style.display='none';
   actBreak.style.display='none';
   settingsPanel.style.display='none';
@@ -856,7 +856,7 @@ function resetShow(){
   if(uXT){ try{ uXT.destroy(); }catch(e){}; uXT=null; }
   const fb=document.getElementById('xtFallback'); if(fb) fb.remove();
   xtChart.style.display='none';
-  springEl.style.display='none'; // κρυφό στην Πράξη 1
+  springEl.style.display='none';       // Πράξη 1: κρυφό
   t0=performance.now(); lastFrame=t0; playbackTime=0;
 }
 btnReset.addEventListener('click', resetShow);
@@ -909,7 +909,7 @@ setTimeout(()=>{ if(!window.uPlot && graphEnabled){ renderXTCanvasFallback(); } 
 
 /* Αρχική γλώσσα & αρχική κατάσταση */
 setLang('gr');
-resetShow(); // για καθαρή σκηνή και κρυμμένο ελατήριο στην Πράξη 1
+resetShow(); // καθαρή σκηνή: πλαϊνές/πάνω κουρτίνες ορατές, κινητή κλειστή, χάρακας ορατός, δείκτης κρυφός
 </script>
 </body>
 </html>
