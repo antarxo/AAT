@@ -22,7 +22,7 @@
   .open .curtain-upper{transform:translateY(calc(-100% - 30px))}
   .closed-show-actors .actor{opacity:1!important}
 
-  /* Spotlight που ακολουθεί τον skater */
+  /* Spotlight */
   .spotlight{position:absolute;inset:0;pointer-events:none;z-index:15;opacity:.25;background:radial-gradient(200px 120px at 50% 50%, rgba(255,255,220,.65), rgba(255,255,220,0) 70%)}
 
   /* Skater / Spring / Πάτωμα */
@@ -104,7 +104,7 @@
   .countdown-sub{font-size:14px;color:#ffd27a;margin-bottom:16px}
   .countdown-timer{font-family:"Courier New",monospace;font-size:40px;font-weight:700;color:#fff}
 
-  .start-btn{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:350;background:#700;color:#fff;border:none;border-radius:8px;padding:12px 24px;font-size:18px;cursor:pointer;box-shadow:0 0 10px #300}
+  .start-btn{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1000;background:#700;color:#fff;border:none;border-radius:8px;padding:12px 24px;font-size:18px;cursor:pointer;box-shadow:0 0 10px #300;pointer-events:auto}
 
   /* Θεατές anchors */
   .viewers{position:absolute;bottom:0;width:100%;display:flex;justify-content:center;gap:3vw;z-index:1;padding-bottom:12px}
@@ -456,7 +456,7 @@ function updateRuler(){
 }
 
 /* Δεξιά κουρτίνα & γράφημα x–t */
-let graphEnabled=false, uXT=null, xData=null, pendingGraph=false;
+let graphEnabled=false, uXT=null, pendingGraph=false;
 function positionRightPanel(){
   const W=stage.clientWidth, H=stage.clientHeight;
   const curtainLeft=W*0.82, curtainW=W*0.18, centerX=curtainLeft+curtainW/2;
@@ -519,7 +519,7 @@ function animate(now){
   if(!obsStarted){ playbackTime=tPhys; }
   else{ playbackTime += (mode==='run'? realDt : (mode==='slow'? realDt*slowFactor : 0)); }
 
-  let tObs= obsStarted ? (playbackTime-obsStartPlaybackOffset) : 0;
+  const tObs= obsStarted ? (playbackTime-obsStartPlaybackOffset) : 0;
   clockEl.textContent='t = '+tObs.toFixed(2)+' s';
 
   if(pendingGraph && graphEnabled){
@@ -553,7 +553,6 @@ function animate(now){
     actor.style.transform='none';
     actor.style.left=(skaterHookX-hookOffsetPx)+'px';
     markerEl.style.left=skaterHookX+'px';
-    // spotlight follow
     spotlight.style.background=`radial-gradient(220px 140px at ${skaterHookX}px ${stage.clientHeight*0.62}px, rgba(255,255,220,.65), rgba(255,255,220,0) 70%)`;
 
     const xMeters=(skaterHookX-centerX)/pxPerMeter;
@@ -566,6 +565,7 @@ requestAnimationFrame(animate);
 
 /* Bubbles */
 const BASE_BUBBLE_LIFT=96;
+let isBubbleActive=false,bubbleAutoTimer=null;
 function showThoughtForViewer(viewerIdx,text,durationSecs,customLift,xShift=0){
   const viewerEl=document.querySelector(`.viewer[data-idx="${viewerIdx}"]`);
   if(!viewerEl) return;
@@ -595,7 +595,7 @@ function resumeFromBubble(nextMode='run'){
 }
 
 /* Νόμοι + αυτόματα γραφήματα */
-let lawCount=0;
+let lawCount=0, firstLawShown=false;
 function addLaw(txt){
   if(!firstLawShown){
     firstLawShown=true;
@@ -726,12 +726,9 @@ function drawFallbackOnce(){
   ctx.textAlign='right'; ctx.fillText(x0Val().toFixed(2), Math.min(w-6, x0x+56), x0y);
 }
 
-/* Γραφήματα Νόμων (v–t, a–t, a–x) */
+/* Γραφήματα Νόμων */
 let vCan=null,aCan=null,axCan=null;
-function sizeLawCanvas(c){
-  const w=Math.floor(stage.clientWidth*0.16); const h=140;
-  c.width=w; c.height=h; c.style.width=w+'px'; c.style.height=h+'px';
-}
+function sizeLawCanvas(c){ const w=Math.floor(stage.clientWidth*0.16); const h=140; c.width=w; c.height=h; c.style.width=w+'px'; c.style.height=h+'px'; }
 function positionLawCharts(){
   const r = lawsPane.getBoundingClientRect();
   const s = stage.getBoundingClientRect();
@@ -742,10 +739,7 @@ function positionLawCharts(){
   if(aCan) drawA(aCan);
   if(axCan) drawAX(axCan);
 }
-function makeLawCanvas(id){
-  const c=document.createElement('canvas'); c.id=id; lawCharts.appendChild(c);
-  sizeLawCanvas(c); return c;
-}
+function makeLawCanvas(id){ const c=document.createElement('canvas'); c.id=id; lawCharts.appendChild(c); sizeLawCanvas(c); return c; }
 function drawAxes(ctx,w,h,xLabel,yLabel){
   ctx.clearRect(0,0,w,h);
   ctx.fillStyle='rgba(255,255,255,0.08)'; ctx.fillRect(0,0,w,h);
@@ -843,16 +837,13 @@ btnAct2 .addEventListener('click', ()=>{
 
 /* Reset: επαναφορά όλων */
 function resetShow(){
-  // timers
   if(bubbleAutoTimer){ clearTimeout(bubbleAutoTimer); bubbleAutoTimer=null; }
-  // state
   thoughtScript=[...thoughtScriptBase];
   nextThoughtIdx=0; isBubbleActive=false;
   measureRowIdx=0; lastSampleObsTime=-Infinity;
   graphEnabled=false; firstLawShown=false; lawCount=0;
   obsStarted=false; obsStartPlaybackOffset=0;
   mode='run'; setMode('run');
-  // UI
   stage.classList.remove('open','closed-show-actors');
   countdownOverlay.style.display='none';
   startBtn.style.display='block';
@@ -863,22 +854,18 @@ function resetShow(){
   bubbleEl.classList.remove('active','checked','closing'); bubbleEl.style.display='none';
   actBreak.style.display='none';
   settingsPanel.style.display='none';
-  // tables / laws / charts
   measureTBody.innerHTML='';
   lawsList.innerHTML=''; lawsPane.style.display='none';
   lawCharts.innerHTML='';
-  // graphs
   if(uXT){ try{ uXT.destroy(); }catch(e){}; uXT=null; }
   const fb=document.getElementById('xtFallback'); if(fb) fb.remove();
   xtChart.style.display='none';
-  // images (Act I χωρίς ελατήριο)
   springEl.style.display='none';
-  // clocks
   t0=performance.now(); lastFrame=t0; playbackTime=0;
 }
 btnReset.addEventListener('click', resetShow);
 
-/* Έναρξη */
+/* Έναρξη (διορθωμένος countdown) */
 function beginObservationAfterCountdown(){
   stage.classList.add('open');
   if(!obsStarted){ obsStarted=true; obsStartPlaybackOffset=playbackTime; }
@@ -890,15 +877,20 @@ function beginObservationAfterCountdown(){
 function startShowCountdown(){
   startBtn.style.display='none';
   countdownOverlay.style.display='flex';
-  let remaining=5; countdownTimerEl.textContent=remaining;
-  const tick=setInterval(()=>{
-    remaining-=1; countdownTimerEl.textContent=Math.max(0,remaining);
-    if(remaining<0){
-      clearInterval(tick);
+  const seconds=5;
+  let end=performance.now()+seconds*1000;
+  function tick(){
+    const now=performance.now();
+    const remain=Math.max(0, Math.ceil((end-now)/1000));
+    countdownTimerEl.textContent=remain;
+    if(now>=end){
       countdownOverlay.style.display='none';
       beginObservationAfterCountdown();
+    }else{
+      requestAnimationFrame(tick);
     }
-  },1000);
+  }
+  requestAnimationFrame(tick);
 }
 startBtn.addEventListener('click', startShowCountdown);
 
