@@ -14,7 +14,7 @@
 
   /* Κουρτίνες (σταθερές πλαϊνές + μία κινητή επάνω) */
   .curtain-top,.curtain-upper,.curtain-side{position:absolute;transition:transform 1.2s cubic-bezier(.2,.9,.2,1),opacity 1s}
-  /* ΙΕΡΑΡΧΙΑ LAYOUT (ψηλά→χαμηλά): Κουρτίνες (160) > Πάτωμα (155) > Κοινό (150) > Skater (110) > Ελατήριο (90) */
+  /* ΙΕΡΑΡΧΙΑ LAYOUT (ψηλά→χαμηλά): Κουρτίνες (160) > Πάτωμα (155) > Viewers (153) > Κοινό (152) > Skater (110) > Ελατήριο (90) */
   .curtain-top{top:0;left:0;width:100%;height:calc(28% - 30px);background:linear-gradient(to bottom,#230000,#180000);box-shadow:0 5px 18px rgba(0,0,0,.8);z-index:160}
   .curtain-upper{top:calc(28% - 30px);left:0;width:100%;height:calc(40% + 30px);background:linear-gradient(to bottom,#8b0000,#400000);transform-origin:top;z-index:160}
   .open .curtain-upper{transform:translateY(calc(-100% - 30px))}
@@ -33,7 +33,7 @@
   .floor{position:absolute;left:0;bottom:calc(32vh - 8px);width:100%;height:2px;background:#888;z-index:155;pointer-events:none}
 
   /* Κοινό (μεσαίο άνοιγμα μόνο) */
-  .audience{position:absolute;left:18%;bottom:0;width:64%;height:60px;object-fit:cover;z-index:150;pointer-events:none;filter:contrast(1.05) brightness(.95)}
+  .audience{position:absolute;left:18%;bottom:0;width:64%;height:60px;object-fit:cover;z-index:152;pointer-events:none;filter:contrast(1.05) brightness(.95)}
 
   /* Ταμπέλα τίτλου (πάνω από την πάνω κουρτίνα) */
   .signboard{position:absolute;top:-6px;left:50%;transform:translateX(-50%);background:transparent;border:none;border-radius:10px;padding:12px 18px;color:#ddd;font-family:'Georgia',serif;text-align:center;z-index:165;line-height:1.2}
@@ -108,7 +108,7 @@
   .start-btn{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1000;background:#700;color:#fff;border:none;border-radius:8px;padding:12px 24px;font-size:18px;cursor:pointer;box-shadow:0 0 10px #300;pointer-events:auto}
 
   /* Θεατές anchors (χωρίς να καλύπτουν τις κουρτίνες) */
-  .viewers{position:absolute;left:18%;width:64%;bottom:0;display:flex;justify-content:center;gap:3vw;z-index:151;padding-bottom:12px}
+  .viewers{position:absolute;left:18%;width:64%;bottom:0;display:flex;justify-content:center;gap:3vw;z-index:153;padding-bottom:12px}
   .viewer{width:60px;height:100px;background:url('https://upload.wikimedia.org/wikipedia/commons/f/f9/Silhouette_icon.svg') no-repeat center/contain;filter:grayscale(1) brightness(.6);opacity:.75}
 </style>
 </head>
@@ -596,7 +596,6 @@ function buildSeriesData(){
 }
 function x0Val(){ return A_m*Math.sin(omega*(0+obsStartPlaybackOffset)); }
 
-/* >>> REMOVED DUPLICATE: let uXT=null; <<< */
 function initXTChart(){
   if(uXT) return; if(!window.uPlot){ if(graphEnabled){ pendingGraph=true; } return; }
   xtChart.style.display='block'; positionRightPanel();
