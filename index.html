@@ -16,16 +16,13 @@
   .curtain-top,.curtain-upper,.curtain-side{position:absolute;transition:transform 1.2s cubic-bezier(.2,.9,.2,1),opacity 1s}
   .curtain-top{top:0;left:0;width:100%;height:calc(28% - 30px);background:linear-gradient(to bottom,#230000,#180000);box-shadow:0 5px 18px rgba(0,0,0,.8);z-index:160}
   .curtain-upper{
-    /* ↓ ζητήθηκε 7px πιο κάτω από πριν */
+    /* 7px πιο κάτω για πλήρη κάλυψη */
     top:calc(28% - 23px);
     left:0;width:100%;height:calc(40% + 30px);
     background:url('courtin.png') center top/cover no-repeat, linear-gradient(to bottom,#8b0000,#400000);
     transform-origin:top; z-index:160
   }
-  /* ↓ Μειωμένη άνοδος (όπως πριν) */
   .open .curtain-upper{ transform: translateY(calc(-100% - 30px)); }
-
-  /* ↓ Πιο αργή ΠΤΩΣΗ μόνο στο κλείσιμο */
   .curtain-upper.slow-close{
     transition: transform 1.8s cubic-bezier(.2,.9,.2,1), opacity 1.2s;
   }
@@ -126,11 +123,8 @@
 
   .start-btn{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1000;background:#700;color:#fff;border:none;border-radius:8px;padding:12px 24px;font-size:18px;cursor:pointer;box-shadow:0 0 10px #300;pointer-events:auto}
 
-  /* Προαγγελία Πράξης 2 (θα την τοποθετώ πάνω από την κινητή κουρτίνα) */
-  .actbreak{
-    position:absolute; /* top/left/width/height ορίζονται δυναμικά ώστε να καλύπτει ΜΟΝΟ την curtain-upper */
-    background:rgba(0,0,0,.55);color:#fff;z-index:410;display:none;align-items:center;justify-content:center;text-align:center
-  }
+  /* Προαγγελία Πράξης 2 — μόνο πάνω από την curtain-upper */
+  .actbreak{position:absolute;background:rgba(0,0,0,.55);color:#fff;z-index:410;display:none;align-items:center;justify-content:center;text-align:center}
 </style>
 </head>
 <body>
@@ -246,7 +240,7 @@
       </div>
     </div>
 
-    <!-- Προαγγελία Πράξης 2 (θα «κουμπώνει» πάνω από την curtain-upper) -->
+    <!-- Προαγγελία Πράξης 2 — «κουμπώνει» πάνω από curtain-upper -->
     <div class="actbreak" id="actBreak">
       <div class="box" style="background:rgba(0,0,0,.7);border:1px solid rgba(255,255,255,.25);border-radius:12px;padding:16px 20px;max-width:520px">
         <h3 id="actBreakTitle">Τέλος Πράξης 1</h3>
@@ -346,7 +340,7 @@ const countdownTimerEl=document.getElementById('countdownTimer');
 const xtChart=document.getElementById('xtChart');
 const paramsBoxEl=document.getElementById('paramsBox');
 const paramAEl=document.getElementById('paramA');
-const paramWEl=document.getElementById('paramW');
+theParamWEl=document.getElementById('paramW'); /* keep naming consistent below */
 const paramPhiEl=document.getElementById('paramPhi');
 const lawsPane=document.getElementById('laws');
 const lawsTitle=document.getElementById('lawsTitle');
@@ -356,7 +350,7 @@ const measureBox=document.getElementById('measureBox');
 const measureTBody=document.getElementById('measureTBody');
 const actBreak=document.getElementById('actBreak');
 
-/* ΝΕΟ: refs κουρτίνας για slow-close & τοποθέτηση actBreak */
+/* refs κουρτίνας */
 const curtainUpper=document.querySelector('.curtain-upper');
 
 /* Ρυθμίσεις ροής */
@@ -371,7 +365,7 @@ slDur.addEventListener('input',()=>{ bubbleDurationSec=parseFloat(slDur.value); 
 slSlow.addEventListener('input',()=>{ slowFactor=parseFloat(slSlow.value); valSlow.textContent=`${slowFactor.toFixed(2)}×`; });
 btnSettings.addEventListener('click',()=>{ settingsPanel.style.display=(settingsPanel.style.display==='block'?'none':'block'); });
 
-/* Timeline Πράξης 1 (ίδιο) */
+/* Timeline Πράξης 1 */
 const thoughtScriptBase=[
   {kind:'bubble',   atT:1.1, viewer:1, key:'t1',  yOffset:120},
   {kind:'bubble',   atT:1.7, viewer:2, key:'t2',  yOffset:130},
@@ -430,7 +424,7 @@ function updateRuler(){
 }
 
 /* Δεξιά κουρτίνα & x–t */
-let graphEnabled=false, uXT=null, pendingGraph=false;
+let graphEnabled=false, uXT=null, pendingGraph=false;  /* <-- uXT δηλώνεται ΜΟΝΟ εδώ */
 function positionRightPanel(){
   const W=stage.clientWidth, H=stage.clientHeight;
   const curtainLeft=W*0.82, curtainW=W*0.18, centerX=curtainLeft+curtainW/2;
@@ -582,9 +576,9 @@ function addLaw(txt){
 /* Παράμετροι Α, ω, φ0 */
 function showCurtainParams(){
   const phi0deg=((omega*obsStartPlaybackOffset)*180/Math.PI + 360)%360;
-  paramAEl.textContent  =`A = ${A_m.toFixed(2)} m`;
-  paramWEl.textContent  =`ω = ${omega.toFixed(3)} rad/s`;
-  paramPhiEl.textContent=`φ₀ = ${phi0deg.toFixed(1)}°`;
+  document.getElementById('paramA').textContent  =`A = ${A_m.toFixed(2)} m`;
+  document.getElementById('paramW').textContent  =`ω = ${omega.toFixed(3)} rad/s`;
+  document.getElementById('paramPhi').textContent=`φ₀ = ${phi0deg.toFixed(1)}°`;
   paramsBoxEl.style.display='block';
 }
 
@@ -599,7 +593,7 @@ function buildSeriesData(){
 }
 function x0Val(){ return A_m*Math.sin(omega*(0+obsStartPlaybackOffset)); }
 
-let uXT=null;
+/* !!! ΔΕΝ επαναδηλώνουμε uXT εδώ !!! */
 function initXTChart(){
   if(uXT) return; if(!window.uPlot){ if(graphEnabled){ pendingGraph=true; } return; }
   xtChart.style.display='block'; positionRightPanel();
@@ -769,16 +763,12 @@ function ensureVelocityChart(){ if(!vCan){ vCan = makeLawCanvas('lawV'); } drawV
 function ensureAccelerationChart(){ if(!aCan){ aCan = makeLawCanvas('lawA'); } drawA(aCan); positionLawCharts(); }
 function ensureAxChart(){ if(!axCan){ axCan = makeLawCanvas('lawAX'); } drawAX(axCan); positionLawCharts(); }
 
-/* Κλείσιμο αυλαίας + actBreak πάνω στην curtain-upper */
+/* Κλείσιμο αυλαίας + actBreak */
 function closeCurtainsSequence(){
-  // πιο αργή πτώση μόνο τώρα
   curtainUpper.classList.add('slow-close');
-
   stage.classList.remove('open');
   markerEl.style.opacity='0';
   setMode('run');
-
-  // εμφάνιση προαγγελίας μετά από 1.5s και μόνο πάνω από την curtain-upper
   setTimeout(()=>{
     const cuRect = curtainUpper.getBoundingClientRect();
     const stRect = stage.getBoundingClientRect();
