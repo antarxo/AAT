@@ -74,7 +74,7 @@
   .marker-line { position:absolute; left:50%; bottom:8px; width:2px; height:70px; background:#ffd27a; box-shadow:0 0 4px rgba(255,210,122,0.8); transform:translateX(-50%); }
   .marker-tip  { position:absolute; left:50%; bottom:0; width:0; height:0; border-left:6px solid transparent; border-right:6px solid transparent; border-top:8px solid #ffd27a; filter:drop-shadow(0 2px 2px rgba(255,210,122,0.8)); transform:translateX(-50%); }
 
-  /* Bubble (dot-dash, πιο σφιχτό, μικρότερο) */
+  /* Bubble */
   .thought-bubble {
     position:absolute; max-width:420px;
     background:rgba(255,255,255,0.85); color:#000;
@@ -344,7 +344,7 @@
 
   /* Layout δεξιάς κουρτίνας + γράφημα (uPlot) */
   let graphEnabled = false;
-  let uXT = null;      // uPlot instance
+  let uXT = null;      // uPlot instance (ΜΟΝΟ εδώ δηλωμένο)
   let xData = null;    // [t[], x[]] για 0..T
 
   function positionRightPanel(){
@@ -378,7 +378,7 @@
 
       if (uXT){
         uXT.setSize({width: Math.floor(w), height: Math.floor(availH)});
-        drawXTChart(); // redraw guides/series
+        drawXTChart();
       }
     }
 
@@ -403,14 +403,15 @@
     try { measureBox.scrollTop = measureBox.scrollHeight; } catch(e) {}
   }
 
-  /* Γεωμετρία ελατηρίου / skater (δέσιμο) */
-  let L0_px; let skaterWidthPx; let hookOffsetPx;
-
+  /* setMode (μία φορά) */
   function setMode(newMode){
     mode = newMode;
     btnSlow.classList.toggle('active', mode==='slow');
     btnPlay.classList.toggle('active', mode==='run');
   }
+
+  /* Κύριο animation */
+  let L0_px; let skaterWidthPx; let hookOffsetPx;
 
   function animate(now){
     const realDt = (now - lastFrame)/1000; lastFrame = now;
@@ -521,7 +522,6 @@
   }
   function x0Val(){ return A_m * Math.sin(omega * (0 + obsStartPlaybackOffset)); }
 
-  let uXT = null; let xData = null;
   function initXTChart(){
     if (uXT) return;
     xtChart.style.display = 'block';
@@ -546,23 +546,19 @@
             const y0 = u.valToPos(0,  'y', true);
             const yA = u.valToPos( A_m, 'y', true);
             const yAm= u.valToPos(-A_m, 'y', true);
-            // dashed ±A
             ctx.save();
             ctx.setLineDash([6,4]);
             ctx.strokeStyle = "rgba(255,255,255,0.45)";
             ctx.beginPath(); ctx.moveTo(x0, yA);  ctx.lineTo(xT, yA);  ctx.stroke();
             ctx.beginPath(); ctx.moveTo(x0, yAm); ctx.lineTo(xT, yAm); ctx.stroke();
             ctx.setLineDash([]);
-            // κάθετη στο Τ
             ctx.setLineDash([4,3]);
             ctx.beginPath(); ctx.moveTo(xT, u.bbox.top); ctx.lineTo(xT, u.bbox.top+u.bbox.height); ctx.stroke();
             ctx.setLineDash([]);
-            // labels A, T
             ctx.fillStyle = "#fff"; ctx.font = "12px Inter, system-ui";
             ctx.textAlign="left"; ctx.textBaseline="bottom"; ctx.fillText(A_m.toFixed(2), x0+4, yA-4);
             ctx.textBaseline="top"; ctx.fillText((-A_m).toFixed(2), x0+4, yAm+4);
             ctx.textAlign="center"; ctx.textBaseline="top"; ctx.fillText(T.toFixed(2), xT, y0+6);
-            // x0 σημείο + τιμή
             const yx0 = u.valToPos(x0Val(), 'y', true);
             ctx.fillStyle = "#ffd27a";
             ctx.beginPath(); ctx.arc(x0, yx0, 3, 0, Math.PI*2); ctx.fill();
@@ -641,7 +637,6 @@
     if (miss.length) console.error('Λείπουν στοιχεία:', miss.join(', ')); else console.log('Self-check OK');
   })();
 
-  requestAnimationFrame(animate);
 </script>
 </body>
 </html>
