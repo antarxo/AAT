@@ -12,7 +12,7 @@
   body{margin:0;background:radial-gradient(circle at center,#222 0%,#000 100%);overflow:hidden;font-family:Inter,system-ui,sans-serif}
   .stage{position:relative;width:100vw;height:100vh;overflow:hidden}
 
-  /* Κουρτίνες (πάντα κορυφή στο z) */
+  /* Κουρτίνες */
   .curtain-top,.curtain-upper,.curtain-side{position:absolute;transition:transform 1.2s cubic-bezier(.2,.9,.2,1),opacity 1s}
   .curtain-top{top:0;left:0;width:100%;height:calc(28% - 30px);background:linear-gradient(to bottom,#230000,#180000);box-shadow:0 5px 18px rgba(0,0,0,.8);z-index:160}
   .curtain-upper{
@@ -20,36 +20,37 @@
     background:url('courtin.png') center top/cover no-repeat, linear-gradient(to bottom,#8b0000,#400000);
     transform-origin:top; z-index:160
   }
-  .open .curtain-upper{ transform: translateY(calc(-100% - 60px)); } /* ανοίγει λίγο παραπάνω */
+  .open .curtain-upper{ transform: translateY(calc(-100% - 60px)); }
   .curtain-side{top:0;height:100%;width:18%;z-index:160}
   .curtain-side.left{left:0;background:linear-gradient(to right,#300000,#1a0000);box-shadow:inset -6px 0 10px rgba(0,0,0,.6)}
   .curtain-side.right{right:0;background:linear-gradient(to left,#300000,#1a0000);box-shadow:inset 6px 0 10px rgba(0,0,0,.6)}
 
-  /* Spotlight */
   .spotlight{position:absolute;inset:0;pointer-events:none;z-index:150;opacity:.25;background:radial-gradient(200px 120px at 50% 50%, rgba(255,255,220,.65), rgba(255,255,220,0) 70%)}
 
-  /* Skater / Spring / Πάτωμα */
+  /* Spring / Skater / Πάτωμα */
   .spring{position:absolute;bottom:calc(32vh + 82px);left:10%;height:96px;width:auto;z-index:90;pointer-events:none;filter:drop-shadow(0 4px 6px rgba(0,0,0,.55));transform-origin:left center;opacity:1;display:none}
   .actor{position:absolute;bottom:calc(32vh + 130px);left:50%;width:144px;height:96px;transform:translate(-50%,0);z-index:110;pointer-events:none;opacity:1}
   .actor img{width:100%;height:auto;display:block;filter:drop-shadow(0 4px 6px rgba(0,0,0,.6))}
   .floor{position:absolute;left:0;bottom:calc(32vh - 8px);width:100%;height:2px;background:#888;z-index:155;pointer-events:none}
 
-  /* Κοινό & viewers */
+  /* Κοινό */
   .audience{
     position:absolute;left:18%;bottom:0;width:64%;
-    height:60px;object-fit:contain; /* για να μην «κόβεται» */
+    height:calc(32vh - 8px); /* μέχρι τη γραμμή του χάρακα */
+    object-fit:contain;       /* πλήρως ορατό */
+    object-position:bottom center;
     z-index:158;pointer-events:none;filter:contrast(1.05) brightness(.95)
   }
   .viewers{position:absolute;left:18%;width:64%;bottom:0;display:flex;justify-content:center;gap:3vw;z-index:159;padding-bottom:12px}
   .viewer{width:60px;height:100px;background:url('https://upload.wikimedia.org/wikipedia/commons/f/f9/Silhouette_icon.svg') no-repeat center/contain;filter:grayscale(1) brightness(.6);opacity:.75}
 
-  /* Ταμπέλα τίτλου */
+  /* Τίτλοι */
   .signboard{position:absolute;top:-6px;left:50%;transform:translateX(-50%);background:transparent;border:none;border-radius:10px;padding:12px 18px;color:#ddd;font-family:'Georgia',serif;text-align:center;z-index:165;line-height:1.2}
   .signboard h1{font-size:32px;margin:0;color:#fff}
   .signboard h2{font-size:18px;margin:2px 0 0 0}
   .signboard h3{font-size:16px;margin:2px 0 0 0;color:#ffd27a}
 
-  /* Δεξιά: ρολόι, μετρήσεις, γράφημα */
+  /* Δεξιά (ρολόι/μετρήσεις/γράφημα) */
   .clock{position:absolute;top:10px;left:calc(82vw + 9vw);transform:translateX(-50%);background:rgba(0,0,0,.5);color:#fff;padding:6px 10px;font-size:16px;font-family:"Courier New",monospace;border-radius:6px;border:1px solid rgba(255,255,255,.3);z-index:265;pointer-events:none;display:none}
   .clock .hint{font-size:10px;color:#ffd27a;opacity:.9;margin-left:6px}
   .measure-box{position:absolute;left:calc(82vw + 9vw);transform:translateX(-50%);top:54px;width:calc(18vw - 16px);z-index:262;background:rgba(0,0,0,.45);color:#fff;border:1px solid rgba(255,255,255,.25);border-radius:8px;padding:6px 8px;display:none;height:50vh;overflow-y:auto}
@@ -57,7 +58,6 @@
   .laws h4{margin:0 0 6px 0}
   .params-box{position:absolute;top:8px;left:50%;transform:translateX(220px);z-index:268;background:rgba(0,0,0,.5);color:#fff;border:1px solid rgba(255,255,255,.25);border-radius:8px;padding:6px 10px;font-size:12px;line-height:1.4;display:none}
 
-  /* Γράφημα x–t */
   #xtChart{position:absolute;display:none;z-index:266;pointer-events:none;border:1px dashed rgba(255,255,255,.25)}
   .uplot{background:rgba(0,0,0,.2);border:1px solid rgba(255,255,255,.2);border-radius:6px}
   .u-legend{display:none!important}
@@ -94,7 +94,7 @@
   .thought-bubble .checkmark{position:absolute;top:-8px;right:-8px;background:#2ecc71;color:#fff;font-size:11px;line-height:1;border-radius:50%;border:1px solid rgba(0,0,0,.4);width:18px;height:18px;display:none;align-items:center;justify-content:center;font-family:system-ui,sans-serif;font-weight:600}
   .thought-bubble.checked .checkmark{display:flex}
 
-  /* Κοντρόλς & Ρυθμίσεις */
+  /* Controls & settings */
   .controls{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.2);border-radius:8px;padding:6px 8px;display:flex;gap:8px;z-index:300}
   .controls button{background:none;border:0;color:#fff;font-size:16px;line-height:1;cursor:pointer;min-width:32px;min-height:32px;border-radius:4px;padding:4px 6px;transition:transform .08s ease}
   .controls button:active{transform:translateY(1px)}
@@ -108,7 +108,7 @@
   .settings input[type=range]{flex:1}
   .settings .val{width:60px;text-align:right;font-family:"Courier New",monospace}
 
-  /* Countdown + Start */
+  /* Countdown/Start */
   .countdown-overlay{position:absolute;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,.6);color:#fff;display:none;align-items:center;justify-content:center;text-align:center;z-index:400;pointer-events:none;font-family:Inter,system-ui,sans-serif}
   .countdown-box{max-width:80%}
   .countdown-main{font-size:24px;font-weight:600;margin-bottom:8px;color:#fff}
@@ -279,9 +279,10 @@ const i18n = {
       t18:"Τέλεια· όλο το σετ νόμων της Α.Α.Τ.!"
     }
   },
-  en: { /* (κρατάμε όπως πριν) */ }
+  en: { }
 };
 let LANG='gr', firstLawShown=false;
+const langSwitch = document.getElementById('langSwitch'); // << χρειάζεται
 function setLang(lang){
   LANG=lang;
   document.documentElement.lang = (lang==='en'?'en':'el');
@@ -298,7 +299,7 @@ function setLang(lang){
   document.getElementById('btnAct2').textContent      =i18n[lang].act2Btn;
   if(firstLawShown) document.getElementById('lawsTitle').textContent=i18n[lang].lawsTitle;
 }
-document.getElementById('langSwitch').addEventListener('click',(e)=>{
+langSwitch.addEventListener('click',(e)=>{
   const btn=e.target.closest('button[data-lang]'); if(!btn) return;
   [...langSwitch.querySelectorAll('button')].forEach(b=>b.classList.toggle('on', b===btn));
   setLang(btn.dataset.lang);
@@ -353,25 +354,25 @@ slDur.addEventListener('input',()=>{ bubbleDurationSec=parseFloat(slDur.value); 
 slSlow.addEventListener('input',()=>{ slowFactor=parseFloat(slSlow.value); valSlow.textContent=`${slowFactor.toFixed(2)}×`; });
 btnSettings.addEventListener('click',()=>{ settingsPanel.style.display=(settingsPanel.style.display==='block'?'none':'block'); });
 
-/* Timeline Πράξης 1 — με ΝΟΜΟΥΣ v(t), a(t) πριν τα διαγράμματά τους */
+/* Timeline Πράξης 1 */
 const thoughtScriptBase=[
   {kind:'bubble',   atT:1.1, viewer:1, key:'t1',  yOffset:120},
   {kind:'bubble',   atT:1.7, viewer:2, key:'t2',  yOffset:130},
   {kind:'bubble',   atT:2.2, viewer:0, key:'t3',  yOffset:140},
   {kind:'bubble',   atT:3.0, viewer:3, key:'t4',  yOffset:120},
   {kind:'bubble',   atT:3.6, viewer:4, key:'t5',  yOffset:130, xShift:-100},
-  {kind:'graph',    atT:4.0},                                     // x–t
-  {kind:'bubbleDyn',atT:4.6, viewer:2, what:'A',   yOffset:135},  // A
-  {kind:'bubbleDyn',atT:5.2, viewer:1, what:'Tw',  yOffset:135},  // T & ω
-  {kind:'bubbleDyn',atT:5.7, viewer:3, what:'phi', yOffset:135},  // φ0 via x0
+  {kind:'graph',    atT:4.0},
+  {kind:'bubbleDyn',atT:4.6, viewer:2, what:'A',   yOffset:135},
+  {kind:'bubbleDyn',atT:5.2, viewer:1, what:'Tw',  yOffset:135},
+  {kind:'bubbleDyn',atT:5.7, viewer:3, what:'phi', yOffset:135},
   {kind:'law',      atT:6.1, lawText:'x(t) = A·ημ(ωt + φ₀)', alsoParams:true},
 
   {kind:'bubble',   atT:6.7, viewer:0, key:'t11', yOffset:130},
-  {kind:'law',      atT:6.95, lawText:'v(t) = ωA·συν(ωt + φ₀)'},  // << προστέθηκε ρητά
+  {kind:'law',      atT:6.95, lawText:'v(t) = ωA·συν(ωt + φ₀)'},
   {kind:'lawPlot',  atT:7.0, plot:'v'},
 
   {kind:'bubble',   atT:7.6, viewer:3, key:'t13', yOffset:140},
-  {kind:'law',      atT:7.85, lawText:'a(t) = −ω²A·ημ(ωt + φ₀)'}, // << προστέθηκε ρητά
+  {kind:'law',      atT:7.85, lawText:'a(t) = −ω²A·ημ(ωt + φ₀)'},
   {kind:'lawPlot',  atT:7.9, plot:'a'},
 
   {kind:'bubble',   atT:8.5, viewer:1, key:'t15', yOffset:125},
@@ -379,10 +380,12 @@ const thoughtScriptBase=[
   {kind:'lawPlot',  atT:9.1, plot:'ax'},
 
   {kind:'bubble',   atT:9.6, viewer:2, key:'t18', yOffset:130},
-  {kind:'close',    atT:10.2}                                     // κλείσιμο αυλαίας
+  {kind:'close',    atT:10.2}
 ];
 let thoughtScript=[...thoughtScriptBase];
-let nextThoughtIdx=0, isBubbleActive=false, bubbleAutoTimer=null;
+let nextThoughtIdx=0;
+let isBubbleActive=false;   // << μοναδική δήλωση
+let bubbleAutoTimer=null;   // << μοναδική δήλωση
 let measureRowIdx=0;
 
 /* Ρολόι & play state */
@@ -414,7 +417,7 @@ function updateRuler(){
 }
 
 /* Δεξιά κουρτίνα & x–t γράφημα */
-let graphEnabled=false, uXT=null, pendingGraph=false;
+let graphEnabled=false, uXT=null, pendingGraph=false;  // << μοναδική δήλωση uXT εδώ
 function positionRightPanel(){
   const W=stage.clientWidth, H=stage.clientHeight;
   const curtainLeft=W*0.82, curtainW=W*0.18, centerX=curtainLeft+curtainW/2;
@@ -443,7 +446,7 @@ function positionRightPanel(){
 }
 window.addEventListener('resize', positionRightPanel);
 
-/* Αγκύρωση ελατηρίου στο δεξί άκρο της αριστερής κουρτίνας */
+/* Αγκύρωση ελατηρίου */
 function anchorX(){ return stage.clientWidth*0.18; }
 
 /* Καταγραφή μέτρησης */
@@ -500,7 +503,7 @@ function animate(now){
   if(!L0_px && springRect.width>0){ L0_px=springRect.width; }
   if(skRect.width>0){ skaterWidthPx=skRect.width; hookOffsetPx=skaterWidthPx/2; }
 
-  { // δέσιμο, spotlight & δείκτης
+  { // δέσιμο + spotlight + δείκτης
     const ax=anchorX();
     const centerX=stage.clientWidth/2;
     const skaterHookX=centerX + A_px*Math.sin(omega*playbackTime);
@@ -523,7 +526,6 @@ requestAnimationFrame(animate);
 
 /* Bubbles */
 const BASE_BUBBLE_LIFT=96;
-let isBubbleActive=false, bubbleAutoTimer=null;
 function showThoughtForViewer(viewerIdx,text,durationSecs,customLift,xShift=0){
   const viewerEl=document.querySelector(`.viewer[data-idx="${viewerIdx}"]`);
   if(!viewerEl) return;
@@ -584,7 +586,6 @@ function buildSeriesData(){
 }
 function x0Val(){ return A_m*Math.sin(omega*(0+obsStartPlaybackOffset)); }
 
-let uXT=null;
 function initXTChart(){
   if(uXT) return; if(!window.uPlot){ if(graphEnabled){ pendingGraph=true; } return; }
   xtChart.style.display='block'; positionRightPanel();
@@ -680,7 +681,7 @@ function drawFallbackOnce(){
   ctx.textAlign='right'; ctx.fillText(x0Val().toFixed(2), Math.min(w-6, x0x+56), x0y);
 }
 
-/* Γραφήματα Νόμων (μικρά, αριστερά) */
+/* Γραφήματα Νόμων */
 let vCan=null,aCan=null,axCan=null;
 function sizeLawCanvas(c){ const w=Math.floor(stage.clientWidth*0.16); const h=140; c.width=w; c.height=h; c.style.width=w+'px'; c.style.height=h+'px'; }
 function positionLawCharts(){
@@ -704,9 +705,6 @@ function drawAxes(ctx,w,h,xLabel,yLabel){
   ctx.textAlign='center'; ctx.fillText(xLabel, w/2, h-6);
   ctx.save(); ctx.translate(10,h/2); ctx.rotate(-Math.PI/2); ctx.textAlign='center'; ctx.fillText(yLabel,0,0); ctx.restore();
 }
-function ensureVelocityChart(){ if(vCan) return; vCan = makeLawCanvas('law_vt'); drawV(vCan); }
-function ensureAccelerationChart(){ if(aCan) return; aCan = makeLawCanvas('law_at'); drawA(aCan); }
-function ensureAxChart(){ if(axCan) return; axCan = makeLawCanvas('law_ax'); drawAX(axCan); }
 function drawV(c){
   sizeLawCanvas(c);
   const ctx=c.getContext('2d'); const w=c.width, h=c.height;
@@ -754,15 +752,15 @@ function drawAX(c){
   ctx.moveTo(X1,Y1); ctx.lineTo(X2,Y2); ctx.stroke();
 }
 
-/* Κλείσιμο αυλαίας + καθυστερημένο overlay Πράξης 2 */
+/* Κλείσιμο αυλαίας + overlay Πράξης 2 */
 function closeCurtainsSequence(){
-  stage.classList.remove('open');     // κλείνει τώρα
-  markerEl.style.opacity='0';         // δείκτης κρυφός
-  setMode('run');                     // ο mD συνεχίζει
-  setTimeout(()=>{ actBreak.style.display='flex'; }, 1200); // «μικρό delay» για συνέχεια
+  stage.classList.remove('open');
+  markerEl.style.opacity='0';
+  setMode('run');
+  setTimeout(()=>{ actBreak.style.display='flex'; }, 1200);
 }
 
-/* Timeline event handler */
+/* Timeline handler */
 function handleTimelineEvent(th){
   if(th.kind==='bubble'){
     const txt = (i18n[LANG].thoughts[th.key]||'');
@@ -791,16 +789,15 @@ function handleTimelineEvent(th){
   }
 }
 
-/* Κουμπιά ροής / Reset / Act II */
+/* Κουμπιά */
 document.getElementById('btnPause').addEventListener('click',()=>{ setMode(mode==='pause'?'run':'pause'); });
 document.getElementById('btnSlow') .addEventListener('click', ()=>{ resumeFromBubble('slow'); });
 document.getElementById('btnPlay') .addEventListener('click', ()=>{ resumeFromBubble('run');  });
 document.getElementById('btnAct2').addEventListener('click', ()=>{
   actBreak.style.display='none';
-  springEl.style.display='block'; // Πράξη 2: εμφάνιση ελατηρίου
+  springEl.style.display='block'; // Πράξη 2: εμφανίζεται το ελατήριο
   document.dispatchEvent(new CustomEvent('act2-start'));
 });
-
 function resetShow(){
   if(bubbleAutoTimer){ clearTimeout(bubbleAutoTimer); bubbleAutoTimer=null; }
   thoughtScript=[...thoughtScriptBase];
@@ -862,7 +859,7 @@ startBtn.addEventListener('click', startShowCountdown);
 /* Παρατηρητής μεγέθους */
 const ro=new ResizeObserver(()=>{ positionRightPanel();
   if(uXT){ drawXTChart(); } else if(document.getElementById('xtFallback')){ drawFallbackOnce(); }
-  if(vCan) drawV(vCan); if(aCan) drawA(aCan); if(axCan) drawAX(axCan);
+  positionLawCharts();
 });
 ro.observe(stage);
 
@@ -873,10 +870,10 @@ ro.observe(stage);
   if(miss.length) console.error('Λείπουν στοιχεία:', miss.join(', ')); else console.log('Self-check OK');
 })();
 
-/* Fallback αν δεν φορτώσει uPlot έγκαιρα */
+/* Fallback αν δεν φορτώσει uPlot */
 setTimeout(()=>{ if(!window.uPlot && graphEnabled){ renderXTCanvasFallback(); } }, 2500);
 
-/* Αρχική γλώσσα & clean state */
+/* Αρχικοποίηση */
 setLang('gr');
 resetShow();
 </script>
