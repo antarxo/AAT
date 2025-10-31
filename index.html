@@ -13,14 +13,13 @@
   .stage{position:relative;width:100vw;height:100vh;overflow:hidden}
 
   /* Κουρτίνες */
-  .curtain-top,.curtain-upper,.curtain-side{position:absolute;z-index:30;transition:transform 1.2s cubic-bezier(.2,.9,.2,1),opacity 1s}
-  .curtain-top{top:0;left:0;width:100%;height:calc(28% - 30px);background:linear-gradient(to bottom,#230000,#180000);box-shadow:0 5px 18px rgba(0,0,0,.8)}
-  .curtain-upper{top:calc(28% - 30px);left:0;width:100%;height:calc(40% + 30px);background:linear-gradient(to bottom,#8b0000,#400000);transform-origin:top}
-  .curtain-side{top:0;width:18%;height:100%;z-index:60}
+  .curtain-top,.curtain-upper,.curtain-side{position:absolute;transition:transform 1.2s cubic-bezier(.2,.9,.2,1),opacity 1s}
+  .curtain-top{top:0;left:0;width:100%;height:calc(28% - 30px);background:linear-gradient(to bottom,#230000,#180000);box-shadow:0 5px 18px rgba(0,0,0,.8);z-index:40}
+  .curtain-upper{top:calc(28% - 30px);left:0;width:100%;height:calc(40% + 30px);background:linear-gradient(to bottom,#8b0000,#400000);transform-origin:top;z-index:16}
+  .curtain-side{top:0;width:18%;height:100%;z-index:14}
   .curtain-side.left{left:0;background:linear-gradient(to right,#300000,#1a0000);box-shadow:inset -6px 0 10px rgba(0,0,0,.6)}
   .curtain-side.right{right:0;background:linear-gradient(to left,#300000,#1a0000);box-shadow:inset 6px 0 10px rgba(0,0,0,.6)}
   .open .curtain-upper{transform:translateY(calc(-100% - 30px))}
-  .closed-show-actors .actor{opacity:1!important}
 
   /* Spotlight */
   .spotlight{position:absolute;inset:0;pointer-events:none;z-index:15;opacity:.25;background:radial-gradient(200px 120px at 50% 50%, rgba(255,255,220,.65), rgba(255,255,220,0) 70%)}
@@ -32,10 +31,10 @@
   .floor{position:absolute;left:0;bottom:calc(32vh - 8px);width:100%;height:2px;background:#888;z-index:50;pointer-events:none}
 
   /* Κοινό */
-  .audience{position:absolute;left:18%;bottom:0;width:64%;height:auto;z-index:150;pointer-events:none;display:block;filter:contrast(1.05) brightness(.95)}
+  .audience{position:absolute;left:18%;bottom:0;width:64%;height:60px;object-fit:cover;z-index:150;pointer-events:none;filter:contrast(1.05) brightness(.95)}
 
   /* Ταμπέλα τίτλου */
-  .signboard{position:absolute;top:-6px;left:50%;transform:translateX(-50%);background:transparent;border:none;border-radius:10px;padding:12px 18px;color:#ddd;font-family:'Georgia',serif;text-align:center;z-index:40;line-height:1.25}
+  .signboard{position:absolute;top:-6px;left:50%;transform:translateX(-50%);background:transparent;border:none;border-radius:10px;padding:12px 18px;color:#ddd;font-family:'Georgia',serif;text-align:center;z-index:40;line-height:1.2}
   .signboard h1{font-size:32px;margin:0;color:#fff}
   .signboard h2{font-size:18px;margin:2px 0 0 0}
   .signboard h3{font-size:16px;margin:2px 0 0 0;color:#ffd27a}
@@ -46,7 +45,7 @@
   .measure-box{position:absolute;left:calc(82vw + 9vw);transform:translateX(-50%);top:54px;width:calc(18vw - 16px);z-index:262;background:rgba(0,0,0,.45);color:#fff;border:1px solid rgba(255,255,255,.25);border-radius:8px;padding:6px 8px;display:none;height:50vh;overflow-y:auto}
   .laws{position:absolute;left:2%;top:44px;width:16%;max-height:30vh;overflow:auto;background:rgba(20,0,0,.6);color:#fff;border:1px solid rgba(255,200,200,.3);border-radius:8px;padding:6px 8px;font-size:16px;line-height:1.5;z-index:260;display:none}
   .laws h4{margin:0 0 6px 0}
-  .params-box{position:absolute;top:8px;z-index:268;background:rgba(0,0,0,.5);color:#fff;border:1px solid rgba(255,255,255,.25);border-radius:8px;padding:6px 10px;font-size:12px;line-height:1.4;display:none}
+  .params-box{position:absolute;top:8px;left:50%;transform:translateX(220px);z-index:268;background:rgba(0,0,0,.5);color:#fff;border:1px solid rgba(255,255,255,.25);border-radius:8px;padding:6px 10px;font-size:12px;line-height:1.4;display:none}
 
   /* Γράφημα x–t */
   #xtChart{position:absolute;display:none;z-index:266;pointer-events:none;border:1px dashed rgba(255,255,255,.25)}
@@ -424,7 +423,7 @@ const thoughtScriptBase=[
   {kind:'close', atT:10.5}
 ];
 let thoughtScript=[...thoughtScriptBase];
-let nextThoughtIdx=0,isBubbleActive=false,bubbleAutoTimer=null;
+let nextThoughtIdx=0, isBubbleActive=false, bubbleAutoTimer=null;
 let measureRowIdx=0;
 
 /* Ρολόι & play state */
@@ -565,7 +564,6 @@ requestAnimationFrame(animate);
 
 /* Bubbles */
 const BASE_BUBBLE_LIFT=96;
-let isBubbleActive=false,bubbleAutoTimer=null;
 function showThoughtForViewer(viewerIdx,text,durationSecs,customLift,xShift=0){
   const viewerEl=document.querySelector(`.viewer[data-idx="${viewerIdx}"]`);
   if(!viewerEl) return;
@@ -595,7 +593,7 @@ function resumeFromBubble(nextMode='run'){
 }
 
 /* Νόμοι + αυτόματα γραφήματα */
-let lawCount=0, firstLawShown=false;
+let lawCount=0;
 function addLaw(txt){
   if(!firstLawShown){
     firstLawShown=true;
@@ -630,7 +628,6 @@ function buildSeriesData(){
 }
 function x0Val(){ return A_m*Math.sin(omega*(0+obsStartPlaybackOffset)); }
 
-let uXT=null;
 function initXTChart(){
   if(uXT) return; if(!window.uPlot){ if(graphEnabled){ pendingGraph=true; } return; }
   xtChart.style.display='block'; positionRightPanel();
@@ -697,7 +694,7 @@ function drawFallbackOnce(){
   ctx.strokeStyle='rgba(255,255,255,0.35)'; ctx.lineWidth=1;
   ctx.beginPath();
   for(let i=0;i<=6;i++){ const x=i*(w/6); ctx.moveTo(x,0); ctx.lineTo(x,h); }
-  for(let j=0;j<=4;j++){ const y=j*(h/4); ctx.moveTo(0,y); ctx.lineTo(w,y); }
+  for(let j=0;j<=4;j'){ const y=j*(h/4); ctx.moveTo(0,y); ctx.lineTo(w,y); }
   ctx.stroke();
   ctx.fillStyle='#fff'; ctx.font='12px Inter, system-ui';
   ctx.textAlign='center'; ctx.fillText('t (s)', w/2, h-6);
@@ -803,7 +800,6 @@ function drawAX(c){
 /* Κλείσιμο αυλαίας */
 function showCurtainsClosing(){
   stage.classList.remove('open');
-  stage.classList.add('closed-show-actors');
   markerEl.style.opacity='0';
   setMode('run');
   actBreak.style.display='flex';
@@ -835,7 +831,7 @@ btnAct2 .addEventListener('click', ()=>{
   document.dispatchEvent(new CustomEvent('act2-start'));
 });
 
-/* Reset: επαναφορά όλων */
+/* Reset */
 function resetShow(){
   if(bubbleAutoTimer){ clearTimeout(bubbleAutoTimer); bubbleAutoTimer=null; }
   thoughtScript=[...thoughtScriptBase];
@@ -844,7 +840,7 @@ function resetShow(){
   graphEnabled=false; firstLawShown=false; lawCount=0;
   obsStarted=false; obsStartPlaybackOffset=0;
   mode='run'; setMode('run');
-  stage.classList.remove('open','closed-show-actors');
+  stage.classList.remove('open');
   countdownOverlay.style.display='none';
   startBtn.style.display='block';
   clockEl.style.display='none';
@@ -860,12 +856,12 @@ function resetShow(){
   if(uXT){ try{ uXT.destroy(); }catch(e){}; uXT=null; }
   const fb=document.getElementById('xtFallback'); if(fb) fb.remove();
   xtChart.style.display='none';
-  springEl.style.display='none';
+  springEl.style.display='none'; // κρυφό στην Πράξη 1
   t0=performance.now(); lastFrame=t0; playbackTime=0;
 }
 btnReset.addEventListener('click', resetShow);
 
-/* Έναρξη (διορθωμένος countdown) */
+/* Έναρξη (countdown) */
 function beginObservationAfterCountdown(){
   stage.classList.add('open');
   if(!obsStarted){ obsStarted=true; obsStartPlaybackOffset=playbackTime; }
@@ -911,8 +907,9 @@ ro.observe(stage);
 /* Αν σε ~2.5s δεν έχει φορτώσει uPlot και ζητήθηκε γράφημα, δείξε fallback */
 setTimeout(()=>{ if(!window.uPlot && graphEnabled){ renderXTCanvasFallback(); } }, 2500);
 
-/* Αρχική γλώσσα */
+/* Αρχική γλώσσα & αρχική κατάσταση */
 setLang('gr');
+resetShow(); // για να εγγυηθούμε ότι Act I ξεκινά με κρυμμένο ελατήριο και καθαρή σκηνή
 </script>
 </body>
 </html>
