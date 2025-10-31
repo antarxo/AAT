@@ -694,7 +694,7 @@ function drawFallbackOnce(){
   ctx.strokeStyle='rgba(255,255,255,0.35)'; ctx.lineWidth=1;
   ctx.beginPath();
   for(let i=0;i<=6;i++){ const x=i*(w/6); ctx.moveTo(x,0); ctx.lineTo(x,h); }
-  for(let j=0;j<=4;j'){ const y=j*(h/4); ctx.moveTo(0,y); ctx.lineTo(w,y); }
+  for(let j=0;j<=4;j++){ const y=j*(h/4); ctx.moveTo(0,y); ctx.lineTo(w,y); }  <!-- FIXED: j++) -->
   ctx.stroke();
   ctx.fillStyle='#fff'; ctx.font='12px Inter, system-ui';
   ctx.textAlign='center'; ctx.fillText('t (s)', w/2, h-6);
@@ -909,7 +909,7 @@ setTimeout(()=>{ if(!window.uPlot && graphEnabled){ renderXTCanvasFallback(); } 
 
 /* Αρχική γλώσσα & αρχική κατάσταση */
 setLang('gr');
-resetShow(); // για να εγγυηθούμε ότι Act I ξεκινά με κρυμμένο ελατήριο και καθαρή σκηνή
+resetShow(); // για καθαρή σκηνή και κρυμμένο ελατήριο στην Πράξη 1
 </script>
 </body>
 </html>
