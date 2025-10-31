@@ -41,7 +41,7 @@
   .signboard h2{font-size:18px;margin:2px 0 0 0}
   .signboard h3{font-size:16px;margin:2px 0 0 0;color:#ffd27a}
 
-  /* Δεξιά κουρτίνα: ρολόι, μετρήσεις, γράφημα (πάνω από τις κουρτίνες) */
+  /* Δεξιά κουρτίνα: ρολόι, μετρήσεις, γράφημα */
   .clock{position:absolute;top:10px;left:calc(82vw + 9vw);transform:translateX(-50%);background:rgba(0,0,0,.5);color:#fff;padding:6px 10px;font-size:16px;font-family:"Courier New",monospace;border-radius:6px;border:1px solid rgba(255,255,255,.3);z-index:265;pointer-events:none;display:none}
   .clock .hint{font-size:10px;color:#ffd27a;opacity:.9;margin-left:6px}
   .measure-box{position:absolute;left:calc(82vw + 9vw);transform:translateX(-50%);top:54px;width:calc(18vw - 16px);z-index:262;background:rgba(0,0,0,.45);color:#fff;border:1px solid rgba(255,255,255,.25);border-radius:8px;padding:6px 8px;display:none;height:50vh;overflow-y:auto}
@@ -497,7 +497,7 @@ function animate(now){
 
   if(obsStarted && !isBubbleActive && nextThoughtIdx<thoughtScript.length){
     const th=thoughtScript[nextThoughtIdx];
-    const shiftMul=(firstThoughtMul-1.1);
+    const shiftMul=(firstThoughtMul-DEFAULT_FIRST_MUL);
     const baseMul=(th.atT??0);
     const eventAtSec=(baseMul+shiftMul)*T*timelineScale;
     if(tObs>=eventAtSec){
@@ -596,7 +596,7 @@ function buildSeriesData(){
 }
 function x0Val(){ return A_m*Math.sin(omega*(0+obsStartPlaybackOffset)); }
 
-let uXT=null;
+/* >>> REMOVED DUPLICATE: let uXT=null; <<< */
 function initXTChart(){
   if(uXT) return; if(!window.uPlot){ if(graphEnabled){ pendingGraph=true; } return; }
   xtChart.style.display='block'; positionRightPanel();
