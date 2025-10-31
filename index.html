@@ -16,12 +16,19 @@
   .curtain-top,.curtain-upper,.curtain-side{position:absolute;transition:transform 1.2s cubic-bezier(.2,.9,.2,1),opacity 1s}
   .curtain-top{top:0;left:0;width:100%;height:calc(28% - 30px);background:linear-gradient(to bottom,#230000,#180000);box-shadow:0 5px 18px rgba(0,0,0,.8);z-index:160}
   .curtain-upper{
-    top:calc(28% - 30px);left:0;width:100%;height:calc(40% + 30px);
+    /* ↓ ζητήθηκε 7px πιο κάτω από πριν */
+    top:calc(28% - 23px);
+    left:0;width:100%;height:calc(40% + 30px);
     background:url('courtin.png') center top/cover no-repeat, linear-gradient(to bottom,#8b0000,#400000);
     transform-origin:top; z-index:160
   }
-  /* ↓ Μειώσαμε την άνοδο κατά 30px */
+  /* ↓ Μειωμένη άνοδος (όπως πριν) */
   .open .curtain-upper{ transform: translateY(calc(-100% - 30px)); }
+
+  /* ↓ Πιο αργή ΠΤΩΣΗ μόνο στο κλείσιμο */
+  .curtain-upper.slow-close{
+    transition: transform 1.8s cubic-bezier(.2,.9,.2,1), opacity 1.2s;
+  }
 
   .curtain-side{top:0;height:100%;width:18%;z-index:160}
   .curtain-side.left{left:0;background:linear-gradient(to right,#300000,#1a0000);box-shadow:inset -6px 0 10px rgba(0,0,0,.6)}
@@ -118,6 +125,12 @@
   .countdown-timer{font-family:"Courier New",monospace;font-size:40px;font-weight:700;color:#fff}
 
   .start-btn{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1000;background:#700;color:#fff;border:none;border-radius:8px;padding:12px 24px;font-size:18px;cursor:pointer;box-shadow:0 0 10px #300;pointer-events:auto}
+
+  /* Προαγγελία Πράξης 2 (θα την τοποθετώ πάνω από την κινητή κουρτίνα) */
+  .actbreak{
+    position:absolute; /* top/left/width/height ορίζονται δυναμικά ώστε να καλύπτει ΜΟΝΟ την curtain-upper */
+    background:rgba(0,0,0,.55);color:#fff;z-index:410;display:none;align-items:center;justify-content:center;text-align:center
+  }
 </style>
 </head>
 <body>
@@ -233,8 +246,8 @@
       </div>
     </div>
 
-    <!-- Overlay τέλους Πράξης 1 -->
-    <div class="actbreak" id="actBreak" style="position:absolute;inset:0;background:rgba(0,0,0,.55);color:#fff;z-index:410;display:none;align-items:center;justify-content:center;text-align:center">
+    <!-- Προαγγελία Πράξης 2 (θα «κουμπώνει» πάνω από την curtain-upper) -->
+    <div class="actbreak" id="actBreak">
       <div class="box" style="background:rgba(0,0,0,.7);border:1px solid rgba(255,255,255,.25);border-radius:12px;padding:16px 20px;max-width:520px">
         <h3 id="actBreakTitle">Τέλος Πράξης 1</h3>
         <p id="actBreakMsg">Ο m,D συνεχίζει. Είστε έτοιμοι για τη Δεύτερη Πράξη;</p>
@@ -342,7 +355,9 @@ const lawCharts=document.getElementById('lawCharts');
 const measureBox=document.getElementById('measureBox');
 const measureTBody=document.getElementById('measureTBody');
 const actBreak=document.getElementById('actBreak');
-const btnAct2=document.getElementById('btnAct2');
+
+/* ΝΕΟ: refs κουρτίνας για slow-close & τοποθέτηση actBreak */
+const curtainUpper=document.querySelector('.curtain-upper');
 
 /* Ρυθμίσεις ροής */
 const DEFAULT_FIRST_MUL=1.1;
@@ -356,7 +371,7 @@ slDur.addEventListener('input',()=>{ bubbleDurationSec=parseFloat(slDur.value); 
 slSlow.addEventListener('input',()=>{ slowFactor=parseFloat(slSlow.value); valSlow.textContent=`${slowFactor.toFixed(2)}×`; });
 btnSettings.addEventListener('click',()=>{ settingsPanel.style.display=(settingsPanel.style.display==='block'?'none':'block'); });
 
-/* Timeline Πράξης 1 */
+/* Timeline Πράξης 1 (ίδιο) */
 const thoughtScriptBase=[
   {kind:'bubble',   atT:1.1, viewer:1, key:'t1',  yOffset:120},
   {kind:'bubble',   atT:1.7, viewer:2, key:'t2',  yOffset:130},
@@ -368,19 +383,15 @@ const thoughtScriptBase=[
   {kind:'bubbleDyn',atT:5.2, viewer:1, what:'Tw',  yOffset:135},
   {kind:'bubbleDyn',atT:5.7, viewer:3, what:'phi', yOffset:135},
   {kind:'law',      atT:6.1, lawText:'x(t) = A·ημ(ωt + φ₀)', alsoParams:true},
-
   {kind:'bubble',   atT:6.7, viewer:0, key:'t11', yOffset:130},
   {kind:'law',      atT:6.95, lawText:'v(t) = ωA·συν(ωt + φ₀)'},
   {kind:'lawPlot',  atT:7.0, plot:'v'},
-
   {kind:'bubble',   atT:7.6, viewer:3, key:'t13', yOffset:140},
   {kind:'law',      atT:7.85, lawText:'a(t) = −ω²A·ημ(ωt + φ₀)'},
   {kind:'lawPlot',  atT:7.9, plot:'a'},
-
   {kind:'bubble',   atT:8.5, viewer:1, key:'t15', yOffset:125},
   {kind:'law',      atT:8.8, lawText:'a(x) = −ω²·x'},
   {kind:'lawPlot',  atT:9.1, plot:'ax'},
-
   {kind:'bubble',   atT:9.6, viewer:2, key:'t18', yOffset:130},
   {kind:'close',    atT:10.2}
 ];
@@ -418,7 +429,7 @@ function updateRuler(){
   }
 }
 
-/* Δεξιά κουρτίνα & x–t γράφημα */
+/* Δεξιά κουρτίνα & x–t */
 let graphEnabled=false, uXT=null, pendingGraph=false;
 function positionRightPanel(){
   const W=stage.clientWidth, H=stage.clientHeight;
@@ -588,6 +599,7 @@ function buildSeriesData(){
 }
 function x0Val(){ return A_m*Math.sin(omega*(0+obsStartPlaybackOffset)); }
 
+let uXT=null;
 function initXTChart(){
   if(uXT) return; if(!window.uPlot){ if(graphEnabled){ pendingGraph=true; } return; }
   xtChart.style.display='block'; positionRightPanel();
@@ -753,18 +765,30 @@ function drawAX(c){
   const X2=w/2 + x2*gainX, Y2=h/2 - a2*gainA;
   ctx.moveTo(X1,Y1); ctx.lineTo(X2,Y2); ctx.stroke();
 }
-
-/* NEW: ensure* για να εμφανιστούν τα mini γραφήματα όταν πρέπει */
 function ensureVelocityChart(){ if(!vCan){ vCan = makeLawCanvas('lawV'); } drawV(vCan); positionLawCharts(); }
 function ensureAccelerationChart(){ if(!aCan){ aCan = makeLawCanvas('lawA'); } drawA(aCan); positionLawCharts(); }
 function ensureAxChart(){ if(!axCan){ axCan = makeLawCanvas('lawAX'); } drawAX(axCan); positionLawCharts(); }
 
-/* Κλείσιμο αυλαίας + overlay Πράξης 2 */
+/* Κλείσιμο αυλαίας + actBreak πάνω στην curtain-upper */
 function closeCurtainsSequence(){
+  // πιο αργή πτώση μόνο τώρα
+  curtainUpper.classList.add('slow-close');
+
   stage.classList.remove('open');
   markerEl.style.opacity='0';
   setMode('run');
-  setTimeout(()=>{ actBreak.style.display='flex'; }, 1200);
+
+  // εμφάνιση προαγγελίας μετά από 1.5s και μόνο πάνω από την curtain-upper
+  setTimeout(()=>{
+    const cuRect = curtainUpper.getBoundingClientRect();
+    const stRect = stage.getBoundingClientRect();
+    actBreak.style.left   = (cuRect.left - stRect.left) + 'px';
+    actBreak.style.top    = (cuRect.top  - stRect.top ) + 'px';
+    actBreak.style.width  = cuRect.width  + 'px';
+    actBreak.style.height = cuRect.height + 'px';
+    actBreak.style.display='flex';
+    curtainUpper.classList.remove('slow-close');
+  }, 1500);
 }
 
 /* Timeline handler */
@@ -872,7 +896,7 @@ ro.observe(stage);
 
 /* Self-check */
 (function(){
-  const must={stage,actor,springEl,startBtn,clockEl,rulerEl,markerEl,bubbleEl,btnPause,btnSlow,btnPlay,btnSettings,btnReset,settingsPanel,xtChart,paramsBoxEl,lawsPane,lawCharts,measureBox,actBreak,spotlight};
+  const must={stage,actor,springEl,startBtn,clockEl,rulerEl,markerEl,bubbleEl,btnPause,btnSlow,btnPlay,btnSettings,btnReset,settingsPanel,xtChart,paramsBoxEl,lawsPane,lawCharts,measureBox,actBreak,spotlight,curtainUpper};
   const miss=Object.entries(must).filter(([k,v])=>!v).map(([k])=>k);
   if(miss.length) console.error('Λείπουν στοιχεία:', miss.join(', ')); else console.log('Self-check OK');
 })();
