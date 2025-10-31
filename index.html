@@ -41,7 +41,7 @@
 
   /* Δεξιά κουρτίνα: ρολόι, μετρήσεις, γράφημα */
   .clock{position:absolute;top:10px;left:calc(82vw + 9vw);transform:translateX(-50%);background:rgba(0,0,0,.5);color:#fff;padding:6px 10px;font-size:16px;font-family:"Courier New",monospace;border-radius:6px;border:1px solid rgba(255,255,255,.3);z-index:265;pointer-events:none;display:none}
-  .clock .hint{font-size:10px;color:#ffd27a;opacity:.9}
+  .clock .hint{font-size:10px;color:#ffd27a;opacity:.9;margin-left:6px}
   .measure-box{position:absolute;left:calc(82vw + 9vw);transform:translateX(-50%);top:54px;width:calc(18vw - 16px);z-index:262;background:rgba(0,0,0,.45);color:#fff;border:1px solid rgba(255,255,255,.25);border-radius:8px;padding:6px 8px;display:none;height:50vh;overflow-y:auto}
   .laws{position:absolute;left:2%;top:10px;width:16%;max-height:30vh;overflow:auto;background:rgba(20,0,0,.6);color:#fff;border:1px solid rgba(255,200,200,.3);border-radius:8px;padding:6px 8px;font-size:16px;line-height:1.5;z-index:260;display:none}
   .laws h4{margin:0 0 6px 0}
@@ -255,7 +255,7 @@ const i18n = {
     actTitle:"Πράξη 1",
     massLine:`m₁ = ${m} kg`,
     kLine:`D₁ = ${D} N/m`,
-    eme ch:`Εμηχ = ${Math.round(E_mech)} J`,
+    emech:`Εμηχ = ${Math.round(E_mech)} J`,
     startBtn:"Έναρξη",
     cdMain:"Η παράσταση αρχίζει...",
     cdSub:"ώρα να χρησιμοποιήσετε χαρτί και μολύβι!",
@@ -286,7 +286,7 @@ const i18n = {
     actTitle:"Act I",
     massLine:`m₁ = ${m} kg`,
     kLine:`D₁ = ${D} N/m`,
-    eme ch:`E_mech = ${Math.round(E_mech)} J`,
+    emech:`E_mech = ${Math.round(E_mech)} J`,
     startBtn:"Start",
     cdMain:"The show is about to begin…",
     cdSub:"grab paper & pencil!",
@@ -314,7 +314,7 @@ const i18n = {
     }
   }
 };
-let LANG='gr';
+let LANG='gr', firstLawShown=false;
 function setLang(lang){
   LANG=lang;
   document.documentElement.lang = (lang==='en'?'en':'el');
@@ -334,14 +334,501 @@ function setLang(lang){
   document.getElementById('actBreakTitle').textContent=i18n[lang].actBreakTitle;
   document.getElementById('actBreakMsg').textContent  =i18n[lang].actBreakMsg;
   document.getElementById('btnAct2').textContent      =i18n[lang].act2Btn;
-  // Laws title: εμφανίζεται όταν γραφτεί ο 1ος νόμος
   if(firstLawShown) document.getElementById('lawsTitle').textContent=i18n[lang].lawsTitle;
-  // refresh bubble αν είναι ανοιχτό και είναι δυναμικό
+}
+/* Διακόπτης γλώσσας */
+const langSwitch=document.getElementById('langSwitch');
+langSwitch.addEventListener('click',(e)=>{
+  const btn=e.target.closest('button[data-lang]');
+  if(!btn) return;
+  const lang=btn.dataset.lang;
+  [...langSwitch.querySelectorAll('button')].forEach(b=>b.classList.toggle('on', b.dataset.lang===lang));
+  setLang(lang);
+});
+
+/* ====== DOM refs ====== */
+const stage=document.getElementById('stage');
+const actor=document.getElementById('actor');
+const springEl=document.getElementById('spring');
+const startBtn=document.getElementById('startBtn');
+const clockEl=document.getElementById('clock');
+const slowHint=document.getElementById('slowHint');
+const rulerEl=document.getElementById('ruler');
+const markerEl=document.getElementById('marker');
+const bubbleEl=document.getElementById('bubble0');
+const btnPause=document.getElementById('btnPause');
+const btnSlow=document.getElementById('btnSlow');
+const btnPlay=document.getElementById('btnPlay');
+const btnSettings=document.getElementById('btnSettings');
+const settingsPanel=document.getElementById('settingsPanel');
+const slFirst=document.getElementById('slFirst'), valFirst=document.getElementById('valFirst');
+const slScale=document.getElementById('slScale'), valScale=document.getElementById('valScale');
+const slDur=document.getElementById('slDur'),   valDur=document.getElementById('valDur');
+const slSlow=document.getElementById('slSlow'), valSlow=document.getElementById('valSlow');
+const countdownOverlay=document.getElementById('countdownOverlay');
+const countdownTimerEl=document.getElementById('countdownTimer');
+const xtChart=document.getElementById('xtChart');
+const paramsBoxEl=document.getElementById('paramsBox');
+const paramAEl=document.getElementById('paramA');
+const paramWEl=document.getElementById('paramW');
+const paramPhiEl=document.getElementById('paramPhi');
+const lawsPane=document.getElementById('laws');
+const lawsTitle=document.getElementById('lawsTitle');
+const lawsList=document.getElementById('lawsList');
+const measureBox=document.getElementById('measureBox');
+const measureTBody=document.getElementById('measureTBody');
+const actBreak=document.getElementById('actBreak');
+const btnAct2=document.getElementById('btnAct2');
+
+/* Ρυθμίσεις ροής */
+const DEFAULT_FIRST_MUL=1.1;
+let firstThoughtMul=parseFloat(slFirst.value);
+let timelineScale=parseFloat(slScale.value);
+let bubbleDurationSec=parseFloat(slDur.value);
+let slowFactor=parseFloat(slSlow.value); // default 1.00×
+
+slFirst.addEventListener('input',()=>{ firstThoughtMul=parseFloat(slFirst.value); valFirst.textContent=`${firstThoughtMul.toFixed(1)}·T`; });
+slScale.addEventListener('input',()=>{ timelineScale=parseFloat(slScale.value); valScale.textContent=`${timelineScale.toFixed(1)}×`; });
+slDur.addEventListener('input',()=>{ bubbleDurationSec=parseFloat(slDur.value); valDur.textContent=`${bubbleDurationSec.toFixed(1)}s`; });
+slSlow.addEventListener('input',()=>{ slowFactor=parseFloat(slSlow.value); valSlow.textContent=`${slowFactor.toFixed(2)}×`; });
+
+btnSettings.addEventListener('click',()=>{ settingsPanel.style.display=(settingsPanel.style.display==='block'?'none':'block'); });
+
+/* Timeline Πράξης 1 */
+const thoughtScript=[
+  {kind:'bubble',atT:1.1,viewer:1,key:'t1',yOffset:120},
+  {kind:'bubble',atT:2.1,viewer:2,key:'t2',yOffset:130},
+  {kind:'bubble',atT:3.0,viewer:0,key:'t3',yOffset:140},
+  {kind:'bubble',atT:3.8,viewer:3,key:'t4',yOffset:120},
+  {kind:'bubble',atT:4.2,viewer:4,key:'t4a',yOffset:130,xShift:-100},
+  {kind:'bubble',atT:4.9,viewer:4,key:'t5',yOffset:140,xShift:-140},
+  {kind:'graph', atT:5.5},
+  {kind:'bubble',atT:6.2,viewer:2,dynamic:'params',yOffset:135},
+  {kind:'law',   atT:6.5,lawText:'x(t) = A·ημ(ωt + φ₀)'},
+  {kind:'bubble',atT:7.2,viewer:0,key:'t9',yOffset:130},
+  {kind:'law',   atT:7.5,lawText:'v(t) = ωA·συν(ωt + φ₀)'},
+  {kind:'bubble',atT:8.2,viewer:3,key:'t10',yOffset:140},
+  {kind:'law',   atT:8.5,lawText:'a(t) = −ω²A·ημ(ωt + φ₀)'},
+  {kind:'bubble',atT:9.2,viewer:1,key:'t11',yOffset:125},
+  {kind:'law',   atT:9.5,lawText:'a = −ω²·x'},
+  {kind:'close', atT:10.5}
+];
+let nextThoughtIdx=0,isBubbleActive=false,bubbleAutoTimer=null;
+let measureRowIdx=0;
+
+/* Ρολόι & play state */
+let t0=performance.now(), lastFrame=performance.now();
+let playbackTime=0, mode='run', obsStarted=false, obsStartPlaybackOffset=0;
+
+/* Μετρήσεις */
+let lastSampleObsTime=-Infinity; const sampleInterval=0.25;
+
+/* Χάρακας −7…+7 m */
+let lastRulerW=0;
+function updateRuler(){
+  const baseLeft=stage.clientWidth*0.18;
+  const usableW =stage.clientWidth*0.64;
+  if(Math.abs(usableW-lastRulerW)<1) return;
+  lastRulerW=usableW;
+  rulerEl.style.left=baseLeft+'px';
+  rulerEl.style.width=usableW+'px';
+  rulerEl.innerHTML='';
+  const centerX=stage.clientWidth/2;
+  for(let mTick=-7;mTick<=7;mTick++){
+    const xPx=centerX+mTick*pxPerMeter;
+    const rel=xPx-baseLeft;
+    const tDiv=document.createElement('div'); tDiv.className='tick'; tDiv.style.left=rel+'px'; rulerEl.appendChild(tDiv);
+    const lbl=document.createElement('div'); lbl.className='tick-label';
+    lbl.textContent=(mTick===0?'0':(mTick>0? '+'+mTick:''+mTick))+' m';
+    lbl.style.left=rel+'px'; rulerEl.appendChild(lbl);
+  }
 }
 
-/* Γλώσσα UI */
-const langSwitch=document.getElementById('langSwitch');
-langSwitch.add EventListener?.call
+/* Layout δεξιάς κουρτίνας & γράφημα */
+let graphEnabled=false, uXT=null, xData=null, pendingGraph=false;
+
+function positionRightPanel(){
+  const W=stage.clientWidth, H=stage.clientHeight;
+  const curtainLeft=W*0.82, curtainW=W*0.18, centerX=curtainLeft+curtainW/2;
+
+  if(clockEl){ clockEl.style.left=centerX+'px'; }
+
+  if(measureBox){
+    measureBox.style.left=centerX+'px';
+    const mTop=54;
+    measureBox.style.top=mTop+'px';
+    const halfH=Math.floor(H*0.5);
+    measureBox.style.height=halfH+'px';
+    measureBox.style.overflowY='auto';
+    measureBox.style.width=Math.max(160,curtainW-16)+'px';
+  }
+
+  if(xtChart){
+    const mTop=measureBox.offsetTop||54;
+    const mHeight=measureBox.offsetHeight||Math.floor(H*0.5);
+    const xTop=mTop+mHeight+8;
+    const availH=Math.max(120,H-xTop-8);
+    xtChart.style.left=centerX+'px';
+    xtChart.style.top =xTop+'px';
+    const w=Math.max(160,(measureBox?measureBox.offsetWidth:(curtainW-16)));
+    xtChart.style.width =w+'px';
+    xtChart.style.height=availH+'px';
+    xtChart.style.transform='translateX(-50%)';
+    if(uXT){ uXT.setSize({width:Math.floor(w), height:Math.floor(availH)}); drawXTChart(); }
+    const c=document.getElementById('xtFallback');
+    if(c){ c.width=Math.max(200,xtChart.clientWidth|0); c.height=Math.max(120,xtChart.clientHeight|0); drawFallbackOnce(); }
+  }
+
+  if(paramsBoxEl){
+    const centerLeft=W*0.18, centerW=W*0.64;
+    const rightEdge=centerLeft+centerW-10;
+    paramsBoxEl.style.left=rightEdge+'px';
+    paramsBoxEl.style.transform='translateX(-100%)';
+  }
+}
+window.addEventListener('resize', positionRightPanel);
+
+function anchorX(){ return stage.clientWidth*0.18; }
+
+function logMeasurement(tObs,xMeters){
+  if(!obsStarted) return; if(mode==='pause') return;
+  if(tObs-lastSampleObsTime<sampleInterval) return; lastSampleObsTime=tObs;
+  const tr=document.createElement('tr');
+  tr.className='new';
+  tr.innerHTML=`<td>${(++measureRowIdx)}</td><td>${tObs.toFixed(2)}</td><td>${xMeters.toFixed(2)}</td>`;
+  measureTBody.appendChild(tr);
+  setTimeout(()=>{ tr.classList.remove('new'); }, 650);
+  try{ tr.scrollIntoView({block:'end'}); }catch(e){}
+  try{ measureBox.scrollTop=measureBox.scrollHeight; }catch(e){}
+}
+
+function setMode(newMode){
+  mode=newMode;
+  btnSlow.classList.toggle('active', mode==='slow');
+  btnPlay.classList.toggle('active', mode==='run');
+  slowHint.textContent = (mode==='slow' && slowFactor<1) ? `SLOW-MO ×${slowFactor.toFixed(2)}` : '';
+}
+
+/* Κύριο animation */
+let L0_px; let skaterWidthPx; let hookOffsetPx;
+
+function animate(now){
+  const realDt=(now-lastFrame)/1000; lastFrame=now;
+  positionRightPanel();
+  updateRuler();
+
+  const tPhys=(now-t0)/1000;
+  if(!obsStarted){ playbackTime=tPhys; }
+  else{
+    if(mode==='run') playbackTime+=realDt;
+    else if(mode==='slow') playbackTime+=realDt*slowFactor; // default 1.00× ⇒ χωρίς επιβράδυνση
+  }
+  let tObs=0; if(obsStarted){ tObs=playbackTime-obsStartPlaybackOffset; }
+  clockEl.textContent='t = '+tObs.toFixed(2)+' s';
+
+  // Γράφημα: μόνο όταν έχει έρθει το event graph
+  if(pendingGraph && graphEnabled){
+    if(window.uPlot){ try{ ensureXTReady(); pendingGraph=false; }catch(e){ console.error('deferred graph init',e); } }
+    else{ renderXTCanvasFallback(); }
+  }
+
+  if(obsStarted && !isBubbleActive && nextThoughtIdx<thoughtScript.length){
+    const th=thoughtScript[nextThoughtIdx];
+    const shiftMul=(firstThoughtMul-DEFAULT_FIRST_MUL);
+    const baseMul=(th.atT??0);
+    const eventAtSec=(baseMul+shiftMul)*T*timelineScale;
+    if(tObs>=eventAtSec){
+      try{ handleTimelineEvent(th); nextThoughtIdx+=1; }
+      catch(e){ console.error('timeline event error:',e); nextThoughtIdx+=1; }
+    }
+  }
+
+  const springRect=springEl.getBoundingClientRect();
+  const skRect=actor.getBoundingClientRect();
+  if(!L0_px && springRect.width>0){ L0_px=springRect.width; }
+  if(skRect.width>0){ skaterWidthPx=skRect.width; hookOffsetPx=skaterWidthPx/2; }
+
+  { // δέσιμο skater–anchor & δείκτης
+    const ax=anchorX();
+    const centerX=stage.clientWidth/2;
+    const skaterHookX=centerX + A_px*Math.sin(omega*playbackTime);
+    const distance=skaterHookX-ax;
+    const scale=(L0_px && L0_px>0) ? (distance/L0_px) : 1;
+    springEl.style.left=ax+'px';
+    springEl.style.transform=`scaleX(${scale})`;
+    actor.style.transform='none';
+    actor.style.left=(skaterHookX-hookOffsetPx)+'px';
+    markerEl.style.left=skaterHookX+'px';
+    const xMeters=(skaterHookX-centerX)/pxPerMeter;
+    logMeasurement(tObs,xMeters);
+  }
+
+  requestAnimationFrame(animate);
+}
+requestAnimationFrame(animate);
+
+/* Bubbles */
+const BASE_BUBBLE_LIFT=96;
+function showThoughtForViewer(viewerIdx,text,durationSecs,customLift,xShift=0){
+  const viewerEl=document.querySelector(`.viewer[data-idx="${viewerIdx}"]`);
+  if(!viewerEl) return;
+  bubbleEl.querySelector('.text').textContent=text||'';
+  const vRect=viewerEl.getBoundingClientRect(); const sRect=stage.getBoundingClientRect();
+  const extraX=(viewerIdx-2)*80 + 40 + (xShift||0);
+  let leftPx=(vRect.left+vRect.width/2 - sRect.left)+extraX;
+  leftPx=Math.min(stage.clientWidth-40, Math.max(40,leftPx));
+  const lift=(typeof customLift==='number'?customLift:BASE_BUBBLE_LIFT);
+  let topPx=(vRect.top - sRect.top - lift); topPx=Math.max(10,topPx);
+  bubbleEl.style.left=leftPx+'px';
+  bubbleEl.style.top =topPx +'px';
+  bubbleEl.style.display='block'; void bubbleEl.offsetWidth;
+  bubbleEl.classList.add('active'); isBubbleActive=true; setMode('slow');
+
+  const dur=(typeof durationSecs==='number'?durationSecs:bubbleDurationSec);
+  if(bubbleAutoTimer){ clearTimeout(bubbleAutoTimer); bubbleAutoTimer=null; }
+  bubbleAutoTimer=setTimeout(()=>{ resumeFromBubble('run'); }, Math.max(0.5,dur)*1000);
+}
+function resumeFromBubble(nextMode='run'){
+  if(bubbleAutoTimer){ clearTimeout(bubbleAutoTimer); bubbleAutoTimer=null; }
+  bubbleEl.classList.add('checked');
+  setTimeout(()=>{ bubbleEl.classList.add('closing'); },200);
+  setTimeout(()=>{
+    bubbleEl.classList.remove('active');
+    bubbleEl.style.display='none';
+    bubbleEl.classList.remove('checked');
+    bubbleEl.classList.remove('closing');
+    isBubbleActive=false;
+  },800);
+  setMode(nextMode==='slow'?'slow':'run');
+}
+
+/* Νόμοι */
+function addLaw(txt){
+  if(!firstLawShown){
+    firstLawShown=true;
+    lawsTitle.textContent=i18n[LANG].lawsTitle;
+    lawsPane.style.display='block';
+  }
+  const li=document.createElement('li'); li.textContent=txt; lawsList.appendChild(li);
+}
+
+/* Παράμετροι στην πάνω κουρτίνα */
+function showCurtainParams(){
+  const phi0deg=((omega*obsStartPlaybackOffset)*180/Math.PI + 360)%360;
+  paramAEl.textContent  =`A = ${A_m.toFixed(2)} m`;
+  paramWEl.textContent  =`ω = ${omega.toFixed(3)} rad/s`;
+  paramPhiEl.textContent=`φ₀ = ${phi0deg.toFixed(1)}°`;
+  paramsBoxEl.style.display='block';
+}
+
+/* uPlot – data */
+function buildSeriesData(){
+  const N=240;
+  const tArr=new Array(N+1);
+  const xArr=new Array(N+1);
+  for(let i=0;i<=N;i++){
+    const tloc=(i/N)*T;
+    tArr[i]=tloc;
+    xArr[i]=A_m*Math.sin(omega*(tloc+obsStartPlaybackOffset));
+  }
+  return [tArr,xArr];
+}
+function x0Val(){ return A_m*Math.sin(omega*(0+obsStartPlaybackOffset)); }
+
+function initXTChart(){
+  if(uXT) return;
+  if(!window.uPlot){ if(graphEnabled){ pendingGraph=true; } return; }
+
+  xtChart.style.display='block';
+  positionRightPanel();
+
+  let w=Math.floor(xtChart.clientWidth)||260;
+  let h=Math.floor(xtChart.clientHeight)||140;
+
+  xData=buildSeriesData(); // Δίνουμε data πριν τον constructor
+
+  const opts={
+    width:w, height:h,
+    scales:{ x:{time:false, range:[0,T]}, y:{range:[-A_m*1.1, A_m*1.1]} },
+    axes:[
+      { stroke:"#fff", grid:{show:true, stroke:"rgba(255,255,255,0.25)"},
+        values:(u,vals)=>vals.map(v=>v.toFixed(1)+" s"), label:"t (s)", labelSize:18, labelGap:6 },
+      { stroke:"#fff", grid:{show:true, stroke:"rgba(255,255,255,0.25)"},
+        values:(u,vals)=>vals.map(v=>v.toFixed(1)+" m"), label:"x (m)", labelSize:18, labelGap:8 }
+    ],
+    series:[{}, {label:"x(t)", stroke:"#ffd27a", width:2}],
+    hooks:{ draw:[(u)=>{
+      const ctx=u.ctx;
+      const x0=u.valToPos(0,'x',true);
+      const xT=u.valToPos(T,'x',true);
+      const y0=u.valToPos(0,'y',true);
+      const yA=u.valToPos(A_m,'y',true);
+      const yAm=u.valToPos(-A_m,'y',true);
+      ctx.save();
+      ctx.setLineDash([6,4]); ctx.strokeStyle="rgba(255,255,255,0.45)";
+      ctx.beginPath(); ctx.moveTo(x0,yA);  ctx.lineTo(xT,yA);  ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x0,yAm); ctx.lineTo(xT,yAm); ctx.stroke();
+      ctx.setLineDash([4,3]); ctx.beginPath(); ctx.moveTo(xT, u.bbox.top); ctx.lineTo(xT, u.bbox.top+u.bbox.height); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle="#fff"; ctx.font="12px Inter, system-ui";
+      ctx.textAlign="left"; ctx.textBaseline="bottom"; ctx.fillText(A_m.toFixed(2), x0+4, yA-4);
+      ctx.textBaseline="top"; ctx.fillText((-A_m).toFixed(2), x0+4, yAm+4);
+      ctx.textAlign="center"; ctx.textBaseline="top"; ctx.fillText(T.toFixed(2), xT, y0+6);
+      const yx0=u.valToPos(x0Val(),'y',true);
+      ctx.fillStyle="#ffd27a"; ctx.beginPath(); ctx.arc(x0, yx0, 3, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle="#fff"; ctx.textAlign="left"; ctx.textBaseline="middle"; ctx.fillText("x₀", x0+6, yx0);
+      ctx.textAlign="right"; ctx.fillText(x0Val().toFixed(2), x0-8, yx0);
+      ctx.restore();
+    }]}
+  };
+
+  uXT=new uPlot(opts, xData, xtChart);
+}
+function drawXTChart(){ if(uXT){ uXT.setData(buildSeriesData()); } }
+
+function ensureXTReady(){
+  if(!graphEnabled) return;
+  try{
+    if(window.uPlot){
+      initXTChart();
+      if(uXT){ drawXTChart(); showCurtainParams(); }
+    }else{
+      if(graphEnabled){ pendingGraph=true; renderXTCanvasFallback(); }
+    }
+  }catch(e){
+    console.error('ensureXTReady',e);
+    if(graphEnabled){ pendingGraph=true; renderXTCanvasFallback(); }
+  }
+}
+
+/* Canvas fallback */
+function renderXTCanvasFallback(){
+  xtChart.style.display='block';
+  positionRightPanel();
+  let c=document.getElementById('xtFallback');
+  if(!c){ c=document.createElement('canvas'); c.id='xtFallback'; xtChart.appendChild(c); }
+  c.width = Math.max(200, xtChart.clientWidth|0);
+  c.height= Math.max(120, xtChart.clientHeight|0);
+  drawFallbackOnce();
+}
+function drawFallbackOnce(){
+  const c=document.getElementById('xtFallback'); if(!c) return;
+  const ctx=c.getContext('2d'); const w=c.width, h=c.height;
+  ctx.clearRect(0,0,w,h);
+  ctx.fillStyle='rgba(255,255,255,0.08)'; ctx.fillRect(0,0,w,h);
+  ctx.strokeStyle='rgba(255,255,255,0.35)'; ctx.lineWidth=1;
+  ctx.beginPath();
+  for(let i=0;i<=6;i++){ const x=i*(w/6); ctx.moveTo(x,0); ctx.lineTo(x,h); }
+  for(let j=0;j<=4;j++){ const y=j*(h/4); ctx.moveTo(0,y); ctx.lineTo(w,y); }
+  ctx.stroke();
+  ctx.fillStyle='#fff'; ctx.font='12px Inter, system-ui';
+  ctx.textAlign='center'; ctx.fillText('t (s)', w/2, h-6);
+  ctx.save(); ctx.translate(10,h/2); ctx.rotate(-Math.PI/2); ctx.textAlign='center'; ctx.fillText('x (m)',0,0); ctx.restore();
+  const N=240; ctx.strokeStyle='#ffd27a'; ctx.lineWidth=2; ctx.beginPath();
+  for(let i=0;i<=N;i++){
+    const tloc=(i/N)*T;
+    const x= i*(w/N);
+    const yVal= A_m*Math.sin(omega*(tloc+obsStartPlaybackOffset));
+    const y= (h/2) - (yVal/(A_m*1.1))*(h/2*0.9);
+    if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  }
+  ctx.stroke();
+  ctx.setLineDash([6,4]); ctx.strokeStyle='rgba(255,255,255,0.5)';
+  let yA=(h/2) - ( A_m/(A_m*1.1))*(h/2*0.9);
+  let yAm=(h/2) - (-A_m/(A_m*1.1))*(h/2*0.9);
+  ctx.beginPath(); ctx.moveTo(0,yA); ctx.lineTo(w,yA); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(0,yAm); ctx.lineTo(w,yAm); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle='#fff'; ctx.textAlign='left'; ctx.textBaseline='bottom'; ctx.fillText(A_m.toFixed(2), 6, yA-4);
+  ctx.textBaseline='top'; ctx.fillText((-A_m).toFixed(2), 6, yAm+4);
+  ctx.textAlign='center'; ctx.textBaseline='top'; ctx.fillText(T.toFixed(2), w-6, h-18);
+  const x0x=0; const x0y=(h/2) - (x0Val()/(A_m*1.1))*(h/2*0.9);
+  ctx.fillStyle='#ffd27a'; ctx.beginPath(); ctx.arc(x0x+6,x0y,3,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='#fff'; ctx.textAlign='left'; ctx.textBaseline='middle'; ctx.fillText('x₀', x0x+12, x0y);
+  ctx.textAlign='right'; ctx.fillText(x0Val().toFixed(2), Math.min(w-6, x0x+56), x0y);
+}
+
+/* Κλείσιμο αυλαίας */
+function showCurtainsClosing(){
+  stage.classList.remove('open');
+  stage.classList.add('closed-show-actors');
+  markerEl.style.opacity='0';
+  setMode('run');
+  actBreak.style.display='flex';
+}
+
+/* Timeline event handler */
+function handleTimelineEvent(th){
+  if(th.kind==='bubble'){
+    let text;
+    if(th.dynamic==='params'){
+      const phi0deg=((omega*obsStartPlaybackOffset)*180/Math.PI + 360)%360;
+      text=i18n[LANG].thoughts.t7lead(A_m.toFixed(2), omega.toFixed(3), phi0deg.toFixed(1));
+    }else{
+      text=i18n[LANG].thoughts[th.key] || '';
+    }
+    showThoughtForViewer(th.viewer,text,bubbleDurationSec,th.yOffset,th.xShift||0);
+  }else if(th.kind==='graph'){
+    graphEnabled=true;
+    ensureXTReady();
+  }else if(th.kind==='law'){
+    addLaw(th.lawText);
+  }else if(th.kind==='close'){
+    setTimeout(showCurtainsClosing,3000);
+  }
+}
+
+/* Κουμπιά ροής */
+btnPause.addEventListener('click',()=>{ setMode(mode==='pause'?'run':'pause'); });
+btnSlow .addEventListener('click', ()=>{ resumeFromBubble('slow'); });
+btnPlay .addEventListener('click', ()=>{ resumeFromBubble('run');  });
+
+btnAct2.addEventListener('click', ()=>{
+  actBreak.style.display='none';
+  springEl.style.display='block'; // Πράξη 2: δείξε το ελατήριο
+  document.dispatchEvent(new CustomEvent('act2-start'));
+});
+
+/* Έναρξη */
+function beginObservationAfterCountdown(){
+  stage.classList.add('open');
+  if(!obsStarted){ obsStarted=true; obsStartPlaybackOffset=playbackTime; }
+  clockEl.style.display='block';
+  measureBox.style.display='block';
+  markerEl.style.opacity='1';
+  positionRightPanel();
+}
+function startShowCountdown(){
+  startBtn.style.display='none';
+  countdownOverlay.style.display='flex';
+  let remaining=5; countdownTimerEl.textContent=remaining;
+  const tick=setInterval(()=>{
+    remaining-=1; countdownTimerEl.textContent=Math.max(0,remaining);
+    if(remaining<0){
+      clearInterval(tick);
+      countdownOverlay.style.display='none';
+      beginObservationAfterCountdown();
+    }
+  },1000);
+}
+startBtn.addEventListener('click', startShowCountdown);
+
+/* Παρατηρητής μεγέθους */
+const ro=new ResizeObserver(()=>{ positionRightPanel(); if(uXT){ drawXTChart(); } else if(document.getElementById('xtFallback')){ drawFallbackOnce(); } });
+ro.observe(stage);
+
+/* Self-check */
+(function(){
+  const must={stage,actor,springEl,startBtn,clockEl,rulerEl,markerEl,bubbleEl,btnPause,btnSlow,btnPlay,btnSettings,settingsPanel,xtChart,paramsBoxEl,lawsPane,measureBox,actBreak};
+  const miss=Object.entries(must).filter(([k,v])=>!v).map(([k])=>k);
+  if(miss.length) console.error('Λείπουν στοιχεία:', miss.join(', ')); else console.log('Self-check OK');
+})();
+
+/* Αν σε ~2.5s δεν έχει φορτώσει uPlot και ζητήθηκε γράφημα, δείξε fallback */
+setTimeout(()=>{ if(!window.uPlot && graphEnabled){ renderXTCanvasFallback(); } }, 2500);
+
+/* Αρχική γλώσσα */
+setLang('gr');
 </script>
 </body>
 </html>
