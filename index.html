@@ -4,6 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Θεατρική Σκηνή – Mockup</title>
+
+<!-- uPlot -->
+<link rel="stylesheet" href="https://unpkg.com/uplot@1.6.30/dist/uPlot.min.css">
+<script src="https://unpkg.com/uplot@1.6.30/dist/uPlot.iife.min.js"></script>
+
 <style>
   body { margin: 0; background: radial-gradient(circle at center, #222 0%, #000 100%); overflow: hidden; font-family: Inter, system-ui, sans-serif; }
   .stage { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
@@ -41,16 +46,18 @@
   .signboard h2 { font-size:20px; margin:2px 0 0 0; }
   .signboard h3 { font-size:18px; margin:2px 0 0 0; color:#ffd27a; }
 
-  /* overlays ΠΑΝΩ από το κοινό (z-index >150) */
+  /* overlays */
   .clock       { position:absolute; top:10px; left:calc(82vw + 9vw); transform:translateX(-50%); background:rgba(0,0,0,0.5); color:#fff; padding:6px 10px; font-size:16px; font-family:"Courier New",monospace; border-radius:6px; border:1px solid rgba(255,255,255,0.3); z-index:265; pointer-events:none; display:none; }
   .measure-box { position:absolute; left:calc(82vw + 9vw); transform:translateX(-50%); top:54px; width:calc(18vw - 16px); z-index:262; background:rgba(0,0,0,0.45); color:#fff; border:1px solid rgba(255,255,255,0.25); border-radius:8px; padding:6px 8px; display:none; height:50vh; overflow-y:auto; }
   .laws        { position:absolute; left:2%; top:10px; width:16%; max-height:30vh; overflow:auto; background:rgba(20,0,0,0.6); color:#fff; border:1px solid rgba(255,200,200,0.3); border-radius:8px; padding:6px 8px; font-size:16px; line-height:1.5; z-index:260; display:none; }
   .params-box  { position:absolute; top:8px; z-index:268; background:rgba(0,0,0,0.5); color:#fff; border:1px solid rgba(255,255,255,0.25); border-radius:8px; padding:6px 10px; font-size:12px; line-height:1.4; display:none; }
 
-  /* Γράφημα x–t (z-index ↑) */
-  #xtCanvas    { position:absolute; display:none; background:rgba(0,0,0,0.2); border:1px solid rgba(255,255,255,0.2); border-radius:6px; z-index:266; pointer-events:none; }
-
-  .laws h4 { margin:0 0 4px 0; font-size:12px; color:#ff8080; font-family:'Georgia',serif; text-align:center; }
+  /* Γράφημα x–t */
+  #xtChart    { position:absolute; display:none; z-index:266; pointer-events:none; }
+  .uplot { background: rgba(0,0,0,0.20); border:1px solid rgba(255,255,255,0.2); border-radius:6px; }
+  .u-legend { display:none !important; }
+  .u-axis text { fill:#fff; }
+  .u-grid line { stroke: rgba(255,255,255,0.25); }
 
   /* Sticky headers για τον πίνακα μετρήσεων */
   .measure-box table { width:100%; border-collapse:separate; border-spacing:0; font-size:12px; }
@@ -67,8 +74,22 @@
   .marker-line { position:absolute; left:50%; bottom:8px; width:2px; height:70px; background:#ffd27a; box-shadow:0 0 4px rgba(255,210,122,0.8); transform:translateX(-50%); }
   .marker-tip  { position:absolute; left:50%; bottom:0; width:0; height:0; border-left:6px solid transparent; border-right:6px solid transparent; border-top:8px solid #ffd27a; filter:drop-shadow(0 2px 2px rgba(255,210,122,0.8)); transform:translateX(-50%); }
 
-  /* Bubble (dotted + ελαφρώς πιο διάφανο) */
-  .thought-bubble { position:absolute; max-width:420px; background:rgba(255,255,255,0.85); color:#000; font-size:20px; line-height:1.65; padding:14px 16px 16px; border-radius:10px; border:2px dotted rgba(0,0,0,0.5); box-shadow:0 6px 12px rgba(0,0,0,0.4); z-index:340; pointer-events:none; opacity:0; display:none; transition:opacity .3s ease; }
+  /* Bubble (dot-dash, πιο σφιχτό, μικρότερο) */
+  .thought-bubble {
+    position:absolute; max-width:420px;
+    background:rgba(255,255,255,0.85); color:#000;
+    font-size:18px; line-height:1.5;
+    padding:10px 12px 12px;
+    border:2px solid transparent; border-radius:10px;
+    /* τελείες + παύλες: dash 6px, gap 4px, dot 2px, gap 4px */
+    border-image: repeating-linear-gradient(90deg,
+      rgba(0,0,0,0.6) 0 6px,
+      transparent     6px 10px,
+      rgba(0,0,0,0.6) 10px 12px,
+      transparent     12px 16px) 1;
+    box-shadow:0 6px 12px rgba(0,0,0,0.4);
+    z-index:340; pointer-events:none; opacity:0; display:none; transition:opacity .3s ease;
+  }
   .thought-bubble.active { opacity:1; }
   .thought-bubble.closing { opacity:0; }
   .thought-bubble .tail { position:absolute; left:50%; bottom:-10px; transform:translateX(-50%); width:0; height:0; border-left:8px solid transparent; border-right:8px solid transparent; border-top:10px solid rgba(255,255,255,0.85); filter:drop-shadow(0 2px 2px rgba(0,0,0,0.4)); }
@@ -146,7 +167,7 @@
         <tbody id="measureTBody"></tbody>
       </table>
     </div>
-    <canvas id="xtCanvas" width="260" height="140"></canvas>
+    <div id="xtChart"></div>
 
     <!-- Νόμοι -->
     <div class="laws"><h4>Νόμοι</h4><ol id="lawsList"></ol></div>
@@ -250,7 +271,7 @@
   const slSlow = document.getElementById('slSlow'), valSlow = document.getElementById('valSlow');
   const countdownOverlay = document.getElementById('countdownOverlay');
   const countdownTimerEl = document.getElementById('countdownTimer');
-  const xtCanvas = document.getElementById('xtCanvas');
+  const xtChart = document.getElementById('xtChart');
   const paramsBoxEl = document.getElementById('paramsBox');
   const paramAEl = document.getElementById('paramA');
   const paramWEl = document.getElementById('paramW');
@@ -273,21 +294,21 @@
   slSlow.addEventListener('input',  ()=>{ slowFactor = parseFloat(slSlow.value);       valSlow.textContent = `${slowFactor.toFixed(2)}×`; });
   btnSettings.addEventListener('click', ()=>{ settingsPanel.style.display = (settingsPanel.style.display==='block'?'none':'block'); });
 
-  /* Timeline (λιγότεροι πολύ δεξιά: indices 0..3) */
+  /* Timeline (θεατές 0..4 + μεγαλύτερο lift) */
   const thoughtScript = [
-    { kind:'bubble', atT: 1.1, viewer:1, text:'η κίνηση είναι ευθύγραμμη παλινδρομική!' },
-    { kind:'bubble', atT: 2.1, viewer:2, text:'… και επαναλαμβανόμενη-περιοδική, άρα ταλάντωση!' },
-    { kind:'bubble', atT: 3.0, viewer:0, text:'Μήπως είναι Απλή Αρμονική Ταλάντωση;' },
-    { kind:'bubble', atT: 3.8, viewer:3, text:'… αν είναι Α.Α.Τ. τότε οι τιμές που μετράμε πρέπει να επαληθεύουν την χ=Αημ(ωt+φ₀)!' },
-    { kind:'bubble', atT: 4.6, viewer:1, text:'Να κάνουμε διάγραμμα x–t, αυτό θα δείξει!' },
+    { kind:'bubble', atT: 1.1, viewer:1, text:'η κίνηση είναι ευθύγραμμη παλινδρομική!', yOffset:120 },
+    { kind:'bubble', atT: 2.1, viewer:2, text:'… και επαναλαμβανόμενη-περιοδική, άρα ταλάντωση!', yOffset:130 },
+    { kind:'bubble', atT: 3.0, viewer:0, text:'Μήπως είναι Απλή Αρμονική Ταλάντωση;', yOffset:140 },
+    { kind:'bubble', atT: 3.8, viewer:3, text:'… αν είναι Α.Α.Τ. τότε οι τιμές που μετράμε πρέπει να επαληθεύουν την χ=Αημ(ωt+φ₀)!', yOffset:120 },
+    { kind:'bubble', atT: 4.6, viewer:4, text:'Να κάνουμε διάγραμμα x–t, αυτό θα δείξει!', yOffset:140 },
     { kind:'graph',  atT: 5.2 },
-    { kind:'bubble', atT: 5.9, viewer:2, dynamic:'params' },
+    { kind:'bubble', atT: 5.9, viewer:2, dynamic:'params', yOffset:135 },
     { kind:'law',    atT: 6.2, lawText: 'x(t) = A·ημ(ωt + φ₀)' },
-    { kind:'bubble', atT: 6.9, viewer:0, text:'Επομένως η ταχύτητα δίνεται από τον νόμο υ=ωA·συν(ωt+φ₀)!' },
+    { kind:'bubble', atT: 6.9, viewer:0, text:'Επομένως η ταχύτητα δίνεται από τον νόμο υ=ωA·συν(ωt+φ₀)!', yOffset:130 },
     { kind:'law',    atT: 7.2, lawText: 'v(t) = ωA·συν(ωt + φ₀)' },
-    { kind:'bubble', atT: 7.9, viewer:3, text:'…και η επιτάχυνση από τον τύπο a = −ω²A·ημ(ωt+φ₀)!' },
+    { kind:'bubble', atT: 7.9, viewer:3, text:'…και η επιτάχυνση από τον τύπο a = −ω²A·ημ(ωt+φ₀)!', yOffset:140 },
     { kind:'law',    atT: 8.2, lawText: 'a(t) = −ω²A·ημ(ωt + φ₀)' },
-    { kind:'bubble', atT: 8.9, viewer:2, text:'Αλλά η σχέση (1) περιέχεται στην (3), δηλαδή a = −ω²·x!' },
+    { kind:'bubble', atT: 8.9, viewer:1, text:'Αλλά η σχέση (1) περιέχεται στην (3), δηλαδή a = −ω²·x!', yOffset:125 },
     { kind:'law',    atT: 9.2, lawText: 'a = −ω²·x' },
     { kind:'close',  atT: 10.2 }
   ];
@@ -322,8 +343,11 @@
     }
   }
 
-  /* Layout δεξιάς κουρτίνας + γράφημα */
+  /* Layout δεξιάς κουρτίνας + γράφημα (uPlot) */
   let graphEnabled = false;
+  let uXT = null;      // uPlot instance
+  let xData = null;    // [t[], x[]] για 0..T
+
   function positionRightPanel(){
     const W = stage.clientWidth, H = stage.clientHeight;
     const curtainLeft = W * 0.82, curtainW = W * 0.18, centerX = curtainLeft + curtainW/2;
@@ -341,22 +365,22 @@
       measureBox.style.width = Math.max(160, curtainW - 16) + 'px';
     }
 
-    if (xtCanvas){
+    if (xtChart){
       const mTop = measureBox.offsetTop || 54;
       const mHeight = measureBox.offsetHeight || Math.floor(H*0.5);
       const xTop = mTop + mHeight + 8;
       const availH = Math.max(120, H - xTop - 8);
-
-      xtCanvas.style.left = centerX + 'px';
-      xtCanvas.style.top  = xTop + 'px';
+      xtChart.style.left = centerX + 'px';
+      xtChart.style.top  = xTop + 'px';
       const w = Math.max(160, (measureBox ? measureBox.offsetWidth : (curtainW - 16)));
-      xtCanvas.style.width = w + 'px';
-      xtCanvas.style.height = availH + 'px';
-      xtCanvas.width  = Math.floor(w);
-      xtCanvas.height = Math.floor(availH);
-      xtCanvas.style.transform = 'translateX(-50%)';
+      xtChart.style.width = w + 'px';
+      xtChart.style.height = availH + 'px';
+      xtChart.style.transform = 'translateX(-50%)';
 
-      if (graphEnabled) showXTGraph(); // redraw σε resize
+      if (uXT){
+        uXT.setSize({width: Math.floor(w), height: Math.floor(availH)});
+        drawXTChart(); // redraw guides/series
+      }
     }
 
     if (paramsBoxEl){
@@ -436,16 +460,21 @@
     btnPlay.classList.toggle('active', mode==='run');
   }
 
-  function showThoughtForViewer(viewerIdx, text, durationSecs){
+  /* Bubbles */
+  const BASE_BUBBLE_LIFT = 96; // λίγο πιο ψηλά από πριν
+  function showThoughtForViewer(viewerIdx, text, durationSecs, customLift){
     const viewerEl = document.querySelector(`.viewer[data-idx="${viewerIdx}"]`);
     if (!viewerEl) return;
     bubbleEl.querySelector('.text').textContent = text || '';
     const vRect = viewerEl.getBoundingClientRect(); const sRect = stage.getBoundingClientRect();
-    const extraX = (viewerIdx - 2) * 80 + 40; // λίγο λιγότερη μετατόπιση δεξιά
+    const extraX = (viewerIdx - 2) * 80 + 40;
     let leftPx = (vRect.left + vRect.width/2 - sRect.left) + extraX;
     leftPx = Math.min(stage.clientWidth - 40, Math.max(40, leftPx));
+    const lift = (typeof customLift === 'number' ? customLift : BASE_BUBBLE_LIFT);
+    let topPx  = (vRect.top  - sRect.top - lift);
+    topPx = Math.max(10, topPx); // να μη βγει εκτός
     bubbleEl.style.left = leftPx + 'px';
-    bubbleEl.style.top  = (vRect.top  - sRect.top - 76) + 'px';
+    bubbleEl.style.top  = topPx  + 'px';
     bubbleEl.style.display = 'block'; void bubbleEl.offsetWidth;
     bubbleEl.classList.add('active'); isBubbleActive = true; setMode('slow');
 
@@ -479,52 +508,90 @@
     paramsBoxEl.style.display = 'block';
   }
 
-  function showXTGraph(){
-    const ctx = xtCanvas.getContext('2d');
-    const W = xtCanvas.width, H = xtCanvas.height;
-    ctx.clearRect(0,0,W,H);
-
-    // Άξονες
-    ctx.strokeStyle = 'rgba(255,255,255,0.6)'; ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(30, H/2); ctx.lineTo(W-10, H/2); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(30, 10); ctx.lineTo(30, H-10); ctx.stroke();
-
-    // Labels
-    ctx.fillStyle = '#ffffff'; ctx.font = '12px Inter,system-ui';
-    ctx.fillText('x (m)', 6, 16);
-    ctx.fillText('t (s)', W-40, H/2 - 6);
-
-    // A & T
-    const Amp = A_m; const scaleY = (H/2 - 18) / Amp;
-    ctx.setLineDash([4,3]); ctx.strokeStyle = 'rgba(255,255,255,0.35)';
-    ctx.beginPath(); ctx.moveTo(30, H/2 - Amp*scaleY); ctx.lineTo(W-10, H/2 - Amp*scaleY); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(30, H/2 + Amp*scaleY); ctx.lineTo(W-10, H/2 + Amp*scaleY); ctx.stroke();
-    ctx.setLineDash([]);
-    ctx.fillText(Amp.toFixed(2), 34, H/2 - Amp*scaleY - 4);
-    ctx.fillText((-Amp).toFixed(2), 38, H/2 + Amp*scaleY + 12);
-
-    const xT = 30 + (W-40);
-    ctx.setLineDash([2,2]); ctx.strokeStyle = 'rgba(255,255,255,0.45)';
-    ctx.beginPath(); ctx.moveTo(xT, 10); ctx.lineTo(xT, H-10); ctx.stroke();
-    ctx.setLineDash([]);
-    ctx.textAlign = 'center';
-    ctx.fillText(T.toFixed(2), xT, H/2 + 18);
-    ctx.textAlign = 'left';
-
-    // Καμπύλη
-    ctx.strokeStyle = '#ffd27a'; ctx.lineWidth = 2; ctx.beginPath();
+  /* uPlot – γράφημα x–t, με x₀ */
+  function buildSeriesData(){
     const N = 240;
+    const tArr = new Array(N+1);
+    const xArr = new Array(N+1);
     for (let i=0;i<=N;i++){
-      const tloc = (i/N) * T;
-      const x = Amp * Math.sin(omega * (tloc + obsStartPlaybackOffset));
-      const xx = 30 + (W-40) * (tloc / T);
-      const yy = H/2 - x * scaleY;
-      if (i===0) ctx.moveTo(xx,yy); else ctx.lineTo(xx,yy);
+      const tloc = (i/N)*T;
+      tArr[i] = tloc;
+      xArr[i] = A_m * Math.sin(omega * (tloc + obsStartPlaybackOffset));
     }
-    ctx.stroke();
-
-    xtCanvas.style.display = 'block';
+    return [tArr, xArr];
   }
+  function x0Val(){
+    return A_m * Math.sin(omega * (0 + obsStartPlaybackOffset));
+  }
+
+  let uXT = null; let xData = null;
+  function initXTChart(){
+    if (uXT) return;
+    xtChart.style.display = 'block';
+    const w = Math.floor(xtChart.clientWidth || 260);
+    const h = Math.floor(xtChart.clientHeight || 140);
+    xData = buildSeriesData();
+
+    uXT = new uPlot({
+      width: w, height: h,
+      scales: { x: { time:false, range:[0, T] }, y: { range:[-A_m*1.1, A_m*1.1] } },
+      axes: [
+        { stroke:"#fff", grid:{show:true, stroke:"rgba(255,255,255,0.25)"}, values:(u,vals)=>vals.map(v=>v.toFixed(1)+" s"), label:"t (s)", labelSize:18, labelGap:6 },
+        { stroke:"#fff", grid:{show:true, stroke:"rgba(255,255,255,0.25)"}, values:(u,vals)=>vals.map(v=>v.toFixed(1)+" m"), label:"x (m)", labelSize:18, labelGap:8 }
+      ],
+      series: [{}, { label:"x(t)", stroke:"#ffd27a", width:2 }],
+      hooks: {
+        draw: [
+          (u) => {
+            const ctx = u.ctx;
+            const x0 = u.valToPos(0,  'x', true);
+            const xT = u.valToPos(T,  'x', true);
+            const y0 = u.valToPos(0,  'y', true);
+            const yA = u.valToPos( A_m, 'y', true);
+            const yAm= u.valToPos(-A_m, 'y', true);
+            // dashed ±A
+            ctx.save();
+            ctx.setLineDash([6,4]);
+            ctx.strokeStyle = "rgba(255,255,255,0.45)";
+            ctx.beginPath(); ctx.moveTo(x0, yA);  ctx.lineTo(xT, yA);  ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(x0, yAm); ctx.lineTo(xT, yAm); ctx.stroke();
+            ctx.setLineDash([]);
+            // κάθετη στο Τ
+            ctx.setLineDash([4,3]);
+            ctx.beginPath(); ctx.moveTo(xT, u.bbox.top); ctx.lineTo(xT, u.bbox.top+u.bbox.height); ctx.stroke();
+            ctx.setLineDash([]);
+            // labels A, T
+            ctx.fillStyle = "#fff"; ctx.font = "12px Inter, system-ui";
+            ctx.textAlign="left"; ctx.textBaseline="bottom"; ctx.fillText(A_m.toFixed(2), x0+4, yA-4);
+            ctx.textBaseline="top"; ctx.fillText((-A_m).toFixed(2), x0+4, yAm+4);
+            ctx.textAlign="center"; ctx.textBaseline="top"; ctx.fillText(T.toFixed(2), xT, y0+6);
+
+            // x0 σημείο + τιμή
+            const yx0 = u.valToPos(x0Val(), 'y', true);
+            // σημείο στο (t=0, x0)
+            ctx.fillStyle = "#ffd27a";
+            ctx.beginPath(); ctx.arc(x0, yx0, 3, 0, Math.PI*2); ctx.fill();
+            // ετικέτα "x₀" δίπλα
+            ctx.fillStyle = "#fff"; ctx.font = "12px Inter, system-ui";
+            ctx.textAlign="left"; ctx.textBaseline="middle";
+            ctx.fillText("x₀", x0+6, yx0);
+            // αριθμητική τιμή x0
+            ctx.textAlign="right";
+            ctx.fillText(x0Val().toFixed(2), x0 - 8, yx0);
+            ctx.restore();
+          }
+        ]
+      }
+    }, xtChart);
+
+    uXT.setData(xData);
+  }
+  function drawXTChart(){
+    if (!uXT) return;
+    xData = buildSeriesData();
+    uXT.setData(xData);
+  }
+  function showXTGraph(){ initXTChart(); drawXTChart(); showCurtainParams(); }
 
   function closeCurtains(){
     stage.classList.remove('open');
@@ -540,11 +607,9 @@
         const phi0deg = ((omega * obsStartPlaybackOffset) * 180/Math.PI + 360) % 360;
         text = `Πραγματικά είναι ΑΑΤ με Α=${A_m.toFixed(2)}  ω=${omega.toFixed(3)} και φ₀=${phi0deg.toFixed(1)}° — ένα το κρατούμενο!`;
       }
-      showThoughtForViewer(th.viewer, text, bubbleDurationSec);
+      showThoughtForViewer(th.viewer, text, bubbleDurationSec, th.yOffset);
     } else if (th.kind === 'graph'){
-      graphEnabled = true;
-      showXTGraph();
-      showCurtainParams();
+      graphEnabled = true; showXTGraph();
     } else if (th.kind === 'law'){
       addLaw(th.lawText);
     } else if (th.kind === 'close'){
@@ -553,9 +618,14 @@
   }
 
   /* Κουμπιά */
+  function setMode(newMode){
+    mode = newMode;
+    btnSlow.classList.toggle('active', mode==='slow');
+    btnPlay.classList.toggle('active', mode==='run');
+  }
   btnPause.addEventListener('click', ()=>{ setMode(mode==='pause' ? 'run' : 'pause'); });
   btnSlow .addEventListener('click',  ()=>{ resumeFromBubble('slow'); });
-  btnPlay .addEventListener('click',  ()=>{ resumeFromBubble('run');  });
+  btnPlay  .addEventListener('click',  ()=>{ resumeFromBubble('run');  });
 
   function beginObservationAfterCountdown(){
     stage.classList.add('open');
@@ -580,7 +650,7 @@
 
   // Self-check
   (function(){
-    const must = {stage, actor, springEl, startBtn, clockEl, rulerEl, markerEl, bubbleEl, btnPause, btnSlow, btnPlay, btnSettings, settingsPanel, xtCanvas, paramsBoxEl, lawsEl, measureBox};
+    const must = {stage, actor, springEl, startBtn, clockEl, rulerEl, markerEl, bubbleEl, btnPause, btnSlow, btnPlay, btnSettings, settingsPanel, xtChart, paramsBoxEl, lawsEl, measureBox};
     const miss = Object.entries(must).filter(([k,v]) => !v).map(([k])=>k);
     if (miss.length) console.error('Λείπουν στοιχεία:', miss.join(', ')); else console.log('Self-check OK');
   })();
