@@ -13,9 +13,9 @@
   body{margin:0;background:radial-gradient(circle at center,#222 0%,#000 100%);overflow:hidden;font-family:Inter,system-ui,sans-serif}
   .stage{position:relative;width:100vw;height:100vh;overflow:hidden}
 
-  /* Κουρτίνες (σταθερή πάνω + κινητή κεντρική από courtin.png + πλαϊνές) */
+  /* Κουρτίνες */
   .curtain-top,.curtain-upper,.curtain-side{position:absolute;transition:transform 1.2s cubic-bezier(.2,.9,.2,1),opacity 1s}
-  /* Ιεραρχία: Κουρτίνες (160) > Πάτωμα (155) > Viewers (153) > Κοινό (152) > Skater (110) > Ελατήριο (90) */
+  /* Ιεραρχία: Κουρτίνες (160) > Viewers (159) > Κοινό (158) > Πάτωμα (155) > λοιπά */
   .curtain-top{
     top:0;left:0;width:100%;
     height:calc(28% - 30px);
@@ -27,14 +27,12 @@
     top:calc(28% - 30px);
     left:0;width:100%;
     height:calc(40% + 30px);
-    /* Εικόνα κουρτίνας + fallback gradient */
     background: url('courtin.png') center top / cover no-repeat,
                 linear-gradient(to bottom,#8b0000,#400000);
     transform-origin: top;
     z-index:160;
   }
   .open .curtain-upper{ transform: translateY(calc(-100% - 30px)); }
-
   .curtain-side{top:0;height:100%;width:18%;z-index:160}
   .curtain-side.left{left:0;background:linear-gradient(to right,#300000,#1a0000);box-shadow:inset -6px 0 10px rgba(0,0,0,.6)}
   .curtain-side.right{right:0;background:linear-gradient(to left,#300000,#1a0000);box-shadow:inset 6px 0 10px rgba(0,0,0,.6)}
@@ -48,8 +46,10 @@
   .actor img{width:100%;height:auto;display:block;filter:drop-shadow(0 4px 6px rgba(0,0,0,.6))}
   .floor{position:absolute;left:0;bottom:calc(32vh - 8px);width:100%;height:2px;background:#888;z-index:155;pointer-events:none}
 
-  /* Κοινό (μεσαίο άνοιγμα μόνο) */
-  .audience{position:absolute;left:18%;bottom:0;width:64%;height:60px;object-fit:cover;z-index:152;pointer-events:none;filter:contrast(1.05) brightness(.95)}
+  /* Κοινό & viewers */
+  .audience{position:absolute;left:18%;bottom:0;width:64%;height:60px;object-fit:cover;z-index:158;pointer-events:none;filter:contrast(1.05) brightness(.95)}
+  .viewers{position:absolute;left:18%;width:64%;bottom:0;display:flex;justify-content:center;gap:3vw;z-index:159;padding-bottom:12px}
+  .viewer{width:60px;height:100px;background:url('https://upload.wikimedia.org/wikipedia/commons/f/f9/Silhouette_icon.svg') no-repeat center/contain;filter:grayscale(1) brightness(.6);opacity:.75}
 
   /* Ταμπέλα τίτλου */
   .signboard{position:absolute;top:-6px;left:50%;transform:translateX(-50%);background:transparent;border:none;border-radius:10px;padding:12px 18px;color:#ddd;font-family:'Georgia',serif;text-align:center;z-index:165;line-height:1.2}
@@ -57,7 +57,7 @@
   .signboard h2{font-size:18px;margin:2px 0 0 0}
   .signboard h3{font-size:16px;margin:2px 0 0 0;color:#ffd27a}
 
-  /* Δεξιά κουρτίνα: ρολόι, μετρήσεις, γράφημα */
+  /* Δεξιά: ρολόι, μετρήσεις, γράφημα */
   .clock{position:absolute;top:10px;left:calc(82vw + 9vw);transform:translateX(-50%);background:rgba(0,0,0,.5);color:#fff;padding:6px 10px;font-size:16px;font-family:"Courier New",monospace;border-radius:6px;border:1px solid rgba(255,255,255,.3);z-index:265;pointer-events:none;display:none}
   .clock .hint{font-size:10px;color:#ffd27a;opacity:.9;margin-left:6px}
   .measure-box{position:absolute;left:calc(82vw + 9vw);transform:translateX(-50%);top:54px;width:calc(18vw - 16px);z-index:262;background:rgba(0,0,0,.45);color:#fff;border:1px solid rgba(255,255,255,.25);border-radius:8px;padding:6px 8px;display:none;height:50vh;overflow-y:auto}
@@ -72,7 +72,6 @@
   .u-axis text{fill:#fff}
   .u-grid line{stroke:rgba(255,255,255,.25)}
 
-  /* Πίνακας μετρήσεων (sticky headers) */
   .measure-box .mb-title{font-weight:700;margin:0 0 6px 0}
   .measure-box table{width:100%;border-collapse:separate;border-spacing:0;font-size:12px}
   .measure-box thead th{position:sticky;top:0;background:rgba(0,0,0,.65);z-index:1}
@@ -125,10 +124,6 @@
   .countdown-timer{font-family:"Courier New",monospace;font-size:40px;font-weight:700;color:#fff}
 
   .start-btn{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1000;background:#700;color:#fff;border:none;border-radius:8px;padding:12px 24px;font-size:18px;cursor:pointer;box-shadow:0 0 10px #300;pointer-events:auto}
-
-  /* Θεατές anchors (χωρίς να καλύπτουν τις κουρτίνες) */
-  .viewers{position:absolute;left:18%;width:64%;bottom:0;display:flex;justify-content:center;gap:3vw;z-index:153;padding-bottom:12px}
-  .viewer{width:60px;height:100px;background:url('https://upload.wikimedia.org/wikipedia/commons/f/f9/Silhouette_icon.svg') no-repeat center/contain;filter:grayscale(1) brightness(.6);opacity:.75}
 </style>
 </head>
 <body>
@@ -141,12 +136,13 @@
     <!-- Spotlight -->
     <div class="spotlight" id="spotlight"></div>
 
-    <!-- Διακόπτης Γλώσσας -->
+    <!-- Γλώσσα -->
     <div class="lang" id="langSwitch" style="position:absolute;top:8px;left:8px;z-index:360;background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.25);border-radius:999px;padding:3px 6px;display:flex;gap:6px">
       <button data-lang="gr" class="on" style="background:rgba(255,255,255,.2);border:0;color:#fff;font-size:12px;padding:4px 8px;border-radius:999px;cursor:pointer">GR</button>
       <button data-lang="en" style="background:none;border:0;color:#fff;font-size:12px;padding:4px 8px;border-radius:999px;cursor:pointer">EN</button>
     </div>
 
+    <!-- Τίτλος -->
     <div class="signboard">
       <h1 data-i18n="actTitle">Πράξη 1</h1>
       <h2 class="mass-line" data-i18n="massLine">m₁ = 70 kg</h2>
@@ -161,7 +157,7 @@
       <div class="param" id="paramPhi"></div>
     </div>
 
-    <!-- Δεξιά κουρτίνα: ρολόι, μετρήσεις, γράφημα -->
+    <!-- Δεξιά: ρολόι / μετρήσεις / x–t -->
     <div class="clock" id="clock">t = 0.00 s<span class="hint" id="slowHint"></span></div>
     <div class="measure-box" id="measureBox" style="display:none;">
       <div class="mb-title" id="mbTitle">Μετρήσεις</div>
@@ -172,7 +168,7 @@
     </div>
     <div id="xtChart"></div>
 
-    <!-- Νόμοι -->
+    <!-- Νόμοι & μικρο-γραφικά -->
     <div class="laws" id="laws">
       <h4 id="lawsTitle">—</h4>
       <ol id="lawsList"></ol>
@@ -186,7 +182,7 @@
     <!-- Bubble -->
     <div class="thought-bubble" id="bubble0"><div class="text"></div><div class="checkmark">✓</div><div class="tail"></div></div>
 
-    <!-- Κοντρόλς & Ρυθμίσεις -->
+    <!-- Κοντρόλς -->
     <div class="controls" id="controls">
       <button id="btnPause" title="παύση">⏸</button>
       <button id="btnSlow"  title="αργά">🐌</button>
@@ -278,16 +274,18 @@ const i18n = {
     actBreakMsg:"Ο m,D συνεχίζει. Είστε έτοιμοι για τη Δεύτερη Πράξη;",
     act2Btn:"Έναρξη Πράξης 2",
     thoughts: {
-      t1:"η κίνηση είναι ευθύγραμμη παλινδρομική!",
-      t2:"… και επαναλαμβανόμενη-περιοδική, άρα ταλάντωση!",
+      t1:"η κίνηση είναι ευθύγραμμη και παλινδρομική!",
+      t2:"… και επαναλαμβανόμενη, περιοδική, άρα ταλάντωση!",
       t3:"Μήπως είναι Απλή Αρμονική Ταλάντωση;",
       t4:"… αν είναι Α.Α.Τ. τότε οι τιμές που μετράμε πρέπει να επαληθεύουν την χ=Αημ(ωt+φ₀)!",
-      t4a:"Ας σημειώσουμε ζεύγη (t, x) από τον δείκτη στη μετροταινία.",
-      t5:"Να κάνουμε διάγραμμα x–t, αυτό θα δείξει!",
-      t7lead:(A,om,phi)=>`Πραγματικά είναι ΑΑΤ με Α=${A}  ω=${om} και φ₀=${phi}° — ένα το κρατούμενο!`,
-      t9:"Επομένως η ταχύτητα δίνεται από τον νόμο υ=ωA·συν(ωt+φ₀)!",
-      t10:"…και η επιτάχυνση από τον τύπο a = −ω²A·ημ(ωt+φ₀)!",
-      t11:"Αλλά η σχέση (1) περιέχεται στην (3), δηλαδή a = −ω²·x!"
+      t5:"Αν κάνουμε διάγραμμα x–t, αυτό θα το επιβεβαιώσει!",
+      t7A:(A)=>`…όντως είναι ΑΑΤ με A=${A}!`,
+      t8Tw:(Tval,om)=>`…και T=${Tval}, επομένως ω=${om}!`,
+      t9phi:(x0,phi)=>`…και φ₀=${phi}°, αφού x₀=${x0}! Χαχα, ένα το κρατούμενο!`,
+      t11:"Επομένως η ταχύτητα δίνεται από τον νόμο υ=ωA·συν(ωt+φ₀)!",
+      t13:"…και η επιτάχυνση από τον τύπο a = −ω²A·ημ(ωt+φ₀)!",
+      t15:"Αλλά η σχέση χ=Αημ(ωt+φ₀) (1) περιέχεται στην (3): a=−ω²A·ημ(ωt+φ₀)=−ω²χ!",
+      t18:"Τέλεια· όλο το σετ νόμων της Α.Α.Τ.!"
     }
   },
   en: {
@@ -304,16 +302,18 @@ const i18n = {
     actBreakMsg:"m,D keeps going. Ready for Act II?",
     act2Btn:"Start Act II",
     thoughts: {
-      t1:"the motion is straight-line and reciprocating!",
-      t2:"…and repeating-periodic, so: oscillation!",
+      t1:"motion is straight-line and reciprocating!",
+      t2:"…and repetitive/periodic → oscillation!",
       t3:"Could it be Simple Harmonic Motion?",
-      t4:"…if it's S.H.M., then our (t,x) pairs must satisfy x=A·sin(ωt+φ₀)!",
-      t4a:"Let’s jot down a few (t, x) pairs from the ruler.",
-      t5:"Plot x–t; that will tell!",
-      t7lead:(A,om,phi)=>`It is SHM: A=${A}  ω=${om}  φ₀=${phi}° — noted!`,
-      t9:"Then velocity: v=ωA·cos(ωt+φ₀)!",
-      t10:"…and acceleration: a=−ω²A·sin(ωt+φ₀)!",
-      t11:"But (1) is contained in (3): a = −ω²·x!"
+      t4:"…if it's S.H.M., then (t,x) pairs must satisfy x=A·sin(ωt+φ₀)!",
+      t5:"Plot x–t; that will confirm it!",
+      t7A:(A)=>`…indeed SHM with A=${A}!`,
+      t8Tw:(Tval,om)=>`…and T=${Tval}, hence ω=${om}!`,
+      t9phi:(x0,phi)=>`…and φ₀=${phi}°, since x₀=${x0}! Noted!`,
+      t11:"Therefore v=ωA·cos(ωt+φ₀)!",
+      t13:"…and a=−ω²A·sin(ωt+φ₀)!",
+      t15:"But (1) is contained in (3): a=−ω²A·sin(ωt+φ₀)=−ω²x!",
+      t18:"Perfect—full SHM law set!"
     }
   }
 };
@@ -391,24 +391,27 @@ slDur.addEventListener('input',()=>{ bubbleDurationSec=parseFloat(slDur.value); 
 slSlow.addEventListener('input',()=>{ slowFactor=parseFloat(slSlow.value); valSlow.textContent=`${slowFactor.toFixed(2)}×`; });
 btnSettings.addEventListener('click',()=>{ settingsPanel.style.display=(settingsPanel.style.display==='block'?'none':'block'); });
 
-/* Timeline Πράξης 1 */
+/* Timeline Πράξης 1 — νέο σενάριο 1–19 (σε k·T) */
 const thoughtScriptBase=[
   {kind:'bubble',atT:1.1,viewer:1,key:'t1',yOffset:120},
-  {kind:'bubble',atT:2.1,viewer:2,key:'t2',yOffset:130},
-  {kind:'bubble',atT:3.0,viewer:0,key:'t3',yOffset:140},
-  {kind:'bubble',atT:3.8,viewer:3,key:'t4',yOffset:120},
-  {kind:'bubble',atT:4.2,viewer:4,key:'t4a',yOffset:130,xShift:-100},
-  {kind:'bubble',atT:4.9,viewer:4,key:'t5',yOffset:140,xShift:-140},
-  {kind:'graph', atT:5.5},
-  {kind:'bubble',atT:6.2,viewer:2,dynamic:'params',yOffset:135},
-  {kind:'law',   atT:6.5,lawText:'x(t) = A·ημ(ωt + φ₀)'},
-  {kind:'bubble',atT:7.2,viewer:0,key:'t9',yOffset:130},
-  {kind:'law',   atT:7.5,lawText:'v(t) = ωA·συν(ωt + φ₀)'},
-  {kind:'bubble',atT:8.2,viewer:3,key:'t10',yOffset:140},
-  {kind:'law',   atT:8.5,lawText:'a(t) = −ω²A·ημ(ωt + φ₀)'},
-  {kind:'bubble',atT:9.2,viewer:1,key:'t11',yOffset:125},
-  {kind:'law',   atT:9.5,lawText:'a = −ω²·x'},
-  {kind:'close', atT:10.5}
+  {kind:'bubble',atT:1.7,viewer:2,key:'t2',yOffset:130},
+  {kind:'bubble',atT:2.2,viewer:0,key:'t3',yOffset:140},
+  {kind:'bubble',atT:3.0,viewer:3,key:'t4',yOffset:120},
+  {kind:'bubble',atT:3.6,viewer:4,key:'t5',yOffset:130,xShift:-100},
+  {kind:'graph', atT:4.0},                               // 6. x–t
+  {kind:'bubbleDyn',atT:4.6,viewer:2,what:'A',yOffset:135}, // 7. A
+  {kind:'bubbleDyn',atT:5.2,viewer:1,what:'Tw',yOffset:135},// 8. T & ω
+  {kind:'bubbleDyn',atT:5.7,viewer:3,what:'phi',yOffset:135},// 9. φ0 via x0
+  {kind:'law',   atT:6.1,lawText:'x(t) = A·ημ(ωt + φ₀)', alsoParams:true}, // 10.
+  {kind:'bubble',atT:6.7,viewer:0,key:'t11',yOffset:130},   // 11.
+  {kind:'lawPlot',atT:7.0,plot:'v'},                        // 12. v–t
+  {kind:'bubble',atT:7.6,viewer:3,key:'t13',yOffset:140},   // 13.
+  {kind:'lawPlot',atT:7.9,plot:'a'},                        // 14. a–t
+  {kind:'bubble',atT:8.5,viewer:1,key:'t15',yOffset:125},   // 15.
+  {kind:'law',   atT:8.8,lawText:'a(x) = −ω²·x'},           // 16.
+  {kind:'lawPlot',atT:9.1,plot:'ax'},                       // 17. a–x
+  {kind:'bubble',atT:9.6,viewer:2,key:'t18',yOffset:130},   // 18.
+  {kind:'close', atT:10.2}                                  // 19.
 ];
 let thoughtScript=[...thoughtScriptBase];
 let nextThoughtIdx=0, isBubbleActive=false, bubbleAutoTimer=null;
@@ -442,7 +445,7 @@ function updateRuler(){
   }
 }
 
-/* Δεξιά κουρτίνα & γράφημα x–t */
+/* Δεξιά κουρτίνα & x–t γράφημα */
 let graphEnabled=false, uXT=null, pendingGraph=false;
 function positionRightPanel(){
   const W=stage.clientWidth, H=stage.clientHeight;
@@ -580,7 +583,7 @@ function resumeFromBubble(nextMode='run'){
   setMode(nextMode==='slow'?'slow':'run');
 }
 
-/* Νόμοι + αυτόματα γραφήματα */
+/* Νόμοι + μικρο-γραφικά (χειροκίνητη εμφάνιση στα βήματα 12/14/17) */
 let lawCount=0;
 function addLaw(txt){
   if(!firstLawShown){
@@ -590,12 +593,10 @@ function addLaw(txt){
   }
   const li=document.createElement('li'); li.textContent=txt; lawsList.appendChild(li);
   lawCount++;
-  if(lawCount===2){ ensureVelocityChart(); }
-  else if(lawCount===3){ ensureAccelerationChart(); }
-  else if(lawCount===4){ ensureAxChart(); }
   positionLawCharts();
 }
 
+/* Θέση παραμέτρων */
 function showCurtainParams(){
   const phi0deg=((omega*obsStartPlaybackOffset)*180/Math.PI + 360)%360;
   paramAEl.textContent  =`A = ${A_m.toFixed(2)} m`;
@@ -659,7 +660,7 @@ function initXTChart(){
 function drawXTChart(){ if(uXT){ uXT.setData(buildSeriesData()); } }
 function ensureXTReady(){
   if(!graphEnabled) return;
-  try{ if(window.uPlot){ initXTChart(); if(uXT){ drawXTChart(); showCurtainParams(); } }
+  try{ if(window.uPlot){ initXTChart(); if(uXT){ drawXTChart(); } }
        else{ if(graphEnabled){ pendingGraph=true; renderXTCanvasFallback(); } } }
   catch(e){ console.error('ensureXTReady',e); if(graphEnabled){ pendingGraph=true; renderXTCanvasFallback(); } }
 }
@@ -795,14 +796,28 @@ function showCurtainsClosing(){
 /* Timeline event handler */
 function handleTimelineEvent(th){
   if(th.kind==='bubble'){
-    const txt = th.dynamic==='params'
-      ? i18n[LANG].thoughts.t7lead(A_m.toFixed(2), omega.toFixed(3), (((omega*obsStartPlaybackOffset)*180/Math.PI+360)%360).toFixed(1))
-      : (i18n[LANG].thoughts[th.key]||'');
+    const txt = (i18n[LANG].thoughts[th.key]||'');
     showThoughtForViewer(th.viewer,txt,bubbleDurationSec,th.yOffset,th.xShift||0);
+  }else if(th.kind==='bubbleDyn'){
+    // Δυναμικά κείμενα για A, T/ω, φ0
+    if(th.what==='A'){
+      showThoughtForViewer(th.viewer, i18n[LANG].thoughts.t7A(A_m.toFixed(2)), bubbleDurationSec, th.yOffset);
+    }else if(th.what==='Tw'){
+      showThoughtForViewer(th.viewer, i18n[LANG].thoughts.t8Tw(T.toFixed(2), omega.toFixed(3)), bubbleDurationSec, th.yOffset);
+    }else if(th.what==='phi'){
+      const x0 = x0Val().toFixed(2);
+      const phi0deg=((omega*obsStartPlaybackOffset)*180/Math.PI + 360)%360;
+      showThoughtForViewer(th.viewer, i18n[LANG].thoughts.t9phi(x0, phi0deg.toFixed(1)), bubbleDurationSec, th.yOffset);
+    }
   }else if(th.kind==='graph'){
     graphEnabled=true; ensureXTReady();
   }else if(th.kind==='law'){
     addLaw(th.lawText);
+    if(th.alsoParams){ showCurtainParams(); }
+  }else if(th.kind==='lawPlot'){
+    if(th.plot==='v') ensureVelocityChart();
+    else if(th.plot==='a') ensureAccelerationChart();
+    else if(th.plot==='ax') ensureAxChart();
   }else if(th.kind==='close'){
     setTimeout(showCurtainsClosing,3000);
   }
@@ -891,12 +906,12 @@ ro.observe(stage);
   if(miss.length) console.error('Λείπουν στοιχεία:', miss.join(', ')); else console.log('Self-check OK');
 })();
 
-/* Αν σε ~2.5s δεν έχει φορτώσει uPlot και ζητήθηκε γράφημα, δείξε fallback */
+/* Fallback αν δεν φορτώσει uPlot έγκαιρα */
 setTimeout(()=>{ if(!window.uPlot && graphEnabled){ renderXTCanvasFallback(); } }, 2500);
 
-/* Αρχική γλώσσα & αρχική κατάσταση */
+/* Αρχική γλώσσα & clean state */
 setLang('gr');
-resetShow(); // καθαρή σκηνή
+resetShow();
 </script>
 </body>
 </html>
