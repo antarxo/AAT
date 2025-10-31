@@ -627,7 +627,6 @@ function buildSeriesData(){
 }
 function x0Val(){ return A_m*Math.sin(omega*(0+obsStartPlaybackOffset)); }
 
-let uXT=null;
 function initXTChart(){
   if(uXT) return; if(!window.uPlot){ if(graphEnabled){ pendingGraph=true; } return; }
   xtChart.style.display='block'; positionRightPanel();
