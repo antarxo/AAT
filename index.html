@@ -14,33 +14,34 @@
 
   /* Κουρτίνες (σταθερές πλαϊνές + μία κινητή επάνω) */
   .curtain-top,.curtain-upper,.curtain-side{position:absolute;transition:transform 1.2s cubic-bezier(.2,.9,.2,1),opacity 1s}
-  .curtain-top{top:0;left:0;width:100%;height:calc(28% - 30px);background:linear-gradient(to bottom,#230000,#180000);box-shadow:0 5px 18px rgba(0,0,0,.8);z-index:40}
-  .curtain-upper{top:calc(28% - 30px);left:0;width:100%;height:calc(40% + 30px);background:linear-gradient(to bottom,#8b0000,#400000);transform-origin:top;z-index:16}
+  /* ΙΕΡΑΡΧΙΑ LAYOUT (ψηλά→χαμηλά): Κουρτίνες (160) > Πάτωμα (155) > Κοινό (150) > Skater (110) > Ελατήριο (90) */
+  .curtain-top{top:0;left:0;width:100%;height:calc(28% - 30px);background:linear-gradient(to bottom,#230000,#180000);box-shadow:0 5px 18px rgba(0,0,0,.8);z-index:160}
+  .curtain-upper{top:calc(28% - 30px);left:0;width:100%;height:calc(40% + 30px);background:linear-gradient(to bottom,#8b0000,#400000);transform-origin:top;z-index:160}
   .open .curtain-upper{transform:translateY(calc(-100% - 30px))}
 
-  .curtain-side{top:0;height:100%;width:18%;z-index:14}
+  .curtain-side{top:0;height:100%;width:18%;z-index:160}
   .curtain-side.left{left:0;background:linear-gradient(to right,#300000,#1a0000);box-shadow:inset -6px 0 10px rgba(0,0,0,.6)}
   .curtain-side.right{right:0;background:linear-gradient(to left,#300000,#1a0000);box-shadow:inset 6px 0 10px rgba(0,0,0,.6)}
 
-  /* Spotlight (αφήνεται ως έχει) */
-  .spotlight{position:absolute;inset:0;pointer-events:none;z-index:15;opacity:.25;background:radial-gradient(200px 120px at 50% 50%, rgba(255,255,220,.65), rgba(255,255,220,0) 70%)}
+  /* Spotlight */
+  .spotlight{position:absolute;inset:0;pointer-events:none;z-index:150;opacity:.25;background:radial-gradient(200px 120px at 50% 50%, rgba(255,255,220,.65), rgba(255,255,220,0) 70%)}
 
   /* Skater / Spring / Πάτωμα */
-  .spring{position:absolute;bottom:calc(32vh + 82px);left:10%;height:96px;width:auto;z-index:5;pointer-events:none;filter:drop-shadow(0 4px 6px rgba(0,0,0,.55));transform-origin:left center;opacity:1;display:none}
-  .actor{position:absolute;bottom:calc(32vh + 130px);left:50%;width:144px;height:96px;transform:translate(-50%,0);z-index:10;pointer-events:none;opacity:1}
+  .spring{position:absolute;bottom:calc(32vh + 82px);left:10%;height:96px;width:auto;z-index:90;pointer-events:none;filter:drop-shadow(0 4px 6px rgba(0,0,0,.55));transform-origin:left center;opacity:1;display:none}
+  .actor{position:absolute;bottom:calc(32vh + 130px);left:50%;width:144px;height:96px;transform:translate(-50%,0);z-index:110;pointer-events:none;opacity:1}
   .actor img{width:100%;height:auto;display:block;filter:drop-shadow(0 4px 6px rgba(0,0,0,.6))}
-  .floor{position:absolute;left:0;bottom:calc(32vh - 8px);width:100%;height:2px;background:#888;z-index:50;pointer-events:none}
+  .floor{position:absolute;left:0;bottom:calc(32vh - 8px);width:100%;height:2px;background:#888;z-index:155;pointer-events:none}
 
-  /* Κοινό */
+  /* Κοινό (μεσαίο άνοιγμα μόνο) */
   .audience{position:absolute;left:18%;bottom:0;width:64%;height:60px;object-fit:cover;z-index:150;pointer-events:none;filter:contrast(1.05) brightness(.95)}
 
-  /* Ταμπέλα τίτλου */
-  .signboard{position:absolute;top:-6px;left:50%;transform:translateX(-50%);background:transparent;border:none;border-radius:10px;padding:12px 18px;color:#ddd;font-family:'Georgia',serif;text-align:center;z-index:40;line-height:1.2}
+  /* Ταμπέλα τίτλου (πάνω από την πάνω κουρτίνα) */
+  .signboard{position:absolute;top:-6px;left:50%;transform:translateX(-50%);background:transparent;border:none;border-radius:10px;padding:12px 18px;color:#ddd;font-family:'Georgia',serif;text-align:center;z-index:165;line-height:1.2}
   .signboard h1{font-size:32px;margin:0;color:#fff}
   .signboard h2{font-size:18px;margin:2px 0 0 0}
   .signboard h3{font-size:16px;margin:2px 0 0 0;color:#ffd27a}
 
-  /* Δεξιά κουρτίνα: ρολόι, μετρήσεις, γράφημα */
+  /* Δεξιά κουρτίνα: ρολόι, μετρήσεις, γράφημα (πάνω από τις κουρτίνες) */
   .clock{position:absolute;top:10px;left:calc(82vw + 9vw);transform:translateX(-50%);background:rgba(0,0,0,.5);color:#fff;padding:6px 10px;font-size:16px;font-family:"Courier New",monospace;border-radius:6px;border:1px solid rgba(255,255,255,.3);z-index:265;pointer-events:none;display:none}
   .clock .hint{font-size:10px;color:#ffd27a;opacity:.9;margin-left:6px}
   .measure-box{position:absolute;left:calc(82vw + 9vw);transform:translateX(-50%);top:54px;width:calc(18vw - 16px);z-index:262;background:rgba(0,0,0,.45);color:#fff;border:1px solid rgba(255,255,255,.25);border-radius:8px;padding:6px 8px;display:none;height:50vh;overflow-y:auto}
@@ -63,7 +64,7 @@
   .measure-box th:first-child,.measure-box td:first-child{text-align:center}
   .measure-box tr.new td{background:rgba(255,210,122,.15);transition:background .6s ease}
 
-  /* Χάρακας & δείκτης (χάρακας ορατός εξαρχής) */
+  /* Χάρακας & δείκτης */
   .ruler{position:absolute;bottom:calc(32vh - 8px + 1px);height:24px;font-size:10px;font-family:"Courier New",monospace;color:#aaa;pointer-events:none;z-index:270}
   .ruler::before{content:'';position:absolute;left:0;right:0;bottom:0;height:1px;background:#aaa}
   .tick{position:absolute;bottom:0;width:1px;height:10px;background:#aaa}
@@ -106,25 +107,9 @@
 
   .start-btn{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1000;background:#700;color:#fff;border:none;border-radius:8px;padding:12px 24px;font-size:18px;cursor:pointer;box-shadow:0 0 10px #300;pointer-events:auto}
 
-  /* Θεατές anchors (ΑΠΟΚΑΤΑΣΤΑΣΗ) */
+  /* Θεατές anchors (χωρίς να καλύπτουν τις κουρτίνες) */
   .viewers{position:absolute;left:18%;width:64%;bottom:0;display:flex;justify-content:center;gap:3vw;z-index:151;padding-bottom:12px}
   .viewer{width:60px;height:100px;background:url('https://upload.wikimedia.org/wikipedia/commons/f/f9/Silhouette_icon.svg') no-repeat center/contain;filter:grayscale(1) brightness(.6);opacity:.75}
-
-  /* Overlay τέλους Πράξης 1 */
-  .actbreak{position:absolute;inset:0;background:rgba(0,0,0,.55);color:#fff;z-index:410;display:none;align-items:center;justify-content:center;text-align:center}
-  .actbreak .box{background:rgba(0,0,0,.7);border:1px solid rgba(255,255,255,.25);border-radius:12px;padding:16px 20px;max-width:520px}
-  .actbreak h3{margin:0 0 8px 0;font-family:'Georgia',serif}
-  .actbreak p{margin:0 0 12px 0;color:#ffd27a}
-  .actbreak button{background:#700;color:#fff;border:none;border-radius:8px;padding:10px 16px;font-size:16px;cursor:pointer}
-
-  /* Διακόπτης γλώσσας */
-  .lang{position:absolute;top:8px;left:8px;z-index:360;background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.25);border-radius:999px;padding:3px 6px;display:flex;gap:6px}
-  .lang button{background:none;border:0;color:#fff;font-size:12px;padding:4px 8px;border-radius:999px;cursor:pointer}
-  .lang button.on{background:rgba(255,255,255,.2)}
-
-  /* Γραφήματα νόμων (αριστερά) */
-  .law-charts{position:absolute;left:2%;width:16%;z-index:259}
-  .law-charts canvas{display:block;width:100%;height:140px;margin-top:8px;background:rgba(0,0,0,.2);border:1px solid rgba(255,255,255,.2);border-radius:6px}
 </style>
 </head>
 <body>
@@ -138,9 +123,9 @@
     <div class="spotlight" id="spotlight"></div>
 
     <!-- Διακόπτης Γλώσσας -->
-    <div class="lang" id="langSwitch">
-      <button data-lang="gr" class="on">GR</button>
-      <button data-lang="en">EN</button>
+    <div class="lang" id="langSwitch" style="position:absolute;top:8px;left:8px;z-index:360;background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.25);border-radius:999px;padding:3px 6px;display:flex;gap:6px">
+      <button data-lang="gr" class="on" style="background:rgba(255,255,255,.2);border:0;color:#fff;font-size:12px;padding:4px 8px;border-radius:999px;cursor:pointer">GR</button>
+      <button data-lang="en" style="background:none;border:0;color:#fff;font-size:12px;padding:4px 8px;border-radius:999px;cursor:pointer">EN</button>
     </div>
 
     <div class="signboard">
@@ -173,7 +158,7 @@
       <h4 id="lawsTitle">—</h4>
       <ol id="lawsList"></ol>
     </div>
-    <div id="lawCharts" class="law-charts"></div>
+    <div id="lawCharts" class="law-charts" style="position:absolute;left:2%;width:16%;z-index:259"></div>
 
     <!-- Σύστημα αναφοράς -->
     <div class="ruler" id="ruler"></div>
@@ -241,11 +226,11 @@
     </div>
 
     <!-- Overlay τέλους Πράξης 1 -->
-    <div class="actbreak" id="actBreak">
-      <div class="box">
+    <div class="actbreak" id="actBreak" style="position:absolute;inset:0;background:rgba(0,0,0,.55);color:#fff;z-index:410;display:none;align-items:center;justify-content:center;text-align:center">
+      <div class="box" style="background:rgba(0,0,0,.7);border:1px solid rgba(255,255,255,.25);border-radius:12px;padding:16px 20px;max-width:520px">
         <h3 id="actBreakTitle">Τέλος Πράξης 1</h3>
         <p id="actBreakMsg">Ο m,D συνεχίζει. Είστε έτοιμοι για τη Δεύτερη Πράξη;</p>
-        <button id="btnAct2">Έναρξη Πράξης 2</button>
+        <button id="btnAct2" style="background:#700;color:#fff;border:none;border-radius:8px;padding:10px 16px;font-size:16px;cursor:pointer">Έναρξη Πράξης 2</button>
       </div>
     </div>
   </div>
@@ -268,11 +253,6 @@ const i18n = {
     startBtn:"Έναρξη",
     cdMain:"Η παράσταση αρχίζει...",
     cdSub:"ώρα να χρησιμοποιήσετε χαρτί και μολύβι!",
-    settingsTitle:"Ρυθμίσεις ροής",
-    startThoughts:"Έναρξη σκέψεων (k·T):",
-    flowScale:"Κλίμακα ροής (×):",
-    bubbleDur:"Διάρκεια σκέψης (s):",
-    slowFactor:"Αργή κίνηση (×):",
     measurementsTitle:"Μετρήσεις",
     lawsTitle:"Νόμοι Α.Α.Τ.",
     actBreakTitle:"Τέλος Πράξης 1",
@@ -299,11 +279,6 @@ const i18n = {
     startBtn:"Start",
     cdMain:"The show is about to begin…",
     cdSub:"grab paper & pencil!",
-    settingsTitle:"Flow settings",
-    startThoughts:"Thoughts start (k·T):",
-    flowScale:"Flow scale (×):",
-    bubbleDur:"Thought duration (s):",
-    slowFactor:"Slow-mo (×):",
     measurementsTitle:"Measurements",
     lawsTitle:"SHM Laws",
     actBreakTitle:"End of Act I",
@@ -334,11 +309,6 @@ function setLang(lang){
   document.getElementById('startBtn').textContent=i18n[lang].startBtn;
   document.getElementById('cdMain').textContent=i18n[lang].cdMain;
   document.getElementById('cdSub').textContent =i18n[lang].cdSub;
-  document.querySelector('[data-i18n="settingsTitle"]').textContent=i18n[lang].settingsTitle;
-  document.querySelector('[data-i18n="startThoughts"]').textContent=i18n[lang].startThoughts;
-  document.querySelector('[data-i18n="flowScale"]').textContent=i18n[lang].flowScale;
-  document.querySelector('[data-i18n="bubbleDur"]').textContent=i18n[lang].bubbleDur;
-  document.querySelector('[data-i18n="slowFactor"]').textContent=i18n[lang].slowFactor;
   document.getElementById('mbTitle').textContent=i18n[lang].measurementsTitle;
   document.getElementById('actBreakTitle').textContent=i18n[lang].actBreakTitle;
   document.getElementById('actBreakMsg').textContent  =i18n[lang].actBreakMsg;
@@ -527,7 +497,7 @@ function animate(now){
 
   if(obsStarted && !isBubbleActive && nextThoughtIdx<thoughtScript.length){
     const th=thoughtScript[nextThoughtIdx];
-    const shiftMul=(firstThoughtMul-DEFAULT_FIRST_MUL);
+    const shiftMul=(firstThoughtMul-1.1);
     const baseMul=(th.atT??0);
     const eventAtSec=(baseMul+shiftMul)*T*timelineScale;
     if(tObs>=eventAtSec){
@@ -607,7 +577,6 @@ function addLaw(txt){
   positionLawCharts();
 }
 
-/* Θέσεις παραμέτρων */
 function showCurtainParams(){
   const phi0deg=((omega*obsStartPlaybackOffset)*180/Math.PI + 360)%360;
   paramAEl.textContent  =`A = ${A_m.toFixed(2)} m`;
@@ -627,6 +596,7 @@ function buildSeriesData(){
 }
 function x0Val(){ return A_m*Math.sin(omega*(0+obsStartPlaybackOffset)); }
 
+let uXT=null;
 function initXTChart(){
   if(uXT) return; if(!window.uPlot){ if(graphEnabled){ pendingGraph=true; } return; }
   xtChart.style.display='block'; positionRightPanel();
@@ -676,7 +646,7 @@ function ensureXTReady(){
   catch(e){ console.error('ensureXTReady',e); if(graphEnabled){ pendingGraph=true; renderXTCanvasFallback(); } }
 }
 
-/* Fallback canvas για x–t */
+/* Fallback canvas */
 function renderXTCanvasFallback(){
   xtChart.style.display='block'; positionRightPanel();
   let c=document.getElementById('xtFallback');
