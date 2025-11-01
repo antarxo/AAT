@@ -134,6 +134,7 @@
     filter: grayscale(1) brightness(0.6);
     opacity: 0.75;
   }
+
   /* Πίνακας Μετρήσεων (δεξιά κουρτίνα) */
   .measure-box { position: absolute; left: calc(82vw + 9vw); transform: translateX(-50%); top: 54px; width: calc(18vw - 16px); z-index: 40; background: rgba(0,0,0,0.45); color: #fff; border: 1px solid rgba(255,255,255,0.25); border-radius: 8px; padding: 6px 8px; display: none; height: 50vh; overflow-y: auto; }
   .measure-box .mb-title { font-size: 14px; margin-bottom: 4px; color: #ffd27a; text-align: center; font-family: 'Georgia', serif; }
@@ -290,7 +291,7 @@
   let nextThoughtIdx = 0; let isBubbleActive = false; let bubbleAutoTimer = null;
   let measureRowIdx = 0;
 
-  // Μετρήσεις – sample ελέγχου (αν αργότερα επαναφέρουμε πίνακα)
+  // Μετρήσεις – sample
   let lastSampleObsTime = -Infinity; const sampleInterval = 0.25; // s
 
   // Ρολόι & play state
@@ -462,11 +463,14 @@
 
     // καμπύλη x(t) για ένα T
     ctx.strokeStyle = '#ffd27a'; ctx.lineWidth = 2; ctx.beginPath();
-    const N = 240; for (let i=0;i<=N;i++){ const tloc = (i/N) * T; const x = Amp * Math.sin(omega * (tloc + obsStartPlaybackOffset)); const xx = 30 + (W-40) * (tloc / T); const yy = H/2 - x * scaleY; if (i===0) ctx.moveTo(xx,yy); else ctx.lineTo(xx,yy); }
-    ctx.stroke();
-
-    xtCanvas.style.display = 'block';
-  }
+    const N = 240;
+    for (let i=0;i<=N;i++){
+      const tloc = (i/N) * T;
+      const x = Amp * Math.sin(omega * (tloc + obsStartPlaybackOffset));
+      const xx = 30 + (W-40) * (tloc / T);
+      const yy = H/2 - x * scaleY;
+      if (i===0) ctx.moveTo(xx,yy); else ctx.lineTo(xx,yy);
+    }
     ctx.stroke();
 
     xtCanvas.style.display = 'block';
