@@ -47,10 +47,13 @@
   .viewer{width:60px;height:100px;background:url('https://upload.wikimedia.org/wikipedia/commons/f/f9/Silhouette_icon.svg') no-repeat center/contain;filter:grayscale(1) brightness(.6);opacity:.75}
 
   /* Τίτλοι */
-  .signboard{position:absolute;top:-6px;left:50%;transform:translateX(-50%);background:transparent;border:none;border-radius:10px;padding:12px 18px;color:#ddd;font-family:'Georgia',serif;text-align:center;z-index:165;line-height:1.2}
+  .signboard{position:absolute;top:-6px;left:50%;transform:translateX(-50%);background:transparent;border:none;border-radius:10px;padding:12px 18px;color:#ddd;font-family:'Georgia',serif;text-align:center;z-index:165;line-height:1.25}
   .signboard h1{font-size:32px;margin:0;color:#fff}
-  .signboard h2{font-size:18px;margin:2px 0 0 0}
-  .signboard h3{font-size:16px;margin:2px 0 0 0;color:#ffd27a}
+  .signboard .sb-lineA{font-size:18px;font-style:italic;margin-top:2px;color:#ddd}
+  .signboard .sb-lineB{font-size:18px;margin-top:2px}
+  .signboard .sb-lineB .hl{color:#ffd27a;font-weight:600}
+  .signboard .sb-lineC{font-size:16px;margin-top:2px;font-weight:700;color:#fff}
+  .signboard .sb-lineD{font-size:14px;margin-top:2px;font-style:italic;opacity:.9}
 
   /* Δεξιά (ρολόι/μετρήσεις/γράφημα) */
   .clock{position:absolute;top:10px;left:calc(82vw + 9vw);transform:translateX(-50%);background:rgba(0,0,0,.5);color:#fff;padding:6px 10px;font-size:16px;font-family:"Courier New",monospace;border-radius:6px;border:1px solid rgba(255,255,255,.3);z-index:265;pointer-events:none;display:none}
@@ -142,12 +145,13 @@
     <!-- Τίτλος -->
     <div class="signboard">
       <h1 data-i18n="actTitle">Πράξη 1η: Η Κινηματική στα ... Αλγεβρικά</h1>
-      <h2 class="mass-line" data-i18n="massLine">m₁ = 70 kg</h2>
-      <h2 class="k-line" data-i18n="kLine">D₁ = 77 N/m</h2>
-      <h3 data-i18n="emech">Εμηχ = 347 J</h3>
+      <div class="sb-lineA" id="sbLineA">Πρωταγωνιστεί ο ταλαντωτής (m₁, D₁) και οι θεαποιοί(*)</div>
+      <div class="sb-lineB" id="sbLineB">στον μονόλογο <span class="hl">«ατέλειωτο πήγαινε έλα»</span>... επί σκηνής!</div>
+      <div class="sb-lineC" id="sbLineC">Παραγωγή-Σκηνοθεσία: Εμηχ. Ενεργειούλης</div>
+      <div class="sb-lineD" id="sbLineD">(*) ... εσείς</div>
     </div>
 
-    <!-- Παράμετροι στην πάνω ακίνητη κουρτίνα -->
+    <!-- Παράμετροι A, ω, φ0 (εμφανίζονται όταν έρθει η ώρα) -->
     <div class="params-box" id="paramsBox">
       <div class="param" id="paramA"></div>
       <div class="param" id="paramW"></div>
@@ -259,9 +263,10 @@ const pxPerMeter=50; let A_px=pxPerMeter*A_m;
 const i18n = {
   gr: {
     actTitle:"Πράξη 1η: Η Κινηματική στα ... Αλγεβρικά",
-    massLine:`m₁ = ${m} kg`,
-    kLine:`D₁ = ${D} N/m`,
-    emech:`Εμηχ = ${Math.round(E_mech)} J`,
+    sbA:"Πρωταγωνιστεί ο ταλαντωτής (m₁, D₁) και οι θεαποιοί(*)",
+    sbB:'στον μονόλογο <span class="hl">«ατέλειωτο πήγαινε έλα»</span>... επί σκηνής!',
+    sbC:"Παραγωγή-Σκηνοθεσία: Εμηχ. Ενεργειούλης",
+    sbD:"(*) ... εσείς",
     startBtn:"Έναρξη",
     cdMain:"Η παράσταση αρχίζει...",
     cdSub:"ώρα να χρησιμοποιήσετε χαρτί και μολύβι!",
@@ -289,9 +294,10 @@ const i18n = {
   },
   en: {
     actTitle:"Act I: Kinematics in… Algebraic Form",
-    massLine:`m₁ = ${m} kg`,
-    kLine:`D₁ = ${D} N/m`,
-    emech:`E_mech = ${Math.round(E_mech)} J`,
+    sbA:"Starring the oscillator (m₁, D₁) and the spect-actors(*)",
+    sbB:'in the monologue <span class="hl">“endless back-and-forth”</span>… on stage!',
+    sbC:"Production & Direction: E_mech Energioulis",
+    sbD:"(*) … you",
     startBtn:"Start",
     cdMain:"The show is about to start…",
     cdSub:"time to grab paper & pencil!",
@@ -324,9 +330,10 @@ function setLang(lang){
   LANG=lang;
   document.documentElement.lang=(lang==='en'?'en':'el');
   document.querySelector('[data-i18n="actTitle"]').textContent=i18n[lang].actTitle;
-  document.querySelector('[data-i18n="massLine"]').textContent=i18n[lang].massLine;
-  document.querySelector('[data-i18n="kLine"]').textContent=i18n[lang].kLine;
-  document.querySelector('[data-i18n="emech"]').textContent=i18n[lang].emech;
+  document.getElementById('sbLineA').textContent = i18n[lang].sbA;
+  document.getElementById('sbLineB').innerHTML  = i18n[lang].sbB;
+  document.getElementById('sbLineC').textContent = i18n[lang].sbC;
+  document.getElementById('sbLineD').textContent = i18n[lang].sbD;
   document.getElementById('startBtn').textContent=i18n[lang].startBtn;
   document.getElementById('cdMain').textContent=i18n[lang].cdMain;
   document.getElementById('cdSub').textContent=i18n[lang].cdSub;
@@ -399,7 +406,7 @@ slDur.addEventListener('input',()=>{ bubbleDurationSec=parseFloat(slDur.value); 
 slSlow.addEventListener('input',()=>{ slowFactor=parseFloat(slSlow.value); valSlow.textContent=`${slowFactor.toFixed(2)}×`; });
 btnSettings.addEventListener('click',()=>{ settingsPanel.style.display=(settingsPanel.style.display==='block'?'none':'block'); });
 
-/* Timeline Πράξης 1 */
+/* Timeline Πράξης 1 (όπως πριν) */
 const thoughtScriptBase=[
   {kind:'bubble',    atT:1.05, viewer:0, key:'t1',  yOffset:120, xShift:-40},
   {kind:'bubble',    atT:1.15, viewer:1, key:'t2',  yOffset:125, xShift:-20},
@@ -460,7 +467,7 @@ function updateRuler(){
 }
 
 /* Δεξιά κουρτίνα & x–t */
-let graphEnabled=false, uXT=null, pendingGraph=false;  /* <— ΜΟΝΟ εδώ δηλώνεται το uXT */
+let graphEnabled=false, uXT=null, pendingGraph=false;
 function positionRightPanel(){
   const W=stage.clientWidth, H=stage.clientHeight;
   const curtainLeft=W*0.82, curtainW=W*0.18, centerX=curtainLeft+curtainW/2;
@@ -573,13 +580,15 @@ const BASE_BUBBLE_LIFT=96;
 let bubbleAltLower=false;
 function randInt(a,b){ return Math.floor(a + Math.random()*(b-a+1)); }
 
+/* >>> ΔΙΟΡΘΩΣΗ ΟΡΙΩΝ BUBBLE <<< */
 function showThoughtForViewer(viewerIdx,text,durationSecs,customLift,xShift=0){
   const viewerEl=document.querySelector(`.viewer[data-idx="${viewerIdx}"]`);
   if(!viewerEl) return;
   bubbleEl.querySelector('.text').textContent=text||'';
 
   const W=stage.clientWidth;
-  const curtainLeft=W*0.82;
+  const leftCurtainRight = W*0.18;
+  const rightCurtainLeft = W*0.82;
   const pad=12;
 
   const vRect=viewerEl.getBoundingClientRect(); const sRect=stage.getBoundingClientRect();
@@ -589,12 +598,13 @@ function showThoughtForViewer(viewerIdx,text,durationSecs,customLift,xShift=0){
   bubbleEl.style.display='block'; bubbleEl.style.opacity='0'; bubbleEl.style.left='0px'; bubbleEl.style.top='0px';
   const bw = bubbleEl.offsetWidth || 240;
 
-  const minCenter = curtainLeft + pad;
-  const maxCenter = W - pad;
-  if(desiredCenterX < minCenter) desiredCenterX = minCenter;
-  if(desiredCenterX > maxCenter) desiredCenterX = maxCenter;
+  const minLeft = leftCurtainRight + pad;
+  const maxLeft = rightCurtainLeft - pad - bw;
 
+  // clamp με βάση ΑΡΙΣΤΕΡΟ ΟΡΙΟ αριστερής κουρτίνας ΚΑΙ ΔΕΞΙΟ ΟΡΙΟ δεξιάς κουρτίνας
   let leftPx = desiredCenterX - bw/2;
+  if(leftPx < minLeft) leftPx = minLeft;
+  if(leftPx > maxLeft) leftPx = maxLeft;
 
   const baseLift=(typeof customLift==='number'?customLift:BASE_BUBBLE_LIFT);
   const downShift = bubbleAltLower ? randInt(15,30) : 0;
@@ -625,7 +635,7 @@ function resumeFromBubble(nextMode='run'){
   setMode(nextMode==='slow'?'slow':'run');
 }
 
-/* Νόμοι + μικρο-γραφικά */
+/* Νόμοι + μικρο-γραφικά (όπως πριν) */
 let lawCount=0;
 function addLaw(txt){
   if(!firstLawShown){
@@ -658,6 +668,7 @@ function buildSeriesData(){
 }
 function x0Val(){ return A_m*Math.sin(omega*(0+obsStartPlaybackOffset)); }
 
+let uXT=null;
 function initXTChart(){
   if(uXT) return; if(!window.uPlot){ if(graphEnabled){ pendingGraph=true; } return; }
   xtChart.style.display='block'; positionRightPanel();
