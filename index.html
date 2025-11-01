@@ -1,168 +1,105 @@
 <!DOCTYPE html>
 <html lang="el">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Θεατρική Σκηνή – Mockup</title>
-<style>
-  body { margin: 0; background: radial-gradient(circle at center, #222 0%, #000 100%); overflow: hidden; font-family: Inter, system-ui, sans-serif; }
-  .stage { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Θεατρική Σκηνή – Act1 base + Act2 scaffold</title>
+  <style>
+    body { margin: 0; background: radial-gradient(circle at center, #222 0%, #000 100%); overflow: hidden; font-family: Inter, system-ui, sans-serif; }
+    .stage { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
 
-  /* Κουρτίνες */
-  .curtain-top, .curtain-upper, .curtain-lower, .curtain-side { position: absolute; z-index: 30; transition: transform 1.2s cubic-bezier(.2,.9,.2,1), opacity 1s; }
-  .curtain-top { top: 0; left: 0; width: 100%; height: calc(28% - 30px); background: linear-gradient(to bottom, #230000, #180000); box-shadow: 0 5px 18px rgba(0,0,0,0.8); }
-  .curtain-upper { top: calc(28% - 30px); left: 0; width: 100%; height: calc(40% + 30px); background: linear-gradient(to bottom, #8b0000, #400000); transform-origin: top; }
-  .curtain-lower { bottom: 0; left: 0; width: 100%; height: 32%; background: linear-gradient(to top, #7a0000, #300000); transform-origin: bottom; }
-  .curtain-side { top: 0; width: 18%; height: 100%; }
-  .curtain-side.left  { left: 0;  background: linear-gradient(to right, #300000, #1a0000);  box-shadow: inset -6px 0 10px rgba(0,0,0,0.6); }
-  .curtain-side.right { right: 0; background: linear-gradient(to left,  #300000, #1a0000);  box-shadow: inset  6px 0 10px rgba(0,0,0,0.6); }
+    /* Κουρτίνες */
+    .curtain-top, .curtain-upper, .curtain-lower, .curtain-side { position: absolute; z-index: 30; transition: transform 1.2s cubic-bezier(.2,.9,.2,1), opacity 1s; }
+    .curtain-top { top: 0; left: 0; width: 100%; height: 28%; background: linear-gradient(to bottom, #230000, #180000); box-shadow: 0 5px 18px rgba(0,0,0,0.8); }
+    .curtain-upper { top: 28%; left: 0; width: 100%; height: 40%; background: linear-gradient(to bottom, #8b0000, #400000); transform-origin: top; }
+    .curtain-lower { bottom: 0; left: 0; width: 100%; height: 32%; background: linear-gradient(to top, #7a0000, #300000); transform-origin: bottom; }
+    .curtain-side { top: 0; width: 18%; height: 100%; }
+    .curtain-side.left  { left: 0;  background: linear-gradient(to right, #300000, #1a0000);  box-shadow: inset -6px 0 10px rgba(0,0,0,0.6); }
+    .curtain-side.right { right: 0; background: linear-gradient(to left,  #300000, #1a0000);  box-shadow: inset  6px 0 10px rgba(0,0,0,0.6); }
 
-  /* Άνοιγμα / Κλείσιμο σκηνής */
-  .open .curtain-upper { transform: translateY(calc(-100% - 20px)); } /* αφήνει ~10px χαμηλότερα απ' το full-up (όπως συμφωνήθηκε) */
-  .open .curtain-lower { transform: translateY(100%); }
+    .open .curtain-upper { transform: translateY(calc(-100% - 10px)); } /* αφήνει 10px χαμηλότερα από full-up */
+    .open .curtain-lower { transform: translateY(100%); }
 
-  /* Ειδική κλάση: μετά το κλείσιμο, ο skater & το ελατήριο παραμένουν ορατά */
-  .closed-show-actors .actor, .closed-show-actors .spring { opacity: 1 !important; }
+    /* Skater / Spring / Πάτωμα */
+    .spring { position: absolute; bottom: calc(32vh + 82px); left: 18%; height: 96px; width: auto; z-index: 5; pointer-events: none; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.55)); transform-origin: left center; opacity: 0; transition: opacity 0.4s linear; display:none; }
+    .actor  { position: absolute; bottom: calc(32vh + 130px); left: 50%; width: 144px; height: 96px; transform: translateX(-50%); z-index: 10; pointer-events: none; opacity: 0; transition: opacity 0.4s linear; }
+    .actor img { width: 100%; height: auto; display: block; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.6)); }
+    .floor  { position: absolute; left: 0; bottom: calc(32vh - 8px); width: 100%; height: 2px; background: #888; z-index: 20; pointer-events: none; }
+    .open .actor, .open .spring { opacity: 1; }
 
-  /* Skater / Spring / Πάτωμα */
-  .spring { position: absolute; bottom: calc(32vh + 82px); left: 10%; height: 96px; width: auto; z-index: 5; pointer-events: none; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.55)); transform-origin: left center; opacity: 0; transition: opacity 0.4s linear; }
-  .actor  { position: absolute; bottom: calc(32vh + 130px); left: 50%; width: 144px; height: 96px; transform: translate(-50%, 0); z-index: 10; pointer-events: none; opacity: 0; transition: opacity 0.4s linear; }
-  .actor img { width: 100%; height: auto; display: block; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.6)); }
-  .floor  { position: absolute; left: 0; bottom: calc(32vh - 8px); width: 100%; height: 2px; background: #888; z-index: 20; pointer-events: none; }
-  .open .actor, .open .spring { opacity: 1; }
+    /* Ακροατήριο */
+    .audience { position: absolute; left: 18%; bottom: 0; width: 64%; height: auto; z-index: 150; pointer-events: none; display: block; }
 
-  /* Κοινό */
-  .audience { position: absolute; left: 18%; bottom: 0; width: 64%; height: auto; z-index: 150; pointer-events: none; display: block; }
+    /* Ταμπέλα */
+    .signboard { position: absolute; top: -6px; left: 50%; transform: translateX(-50%); background: transparent; border: none; border-radius: 10px; padding: 14px 22px; color: #ddd; font-family: 'Georgia', serif; text-align: center; z-index: 40; line-height: 1.35; }
+    .signboard h1 { font-size: 32px; margin: 0; color: #fff; }
+    .signboard h2 { font-size: 20px; margin: 2px 0 0 0; }
+    .signboard h3 { font-size: 18px; margin: 2px 0 0 0; color: #ffd27a; }
 
-  /* Ταμπέλα */
-  .signboard { position: absolute; top: -6px; left: 50%; transform: translateX(-50%); background: transparent; border: none; border-radius: 10px; padding: 14px 22px; color: #ddd; font-family: 'Georgia', serif; text-align: center; z-index: 40; line-height: 1.35; }
-  .signboard h1 { font-size: 32px; margin: 0; color: #fff; }
-  .signboard h2 { font-size: 20px; margin: 2px 0 0 0; }
-  .signboard h3 { font-size: 18px; margin: 2px 0 0 0; color: #ffd27a; }
+    /* Ρολόι δεξιά επάνω */
+    .clock { position: absolute; top: 10px; left: calc(82vw + 9vw); transform: translateX(-50%); background: rgba(0,0,0,0.5); color: #fff; padding: 6px 10px; font-size: 16px; font-family: "Courier New", monospace; border-radius: 6px; border: 1px solid rgba(255,255,255,0.3); z-index: 40; pointer-events: none; display: none; }
 
-  /* Ρολόι δεξιά επάνω */
-  .clock { position: absolute; top: 10px; left: calc(82vw + 9vw); transform: translateX(-50%); background: rgba(0,0,0,0.5); color: #fff; padding: 6px 10px; font-size: 16px; font-family: "Courier New", monospace; border-radius: 6px; border: 1px solid rgba(255,255,255,0.3); z-index: 40; pointer-events: none; display: none; }
+    /* Law box */
+    .laws { position: absolute; left: 2%; top: 10px; width: 16%; max-height: 30vh; overflow: auto; background: rgba(20,0,0,0.6); color: #fff; border: 1px solid rgba(255,200,200,0.3); border-radius: 8px; padding: 6px 8px; font-size: 16px; line-height: 1.5; z-index: 40; display: none; }
+    .laws h4 { margin: 0 0 4px 0; font-size: 12px; color: #ff8080; font-family: 'Georgia', serif; text-align: center; }
+    .laws ol { margin: 0; padding-left: 20px; }
 
-  /* Πίνακας Νόμων – ΠΛΑΤΥΤΕΡΟΣ */
-  .laws { position: absolute; left: 2%; top: 10px; width: 16%; max-height: 30vh; overflow: auto; background: rgba(20,0,0,0.6); color: #fff; border: 1px solid rgba(255,200,200,0.3); border-radius: 8px; padding: 6px 8px; font-size: 16px; line-height: 1.5; z-index: 40; display: none; }
-  .laws h4 { margin: 0 0 4px 0; font-size: 12px; color: #ff8080; font-family: 'Georgia', serif; text-align: center; }
-  .laws ol { margin: 0; padding-left: 20px; }
+    /* Κουτί παραμέτρων – εμφανίζεται στην Πρ.2 */
+    .params-box { position: absolute; top: 8px; right: 22%; z-index: 45; background: rgba(0,0,0,0.5); color: #fff; border: 1px solid rgba(255,255,255,0.25); border-radius: 8px; padding: 6px 10px; font-size: 12px; line-height: 1.4; display: none; }
+    .params-box .param { white-space: nowrap; }
 
-  /* Κουτί παραμέτρων πάνω δεξιά (επάνω κουρτίνα) */
-  .params-box { position: absolute; top: 8px; right: 22%; z-index: 45; background: rgba(0,0,0,0.5); color: #fff; border: 1px solid rgba(255,255,255,0.25); border-radius: 8px; padding: 6px 10px; font-size: 12px; line-height: 1.4; display: none; }
-  .params-box h4 { margin: 0 0 4px 0; font-size: 12px; color: #ffd27a; font-family: 'Georgia', serif; }
-  .params-box .param { white-space: nowrap; }
+    /* Καμβάς διαγράμματος x–t (δεξιά κουρτίνα) */
+    #xtCanvas { position: absolute; display: none; background: rgba(0,0,0,0.2); border:1px solid rgba(255,255,255,0.2); border-radius:6px; z-index: 60; pointer-events: none; }
 
-  /* Καμβάς διαγράμματος x–t */
-  #xtCanvas { position: absolute; display: none; background: rgba(0,0,0,0.2); border:1px solid rgba(255,255,255,0.2); border-radius:6px; z-index: 60; pointer-events: none; }
+    /* Χάρακας & δείκτης */
+    .ruler { position: absolute; bottom: calc(32vh - 8px + 1px); height: 24px; font-size: 10px; font-family: "Courier New", monospace; color: #aaa; pointer-events: none; z-index: 170; }
+    .ruler::before { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 1px; background: #aaa; }
+    .tick { position: absolute; bottom: 0; width: 1px; height: 10px; background: #aaa; }
+    .tick-label { position: absolute; bottom: 12px; transform: translateX(-50%); font-size: 10px; color: #aaa; white-space: nowrap; }
+    .marker { position: absolute; bottom: calc(32vh - 8px + 1px); width: 0; height: 80px; transform: translateX(-50%); pointer-events: none; z-index: 175; opacity: 0; transition: opacity .3s; }
+    .marker-line { position: absolute; left: 50%; bottom: 8px; width: 2px; height: 70px; background: #ffd27a; box-shadow: 0 0 4px rgba(255,210,122,0.8); transform: translateX(-50%); }
+    .marker-tip  { position: absolute; left: 50%; bottom: 0; width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 8px solid #ffd27a; filter: drop-shadow(0 2px 2px rgba(255,210,122,0.8)); transform: translateX(-50%); }
 
-  /* Χάρακας & δείκτης */
-  .ruler { position: absolute; bottom: calc(32vh - 8px + 1px); height: 24px; font-size: 10px; font-family: "Courier New", monospace; color: #aaa; pointer-events: none; z-index: 170; }
-  .ruler::before { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 1px; background: #aaa; }
-  .tick { position: absolute; bottom: 0; width: 1px; height: 10px; background: #aaa; }
-  .tick-label { position: absolute; bottom: 12px; transform: translateX(-50%); font-size: 10px; color: #aaa; white-space: nowrap; }
-  .marker { position: absolute; bottom: calc(32vh - 8px + 1px); width: 0; height: 80px; transform: translateX(-50%); pointer-events: none; z-index: 175; opacity: 0; transition: opacity .3s; }
-  .marker-line { position: absolute; left: 50%; bottom: 8px; width: 2px; height: 70px; background: #ffd27a; box-shadow: 0 0 4px rgba(255,210,122,0.8); transform: translateX(-50%); }
-  .marker-tip  { position: absolute; left: 50%; bottom: 0; width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 8px solid #ffd27a; filter: drop-shadow(0 2px 2px rgba(255,210,122,0.8)); transform: translateX(-50%); }
+    /* Bubbles */
+    .thought-bubble { position: absolute; max-width: 360px; background: rgba(255,255,255,0.92); color: #000; font-size: 15px; line-height: 1.55; padding: 10px 12px 12px 12px; border-radius: 10px; border: 1px dashed rgba(0,0,0,0.55); box-shadow: 0 6px 12px rgba(0,0,0,0.35); z-index: 240; pointer-events: none; opacity: 0; display: none; transition: opacity .3s ease; }
+    .thought-bubble.active { opacity: 1; }
+    .thought-bubble.closing { opacity: 0; }
+    .thought-bubble .tail { position: absolute; left: 50%; bottom: -8px; transform: translateX(-50%); width: 0; height: 0; border-left: 8px solid transparent; border-right: 8px solid transparent; border-top: 10px solid rgba(255,255,255,0.92); filter: drop-shadow(0 2px 2px rgba(0,0,0,0.4)); }
+    .thought-bubble .checkmark { position: absolute; top: -8px; right: -8px; background: #2ecc71; color: #fff; font-size: 11px; line-height: 1; border-radius: 50%; border: 1px solid rgba(0,0,0,0.4); width: 18px; height: 18px; display: none; align-items: center; justify-content: center; font-family: system-ui, sans-serif; font-weight: 600; }
+    .thought-bubble.checked .checkmark { display: flex; }
 
-  /* Bubbles */
-  .thought-bubble { position: absolute; max-width: 360px; background: rgba(255,255,255,0.92); color: #000; font-size: 18px; line-height: 1.6; padding: 12px 14px 14px 14px; border-radius: 10px; border: 1px solid rgba(0,0,0,0.4); box-shadow: 0 6px 12px rgba(0,0,0,0.4); z-index: 240; pointer-events: none; opacity: 0; display: none; transition: opacity .3s ease; }
-  .thought-bubble.active { opacity: 1; }
-  .thought-bubble.closing { opacity: 0; }
-  .thought-bubble .tail { position: absolute; left: 50%; bottom: -8px; transform: translateX(-50%); width: 0; height: 0; border-left: 8px solid transparent; border-right: 8px solid transparent; border-top: 10px solid rgba(255,255,255,0.92); filter: drop-shadow(0 2px 2px rgba(0,0,0,0.4)); }
-  .thought-bubble .checkmark { position: absolute; top: -8px; right: -8px; background: #2ecc71; color: #fff; font-size: 11px; line-height: 1; border-radius: 50%; border: 1px solid rgba(0,0,0,0.4); width: 18px; height: 18px; display: none; align-items: center; justify-content: center; font-family: system-ui, sans-serif; font-weight: 600; }
-  .thought-bubble.checked .checkmark { display: flex; }
+    /* Κοντρόλς (pause/slow/play) */
+    .controls { position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 6px 8px; display: flex; gap: 8px; z-index: 200; }
+    .controls button { background: none; border: 0; color: #fff; font-size: 16px; line-height: 1; cursor: pointer; min-width: 32px; min-height: 32px; border-radius: 4px; padding: 4px 6px; }
+    .controls button.active { background: rgba(255,255,255,0.2); }
 
-  /* Κοντρόλς */
-  .controls { position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 6px 8px; display: flex; gap: 8px; z-index: 200; }
-  .controls button { background: none; border: 0; color: #fff; font-size: 16px; line-height: 1; cursor: pointer; min-width: 32px; min-height: 32px; border-radius: 4px; padding: 4px 6px; }
-  .controls button.active { background: rgba(255,255,255,0.2); }
+    /* Countdown */
+    .countdown-overlay { position: absolute; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); color: #fff; display: none; align-items: center; justify-content: center; text-align: center; z-index: 300; pointer-events: none; font-family: Inter, system-ui, sans-serif; }
+    .countdown-box { max-width: 80%; }
+    .countdown-main { font-size: 24px; font-weight: 600; margin-bottom: 8px; color: #fff; }
+    .countdown-sub  { font-size: 14px; color: #ffd27a; margin-bottom: 16px; }
+    .countdown-timer{ font-family: "Courier New", monospace; font-size: 40px; font-weight: 700; color: #fff; }
 
-  /* Countdown */
-  .countdown-overlay { position: absolute; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); color: #fff; display: none; align-items: center; justify-content: center; text-align: center; z-index: 300; pointer-events: none; font-family: Inter, system-ui, sans-serif; }
-  .countdown-box { max-width: 80%; }
-  .countdown-main { font-size: 24px; font-weight: 600; margin-bottom: 8px; color: #fff; }
-  .countdown-sub  { font-size: 14px; color: #ffd27a; margin-bottom: 16px; }
-  .countdown-timer{ font-family: "Courier New", monospace; font-size: 40px; font-weight: 700; color: #fff; }
+    /* Viewers (για αγκύρωση bubbles) */
+    .viewers { position: absolute; bottom: 0; width: 100%; display: flex; justify-content: center; gap: 3vw; z-index: 1; padding-bottom: 12px; }
+    .viewer { width: 60px; height: 100px; background: url('https://upload.wikimedia.org/wikipedia/commons/f/f9/Silhouette_icon.svg') no-repeat center/contain; filter: grayscale(1) brightness(0.6); opacity: 0.75; }
 
-  @media (max-width: 600px) {
-    .actor { bottom: calc(32vh + 40px); left: 50%; width: 100px; height: 66px; transform: translate(-50%, 0); }
-    .spring{ bottom: calc(32vh + 7px); left: 10%; height: 66px; width: auto; }
-    .audience{ left: 18%; bottom: 0; width: 64%; height: 40px; }
-    .signboard{ padding: 8px 12px; }
-    .signboard h1 { font-size: 20px; }
-    .signboard h2 { font-size: 14px; }
-    .signboard h3 { font-size: 12px; }
-  }
-  @media (max-height: 500px) and (orientation: landscape) {
-    .actor { bottom: calc(32vh + 30px); left: 50%; width: 70px; height: 46px; transform: translate(-50%, 0); }
-    .spring{ bottom: calc(32vh + 7px); left: 10%; height: 46px; width: auto; }
-  }
-  
-  /* Start button (visible & above curtains) */
-  .start-btn {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 100;
-    background: #700;
-    color: #fff;
-    border: none;
-    border-radius: 8px;
-    padding: 12px 24px;
-    font-size: 18px;
-    cursor: pointer;
-    box-shadow: 0 0 10px #300;
-  }
+    /* Πίνακας Μετρήσεων (δεξιά κουρτίνα) */
+    .measure-box { position: absolute; left: calc(82vw + 9vw); transform: translateX(-50%); top: 54px; width: calc(18vw - 16px); z-index: 40; background: rgba(0,0,0,0.45); color: #fff; border: 1px solid rgba(255,255,255,0.25); border-radius: 8px; padding: 6px 8px; display: none; height: 50vh; overflow-y: auto; }
+    .measure-box .mb-title { font-size: 14px; margin-bottom: 4px; color: #ffd27a; text-align: center; font-family: 'Georgia', serif; }
+    .measure-box table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .measure-box th, .measure-box td { border-bottom: 1px solid rgba(255,255,255,0.2); padding: 2px 4px; text-align: right; }
+    .measure-box th:first-child, .measure-box td:first-child { text-align: center; }
 
-  /* Viewers (silhouettes) for bubble anchoring */
-  .viewers {
-    position: absolute;
-    bottom: 0;
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    gap: 3vw;
-    z-index: 1;
-    padding-bottom: 12px;
-  }
-  .viewer {
-    width: 60px;
-    height: 100px;
-    background: url('https://upload.wikimedia.org/wikipedia/commons/f/f9/Silhouette_icon.svg') no-repeat center/contain;
-    filter: grayscale(1) brightness(0.6);
-    opacity: 0.75;
-  }
-  /* Πίνακας Μετρήσεων (δεξιά κουρτίνα) */
-  .measure-box { position: absolute; left: calc(82vw + 9vw); transform: translateX(-50%); top: 54px; width: calc(18vw - 16px); z-index: 40; background: rgba(0,0,0,0.45); color: #fff; border: 1px solid rgba(255,255,255,0.25); border-radius: 8px; padding: 6px 8px; display: none; height: 50vh; overflow-y: auto; }
-  .measure-box .mb-title { font-size: 14px; margin-bottom: 4px; color: #ffd27a; text-align: center; font-family: 'Georgia', serif; }
-  .measure-box table { width: 100%; border-collapse: collapse; font-size: 12px; }
-  .measure-box th, .measure-box td { border-bottom: 1px solid rgba(255,255,255,0.2); padding: 2px 4px; text-align: right; }
-  .measure-box th:first-child, .measure-box td:first-child { text-align: center; }
-  /* Act II start button */
-  .start-act2-btn {
-    position: absolute;
-    top: 60%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 110;
-    background: #074;
-    color: #fff;
-    border: none;
-    border-radius: 8px;
-    padding: 10px 18px;
-    font-size: 16px;
-    cursor: pointer;
-    box-shadow: 0 0 10px #032;
-    display: none;
-  }
-</style>
+    /* Start buttons */
+    .start-btn { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 100; background: #700; color: #fff; border: none; border-radius: 8px; padding: 12px 24px; font-size: 18px; cursor: pointer; box-shadow: 0 0 10px #300; }
+    .start-act2-btn { position: absolute; top: 60%; left: 50%; transform: translate(-50%, -50%); z-index: 110; background: #074; color: #fff; border: none; border-radius: 8px; padding: 10px 18px; font-size: 16px; cursor: pointer; box-shadow: 0 0 10px #032; display: none; }
+  </style>
 </head>
 <body>
   <div class="stage" id="stage">
     <div class="curtain-top"></div>
-    <div class="curtain-upper"></div>
+    <div class="curtain-upper"></></div>
     <div class="curtain-lower"></div>
     <div class="curtain-side left"></div>
     <div class="curtain-side right"></div>
@@ -234,375 +171,444 @@
     </div>
 
     <button class="start-btn" id="startBtn">Έναρξη</button>
-    <button class="start-act2-btn" id="startAct2Btn" style="display:none;">Έναρξη Πράξης 2</button>
+    <button class="start-act2-btn" id="startAct2Btn">Έναρξη Πράξης 2</button>
   </div>
 
-<script>
-  // Φυσικές παράμετροι
-  const m = 70;           // kg
-  const T = 6.0;          // s
-  const A_m = 3.0;        // m
-  const omega = 2*Math.PI / T; // rad/s
-  const D = Math.round(m * omega * omega);
-  const E_mech = 0.5 * D * A_m * A_m;
+  <script>
+  (function(){
+    'use strict';
 
-  // Κλίμακα θέσης
-  const pxPerMeter = 50;
-  let A_px = pxPerMeter * A_m;
+    // ======== Φυσικές σταθερές (Act 1) =========
+    const m = 70;
+    const T = 6.0;
+    const A_m = 3.0;
+    const omega = 2*Math.PI / T;
+    const D = Math.round(m * omega * omega);
+    const E_mech = 0.5 * D * A_m * A_m;
 
-  // Header updates
-  document.addEventListener('DOMContentLoaded', ()=>{
-    const massLine = document.querySelector('.signboard .mass-line');
-    const kLine = document.querySelector('.signboard .k-line');
-    const energyLine = document.querySelector('.signboard h3');
-    if (massLine) { massLine.textContent = `m₁ = ${m} kg`; }
-    if (kLine)   { kLine.textContent   = `D₁ = ${D} N/m`; }
-    if (energyLine){ energyLine.textContent = `Εμηχ = ${Math.round(E_mech)} J`; }
-  });
+    const pxPerMeter = 50;
+    let A_px = pxPerMeter * A_m;
+    let phi0 = 0.3; // αρχική φάση
 
-  // DOM refs
-  const stage = document.getElementById('stage');
-  const actor = document.getElementById('actor');
-  const springEl = document.getElementById('spring');
-  const startBtn = document.getElementById('startBtn');
-  const clockEl = document.getElementById('clock');
-  const rulerEl = document.getElementById('ruler');
-  const markerEl = document.getElementById('marker');
-  const bubbleEl = document.getElementById('bubble0');
-  const btnPause = document.getElementById('btnPause');
-  const btnSlow  = document.getElementById('btnSlow');
-  const btnPlay  = document.getElementById('btnPlay');
-  const countdownOverlay = document.getElementById('countdownOverlay');
-  const countdownTimerEl = document.getElementById('countdownTimer');
-  const xtCanvas = document.getElementById('xtCanvas');
-  const paramsBoxEl = document.getElementById('paramsBox');
-  const paramAEl = document.getElementById('paramA');
-  const paramWEl = document.getElementById('paramW');
-  const paramPhiEl = document.getElementById('paramPhi');
-  const lawsEl = document.querySelector('.laws');
-  const measureBox = document.getElementById('measureBox');
-  const measureTBody = document.getElementById('measureTBody');
+    // ======== Elements ===========
+    const stage = document.getElementById('stage');
+    const actor = document.getElementById('actor');
+    const springEl = document.getElementById('spring');
+    const startBtn = document.getElementById('startBtn');
+    const startAct2Btn = document.getElementById('startAct2Btn');
+    const clockEl = document.getElementById('clock');
+    const rulerEl = document.getElementById('ruler');
+    const markerEl = document.getElementById('marker');
+    const bubbleEl = document.getElementById('bubble0');
+    const btnPause = document.getElementById('btnPause');
+    const btnSlow  = document.getElementById('btnSlow');
+    const btnPlay  = document.getElementById('btnPlay');
+    const countdownOverlay = document.getElementById('countdownOverlay');
+    const countdownTimerEl = document.getElementById('countdownTimer');
+    const xtCanvas = document.getElementById('xtCanvas');
+    const paramsBoxEl = document.getElementById('paramsBox');
+    const paramAEl = document.getElementById('paramA');
+    const paramWEl = document.getElementById('paramW');
+    const paramPhiEl = document.getElementById('paramPhi');
+    const lawsBox = document.querySelector('.laws');
+    const lawsList = document.getElementById('lawsList');
+    const measureBox = document.getElementById('measureBox');
+    const measureTBody = document.getElementById('measureTBody');
 
-  // Timeline – οι ατάκες (Act-based)
-  let thoughtScript = [];
-  const ACTS = {
-    1: {
-      showSpring: false,
-      showParams: false,
-      timeline: [
-        { kind:'bubble', at: 1.0,  viewer:1, duration:3, text:'η κίνηση είναι ευθύγραμμη παλινδρομική!' },
-        { kind:'bubble', at: 3.6,  viewer:3, duration:3, text:'… και επαναλαμβανόμενη-περιοδική, άρα ταλάντωση!' },
-        { kind:'bubble', at: 6.2,  viewer:0, duration:3, text:'Μήπως είναι Απλή Αρμονική Ταλάντωση;' },
-        { kind:'bubble', at: 8.8,  viewer:4, duration:3, text:'… αν είναι Α.Α.Τ. τότε οι τιμές που μετράμε πρέπει να επαληθεύουν την χ=Αημ(ωt+φ₀)!' },
-        { kind:'bubble', at: 11.4, viewer:2, duration:2.5, text:'Να κάνουμε διάγραμμα x–t, αυτό θα δείξει!' },
-        { kind:'graph',  at: 14.5 },
-        { kind:'bubble', at: 16.8, viewer:1, duration:3, dynamic:'params' },
-        { kind:'law',    at: 18.4, lawText: 'x(t) = A·ημ(ωt + φ₀)' },
+    // Header updates
+    document.addEventListener('DOMContentLoaded', ()=>{
+      const massLine = document.querySelector('.signboard .mass-line');
+      const kLine = document.querySelector('.signboard .k-line');
+      const energyLine = document.querySelector('.signboard h3');
+      if (massLine) { massLine.textContent = `m₁ = ${m} kg`; }
+      if (kLine)   { kLine.textContent   = `D₁ = ${D} N/m`; }
+      if (energyLine){ energyLine.textContent = `Εμηχ = ${Math.round(E_mech)} J`; }
+    });
 
-        { kind:'bubble', at: 20.6, viewer:0, duration:2.5, text:'Επομένως η ταχύτητα δίνεται από τον νόμο υ=ωA·συν(ωt+φ₀)!' },
-        { kind:'law',    at: 22.0, lawText: 'v(t) = ωA·συν(ωt + φ₀)' },
+    // ======== Acts config (Act1 untouched, Act2 scaffold) ========
+    const ACTS = {
+      1: {
+        showSpring: false,
+        showParams: false,
+        timeline: [
+          { kind:'bubble', at: 1.0,  viewer:1, duration:3, text:'η κίνηση είναι ευθύγραμμη παλινδρομική!' },
+          { kind:'bubble', at: 3.6,  viewer:3, duration:3, text:'… και επαναλαμβανόμενη-περιοδική, άρα ταλάντωση!' },
+          { kind:'bubble', at: 6.2,  viewer:0, duration:3, text:'Μήπως είναι Απλή Αρμονική Ταλάντωση;' },
+          { kind:'bubble', at: 8.8,  viewer:4, duration:3, text:'… αν είναι Α.Α.Τ. τότε οι τιμές που μετράμε πρέπει να επαληθεύουν την χ=Α·ημ(ωt+φ₀)!' },
+          { kind:'bubble', at: 11.4, viewer:2, duration:2.5, text:'Να κάνουμε διάγραμμα x–t, αυτό θα δείξει!' },
+          { kind:'graph',  at: 14.5 },
+          { kind:'bubble', at: 16.8, viewer:1, duration:3, dynamic:'params' },
+          { kind:'law',    at: 18.4, lawText: 'x(t) = A·ημ(ωt + φ₀)' },
+          { kind:'bubble', at: 20.6, viewer:0, duration:2.5, text:'Επομένως η ταχύτητα δίνεται από τον νόμο v=ωA·συν(ωt+φ₀)!' },
+          { kind:'law',    at: 22.0, lawText: 'v(t) = ωA·συν(ωt + φ₀)' },
+          { kind:'bubble', at: 23.8, viewer:4, duration:2.5, text:'…και η επιτάχυνση από τον τύπο a=−ω²A·ημ(ωt+φ₀)!' },
+          { kind:'law',    at: 25.2, lawText: 'a(t) = −ω²A·ημ(ωt + φ₀)' },
+          { kind:'bubble', at: 26.8, viewer:2, duration:2.5, text:'Αλλά η σχέση (1) περιέχεται στην (3), δηλαδή a = −ω²·x!' },
+          { kind:'law',    at: 28.2, lawText: 'a = −ω²·x' },
+          { kind:'close',  at: 31.2 }
+        ]
+      },
+      2: {
+        showSpring: true,
+        showParams: true,
+        timeline: [
+          { kind:'bubble', at: 1.0, viewer:2, duration:3, text:'Πράξη 2: Δυναμική — το ελατήριο στη σκηνή από την αρχή.' },
+          { kind:'law',    at: 4.0, lawText:'F = −D·x' },
+          { kind:'graph',  at: 6.0 }
+        ]
+      }
+    };
 
-        { kind:'bubble', at: 23.8, viewer:4, duration:2.5, text:'…και η επιτάχυνση από τον τύπο a = −ω²A·ημ(ωt+φ₀)!' },
-        { kind:'law',    at: 25.2, lawText: 'a(t) = −ω²A·ημ(ωt + φ₀)' },
+    let currentAct = 1;
+    let nextThoughtIdx = 0;
+    let isBubbleActive = false;
+    let bubbleAutoTimer = null;
+    let measureRowIdx = 0;
 
-        { kind:'bubble', at: 26.8, viewer:2, duration:2.5, text:'Αλλά η σχέση (1) περιέχεται στην (3), δηλαδή a = −ω²·x!' },
-        { kind:'law',    at: 28.2, lawText: 'a = −ω²·x' },
+    // Μετρήσεις sampling
+    let lastSampleObsTime = -Infinity;
+    const sampleInterval = 0.25; // s
 
-        { kind:'close',  at: 31.2 }
-      ]
-    },
-    2: {
-      showSpring: true,
-      showParams: true,
-      timeline: [
-        { kind:'bubble', at: 1.0, viewer:2, duration:3, text:'Πράξη 2: Δυναμική – το ελατήριο στη σκηνή από την αρχή.' },
-        { kind:'graph',  at: 4.0 },
-        { kind:'law',    at: 6.0, lawText: 'F = −D·x' }
-      ]
+    // Ρολόι & play state
+    let t0 = performance.now();
+    let lastFrame = performance.now();
+    let playbackTime = 0;
+    let mode = 'run';          // 'run' | 'slow' | 'pause'
+    const slowFactor = 0.15;
+    let obsStarted = false;
+    let obsStartPlaybackOffset = 0;
+
+    // Ruler
+    let lastRulerW = 0;
+    function updateRuler(){
+      if (!rulerEl) return;
+      const baseLeft = stage.clientWidth * 0.18; // δεξί άκρο αριστερής κουρτίνας
+      const usableW  = stage.clientWidth * 0.64; // άνοιγμα σκηνής
+      if (Math.abs(usableW - lastRulerW) < 1) return;
+      lastRulerW = usableW;
+      rulerEl.style.left = baseLeft + 'px';
+      rulerEl.style.width = usableW + 'px';
+      rulerEl.innerHTML = '';
+      const centerX = stage.clientWidth / 2;
+      for (let mTick = -3; mTick <= 3; mTick++){
+        const xPx = centerX + mTick * pxPerMeter;
+        const rel = xPx - baseLeft;
+        const tickDiv = document.createElement('div'); tickDiv.className = 'tick'; tickDiv.style.left = rel + 'px'; rulerEl.appendChild(tickDiv);
+        const labelDiv = document.createElement('div'); labelDiv.className = 'tick-label'; labelDiv.textContent = (mTick===0? '0' : (mTick>0? '+'+mTick : ''+mTick)) + ' m'; labelDiv.style.left = rel + 'px'; rulerEl.appendChild(labelDiv);
+      }
     }
-  };
-  let currentAct = 1;
-  let nextThoughtIdx = 0; let isBubbleActive = false; let bubbleAutoTimer = null;
-  let measureRowIdx = 0;
 
-  // Μετρήσεις – sample ελέγχου
-  let lastSampleObsTime = -Infinity; const sampleInterval = 0.25; // s
-
-  // Ρολόι & play state
-  let t0 = performance.now(); let lastFrame = performance.now();
-  let playbackTime = 0; let mode = 'run'; const slowFactor = 0.15;
-  let obsStarted = false; let obsStartPlaybackOffset = 0;
-
-  // Ruler
-  let lastRulerW = 0;
-  function updateRuler(){
-    if (!rulerEl) return;
-    const baseLeft = stage.clientWidth * 0.18; // δεξί άκρο αριστερής κουρτίνας
-    const usableW  = stage.clientWidth * 0.64; // άνοιγμα σκηνής
-    if (Math.abs(usableW - lastRulerW) < 1) return;
-    lastRulerW = usableW;
-    rulerEl.style.left = baseLeft + 'px';
-    rulerEl.style.width = usableW + 'px';
-    rulerEl.innerHTML = '';
-    const centerX = stage.clientWidth / 2;
-    for (let mTick = -3; mTick <= 3; mTick++){
-      const xPx = centerX + mTick * pxPerMeter; const rel = xPx - baseLeft;
-      const tickDiv = document.createElement('div'); tickDiv.className = 'tick'; tickDiv.style.left = rel + 'px'; rulerEl.appendChild(tickDiv);
-      const labelDiv = document.createElement('div'); labelDiv.className = 'tick-label'; labelDiv.textContent = (mTick===0? '0' : (mTick>0? '+'+mTick : ''+mTick)) + ' m'; labelDiv.style.left = rel + 'px'; rulerEl.appendChild(labelDiv);
+    function positionRightPanel(){
+      const curtainLeft = stage.clientWidth * 0.82;
+      const curtainW = stage.clientWidth * 0.18;
+      const centerX = curtainLeft + curtainW/2;
+      if (clockEl){ clockEl.style.left = centerX + 'px'; }
+      if (measureBox){
+        measureBox.style.left = centerX + 'px';
+        const topAfterClock = 10 + 34; // clock top + approx height
+        measureBox.style.top = (topAfterClock + 10) + 'px';
+        const halfH = Math.floor(stage.clientHeight * 0.5);
+        measureBox.style.height = halfH + 'px';
+        measureBox.style.overflowY = 'auto';
+        measureBox.style.width = Math.max(160, curtainW - 16) + 'px';
+      }
+      if (xtCanvas){
+        const mbottom = measureBox ? (parseFloat(measureBox.style.top)||54) + (parseFloat(measureBox.style.height)||Math.floor(stage.clientHeight*0.5)) : 200;
+        const xTop = mbottom + 8;
+        xtCanvas.style.left = centerX + 'px';
+        xtCanvas.style.top  = xTop + 'px';
+        const w = Math.max(160, (measureBox ? measureBox.offsetWidth : (curtainW - 16)));
+        const halfH = Math.floor(stage.clientHeight * 0.5);
+        const h = Math.max(120, halfH - 16);
+        xtCanvas.style.width = w + 'px';
+        xtCanvas.style.height = h + 'px';
+        xtCanvas.width = Math.floor(w);
+        xtCanvas.height = Math.floor(h);
+        xtCanvas.style.transform = 'translateX(-50%)';
+      }
     }
-  }
 
-  function positionRightPanel(){
-    const curtainLeft = stage.clientWidth * 0.82;
-    const curtainW = stage.clientWidth * 0.18;
-    const centerX = curtainLeft + curtainW/2;
-    if (clockEl){ clockEl.style.left = centerX + 'px'; }
-    if (measureBox){
-      measureBox.style.left = centerX + 'px';
-      const topAfterClock = 10 + 34; // clock top + approx height
-      measureBox.style.top = (topAfterClock + 10) + 'px';
-      const halfH = Math.floor(stage.clientHeight * 0.5);
-      measureBox.style.height = halfH + 'px';
-      measureBox.style.overflowY = 'auto';
-      measureBox.style.width = Math.max(160, curtainW - 16) + 'px';
+    function anchorX(){ return stage.clientWidth * 0.18; } // δεξί άκρο αριστερής κουρτίνας
+
+    function logMeasurement(tObs, xMeters){
+      if (!obsStarted) return;
+      if (mode==='pause') return;
+      if (tObs - lastSampleObsTime < sampleInterval) return;
+      lastSampleObsTime = tObs;
+      if (!measureTBody) return;
+      const tr = document.createElement('tr');
+      const c1 = document.createElement('td'); c1.textContent = (++measureRowIdx).toString();
+      const c2 = document.createElement('td'); c2.textContent = tObs.toFixed(2);
+      const c3 = document.createElement('td'); c3.textContent = xMeters.toFixed(2);
+      tr.appendChild(c1); tr.appendChild(c2); tr.appendChild(c3);
+      measureTBody.appendChild(tr);
+      try { tr.scrollIntoView({block:'end'}); } catch(e) {}
+      try { if (measureBox) measureBox.scrollTop = measureBox.scrollHeight; } catch(e) {}
     }
-    if (xtCanvas){
-      const mbottom = measureBox ? (parseFloat(measureBox.style.top)||54) + (parseFloat(measureBox.style.height)||Math.floor(stage.clientHeight*0.5)) : 200;
-      const xTop = mbottom + 8;
-      xtCanvas.style.left = centerX + 'px';
-      xtCanvas.style.top  = xTop + 'px';
-      const w = Math.max(160, (measureBox ? measureBox.offsetWidth : (curtainW - 16)));
-      const halfH = Math.floor(stage.clientHeight * 0.5);
-      const h = Math.max(120, halfH - 16);
-      xtCanvas.style.width = w + 'px';
-      xtCanvas.style.height = h + 'px';
-      xtCanvas.width = Math.floor(w);
-      xtCanvas.height = Math.floor(h);
-      xtCanvas.style.transform = 'translateX(-50%)';
+
+    function drawXTGraph(){
+      if (!xtCanvas) return;
+      positionRightPanel();
+      const ctx = xtCanvas.getContext('2d');
+      const W = xtCanvas.width, H = xtCanvas.height;
+      ctx.clearRect(0,0,W,H);
+      // άξονες
+      ctx.strokeStyle = 'rgba(255,255,255,0.6)'; ctx.lineWidth = 1;
+      // t-axis
+      ctx.beginPath(); ctx.moveTo(30, H/2); ctx.lineTo(W-10, H/2); ctx.stroke();
+      // x-axis
+      ctx.beginPath(); ctx.moveTo(30, 10); ctx.lineTo(30, H-10); ctx.stroke();
+      // labels
+      ctx.fillStyle = '#ffffff'; ctx.font = '12px Inter,system-ui';
+      ctx.fillText('x (m)', 6, 16);
+      ctx.fillText('t (s)', W-40, H/2 - 6);
+
+      const Amp = A_m; const scaleY = (H/2 - 18) / Amp;
+      // οριζ. γραμμές +A και -A και τιμές
+      ctx.setLineDash([4,3]); ctx.strokeStyle = 'rgba(255,255,255,0.35)';
+      ctx.beginPath(); ctx.moveTo(30, H/2 - Amp*scaleY); ctx.lineTo(W-10, H/2 - Amp*scaleY); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(30, H/2 + Amp*scaleY); ctx.lineTo(W-10, H/2 + Amp*scaleY); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillText(Amp.toFixed(2), 34, H/2 - Amp*scaleY - 4);
+      ctx.fillText((-Amp).toFixed(2), 38, H/2 + Amp*scaleY + 12);
+
+      // Ημιτονική καμπύλη 1 περίοδου
+      const steps = W - 40;
+      ctx.strokeStyle = '#9ad0ff';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      for (let i=0;i<=steps;i++){
+        const tFrac = i/steps;           // 0..1
+        const tNow = tFrac * T;          // 0..T
+        const x = A_m * Math.sin(omega*tNow + phi0);
+        const px = 30 + i;
+        const py = H/2 - x*scaleY;
+        if (i===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
+      }
+      ctx.stroke();
+
+      // δείκτης T στο τέλος άξονα t
+      ctx.setLineDash([2,2]); ctx.strokeStyle = 'rgba(255,255,255,0.35)';
+      ctx.beginPath(); ctx.moveTo(W-10, 10); ctx.lineTo(W-10, H-10); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillText(T.toFixed(2), W-18, H/2 + 12);
     }
-  }
 
-  // Γεωμετρία ελατηρίου / skater
-  let L0_px; let skaterWidthPx; let hookOffsetPx;
-  function anchorX(){ return stage.clientWidth * 0.18; }
+    function showXTGraph(){
+      xtCanvas.style.display = 'block';
+      drawXTGraph();
+    }
 
-  function logMeasurement(tObs, xMeters){
-    if (!obsStarted) return; if (mode==='pause') return; if (tObs - lastSampleObsTime < sampleInterval) return; lastSampleObsTime = tObs;
-    if (!measureTBody) return;
-    const tr = document.createElement('tr');
-    const c1 = document.createElement('td'); c1.textContent = (++measureRowIdx).toString();
-    const c2 = document.createElement('td'); c2.textContent = tObs.toFixed(2);
-    const c3 = document.createElement('td'); c3.textContent = xMeters.toFixed(2);
-    tr.appendChild(c1); tr.appendChild(c2); tr.appendChild(c3);
-    measureTBody.appendChild(tr);
-    try { tr.scrollIntoView({block:'end'}); } catch(e) {}
-    try { if (measureBox) measureBox.scrollTop = measureBox.scrollHeight; } catch(e) {}
-  }
+    function addLaw(text){
+      if (!lawsList) return;
+      if (lawsBox && lawsBox.style.display!=='block') lawsBox.style.display='block';
+      const li = document.createElement('li');
+      li.textContent = text;
+      lawsList.appendChild(li);
+    }
 
-  function animate(now){
-    const realDt = (now - lastFrame)/1000; lastFrame = now; positionRightPanel();
-    updateRuler();
-    const tPhys = (now - t0)/1000;
-    if (!obsStarted){ playbackTime = tPhys; } else { if (mode==='run') playbackTime += realDt; else if (mode==='slow') playbackTime += realDt * slowFactor; }
-    let tObs = 0; if (obsStarted){ tObs = playbackTime - obsStartPlaybackOffset; }
-    if (clockEl){ clockEl.textContent = 't = ' + tObs.toFixed(2) + ' s'; }
+    function setMode(newMode){
+      mode = newMode;
+      if (btnPause) btnPause.classList.toggle('active', mode === 'pause');
+      if (btnSlow)  btnSlow.classList.toggle('active',  mode === 'slow');
+      if (btnPlay)  btnPlay.classList.toggle('active',  mode === 'run');
+    }
 
-    if (obsStarted && !isBubbleActive && nextThoughtIdx < thoughtScript.length){ const th = thoughtScript[nextThoughtIdx]; if (tObs >= th.at){ handleTimelineEvent(th); nextThoughtIdx += 1; } }
+    if (btnPause) btnPause.addEventListener('click', ()=> setMode('pause'));
+    if (btnSlow)  btnSlow.addEventListener('click',  ()=> setMode(mode==='slow' ? 'run' : 'slow'));
+    if (btnPlay)  btnPlay.addEventListener('click',  ()=> setMode('run'));
 
-    const springRect = springEl.getBoundingClientRect(); const skRect = actor.getBoundingClientRect();
-    if (!L0_px && springRect.width > 0) { L0_px = springRect.width; }
-    if (skRect.width > 0) { skaterWidthPx = skRect.width; hookOffsetPx = skaterWidthPx / 2; }
+    function anchorBubbleToViewer(bubble, viewerIdx){
+      const viewers = document.querySelectorAll('.viewer');
+      const v = viewers[viewerIdx % viewers.length];
+      const vb = v.getBoundingClientRect();
+      const sb = stage.getBoundingClientRect();
+      let cx = vb.left + vb.width/2 - sb.left;
+      let by = sb.height*0.32 + 80; // λίγο πάνω από πάτωμα
+      bubble.style.left = Math.max(sb.width*0.18 + 10, Math.min(cx, sb.width*0.82 - 10)) + 'px';
+      bubble.style.bottom = (sb.height*0.32 + 110) + 'px';
+    }
 
-    if (L0_px){
-      const ax = anchorX(); const centerX = stage.clientWidth / 2; const skaterHookX = centerX + A_px * Math.sin(omega * playbackTime);
-      const distance = skaterHookX - ax; const scale = distance / L0_px;
-      springEl.style.left = ax + 'px'; springEl.style.transform = `scaleX(${scale})`;
-      actor.style.transform = 'none'; actor.style.left = (skaterHookX - hookOffsetPx) + 'px';
-      if (markerEl){ markerEl.style.left = skaterHookX + 'px'; }
-      const xMeters = (skaterHookX - centerX) / pxPerMeter; logMeasurement(tObs, xMeters);
+    function showBubble(text, viewerIdx, durationSec, dynamicKey){
+      if (!bubbleEl) return;
+      if (isBubbleActive) return;
+      bubbleEl.querySelector('.text').textContent = text;
+      anchorBubbleToViewer(bubbleEl, viewerIdx);
+      bubbleEl.style.display = 'block';
+      requestAnimationFrame(()=> bubbleEl.classList.add('active'));
+      isBubbleActive = true;
+      const prevMode = mode;
+      setMode('slow'); // αργή κίνηση κατά τη σκέψη
+
+      if (dynamicKey === 'params'){
+        if (paramsBoxEl){
+          paramsBoxEl.style.display = 'block';
+          paramAEl.textContent = `A = ${A_m.toFixed(2)}`;
+          paramWEl.textContent = `ω = ${omega.toFixed(3)}`;
+          paramPhiEl.textContent = `φ₀ = ${phi0.toFixed(3)}`;
+        }
+      }
+
+      if (bubbleAutoTimer) clearTimeout(bubbleAutoTimer);
+      bubbleAutoTimer = setTimeout(()=>{
+        bubbleEl.classList.add('checked');
+        bubbleEl.classList.add('closing');
+        setTimeout(()=>{
+          bubbleEl.classList.remove('active','closing','checked');
+          bubbleEl.style.display = 'none';
+        }, 300);
+        isBubbleActive = false;
+        setMode(prevMode==='pause' ? 'pause' : 'run');
+      }, Math.max(1, durationSec) * 1000);
+    }
+
+    function closeCurtains(){
+      stage.classList.remove('open');
+      if (markerEl) markerEl.style.opacity = '0';
+      setTimeout(()=>{
+        startAct2Btn.style.display = 'block';
+      }, 1500);
+    }
+
+    function handleTimelineEvent(ev){
+      if (!ev) return;
+      if (ev.kind === 'bubble'){
+        showBubble(ev.text || '', ev.viewer||0, ev.duration||3, ev.dynamic || null);
+      } else if (ev.kind === 'graph'){
+        showXTGraph();
+      } else if (ev.kind === 'law'){
+        addLaw(ev.lawText || '');
+      } else if (ev.kind === 'close'){
+        closeCurtains();
+      }
+    }
+
+    function getActiveTimeline(){ return (ACTS[currentAct] && ACTS[currentAct].timeline) || []; }
+
+    // ======== Χρόνος / Animation =========
+    function beginObservation(){
+      obsStarted = true;
+      obsStartPlaybackOffset = playbackTime;
+      if (clockEl) clockEl.style.display = 'block';
+      if (measureBox) measureBox.style.display = 'block';
+      if (markerEl) markerEl.style.opacity = '1';
+      stage.classList.add('open');
+      nextThoughtIdx = 0;
+      lastSampleObsTime = -Infinity;
+    }
+
+    function startShowCountdown(){
+      let n = 5;
+      countdownOverlay.style.display = 'flex';
+      countdownTimerEl.textContent = String(n);
+      const intv = setInterval(()=>{
+        n--;
+        if (n <= 0){
+          clearInterval(intv);
+          countdownOverlay.style.display = 'none';
+          beginObservation();
+        } else {
+          countdownTimerEl.textContent = String(n);
+        }
+      }, 1000);
+    }
+
+    function applyActConfig(){
+      const cfg = ACTS[currentAct] || {};
+      springEl.style.display = cfg.showSpring ? 'block' : 'none';
+      paramsBoxEl.style.display = cfg.showParams ? 'block' : 'none';
+    }
+
+    if (startBtn){
+      startBtn.addEventListener('click', ()=>{
+        startBtn.style.display = 'none';
+        applyActConfig(); // για Act1: θα κρύψει το spring/params αν χρειάζεται
+        startShowCountdown();
+      });
+    }
+
+    if (startAct2Btn){
+      startAct2Btn.addEventListener('click', ()=>{
+        // reset για νέα πράξη
+        currentAct = 2;
+        nextThoughtIdx = 0;
+        isBubbleActive = false;
+        if (bubbleAutoTimer){ clearTimeout(bubbleAutoTimer); bubbleAutoTimer = null; }
+        if (lawsList) lawsList.innerHTML = '';
+        if (measureTBody) measureTBody.innerHTML = '';
+        xtCanvas.style.display = 'none';
+        applyActConfig();
+        startAct2Btn.style.display = 'none';
+        startShowCountdown();
+      });
+    }
+
+    function updateRightPanel(){
+      const tObs = Math.max(0, playbackTime - obsStartPlaybackOffset);
+      if (clockEl) clockEl.textContent = `t = ${tObs.toFixed(2)} s`;
+    }
+
+    function animate(now){
+      const dt = (now - lastFrame)/1000; lastFrame = now;
+      let scale = 1.0;
+      if (mode === 'slow') scale = slowFactor;
+      if (mode === 'pause') scale = 0.0;
+      playbackTime += dt * scale;
+
+      updateRuler();
+      positionRightPanel();
+
+      // σκηνή: x(t) = A·ημ(ωt+φ0)
+      const tObs = Math.max(0, playbackTime - obsStartPlaybackOffset);
+      const x = A_px * Math.sin(omega * tObs + phi0);
+      actor.style.left = `calc(50% + ${x}px)`;
+
+      // ελατήριο: αγκύρωση στο δεξί άκρο της αριστερής κουρτίνας
+      const ax = anchorX();
+      const actorRect = actor.getBoundingClientRect();
+      const stageRect = stage.getBoundingClientRect();
+      const skCenter = (actorRect.left + actorRect.right)/2 - stageRect.left;
+      const dx = Math.max(0, skCenter - ax - 10);
+      if (springEl){
+        springEl.style.transform = `scaleX(${Math.max(0.2, dx/120)})`;
+      }
+
+      // δείκτης θέσης
+      if (markerEl){
+        const centerX = stage.clientWidth / 2;
+        const markerX = centerX + x;
+        markerEl.style.left = markerX + 'px';
+      }
+
+      // μετρήσεις
+      if (obsStarted){
+        logMeasurement(tObs, (x/pxPerMeter));
+        // timeline fire
+        const TL = getActiveTimeline();
+        const th = TL[nextThoughtIdx];
+        if (th && tObs >= th.at && !isBubbleActive){
+          handleTimelineEvent(th);
+          nextThoughtIdx++;
+        }
+        updateRightPanel();
+      }
+
+      requestAnimationFrame(animate);
     }
     requestAnimationFrame(animate);
-  }
-  requestAnimationFrame(animate);
 
-  function setMode(newMode){ mode = newMode; if (btnSlow) btnSlow.classList.toggle('active', mode==='slow'); if (btnPlay) btnPlay.classList.toggle('active', mode==='run'); }
+    // αρχικά κρύβουμε ό,τι δεν πρέπει
+    clockEl.style.display = 'none';
+    measureBox.style.display = 'none';
+    xtCanvas.style.display = 'none';
+    markerEl.style.opacity = '0';
+    // Act1: spring/params off
+    springEl.style.display = 'none';
+    paramsBoxEl.style.display = 'none';
 
-  function showThoughtForViewer(viewerIdx, text, durationSecs=3){
-    const viewerEl = document.querySelector(`.viewer[data-idx="${viewerIdx}"]`); if (!viewerEl || !bubbleEl) return;
-    const txtNode = bubbleEl.querySelector('.text'); if (txtNode) txtNode.textContent = text || '';
-    const vRect = viewerEl.getBoundingClientRect(); const sRect = stage.getBoundingClientRect();
-    const extraX = (viewerIdx - 2) * 90 + 60; // διασπορά
-    let leftPx = (vRect.left + vRect.width/2 - sRect.left) + extraX;
-    leftPx = Math.min(stage.clientWidth - 40, Math.max(40, leftPx));
-    bubbleEl.style.left = leftPx + 'px';
-    bubbleEl.style.top  = (vRect.top  - sRect.top - 70) + 'px';
-    bubbleEl.style.display = 'block'; void bubbleEl.offsetWidth; bubbleEl.classList.add('active'); isBubbleActive = true; setMode('slow');
-    if (bubbleAutoTimer) { clearTimeout(bubbleAutoTimer); bubbleAutoTimer = null; }
-    bubbleAutoTimer = setTimeout(()=>{ resumeFromBubble('run'); }, Math.max(0.5, durationSecs) * 1000);
-  }
-  function resumeFromBubble(nextMode='run'){
-    if (bubbleAutoTimer) { clearTimeout(bubbleAutoTimer); bubbleAutoTimer = null; }
-    if (bubbleEl){
-      bubbleEl.classList.add('checked');
-      setTimeout(()=>{ bubbleEl.classList.add('closing'); }, 200);
-      setTimeout(()=>{ bubbleEl.classList.remove('active'); bubbleEl.style.display = 'none'; bubbleEl.classList.remove('checked'); bubbleEl.classList.remove('closing'); isBubbleActive = false; }, 800);
-    } else { isBubbleActive = false; }
-    setMode(nextMode==='slow' ? 'slow' : 'run');
-  }
+    window.addEventListener('resize', ()=>{ updateRuler(); positionRightPanel(); drawXTGraph(); });
 
-  function addLaw(txt){ const lawsList = document.getElementById('lawsList'); if (!lawsList) return; const li = document.createElement('li'); li.textContent = txt; lawsList.appendChild(li); }
-
-  // Τιμές A, ω, φ₀ πάνω δεξιά μετά το γράφημα
-  function showCurtainParams(){
-    if (!paramsBoxEl) return;
-    const phi0deg = ((omega * obsStartPlaybackOffset) * 180/Math.PI + 360) % 360;
-    paramAEl.textContent   = `A = ${A_m.toFixed(2)} m`;
-    paramWEl.textContent   = `ω = ${omega.toFixed(3)} rad/s`;
-    paramPhiEl.textContent = `φ₀ = ${phi0deg.toFixed(1)}°`;
-    paramsBoxEl.style.display = 'block';
-  }
-
-  // Διάγραμμα x–t
-  function showXTGraph(){
-    if (!xtCanvas) return;
-    positionRightPanel();
-    const ctx = xtCanvas.getContext('2d');
-    const W = xtCanvas.width, H = xtCanvas.height;
-    ctx.clearRect(0,0,W,H);
-    // άξονες
-    ctx.strokeStyle = 'rgba(255,255,255,0.6)'; ctx.lineWidth = 1;
-    // t-axis
-    ctx.beginPath(); ctx.moveTo(30, H/2); ctx.lineTo(W-10, H/2); ctx.stroke();
-    // x-axis
-    ctx.beginPath(); ctx.moveTo(30, 10); ctx.lineTo(30, H-10); ctx.stroke();
-    // labels
-    ctx.fillStyle = '#ffffff'; ctx.font = '12px Inter,system-ui';
-    ctx.fillText('x (m)', 6, 16);
-    ctx.fillText('t (s)', W-40, H/2 - 6);
-
-    const Amp = A_m; const scaleY = (H/2 - 18) / Amp;
-    // οριζ. γραμμές +A και -A και τιμές
-    ctx.setLineDash([4,3]); ctx.strokeStyle = 'rgba(255,255,255,0.35)';
-    ctx.beginPath(); ctx.moveTo(30, H/2 - Amp*scaleY); ctx.lineTo(W-10, H/2 - Amp*scaleY); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(30, H/2 + Amp*scaleY); ctx.lineTo(W-10, H/2 + Amp*scaleY); ctx.stroke();
-    ctx.setLineDash([]);
-    ctx.fillText(Amp.toFixed(2), 34, H/2 - Amp*scaleY - 4);
-    ctx.fillText((-Amp).toFixed(2), 38, H/2 + Amp*scaleY + 12);
-
-    // κάθετος δείκτης στο T
-    const xT = 30 + (W-40);
-    ctx.setLineDash([2,2]); ctx.strokeStyle = 'rgba(255,255,255,0.45)';
-    ctx.beginPath(); ctx.moveTo(xT, 10); ctx.lineTo(xT, H-10); ctx.stroke();
-    ctx.setLineDash([]);
-    ctx.textAlign = 'center';
-    ctx.fillText(T.toFixed(2), xT, H/2 + 18);
-    ctx.textAlign = 'left';
-
-    // καμπύλη x(t) για ένα T
-    ctx.strokeStyle = '#ffd27a'; ctx.lineWidth = 2; ctx.beginPath();
-    const N = 240; for (let i=0;i<=N;i++){ const tloc = (i/N) * T; const x = Amp * Math.sin(omega * (tloc + obsStartPlaybackOffset)); const xx = 30 + (W-40) * (tloc / T); const yy = H/2 - x * scaleY; if (i===0) ctx.moveTo(xx,yy); else ctx.lineTo(xx,yy); }
-    ctx.stroke();
-
-    xtCanvas.style.display = 'block';
-  }
-
-  // Κλείσιμο 1ης πράξης
-  function closeCurtains(){
-    stage.classList.remove('open');
-    stage.classList.add('closed-show-actors');
-    if (markerEl){ markerEl.style.opacity = '0'; }
-    setMode('run');
-    const act2Btn = document.getElementById('startAct2Btn');
-    if (act2Btn){ act2Btn.style.display = 'block'; }
-  }
-
-  function handleTimelineEvent(th){
-    if (th.kind === 'bubble'){
-      let text = th.text;
-      if (th.dynamic === 'params'){
-        const phi0deg = ((omega * obsStartPlaybackOffset) * 180/Math.PI + 360) % 360;
-        text = `Πραγματικά είναι ΑΑΤ με Α=${A_m.toFixed(2)}  ω=${omega.toFixed(3)} και φ₀=${phi0deg.toFixed(1)}° — ένα το κρατούμενο!`;
-      }
-      showThoughtForViewer(th.viewer, text, th.duration ?? 3);
-    }
-    else if (th.kind === 'graph'){ showXTGraph(); showCurtainParams(); }
-    else if (th.kind === 'law'){ addLaw(th.lawText); }
-    else if (th.kind === 'close'){ closeCurtains(); }
-  }
-
-  // Κουμπιά ελέγχου
-  if (btnPause){ btnPause.addEventListener('click', ()=>{ setMode(mode==='pause' ? 'run' : 'pause'); }); }
-  if (btnSlow){  btnSlow.addEventListener('click',  ()=>{ resumeFromBubble('slow'); }); }
-  if (btnPlay){  btnPlay.addEventListener('click',  ()=>{ resumeFromBubble('run');  }); }
-
-  function beginObservationAfterCountdown(){
-    stage.classList.add('open');
-    if (!obsStarted){ obsStarted = true; obsStartPlaybackOffset = playbackTime; }
-    if (clockEl){ clockEl.style.display = 'block'; }
-    if (lawsEl){  lawsEl.style.display  = 'block'; }
-    if (measureBox){ measureBox.style.display = 'block'; }
-    if (markerEl){ markerEl.style.opacity = '1'; }
-    const cfg = ACTS[currentAct] || {};
-    if (cfg.showParams){ showCurtainParams(); }
-    positionRightPanel();
-  }
-
-  function startShowCountdown(){
-    startBtn.style.display = 'none'; if (countdownOverlay){ countdownOverlay.style.display = 'flex'; }
-    let remaining = 5; if (countdownTimerEl){ countdownTimerEl.textContent = remaining; }
-    const tick = setInterval(()=>{ remaining -= 1; if (remaining >= 0 && countdownTimerEl){ countdownTimerEl.textContent = remaining; } if (remaining < 0){ clearInterval(tick); if (countdownOverlay){ countdownOverlay.style.display = 'none'; } beginObservationAfterCountdown(); } }, 1000);
-  }
-  if (startBtn){ startBtn.addEventListener('click', startShowCountdown); }
-  const startAct2Btn = document.getElementById('startAct2Btn');
-  if (startAct2Btn){
-    startAct2Btn.addEventListener('click', ()=>{
-      initAct(2);
-      startShowCountdown();
-    });
-  }
-
-  // Acts engine
-  function applyActConfig(cfg){
-    if (!cfg) cfg = {};
-    if (springEl){ springEl.style.display = cfg.showSpring ? 'block' : 'none'; }
-    if (!cfg.showParams && paramsBoxEl){ paramsBoxEl.style.display = 'none'; }
-  }
-  function resetAct(){
-    // timeline state
-    nextThoughtIdx = 0; isBubbleActive = false; if (bubbleAutoTimer){ clearTimeout(bubbleAutoTimer); bubbleAutoTimer = null; }
-    // bubble UI
-    if (bubbleEl){ bubbleEl.classList.remove('active','checked','closing'); bubbleEl.style.display='none'; }
-    // measures
-    measureRowIdx = 0; lastSampleObsTime = -Infinity; if (measureTBody){ measureTBody.innerHTML=''; }
-    // graph
-    if (xtCanvas){ xtCanvas.style.display='none'; const ctx = xtCanvas.getContext('2d'); if (ctx) ctx.clearRect(0,0,xtCanvas.width, xtCanvas.height); }
-    // laws
-    const lawsList = document.getElementById('lawsList'); if (lawsList){ lawsList.innerHTML=''; }
-    // clock & time
-    obsStarted = false; playbackTime = 0; t0 = performance.now(); lastFrame = t0; obsStartPlaybackOffset = 0;
-    // UI buttons
-    if (startBtn){ startBtn.style.display='block'; startBtn.textContent = (currentAct===2? 'Έναρξη Πράξης 2' : 'Έναρξη'); }
-    const act2Btn = document.getElementById('startAct2Btn'); if (act2Btn){ act2Btn.style.display='none'; }
-    // classes
-    stage.classList.remove('closed-show-actors');
-    // marker hidden until start
-    if (markerEl){ markerEl.style.opacity='0'; }
-  }
-  function initAct(actId){
-    currentAct = actId;
-    const cfg = ACTS[actId] || {timeline:[]};
-    thoughtScript = Array.isArray(cfg.timeline) ? cfg.timeline.slice() : [];
-    resetAct();
-    applyActConfig(cfg);
-  }
-
-  // Self-check & αρχικοποίηση Act 1
-  (function(){
-    const must = {stage, actor, springEl, startBtn, clockEl, rulerEl, markerEl, bubbleEl, btnPause, btnSlow, btnPlay, xtCanvas, paramsBoxEl};
-    const miss = Object.entries(must).filter(([k,v]) => !v).map(([k])=>k);
-    if (miss.length) console.error('Λείπουν στοιχεία:', miss.join(', ')); else console.log('Self-check OK');
   })();
-  window.addEventListener('load', ()=>{ initAct(1); });
-</script>
+  </script>
 </body>
 </html>
