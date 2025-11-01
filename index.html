@@ -46,7 +46,7 @@
 
   /* Κοινό & πάτωμα */
   .audience{
-    position:absolute;left:18%;right:18%;bottom:8vh;height:63px; /* +3px όπως ζητήθηκε νωρίτερα */
+    position:absolute;left:18%;right:18%;bottom:8vh;height:63px;
     object-fit:contain;object-position:center;z-index:150;filter:brightness(0.85) contrast(1.05) saturate(0.9);
   }
   .audience.fallback{background:repeating-linear-gradient(90deg,#333 0 8px,#222 8px 16px);}
@@ -77,13 +77,23 @@
     color:#d0e7ff;text-shadow:0 1px 2px #000;pointer-events:none;z-index:131;
   }
 
+  /* NEW: τονισμένη ένδειξη ενέργειας ghost */
+  .ghost-energy{
+    position:absolute; z-index:132; pointer-events:none;
+    background:rgba(8, 20, 35, .92);
+    color:#ffd27a; border:1px solid #ffd27a; border-radius:10px;
+    padding:6px 10px; font-weight:800; font-size:13px;
+    box-shadow:0 6px 18px rgba(0,0,0,.45);
+  }
+
   /* Δείκτης θέσης ghost + ticks πλάτους A′ */
   .ghost-pointer{
-    position:absolute; bottom:calc(32vh - 8px + 2px); /* κάθεται πάνω στο πάτωμα */
+    position:absolute; bottom:calc(32vh - 8px + 2px);
     width:0; height:18px; border-left:2px solid #7ad9ff; z-index:131; transform:translateX(-1px);
   }
-  .ghost-pointer::after{ /* μικρή μύτη */
-    content:''; position:absolute; bottom:-5px; left:-4px; border-left:4px solid transparent; border-right:4px solid transparent; border-top:5px solid #7ad9ff;
+  .ghost-pointer::after{
+    content:''; position:absolute; bottom:-5px; left:-4px;
+    border-left:4px solid transparent; border-right:4px solid transparent; border-top:5px solid #7ad9ff;
   }
   .amp-tick{
     position:absolute; bottom:calc(32vh - 8px + 1px);
@@ -193,7 +203,7 @@ const btnAct2 = document.getElementById('btnAct2');
 const btnReset = document.getElementById('btnReset');
 
 /* ===== State/Time ===== */
-let rafId = null, t0 = performance.now(), last = performance.now();
+let rafId = null, t0 = performance.now();
 let play = true, act2Started = false, act2StartT = 0, timelineIdx = 0;
 
 /* ===== Helpers ===== */
@@ -240,15 +250,37 @@ function addBubble(text, lane='top', viewerIndex=2, duration=3){
   setTimeout(kill, Math.max(1000, duration*1000));
 }
 
-/* ===== Ghost (θύμηση) με δείκτη & ticks πλάτους ===== */
-A2.memory = { active:false, ghostActor:null, ghostSpring:null, labelEl:null, pointer:null, tickL:null, tickR:null, scale:1.35, t0:0, dur:9000 };
+/* ===== Ghost (θύμηση) με ένδειξη Ε’ ===== */
+A2.memory = {
+  active:false, ghostActor:null, ghostSpring:null, labelEl:null,
+  pointer:null, tickL:null, tickR:null, energyEl:null,
+  scale:1.5, t0:0, dur:9000, energyVal:0
+};
 function startMemoryOverlay(ampScale=1.5, durationSec=9, label='θύμηση: ίδιο T₀, μεγαλύτερο A'){
-  const M = A2.memory; M.active=true; M.scale=ampScale; M.t0=performance.now(); M.dur=durationSec*1000;
+  const M = A2.memory;
+  M.active=true; M.scale=ampScale; M.t0=performance.now(); M.dur=durationSec*1000;
+
+  /* Υπολογισμός Ε’ με D σταθερή: E’ = 1/2·D·(A’)^2  όπου A’=ampScale·A_m */
+  const Aghost_m = A2.A_m * ampScale;
+  M.energyVal = 0.5 * A2.D * Aghost_m * Aghost_m;
 
   if (!M.ghostActor){ const ga = actor.cloneNode(true); ga.id='ghostActor'; ga.classList.add('ghost-actor'); actor.parentNode.appendChild(ga); M.ghostActor=ga; }
   if (springEl && !M.ghostSpring){ const gs = springEl.cloneNode(true); gs.id='ghostSpring'; gs.classList.add('ghost-spring'); springEl.parentNode.appendChild(gs); M.ghostSpring=gs; }
+
   if (!M.labelEl){ const lab=document.createElement('div'); lab.className='ghost-label'; stage.appendChild(lab); M.labelEl=lab; }
   M.labelEl.textContent = label; M.labelEl.style.display='block';
+
+  /* NEW: pill ένδειξη ενέργειας E’ */
+  if (!M.energyEl){
+    const pill = document.createElement('div');
+    pill.className = 'ghost-energy';
+    pill.textContent = `E’ (τότε): ${Math.round(M.energyVal)} J`;
+    stage.appendChild(pill);
+    M.energyEl = pill;
+  } else {
+    M.energyEl.textContent = `E’ (τότε): ${Math.round(M.energyVal)} J`;
+    M.energyEl.style.display = 'block';
+  }
 
   if (!M.pointer){ const p=document.createElement('div'); p.className='ghost-pointer'; stage.appendChild(p); M.pointer=p; }
   if (!M.tickL){ const tl=document.createElement('div'); tl.className='amp-tick'; stage.appendChild(tl); M.tickL=tl; }
@@ -256,13 +288,13 @@ function startMemoryOverlay(ampScale=1.5, durationSec=9, label='θύμηση: ί
 }
 function stopMemoryOverlay(){
   const M=A2.memory; if (!M.active) return;
-  ['ghostActor','ghostSpring','labelEl','pointer','tickL','tickR'].forEach(k=>{
+  ['ghostActor','ghostSpring','labelEl','pointer','tickL','tickR','energyEl'].forEach(k=>{
     if (M[k]){ M[k].remove ? M[k].remove() : (M[k].style.display='none'); M[k]=null; }
   });
   M.active=false;
 }
 
-/* ===== Timeline (όπως συμφωνήθηκε) ===== */
+/* ===== Timeline (Act II) ===== */
 const thoughtScriptAct2 = [
   { kind:'title', atT:0.2, lines:[
     'Πράξη 2η: Η Δυναμική στα ... Αλγεβρικά!',
@@ -272,7 +304,7 @@ const thoughtScriptAct2 = [
   { kind:'bubble', atT:0.9, viewer:2, lane:'top', duration:3, text:'ωπ! δεμένος σε ελατήριο είναι ο m₁D₁!' },
   { kind:'bubble', atT:3.6, viewer:0, lane:'low', duration:3, text:'αυτόν ακριβώς τον m₁D₁ τον έχω ξαναδεί σε άλλη παράσταση αλλά με άλλον παραγωγό' },
   { kind:'bubble', atT:6.6, viewer:4, lane:'top', duration:3, text:'ναι, κι εκεί με ίδια περίοδο κινήθηκε αλλά με μεγαλύτερο πλάτος A!' },
-  /* Ghost θύμηση μπροστά + δείκτης & ticks πλάτους */
+  /* Ghost θύμηση με ενέργεια E’ */
   { kind:'memory', atT:8.4, ampScale:1.5, duration:9.0, label:'θύμηση: ίδιο T₀, μεγαλύτερο A' },
   { kind:'bubble', atT:18.0, viewer:1, lane:'top', duration:3, text:'Πρωταγωνιστής είναι ο κινούμενος και τα εργαλεία του μαζί!' },
   { kind:'bubble', atT:21.0, viewer:3, lane:'low', duration:3, text:'Τώρα καταλαβαίνω γιατί τον λένε m₁,D₁…' },
@@ -308,32 +340,38 @@ function animate(now){
     springEl.style.width = springW + 'px';
   }
 
-  /* Ghost ενημέρωση (μπροστά + δείκτης + ticks) */
+  /* Ghost ενημέρωση (μπροστά + δείκτης + ticks + Ε’) */
   if (A2.memory.active){
-    const gx = (A2.Apx * A2.memory.scale) * Math.sin(A2.omega*t + A2.phi0);
+    const M = A2.memory;
+    const gx = (A2.Apx * M.scale) * Math.sin(A2.omega*t + A2.phi0);
     const gCx = stageRect.width/2 + gx - 20;
-    if (A2.memory.ghostActor)  A2.memory.ghostActor.style.left = `calc(50% + ${gx - 20}px)`;
-    if (A2.memory.ghostSpring){
+
+    if (M.ghostActor)  M.ghostActor.style.left = `calc(50% + ${gx - 20}px)`;
+    if (M.ghostSpring){
       const gw = Math.max(0, gCx - leftAnchor);
-      A2.memory.ghostSpring.style.left = `calc(18%)`;
-      A2.memory.ghostSpring.style.width = gw + 'px';
-      A2.memory.ghostSpring.style.bottom = springEl.style.bottom;
+      M.ghostSpring.style.left = `calc(18%)`;
+      M.ghostSpring.style.width = gw + 'px';
+      M.ghostSpring.style.bottom = springEl.style.bottom;
     }
-    if (A2.memory.labelEl){
-      const baseline = stageRect.bottom - (0.32*stageRect.height);
-      A2.memory.labelEl.style.left = (gCx - 60)+'px';
-      A2.memory.labelEl.style.top  = (baseline - 30)+'px';
+    const baseline = stageRect.bottom - (0.32*stageRect.height);
+    if (M.labelEl){
+      M.labelEl.style.left = (gCx - 60)+'px';
+      M.labelEl.style.top  = (baseline - 30)+'px';
     }
-    if (A2.memory.pointer){
-      A2.memory.pointer.style.left = (gCx) + 'px';
+    if (M.energyEl){
+      /* Τοποθετώ την ένδειξη Ε’ λίγο πάνω και δεξιότερα από το label */
+      M.energyEl.textContent = `E’ (τότε): ${Math.round(M.energyVal)} J`;
+      M.energyEl.style.left = (gCx + 8)+'px';
+      M.energyEl.style.top  = (baseline - 56)+'px';
     }
-    if (A2.memory.tickL && A2.memory.tickR){
-      const Aghost = A2.Apx * A2.memory.scale;
+    if (M.pointer){ M.pointer.style.left = (gCx) + 'px'; }
+    if (M.tickL && M.tickR){
+      const Aghost = A2.Apx * M.scale;
       const cMid = stageRect.width/2 - 20;
-      A2.memory.tickL.style.left = (cMid - Aghost) + 'px';
-      A2.memory.tickR.style.left = (cMid + Aghost) + 'px';
+      M.tickL.style.left = (cMid - Aghost) + 'px';
+      M.tickR.style.left = (cMid + Aghost) + 'px';
     }
-    if (now - A2.memory.t0 > A2.memory.dur) stopMemoryOverlay();
+    if (now - M.t0 > M.dur) stopMemoryOverlay();
   }
 
   if (act2Started){
