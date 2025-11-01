@@ -2,96 +2,86 @@
 <html lang="el">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Πράξη 2η — Η Δυναμική στα … Αλγεβρικά!</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0" />
+<title>Θεατρική Σκηνή — Πράξη 1 & Πράξη 2</title>
 <style>
+  html,body{margin:0;height:100%;background:#000;font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;}
+  .wrap{position:fixed;inset:0;overflow:hidden;background:#000;}
+  /* Switcher */
+  .topbar{
+    position:fixed;left:12px;top:10px;z-index:1000;display:flex;gap:8px;
+    background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.15);padding:6px 8px;border-radius:10px;
+    backdrop-filter: blur(6px);
+  }
+  .topbar button{
+    background:#700;color:#fff;border:none;border-radius:8px;padding:8px 10px;font-size:13px;cursor:pointer;box-shadow:0 0 8px #300;
+  }
+  .topbar button.alt{ background:#2f5; color:#020; }
+  .topbar button[disabled]{opacity:.55;cursor:not-allowed}
+  /* Περιοχές πράξεων */
+  #act1Wrap, #act2Wrap{position:absolute;inset:0;display:none}
+  #act1Wrap.active, #act2Wrap.active{display:block}
+  #act1Frame{position:absolute;inset:0;border:0;width:100%;height:100%}
+  /* ====== Στυλ Πράξης 2 (ίδιο look με πριν) ====== */
   :root{ --open-offset: 10px; }
-  html,body{margin:0;height:100%;font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;background:#000;}
-  .stage{
-    position:relative;width:100vw;height:100vh;overflow:hidden;
+  #act2Stage{
+    position:absolute;inset:0;overflow:hidden;
     background: radial-gradient(80% 60% at 50% 65%, #121212 0%, #0a0a0a 50%, #000 100%);
   }
-  /* Κουρτίνες */
   .curtain-top{
     position:absolute;top:0;left:0;right:0;height:28%;
     background:linear-gradient(to bottom,#230000,#180000);
     box-shadow:0 5px 18px rgba(0,0,0,.85);
-    z-index:40; display:flex;align-items:flex-start;justify-content:center;
+    z-index:40;display:flex;align-items:flex-start;justify-content:center;
   }
   .curtain-upper{
     position:absolute;left:0;right:0;top:28%;height:40%;
     background:linear-gradient(to bottom,#8b0000,#400000);
-    transform:translateY(0); transition:transform 1.0s cubic-bezier(.2,.9,.2,1);
+    transform:translateY(0);transition:transform 1.0s cubic-bezier(.2,.9,.2,1);
     z-index:16;
   }
   .curtain-upper.open{ transform:translateY(calc(-100% + var(--open-offset))); }
 
-  .curtain-side{
-    position:absolute;top:0;height:100%;width:18%;
-    background:linear-gradient(to right,#300000,#1a0000);
-    box-shadow: inset -6px 0 10px rgba(0,0,0,.6);
-    z-index:14;
+  .curtain-side{ position:absolute;top:0;height:100%;width:18%;z-index:14; }
+  .curtain-side.left{
+    left:0;background:linear-gradient(to right,#300000,#1a0000); box-shadow: inset -6px 0 10px rgba(0,0,0,.6);
   }
-  .curtain-side.right{ right:0;left:auto;background:linear-gradient(to left,#300000,#1a0000); box-shadow:inset 6px 0 10px rgba(0,0,0,.6); }
-  .curtain-side.left{ left:0; }
+  .curtain-side.right{
+    right:0;background:linear-gradient(to left,#300000,#1a0000); box-shadow: inset 6px 0 10px rgba(0,0,0,.6);
+  }
 
-  /* Τίτλος */
-  .signboard{
-    position:absolute;top:6px;left:50%;transform:translateX(-50%);
-    color:#eee;text-align:center;line-height:1.35;z-index:41;pointer-events:none;user-select:none;
-  }
+  .signboard{ position:absolute;top:6px;left:50%;transform:translateX(-50%);color:#eee;text-align:center;line-height:1.35;z-index:41;pointer-events:none;user-select:none; }
   .signboard h1{margin:0;font-weight:800;font-size:28px;color:#fff;}
   .signboard h2{margin:4px 0 0 0;font-size:16px;}
   .signboard h3{margin:4px 0 0 0;font-size:15px;color:#ffd27a;}
 
-  /* Κοινό & πάτωμα */
-  .audience{
-    position:absolute;left:18%;right:18%;bottom:8vh;height:63px;
-    object-fit:contain;object-position:center;z-index:150;filter:brightness(0.85) contrast(1.05) saturate(0.9);
-  }
-  .audience.fallback{background:repeating-linear-gradient(90deg,#333 0 8px,#222 8px 16px);}
-  .floor-line{
-    position:absolute;left:18%;right:18%;
-    bottom:calc(32vh - 8px);height:2px;background:#9aa0a6;opacity:.9;z-index:120;
+  .chrono{
+    position:absolute;top:8px;right:8px;color:#fff;background:rgba(0,0,0,.35);
+    border:1px solid rgba(255,255,255,.12);padding:6px 8px;border-radius:8px;
+    font-weight:600;font-size:16px;z-index:41;
   }
 
-  /* Actor & spring */
-  .actor{
-    position:absolute;bottom:calc(32vh);left:50%;
-    width:180px;height:auto;transform:translateX(-50%);
-    z-index:110;pointer-events:none;filter:drop-shadow(0 4px 6px rgba(0,0,0,.6));
-  }
+  .floor-line{ position:absolute;left:18%;right:18%; bottom:calc(32vh - 8px);height:2px;background:#9aa0a6;opacity:.9;z-index:120; }
+
+  .audience{ position:absolute;left:18%;right:18%;bottom:8vh;height:63px;object-fit:contain;object-position:center;z-index:150;filter:brightness(0.85) contrast(1.05) saturate(0.9); }
+  .audience.fallback{background:repeating-linear-gradient(90deg,#333 0 8px,#222 8px 16px);}
+
+  .actor{ position:absolute;bottom:calc(32vh);left:50%; width:180px;height:auto;transform:translateX(-50%); z-index:110;pointer-events:none;filter:drop-shadow(0 4px 6px rgba(0,0,0,.6)); }
   .actor.fallback{background:#5aa; width:120px; height:90px; border-radius:10px;}
-  .spring{
-    position:absolute;bottom:calc(32vh + 60px);
-    left:18%;height:26px;transform-origin:left center;z-index:100;
-  }
+  .spring{ position:absolute;bottom:calc(32vh + 60px); left:18%;height:26px;transform-origin:left center;z-index:100; }
   .spring.fallback{height:6px;background:repeating-linear-gradient(90deg,#8cf 0 8px,#46a 8px 16px);}
 
-  /* Ghost “θύμηση”: μπροστά από τον κανονικό */
   .ghost-actor{ opacity:.38; filter:hue-rotate(180deg) saturate(1.1); pointer-events:none; z-index:130; }
   .ghost-spring{ opacity:.32; filter:hue-rotate(180deg) saturate(1.1); pointer-events:none; z-index:112; }
+  .ghost-label{ position:absolute;font:600 12px/1.2 Inter,system-ui,sans-serif;color:#d0e7ff;text-shadow:0 1px 2px #000;pointer-events:none;z-index:131; }
 
-  .ghost-label{
-    position:absolute;font:600 12px/1.2 Inter,system-ui,sans-serif;
-    color:#d0e7ff;text-shadow:0 1px 2px #000;pointer-events:none;z-index:131;
-  }
-
-  /* Pills στη πάνω κουρτίνα (δύο σειρές, μεγαλύτερο μέγεθος) */
-  .ghost-stats-wrap{
-    position:absolute; z-index:42; pointer-events:none;
-    display:flex; flex-direction:column; gap:6px;
-  }
+  .ghost-stats-wrap{ position:absolute; z-index:42; pointer-events:none; display:flex; flex-direction:column; gap:6px; }
   .ghost-stats-wrap .row1{ display:flex; gap:8px; }
-  .ghost-stat{
-    padding:6px 10px; border-radius:10px; font:700 16px/1 Inter,system-ui,sans-serif;
-    box-shadow:0 2px 10px rgba(0,0,0,.35); white-space:nowrap; border:1px solid transparent;
-  }
+  .ghost-stat{ padding:6px 10px; border-radius:10px; font:700 16px/1 Inter,system-ui,sans-serif; box-shadow:0 2px 10px rgba(0,0,0,.35); white-space:nowrap; border:1px solid transparent; }
   .ghost-stat.m1{ background:#04292f; color:#9be8ff; border-color:#38c7ff; }
   .ghost-stat.d1{ background:#2a1d06; color:#ffcf88; border-color:#ffb347; }
   .ghost-stat.eg{ background:#201a03; color:#ffe27a; border-color:#ffd54a; }
 
-  /* Bubbles */
   .bubble{
     position:absolute;max-width:36ch;padding:10px 12px;border-radius:12px;
     background:rgba(30,30,35,.85);color:#e9eef5;z-index:70;
@@ -100,318 +90,321 @@
     font-size:13.5px;
   }
   .bubble.hidden{opacity:0;transform:translateY(6px);}
-  .bubble .ok{
-    margin-top:8px;padding:4px 8px;border:1px solid #b7c7ff;border-radius:8px;
-    background:transparent;color:#b7c7ff;cursor:pointer;font-size:12px;
-  }
+  .bubble .ok{ margin-top:8px;padding:4px 8px;border:1px solid #b7c7ff;border-radius:8px;background:transparent;color:#b7c7ff;cursor:pointer;font-size:12px; }
   .bubble.checked{border-style:dashed;}
   .bubble .checkmark{display:inline-block;margin-left:6px;color:#9cff9c;}
 
-  /* Κουμπιά */
-  .controls{
+  .controls2{
     position:absolute;left:50%;bottom:16px;transform:translateX(-50%);
     display:flex;gap:10px;z-index:100;
   }
-  .btn{ background:#700;color:#fff;border:none;border-radius:8px;padding:10px 14px;font-size:14px;cursor:pointer;box-shadow:0 0 10px #300; }
-  .btn.alt{background:#2f5;} .btn.warn{background:#f55;} .btn:disabled{opacity:.5;cursor:not-allowed}
+  .controls2 .btn{ background:#700;color:#fff;border:none;border-radius:8px;padding:10px 14px;font-size:14px;cursor:pointer;box-shadow:0 0 10px #300; }
+  .controls2 .btn.alt{background:#2f5;} .controls2 .btn.warn{background:#f55;} .controls2 .btn:disabled{opacity:.5;cursor:not-allowed}
 
-  .chrono{
-    position:absolute;top:8px;right:8px;color:#fff;background:rgba(0,0,0,.35);
-    border:1px solid rgba(255,255,255,.12);padding:6px 8px;border-radius:8px;
-    font-weight:600;font-size:16px;z-index:41;
-  }
+  .laws{ position:absolute;left:2%;top:30%;width:14%;height:62%;overflow:auto;padding:8px;border-radius:10px;background:rgba(0,0,0,.35);color:#eee;border:1px solid rgba(255,255,255,.12);z-index:41; }
+  .laws h4{margin:0 0 6px 0;}
+  .law{padding:4px 0;border-bottom:1px dashed rgba(255,255,255,.12);font-size:13px;}
 </style>
 </head>
 <body>
-<div class="stage" id="stage">
-  <!-- Πάνω ακίνητη κουρτίνα -->
-  <div class="curtain-top" id="curtainTop">
-    <div class="signboard" id="signboard">
-      <h1>Πράξη 2η: Η Δυναμική στα ... Αλγεβρικά!</h1>
-      <h2>m₁ = … kg , D₁ = … N/m</h2>
-      <h3>Eμηχ = … J</h3>
+<div class="wrap">
+
+  <!-- Μικρός εναλλάκτης Πράξεων -->
+  <div class="topbar">
+    <button id="btnToAct1" class="">Πράξη 1</button>
+    <button id="btnToAct2" class="alt">Πράξη 2</button>
+  </div>
+
+  <!-- Πράξη 1: ΑΠΑΡΑΛΛΑΚΤΗ μέσα σε iframe -->
+  <section id="act1Wrap" class="active">
+    <iframe id="act1Frame" src="Act1.html" title="Πράξη 1"></iframe>
+  </section>
+
+  <!-- Πράξη 2: Σκηνή (ίδια όπως συμφωνήσαμε) -->
+  <section id="act2Wrap">
+    <div id="act2Stage">
+      <div class="curtain-top" id="curtainTop">
+        <div class="signboard" id="signboard">
+          <h1>Πράξη 2η: Η Δυναμική στα ... Αλγεβρικά!</h1>
+          <h2>m₁ = … kg , D₁ = … N/m</h2>
+          <h3>Eμηχ = … J</h3>
+        </div>
+        <div class="chrono" id="chrono" hidden>t = 0.00 s</div>
+      </div>
+      <div class="curtain-upper" id="curtainUpper"></div>
+      <div class="curtain-side left"></div>
+      <div class="curtain-side right"></div>
+
+      <div class="laws" id="laws"><h4>Νόμοι</h4><div id="lawsList"></div></div>
+
+      <div class="floor-line" id="floor"></div>
+      <img id="audience" class="audience" src="koino.png" alt="κοινό"
+           onerror="this.classList.add('fallback'); this.removeAttribute('src');"/>
+
+      <img id="springEl" class="spring" src="spring.png" alt="ελατήριο"
+           onerror="this.classList.add('fallback'); this.removeAttribute('src');"/>
+      <img id="actor" class="actor" src="skater.png" alt="skater"
+           onerror="this.classList.add('fallback'); this.removeAttribute('src');"/>
+
+      <div class="controls2">
+        <button class="btn" id="btnOpen">Άνοιγμα Κουρτίνας</button>
+        <button class="btn alt" id="btnAct2" disabled>Έναρξη Πράξης 2</button>
+        <button class="btn warn" id="btnReset">Reset</button>
+      </div>
     </div>
-    <div class="chrono" id="chrono" hidden>t = 0.00 s</div>
-  </div>
-
-  <!-- Κινητή -->
-  <div class="curtain-upper" id="curtainUpper"></div>
-
-  <!-- Πλάγιες -->
-  <div class="curtain-side left"></div>
-  <div class="curtain-side right"></div>
-
-  <!-- Νόμοι -->
-  <div class="laws" id="laws"><h4>Νόμοι</h4><div id="lawsList"></div></div>
-
-  <!-- Πάτωμα & κοινό -->
-  <div class="floor-line" id="floor"></div>
-  <img id="audience" class="audience" src="koino.png" alt="κοινό" onerror="this.classList.add('fallback'); this.removeAttribute('src');"/>
-
-  <!-- Ελατήριο & Skater -->
-  <img id="springEl" class="spring" src="spring.png" alt="ελατήριο" onerror="this.classList.add('fallback'); this.removeAttribute('src');"/>
-  <img id="actor" class="actor" src="skater.png" alt="skater" onerror="this.classList.add('fallback'); this.removeAttribute('src');"/>
-
-  <!-- Έλεγχοι -->
-  <div class="controls">
-    <button class="btn" id="btnOpen">Άνοιγμα Κουρτίνας</button>
-    <button class="btn alt" id="btnAct2" disabled>Έναρξη Πράξης 2</button>
-    <button class="btn warn" id="btnReset">Reset</button>
-  </div>
+  </section>
 </div>
 
 <script>
-/* ===== Παράμετροι Συστήματος ===== */
-const A2 = {
-  m: 70, T: 6.0, A_m: 3.0, phi0: 0.3, pxPerMeter: 50,
-  bubbleClampPadding: 16, bubbleTopY: 0.18, bubbleLowY: 0.28
-};
-A2.omega = 2*Math.PI/A2.T;
-A2.D = Math.round(A2.m * A2.omega * A2.omega);
-A2.E = 0.5 * A2.D * A2.A_m * A2.A_m;
-A2.Apx = A2.A_m * A2.pxPerMeter;
+(() => {
+  /* Εναλλαγή προβολής */
+  const act1Wrap = document.getElementById('act1Wrap');
+  const act2Wrap = document.getElementById('act2Wrap');
+  const btnToAct1 = document.getElementById('btnToAct1');
+  const btnToAct2 = document.getElementById('btnToAct2');
 
-/* ===== DOM ===== */
-const stage = document.getElementById('stage');
-const signboard = document.getElementById('signboard');
-const curtainTop = document.getElementById('curtainTop');
-const chrono = document.getElementById('chrono');
-const curtainUpper = document.getElementById('curtainUpper');
-const actor = document.getElementById('actor');
-const springEl = document.getElementById('springEl');
-const lawsList = document.getElementById('lawsList');
-const btnOpen = document.getElementById('btnOpen');
-const btnAct2 = document.getElementById('btnAct2');
-const btnReset = document.getElementById('btnReset');
+  let act2Inited = false;
 
-/* ===== State/Time ===== */
-let rafId = null, t0 = performance.now();
-let play = true, act2Started = false, act2StartT = 0, timelineIdx = 0;
-
-/* ===== Helpers ===== */
-const fmt = (n,d=2)=>n.toFixed(d);
-function updateTitle(lines){
-  const [h1,h2,h3] = ['h1','h2','h3'].map(s=>signboard.querySelector(s));
-  if (lines[0]!=null) h1.textContent = lines[0];
-  if (lines[1]!=null) h2.textContent = lines[1];
-  if (lines[2]!=null) h3.textContent = lines[2];
-}
-function addLaw(text){
-  const div = document.createElement('div');
-  div.className = 'law'; div.textContent = text;
-  lawsList.appendChild(div);
-  lawsList.parentElement.scrollTop = lawsList.parentElement.scrollHeight;
-}
-function addBubble(text, lane='top', viewerIndex=2, duration=3){
-  const stageRect = stage.getBoundingClientRect();
-  const leftCurtainW = stageRect.width * 0.18;
-  const rightCurtainX = stageRect.width * 0.82;
-  const minX = leftCurtainW + A2.bubbleClampPadding;
-  const maxX = rightCurtainX - A2.bubbleClampPadding;
-
-  const bub = document.createElement('div');
-  bub.className = 'bubble hidden';
-  bub.innerHTML = `<div class="txt">${text}</div><button class="ok">συνέχεια</button>`;
-  stage.appendChild(bub);
-
-  const viewerSlots = 5;
-  const frac = (viewerIndex%viewerSlots + 0.5)/viewerSlots;
-  const cx = minX + frac*(maxX-minX);
-  const y = (lane==='top'? A2.bubbleTopY: A2.bubbleLowY) * stageRect.height;
-  bub.style.left = Math.round(cx - bub.clientWidth/2) + 'px';
-  bub.style.top  = Math.round(y) + 'px';
-  requestAnimationFrame(()=>bub.classList.remove('hidden'));
-
-  const btn = bub.querySelector('.ok');
-  let cleared = false;
-  const kill = ()=>{ if(cleared) return; cleared=true;
-    bub.classList.add('checked'); btn.insertAdjacentHTML('beforeend','<span class="checkmark">✔</span>');
-    setTimeout(()=>{ bub.classList.add('hidden'); setTimeout(()=>bub.remove(), 350); }, 300);
-  };
-  btn.addEventListener('click', kill);
-  setTimeout(kill, Math.max(1000, duration*1000));
-}
-
-/* ===== Ghost (θύμηση) + επάνω pills σε 2 σειρές ===== */
-A2.memory = {
-  active:false, ghostActor:null, ghostSpring:null, labelEl:null,
-  pointer:null, tickL:null, tickR:null,
-  statsWrap:null, /* << container με δύο σειρές (m’,D’) / (E’) */
-  scale:1.5, t0:0, dur:9000, energyVal:0
-};
-function startMemoryOverlay(ampScale=1.5, durationSec=9, label='θύμηση: ίδιο T₀, μεγαλύτερο A'){
-  const M = A2.memory;
-  M.active=true; M.scale=ampScale; M.t0=performance.now(); M.dur=durationSec*1000;
-
-  /* Ε’ με D σταθερή: E’ = 1/2·D·(A’)^2  με A’=ampScale·A_m */
-  const Aghost_m = A2.A_m * ampScale;
-  M.energyVal = 0.5 * A2.D * Aghost_m * Aghost_m;
-
-  if (!M.ghostActor){ const ga = actor.cloneNode(true); ga.id='ghostActor'; ga.classList.add('ghost-actor'); actor.parentNode.appendChild(ga); M.ghostActor=ga; }
-  if (springEl && !M.ghostSpring){ const gs = springEl.cloneNode(true); gs.id='ghostSpring'; gs.classList.add('ghost-spring'); springEl.parentNode.appendChild(gs); M.ghostSpring=gs; }
-
-  if (!M.labelEl){ const lab=document.createElement('div'); lab.className='ghost-label'; stage.appendChild(lab); M.labelEl=lab; }
-  M.labelEl.textContent = label; M.labelEl.style.display='block';
-
-  /* NEW: wrap με 2 σειρές: (m’,D’) πάνω — (E’) κάτω */
-  if (!M.statsWrap){
-    const wrap=document.createElement('div');
-    wrap.className='ghost-stats-wrap';
-    wrap.innerHTML=`
-      <div class="row1">
-        <span class="ghost-stat m1">m₁’ = ${A2.m} kg</span>
-        <span class="ghost-stat d1">D₁’ = ${A2.D} N/m</span>
-      </div>
-      <div class="row2">
-        <span class="ghost-stat eg">E’ (τότε) = ${Math.round(M.energyVal)} J</span>
-      </div>`;
-    curtainTop.appendChild(wrap);
-    M.statsWrap=wrap;
+  function showAct1(){
+    act2Wrap.classList.remove('active');
+    act1Wrap.classList.add('active');
   }
-  positionGhostTopPills(); /* αρχική τοποθέτηση */
-}
-function stopMemoryOverlay(){
-  const M=A2.memory; if (!M.active) return;
-  ['ghostActor','ghostSpring','labelEl','pointer','tickL','tickR','statsWrap'].forEach(k=>{
-    if (M[k]){ M[k].remove ? M[k].remove() : (M[k].style.display='none'); M[k]=null; }
-  });
-  M.active=false;
-}
-/* Τοποθέτηση του wrap δίπλα από το h2 (δεξιά) — η 2η σειρά μένει ακριβώς από κάτω */
-function positionGhostTopPills(){
-  const M = A2.memory; if (!M.active || !M.statsWrap) return;
-  const h2 = signboard.querySelector('h2');
-  if (!h2) return;
-
-  const ctRect = curtainTop.getBoundingClientRect();
-  const h2r    = h2.getBoundingClientRect();
-
-  const offLeft = (r)=> (r.left - ctRect.left);
-  const offTop  = (r)=> (r.top  - ctRect.top);
-
-  M.statsWrap.style.left = (offLeft(h2r) + h2r.width + 8) + 'px';
-  M.statsWrap.style.top  = (offTop(h2r) - 2) + 'px';
-}
-
-/* ===== Timeline (Act II) ===== */
-const thoughtScriptAct2 = [
-  { kind:'title', atT:0.2, lines:[
-    'Πράξη 2η: Η Δυναμική στα ... Αλγεβρικά!',
-    `m₁ = ${A2.m} kg , D₁ = ${A2.D} N/m`,
-    `Eμηχ = ${Math.round(A2.E)} J`
-  ]},
-  { kind:'bubble', atT:0.9, viewer:2, lane:'top', duration:3, text:'ωπ! δεμένος σε ελατήριο είναι ο m₁D₁!' },
-  { kind:'bubble', atT:3.6, viewer:0, lane:'low', duration:3, text:'αυτόν ακριβώς τον m₁D₁ τον έχω ξαναδεί σε άλλη παράσταση αλλά με άλλον παραγωγό' },
-  { kind:'bubble', atT:6.6, viewer:4, lane:'top', duration:3, text:'ναι, κι εκεί με ίδια περίοδο κινήθηκε αλλά με μεγαλύτερο πλάτος A!' },
-  /* Ghost θύμηση με wrap δύο σειρών */
-  { kind:'memory', atT:8.4, ampScale:1.5, duration:9.0, label:'θύμηση: ίδιο T₀, μεγαλύτερο A' },
-  { kind:'bubble', atT:18.0, viewer:1, lane:'top', duration:3, text:'Πρωταγωνιστής είναι ο κινούμενος και τα εργαλεία του μαζί!' },
-  { kind:'bubble', atT:21.0, viewer:3, lane:'low', duration:3, text:'Τώρα καταλαβαίνω γιατί τον λένε m₁,D₁…' },
-  { kind:'bubble', atT:24.0, viewer:2, lane:'top', duration:3, text:'…το m₁ είναι η μάζα του, αλλά ως ταλαντωτής συνοδεύεται από ελαστικό αίτιο-δύναμη (D₁)' },
-  { kind:'bubble', atT:27.0, viewer:0, lane:'low', duration:3, text:'…m₁ και D₁ πάνε πακέτο!' },
-  { kind:'bubble', atT:30.0, viewer:4, lane:'top', duration:3, text:'…γι’ αυτό σαν αριθμό μητρώου έχει τα mD!' },
-  { kind:'bubble', atT:33.0, viewer:1, lane:'low', duration:3, text:'Πώς γράφεται ο 2ος Νόμος του Νεύτωνα για τον ταλαντωτή;' },
-  { kind:'law',    atT:35.0, lawText:'ΣF = m·a' },
-  { kind:'law',    atT:36.4, lawText:'(3)  a(t) = −ω²A·ημ(ωt+φ₀)' },
-  { kind:'law',    atT:38.0, lawText:'(5)  ΣF = −m·ω²·A·ημ(ωt+φ₀)' },
-  { kind:'law',    atT:40.0, lawText:'(6)  με x=A·ημ(ωt+φ₀):  ΣF = −m·ω²·x' },
-  { kind:'law',    atT:42.0, lawText:'Η (6) περιέχει “σωματότυπο” (m) και “εμμονή” (ω)' },
-  { kind:'law',    atT:44.0, lawText:'Ορισμός:  D = m·ω²' },
-  { kind:'law',    atT:45.6, lawText:'(7)  Άρα:  ΣF = −D·x' },
-  { kind:'close',  atT:49.0 }
-];
-
-/* ===== Animation ===== */
-function animate(now){
-  rafId = requestAnimationFrame(animate);
-  if (!play) return;
-
-  const t = (now - t0)/1000;
-  const x = A2.Apx * Math.sin(A2.omega*t + A2.phi0); // px
-  actor.style.left = `calc(50% + ${x - 20}px)`;
-
-  const stageRect = stage.getBoundingClientRect();
-  const leftAnchor = stageRect.width * 0.18;
-  const actorCx = stageRect.width/2 + x - 20;
-  const springW = Math.max(0, actorCx - leftAnchor);
-  if (springEl){
-    springEl.style.left = `calc(18%)`;
-    springEl.style.width = springW + 'px';
+  function showAct2(){
+    act1Wrap.classList.remove('active');
+    act2Wrap.classList.add('active');
+    if (!act2Inited){ initAct2(); act2Inited = true; }
   }
 
-  /* Ghost ενημέρωση θέσης/δεικτών */
-  if (A2.memory.active){
-    const M = A2.memory;
-    const gx = (A2.Apx * M.scale) * Math.sin(A2.omega*t + A2.phi0);
-    const gCx = stageRect.width/2 + gx - 20;
+  btnToAct1.addEventListener('click', showAct1);
+  btnToAct2.addEventListener('click', showAct2);
 
-    if (M.ghostActor)  M.ghostActor.style.left = `calc(50% + ${gx - 20}px)`;
-    if (M.ghostSpring){
-      const gw = Math.max(0, gCx - leftAnchor);
-      M.ghostSpring.style.left = `calc(18%)`;
-      M.ghostSpring.style.width = gw + 'px';
-      M.ghostSpring.style.bottom = springEl.style.bottom;
+  /* ======= ΠΡΑΞΗ 2 — Όλος ο κώδικας μέσα σε closure για να μην «συγκρούεται» ======= */
+  function initAct2(){
+    const A2 = {
+      m: 70, T: 6.0, A_m: 3.0, phi0: 0.3, pxPerMeter: 50,
+      bubbleClampPadding: 16, bubbleTopY: 0.18, bubbleLowY: 0.28
+    };
+    A2.omega = 2*Math.PI/A2.T;
+    A2.D = Math.round(A2.m * A2.omega * A2.omega);
+    A2.E = 0.5 * A2.D * A2.A_m * A2.A_m;
+    A2.Apx = A2.A_m * A2.pxPerMeter;
+
+    const stage = document.getElementById('act2Stage');
+    const signboard = document.getElementById('signboard');
+    const curtainTop = document.getElementById('curtainTop');
+    const chrono = document.getElementById('chrono');
+    const curtainUpper = document.getElementById('curtainUpper');
+    const actor = document.getElementById('actor');
+    const springEl = document.getElementById('springEl');
+    const lawsList = document.getElementById('lawsList');
+    const btnOpen = document.getElementById('btnOpen');
+    const btnAct2 = document.getElementById('btnAct2');
+    const btnReset = document.getElementById('btnReset');
+
+    let rafId = null, t0 = performance.now();
+    let act2Started = false, act2StartT = 0, timelineIdx = 0;
+
+    const fmt = (n,d=2)=>n.toFixed(d);
+
+    function updateTitle(lines){
+      const [h1,h2,h3] = ['h1','h2','h3'].map(s=>signboard.querySelector(s));
+      if (lines[0]!=null) h1.textContent = lines[0];
+      if (lines[1]!=null) h2.textContent = lines[1];
+      if (lines[2]!=null) h3.textContent = lines[2];
     }
-    const baseline = stageRect.bottom - (0.32*stageRect.height);
-    if (M.labelEl){
-      M.labelEl.style.left = (gCx - 60)+'px';
-      M.labelEl.style.top  = (baseline - 30)+'px';
+    function addLaw(text){
+      const div = document.createElement('div');
+      div.className = 'law'; div.textContent = text;
+      lawsList.appendChild(div);
+      lawsList.parentElement.scrollTop = lawsList.parentElement.scrollHeight;
     }
-    positionGhostTopPills(); /* διατηρούμε σωστή θέση των top pills */
+    function addBubble(text, lane='top', viewerIndex=2, duration=3){
+      const stageRect = stage.getBoundingClientRect();
+      const leftCurtainW = stageRect.width * 0.18;
+      const rightCurtainX = stageRect.width * 0.82;
+      const minX = leftCurtainW + A2.bubbleClampPadding;
+      const maxX = rightCurtainX - A2.bubbleClampPadding;
 
-    if (now - M.t0 > M.dur) stopMemoryOverlay();
-  }
+      const bub = document.createElement('div');
+      bub.className = 'bubble hidden';
+      bub.innerHTML = `<div class="txt">${text}</div><button class="ok">συνέχεια</button>`;
+      stage.appendChild(bub);
 
-  if (act2Started){
-    const tAct2 = (now - act2StartT)/1000;
-    chrono.textContent = `t = ${fmt(tAct2,2)} s`;
-    while (timelineIdx < thoughtScriptAct2.length &&
-           thoughtScriptAct2[timelineIdx].atT <= tAct2){
-      handleEvent(thoughtScriptAct2[timelineIdx++]);
+      const viewerSlots = 5;
+      const frac = (viewerIndex%viewerSlots + 0.5)/viewerSlots;
+      const cx = minX + frac*(maxX-minX);
+      const y = (lane==='top'? A2.bubbleTopY: A2.bubbleLowY) * stageRect.height;
+      bub.style.left = Math.round(cx - bub.clientWidth/2) + 'px';
+      bub.style.top  = Math.round(y) + 'px';
+      requestAnimationFrame(()=>bub.classList.remove('hidden'));
+
+      const btn = bub.querySelector('.ok');
+      let cleared = false;
+      const kill = ()=>{ if(cleared) return; cleared=true;
+        bub.classList.add('checked'); btn.insertAdjacentHTML('beforeend','<span class="checkmark">✔</span>');
+        setTimeout(()=>{ bub.classList.add('hidden'); setTimeout(()=>bub.remove(), 350); }, 300);
+      };
+      btn.addEventListener('click', kill);
+      setTimeout(kill, Math.max(1000, duration*1000));
     }
+
+    /* Ghost (θύμηση) + 2 σειρές pills (m’,D’) / (E’) */
+    A2.memory = { active:false, ghostActor:null, ghostSpring:null, labelEl:null, statsWrap:null, scale:1.5, t0:0, dur:9000, energyVal:0 };
+    function startMemoryOverlay(ampScale=1.5, durationSec=9, label='θύμηση: ίδιο T₀, μεγαλύτερο A'){
+      const M = A2.memory;
+      M.active=true; M.scale=ampScale; M.t0=performance.now(); M.dur=durationSec*1000;
+      const Aghost_m = A2.A_m * ampScale;
+      M.energyVal = 0.5 * A2.D * Aghost_m * Aghost_m;
+
+      if (!M.ghostActor){ const ga = actor.cloneNode(true); ga.id='ghostActor'; ga.classList.add('ghost-actor'); actor.parentNode.appendChild(ga); M.ghostActor=ga; }
+      if (springEl && !M.ghostSpring){ const gs = springEl.cloneNode(true); gs.id='ghostSpring'; gs.classList.add('ghost-spring'); springEl.parentNode.appendChild(gs); M.ghostSpring=gs; }
+
+      if (!M.labelEl){ const lab=document.createElement('div'); lab.className='ghost-label'; stage.appendChild(lab); M.labelEl=lab; }
+      M.labelEl.textContent = label; M.labelEl.style.display='block';
+
+      if (!M.statsWrap){
+        const wrap=document.createElement('div');
+        wrap.className='ghost-stats-wrap';
+        wrap.innerHTML=`
+          <div class="row1">
+            <span class="ghost-stat m1">m₁’ = ${A2.m} kg</span>
+            <span class="ghost-stat d1">D₁’ = ${A2.D} N/m</span>
+          </div>
+          <div class="row2">
+            <span class="ghost-stat eg">E’ (τότε) = ${Math.round(M.energyVal)} J</span>
+          </div>`;
+        curtainTop.appendChild(wrap);
+        M.statsWrap=wrap;
+      }
+      positionGhostTopPills();
+    }
+    function stopMemoryOverlay(){
+      const M=A2.memory; if (!M.active) return;
+      ['ghostActor','ghostSpring','labelEl','statsWrap'].forEach(k=>{
+        if (M[k]){ M[k].remove ? M[k].remove() : (M[k].style.display='none'); M[k]=null; }
+      });
+      M.active=false;
+    }
+    function positionGhostTopPills(){
+      const M = A2.memory; if (!M.active || !M.statsWrap) return;
+      const h2 = signboard.querySelector('h2'); if (!h2) return;
+      const ctRect = curtainTop.getBoundingClientRect();
+      const h2r    = h2.getBoundingClientRect();
+      const offLeft = (r)=> (r.left - ctRect.left);
+      const offTop  = (r)=> (r.top  - ctRect.top);
+      M.statsWrap.style.left = (offLeft(h2r) + h2r.width + 8) + 'px';
+      M.statsWrap.style.top  = (offTop(h2r) - 2) + 'px';
+    }
+
+    const thoughtScriptAct2 = [
+      { kind:'title', atT:0.2, lines:[
+        'Πράξη 2η: Η Δυναμική στα ... Αλγεβρικά!',
+        `m₁ = ${A2.m} kg , D₁ = ${A2.D} N/m`,
+        `Eμηχ = ${Math.round(A2.E)} J`
+      ]},
+      { kind:'bubble', atT:0.9, viewer:2, lane:'top', duration:3, text:'ωπ! δεμένος σε ελατήριο είναι ο m₁D₁!' },
+      { kind:'bubble', atT:3.6, viewer:0, lane:'low', duration:3, text:'αυτόν ακριβώς τον m₁D₁ τον έχω ξαναδεί σε άλλη παράσταση αλλά με άλλον παραγωγό' },
+      { kind:'bubble', atT:6.6, viewer:4, lane:'top', duration:3, text:'ναι, κι εκεί με ίδια περίοδο κινήθηκε αλλά με μεγαλύτερο πλάτος A!' },
+      { kind:'memory', atT:8.4, ampScale:1.5, duration:9.0, label:'θύμηση: ίδιο T₀, μεγαλύτερο A' },
+      { kind:'bubble', atT:18.0, viewer:1, lane:'top', duration:3, text:'Πρωταγωνιστής είναι ο κινούμενος και τα εργαλεία του μαζί!' },
+      { kind:'bubble', atT:21.0, viewer:3, lane:'low', duration:3, text:'Τώρα καταλαβαίνω γιατί τον λένε m₁,D₁…' },
+      { kind:'bubble', atT:24.0, viewer:2, lane:'top', duration:3, text:'…το m₁ είναι η μάζα του, αλλά ως ταλαντωτής συνοδεύεται από ελαστικό αίτιο-δύναμη (D₁)' },
+      { kind:'bubble', atT:27.0, viewer:0, lane:'low', duration:3, text:'…m₁ και D₁ πάνε πακέτο!' },
+      { kind:'bubble', atT:30.0, viewer:4, lane:'top', duration:3, text:'…γι’ αυτό σαν αριθμό μητρώου έχει τα mD!' },
+      { kind:'bubble', atT:33.0, viewer:1, lane:'low', duration:3, text:'Πώς γράφεται ο 2ος Νόμος του Νεύτωνα για τον ταλαντωτή;' },
+      { kind:'law',    atT:35.0, lawText:'ΣF = m·a' },
+      { kind:'law',    atT:36.4, lawText:'(3)  a(t) = −ω²A·ημ(ωt+φ₀)' },
+      { kind:'law',    atT:38.0, lawText:'(5)  ΣF = −m·ω²·A·ημ(ωt+φ₀)' },
+      { kind:'law',    atT:40.0, lawText:'(6)  με x=A·ημ(ωt+φ₀):  ΣF = −m·ω²·x' },
+      { kind:'law',    atT:42.0, lawText:'Η (6) περιέχει “σωματότυπο” (m) και “εμμονή” (ω)' },
+      { kind:'law',    atT:44.0, lawText:'Ορισμός:  D = m·ω²' },
+      { kind:'law',    atT:45.6, lawText:'(7)  Άρα:  ΣF = −D·x' },
+      { kind:'close',  atT:49.0 }
+    ];
+
+    function animate(now){
+      rafId = requestAnimationFrame(animate);
+      const t = (now - t0)/1000;
+      const x = A2.Apx * Math.sin(A2.omega*t + A2.phi0);
+      actor.style.left = `calc(50% + ${x - 20}px)`;
+
+      const stageRect = stage.getBoundingClientRect();
+      const leftAnchor = stageRect.width * 0.18;
+      const actorCx = stageRect.width/2 + x - 20;
+      const springW = Math.max(0, actorCx - leftAnchor);
+      if (springEl){
+        springEl.style.left = `calc(18%)`;
+        springEl.style.width = springW + 'px';
+      }
+
+      if (A2.memory.active){
+        const M = A2.memory;
+        const gx = (A2.Apx * M.scale) * Math.sin(A2.omega*t + A2.phi0);
+        const gCx = stageRect.width/2 + gx - 20;
+
+        if (M.ghostActor)  M.ghostActor.style.left = `calc(50% + ${gx - 20}px)`;
+        if (M.ghostSpring){
+          const gw = Math.max(0, gCx - leftAnchor);
+          M.ghostSpring.style.left = `calc(18%)`;
+          M.ghostSpring.style.width = gw + 'px';
+          M.ghostSpring.style.bottom = springEl.style.bottom;
+        }
+        const baseline = stageRect.bottom - (0.32*stageRect.height);
+        if (M.labelEl){
+          M.labelEl.style.left = (gCx - 60)+'px';
+          M.labelEl.style.top  = (baseline - 30)+'px';
+        }
+        positionGhostTopPills();
+        if (now - M.t0 > M.dur) stopMemoryOverlay();
+      }
+
+      if (act2Started){
+        const tAct2 = (now - act2StartT)/1000;
+        chrono.textContent = `t = ${fmt(tAct2,2)} s`;
+        while (timelineIdx < thoughtScriptAct2.length &&
+               thoughtScriptAct2[timelineIdx].atT <= tAct2){
+          handleEvent(thoughtScriptAct2[timelineIdx++]);
+        }
+      }
+    }
+
+    function handleEvent(ev){
+      switch (ev.kind){
+        case 'title':  updateTitle(ev.lines || []); break;
+        case 'bubble': addBubble(ev.text||'', ev.lane||'top', ev.viewer??2, ev.duration??3); break;
+        case 'law':    addLaw(ev.lawText||''); break;
+        case 'memory': startMemoryOverlay(ev.ampScale||1.5, ev.duration||9.0, ev.label||''); break;
+        case 'close':  curtainUpper.classList.remove('open'); break;
+      }
+    }
+
+    btnOpen.addEventListener('click', ()=>{
+      curtainUpper.classList.add('open');
+      btnAct2.disabled = false;
+    });
+    btnAct2.addEventListener('click', ()=>{
+      updateTitle([
+        'Πράξη 2η: Η Δυναμική στα ... Αλγεβρικά!',
+        `m₁ = ${A2.m} kg , D₁ = ${A2.D} N/m`,
+        `Eμηχ = ${Math.round(A2.E)} J`
+      ]);
+      chrono.hidden = false;
+      act2Started = true; act2StartT = performance.now(); timelineIdx = 0;
+      btnAct2.disabled = true;
+    });
+    btnReset.addEventListener('click', ()=>{
+      stopMemoryOverlay();
+      lawsList.innerHTML = '';
+      curtainUpper.classList.remove('open');
+      act2Started = false; chrono.hidden = true; timelineIdx = 0;
+      t0 = performance.now();
+    });
+
+    t0 = performance.now();
+    rafId = requestAnimationFrame(animate);
+    window.addEventListener('resize', ()=>positionGhostTopPills());
   }
-}
-
-/* ===== Events ===== */
-function handleEvent(ev){
-  switch (ev.kind){
-    case 'title':  updateTitle(ev.lines || []); break;
-    case 'bubble': addBubble(ev.text||'', ev.lane||'top', ev.viewer??2, ev.duration??3); break;
-    case 'law':    addLaw(ev.lawText||''); break;
-    case 'memory': startMemoryOverlay(ev.ampScale||1.5, ev.duration||9.0, ev.label||''); break;
-    case 'close':  curtainUpper.classList.remove('open'); break;
-  }
-}
-
-/* ===== Κουμπιά ===== */
-btnOpen.addEventListener('click', ()=>{
-  curtainUpper.classList.add('open');
-  btnAct2.disabled = false;
-});
-btnAct2.addEventListener('click', ()=>{
-  updateTitle([
-    'Πράξη 2η: Η Δυναμική στα ... Αλγεβρικά!',
-    `m₁ = ${A2.m} kg , D₁ = ${A2.D} N/m`,
-    `Eμηχ = ${Math.round(A2.E)} J`
-  ]);
-  chrono.hidden = false;
-  act2Started = true; act2StartT = performance.now(); timelineIdx = 0;
-  btnAct2.disabled = true;
-});
-btnReset.addEventListener('click', ()=>{
-  stopMemoryOverlay();
-  lawsList.innerHTML = '';
-  curtainUpper.classList.remove('open');
-  act2Started = false; chrono.hidden = true; timelineIdx = 0;
-  t0 = performance.now();
-});
-
-/* Start loop */
-t0 = performance.now();
-rafId = requestAnimationFrame(animate);
-
-/* Ασφάλεια: ανατοποθέτηση pills αν γίνει resize */
-window.addEventListener('resize', ()=>positionGhostTopPills());
+})();
 </script>
 </body>
 </html>
