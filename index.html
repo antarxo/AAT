@@ -58,7 +58,7 @@
   .measure-box{position:absolute;left:calc(82vw + 9vw);transform:translateX(-50%);top:54px;width:calc(18vw - 16px);z-index:262;background:rgba(0,0,0,.45);color:#fff;border:1px solid rgba(255,255,255,.25);border-radius:8px;padding:6px 8px;display:none;height:50vh;overflow-y:auto}
   .laws{position:absolute;left:2%;top:44px;width:16%;max-height:30vh;overflow:auto;background:rgba(20,0,0,.6);color:#fff;border:1px solid rgba(255,200,200,.3);border-radius:8px;padding:6px 8px;font-size:16px;line-height:1.5;z-index:260;display:none}
   .laws h4{margin:0 0 6px 0}
-  .params-box{position:absolute;top:33px; /* +25px χαμηλότερα */ z-index:268;background:rgba(0,0,0,.5);color:#fff;border:1px solid rgba(255,255,255,.25);border-radius:8px;padding:6px 10px;font-size:16px;line-height:1.45;display:none}
+  .params-box{position:absolute;top:33px; z-index:268;background:rgba(0,0,0,.5);color:#fff;border:1px solid rgba(255,255,255,.25);border-radius:8px;padding:6px 10px;font-size:16px;line-height:1.45;display:none}
 
   #xtChart{position:absolute;display:none;z-index:266;pointer-events:none;border:1px dashed rgba(255,255,255,.25)}
   .uplot{background:rgba(0,0,0,.2);border:1px solid rgba(255,255,255,.2);border-radius:6px}
@@ -271,20 +271,20 @@ const i18n = {
     actBreakMsg:"Ο m,D συνεχίζει. Είστε έτοιμοι για τη Δεύτερη Πράξη;",
     act2Btn:"Έναρξη Πράξης 2",
     thoughts: {
-      t1:  "Ο m1D1 ήταν ήδη σε κίνηση!",
-      t2:  "…χρονική στιγμή t0=0 με το άνοιγμα της κουρτίνας!",
-      t3:  "… και η κίνηση είναι ευθύγραμμη και παλινδρομική!",
-      t4:  "… και επαναλαμβανόμενη, περιοδική, άρα ταλάντωση!",
-      t5:  "Μήπως είναι Απλή Αρμονική Ταλάντωση;",
-      t6:  "… αν είναι Α.Α.Τ. τότε οι τιμές που μετράμε πρέπει να επαληθεύουν την χ=Αημ(ωt+φ₀)!",
-      t7:  "… αν κάνουμε διάγραμμα x–t, αυτό θα το επιβεβαιώσει!",
-      t9phi: (x0, phi) => `… όντως είναι ΑΑΤ και αφού το x₀=${x0} υπάρχει φ₀=${phi}°. Χαχα, ένα το κρατούμενο!`,
-      t7A:   (A)       => `…με A=${A}!`,
-      t8Tw:  (Tval,om) => `… και T=${Tval} και επομένως ω=${om}!`,
-      t11: "… επομένως η ταχύτητα δίνεται από τον νόμο v=ωAημ(ωt+φ₀)!",
-      t13: "…και η επιτάχυνση από τον τύπο a=−ω²Aημ(ωt+φ₀)!",
-      t15: "Αλλά η σχέση χ=Αημ(ωt+φ₀) (1) περιέχεται στην (3) δηλαδή a=−ω²Aημ(ωt+φ₀)=−ω²x!",
-      t18: "Τέλεια! όλο το σετ νόμων της Α.Α.Τ!"
+      t1:"Ο m1D1 ήταν ήδη σε κίνηση!",
+      t2:"…χρονική στιγμή t0=0 με το άνοιγμα της κουρτίνας!",
+      t3:"… και η κίνηση είναι ευθύγραμμη και παλινδρομική!",
+      t4:"… και επαναλαμβανόμενη, περιοδική, άρα ταλάντωση!",
+      t5:"Μήπως είναι Απλή Αρμονική Ταλάντωση;",
+      t6:"… αν είναι Α.Α.Τ. τότε οι τιμές που μετράμε πρέπει να επαληθεύουν την χ=Αημ(ωt+φ₀)!",
+      t7:"… αν κάνουμε διάγραμμα x–t, αυτό θα το επιβεβαιώσει!",
+      t9phi:(x0,phi)=>`… όντως είναι ΑΑΤ και αφού το x₀=${x0} υπάρχει φ₀=${phi}°. Χαχα, ένα το κρατούμενο!`,
+      t7A:(A)=>`…με A=${A}!`,
+      t8Tw:(Tval,om)=>`… και T=${Tval} και επομένως ω=${om}!`,
+      t11:"… επομένως η ταχύτητα δίνεται από τον νόμο v=ωAημ(ωt+φ₀)!",
+      t13:"…και η επιτάχυνση από τον τύπο a=−ω²Aημ(ωt+φ₀)!",
+      t15:"Αλλά η σχέση χ=Αημ(ωt+φ₀) (1) περιέχεται στην (3) δηλαδή a=−ω²Aημ(ωt+φ₀)=−ω²x!",
+      t18:"Τέλεια! όλο το σετ νόμων της Α.Α.Τ!"
     }
   },
   en: {
@@ -301,20 +301,20 @@ const i18n = {
     actBreakMsg:"m,D keeps moving. Ready for Act II?",
     act2Btn:"Start Act II",
     thoughts: {
-      t1:  "m1D1 was already moving!",
-      t2:  "…time origin t₀=0 at the curtain opening!",
-      t3:  "…the motion is linear and back-and-forth!",
-      t4:  "…repeating, periodic — so it’s oscillation!",
-      t5:  "Could it be Simple Harmonic Motion?",
-      t6:  "…if it’s SHM, then x must match x=A·sin(ωt+φ₀)!",
-      t7:  "…let’s plot x–t; that will confirm it!",
-      t9phi: (x0, phi) => `…indeed SHM, since x₀=${x0} ⇒ φ₀=${phi}°. One down!`,
-      t7A:   (A)       => `…with A=${A}!`,
-      t8Tw:  (Tval,om) => `…and T=${Tval}, hence ω=${om}!`,
-      t11: "…thus v(t)=ωA·cos(ωt+φ₀)!",
-      t13: "…and a(t)=−ω²A·sin(ωt+φ₀)!",
-      t15: "But x=A·sin(ωt+φ₀) implies a=−ω²x!",
-      t18: "Perfect — the full SHM law set!"
+      t1:"m1D1 was already moving!",
+      t2:"…time origin t₀=0 at the curtain opening!",
+      t3:"…the motion is linear and back-and-forth!",
+      t4:"…repeating, periodic — so it’s oscillation!",
+      t5:"Could it be Simple Harmonic Motion?",
+      t6:"…if it’s SHM, then x must match x=A·sin(ωt+φ₀)!",
+      t7:"…let’s plot x–t; that will confirm it!",
+      t9phi:(x0,phi)=>`…indeed SHM, since x₀=${x0} ⇒ φ₀=${phi}°. One down!`,
+      t7A:(A)=>`…with A=${A}!`,
+      t8Tw:(Tval,om)=>`…and T=${Tval}, hence ω=${om}!`,
+      t11:"…thus v(t)=ωA·cos(ωt+φ₀)!",
+      t13:"…and a(t)=−ω²A·sin(ωt+φ₀)!",
+      t15:"But x=A·sin(ωt+φ₀) implies a=−ω²x!",
+      t18:"Perfect — the full SHM law set!"
     }
   }
 };
@@ -322,18 +322,18 @@ let LANG='gr', firstLawShown=false;
 const langSwitch = document.getElementById('langSwitch');
 function setLang(lang){
   LANG=lang;
-  document.documentElement.lang = (lang==='en'?'en':'el');
+  document.documentElement.lang=(lang==='en'?'en':'el');
   document.querySelector('[data-i18n="actTitle"]').textContent=i18n[lang].actTitle;
   document.querySelector('[data-i18n="massLine"]').textContent=i18n[lang].massLine;
-  document.querySelector('[data-i18n="kLine"]').textContent  =i18n[lang].kLine;
-  document.querySelector('[data-i18n="emech"]').textContent  =i18n[lang].emech;
+  document.querySelector('[data-i18n="kLine"]').textContent=i18n[lang].kLine;
+  document.querySelector('[data-i18n="emech"]').textContent=i18n[lang].emech;
   document.getElementById('startBtn').textContent=i18n[lang].startBtn;
   document.getElementById('cdMain').textContent=i18n[lang].cdMain;
-  document.getElementById('cdSub').textContent =i18n[lang].cdSub;
+  document.getElementById('cdSub').textContent=i18n[lang].cdSub;
   document.getElementById('mbTitle').textContent=i18n[lang].measurementsTitle;
   document.getElementById('actBreakTitle').textContent=i18n[lang].actBreakTitle;
-  document.getElementById('actBreakMsg').textContent  =i18n[lang].actBreakMsg;
-  document.getElementById('btnAct2').textContent      =i18n[lang].act2Btn;
+  document.getElementById('actBreakMsg').textContent=i18n[lang].actBreakMsg;
+  document.getElementById('btnAct2').textContent=i18n[lang].act2Btn;
   if(firstLawShown) document.getElementById('lawsTitle').textContent=i18n[lang].lawsTitle;
 }
 langSwitch.addEventListener('click',(e)=>{
@@ -381,10 +381,10 @@ const curtainUpper=document.querySelector('.curtain-upper');
 
 /* Position helpers */
 function positionParamsBox(){
-  const rightEdge = stage.clientWidth*0.82; // δεξί όριο κεντρικής σκηνής
+  const rightEdge = stage.clientWidth*0.82;
   const w = paramsBoxEl.offsetWidth || 180;
   paramsBoxEl.style.left = (rightEdge - w - 6) + 'px';
-  paramsBoxEl.style.top  = '33px'; /* +25px κάτω */
+  paramsBoxEl.style.top  = '33px';
 }
 
 /* Ρυθμίσεις ροής */
@@ -460,7 +460,7 @@ function updateRuler(){
 }
 
 /* Δεξιά κουρτίνα & x–t */
-let graphEnabled=false, uXT=null, pendingGraph=false;
+let graphEnabled=false, uXT=null, pendingGraph=false;  /* <— ΜΟΝΟ εδώ δηλώνεται το uXT */
 function positionRightPanel(){
   const W=stage.clientWidth, H=stage.clientHeight;
   const curtainLeft=W*0.82, curtainW=W*0.18, centerX=curtainLeft+curtainW/2;
@@ -570,7 +570,7 @@ requestAnimationFrame(animate);
 
 /* Bubbles */
 const BASE_BUBBLE_LIFT=96;
-let bubbleAltLower=false; // εναλλάξ κατακόρυφη μετατόπιση
+let bubbleAltLower=false;
 function randInt(a,b){ return Math.floor(a + Math.random()*(b-a+1)); }
 
 function showThoughtForViewer(viewerIdx,text,durationSecs,customLift,xShift=0){
@@ -578,40 +578,33 @@ function showThoughtForViewer(viewerIdx,text,durationSecs,customLift,xShift=0){
   if(!viewerEl) return;
   bubbleEl.querySelector('.text').textContent=text||'';
 
-  // Υπολογισμοί ορίων (κέντρο bubble ≥ αριστερό όριο δεξιάς κουρτίνας)
   const W=stage.clientWidth;
   const curtainLeft=W*0.82;
   const pad=12;
 
-  // Βάση από θεατή (αν δεν χρειαστεί, θα κλαμπαριστεί δεξιά)
   const vRect=viewerEl.getBoundingClientRect(); const sRect=stage.getBoundingClientRect();
   const viewerCenterX=(vRect.left+vRect.width/2 - sRect.left);
   let desiredCenterX = viewerCenterX + (xShift||0);
 
-  // Προσωρινή εμφάνιση για να μετρήσουμε πλάτος
   bubbleEl.style.display='block'; bubbleEl.style.opacity='0'; bubbleEl.style.left='0px'; bubbleEl.style.top='0px';
   const bw = bubbleEl.offsetWidth || 240;
 
-  // Clamp κέντρο: τουλάχιστον στο αριστερό όριο της δεξιάς κουρτίνας
   const minCenter = curtainLeft + pad;
   const maxCenter = W - pad;
   if(desiredCenterX < minCenter) desiredCenterX = minCenter;
   if(desiredCenterX > maxCenter) desiredCenterX = maxCenter;
 
-  // Τελικό left από το κέντρο
   let leftPx = desiredCenterX - bw/2;
 
-  // Κατακόρυφο: εναλλάξ + τυχαίο downshift 15–30px
   const baseLift=(typeof customLift==='number'?customLift:BASE_BUBBLE_LIFT);
   const downShift = bubbleAltLower ? randInt(15,30) : 0;
-  bubbleAltLower = !bubbleAltLower; // εναλλάξ
+  bubbleAltLower = !bubbleAltLower;
   let topPx=(vRect.top - sRect.top - baseLift + downShift);
   topPx=Math.max(10,topPx);
 
-  // Απόδοση
   bubbleEl.style.left=leftPx+'px';
   bubbleEl.style.top =topPx +'px';
-  void bubbleEl.offsetWidth; // reflow
+  void bubbleEl.offsetWidth;
   bubbleEl.classList.add('active'); bubbleEl.style.opacity='1';
   isBubbleActive=true; setMode('slow');
 
@@ -665,7 +658,6 @@ function buildSeriesData(){
 }
 function x0Val(){ return A_m*Math.sin(omega*(0+obsStartPlaybackOffset)); }
 
-let uXT=null;
 function initXTChart(){
   if(uXT) return; if(!window.uPlot){ if(graphEnabled){ pendingGraph=true; } return; }
   xtChart.style.display='block'; positionRightPanel();
