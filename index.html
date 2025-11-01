@@ -76,20 +76,16 @@
     position:absolute;font:600 12px/1.2 Inter,system-ui,sans-serif;
     color:#d0e7ff;text-shadow:0 1px 2px #000;pointer-events:none;z-index:131;
   }
-  .ghost-energy{
-    position:absolute; z-index:132; pointer-events:none;
-    background:rgba(8, 20, 35, .92);
-    color:#ffd27a; border:1px solid #ffd27a; border-radius:10px;
-    padding:6px 10px; font-weight:800; font-size:13px;
-    box-shadow:0 6px 18px rgba(0,0,0,.45);
-  }
 
-  /* NEW: Pills στη πάνω κουρτίνα για m₁’, D₁’, E’ */
-  .ghost-stat{
+  /* Pills στη πάνω κουρτίνα (δύο σειρές, μεγαλύτερο μέγεθος) */
+  .ghost-stats-wrap{
     position:absolute; z-index:42; pointer-events:none;
-    padding:4px 8px; border-radius:8px; font:700 12px/1 Inter,system-ui,sans-serif;
-    box-shadow:0 2px 10px rgba(0,0,0,.35); white-space:nowrap;
-    border:1px solid transparent;
+    display:flex; flex-direction:column; gap:6px;
+  }
+  .ghost-stats-wrap .row1{ display:flex; gap:8px; }
+  .ghost-stat{
+    padding:6px 10px; border-radius:10px; font:700 16px/1 Inter,system-ui,sans-serif;
+    box-shadow:0 2px 10px rgba(0,0,0,.35); white-space:nowrap; border:1px solid transparent;
   }
   .ghost-stat.m1{ background:#04292f; color:#9be8ff; border-color:#38c7ff; }
   .ghost-stat.d1{ background:#2a1d06; color:#ffcf88; border-color:#ffb347; }
@@ -236,11 +232,11 @@ function addBubble(text, lane='top', viewerIndex=2, duration=3){
   setTimeout(kill, Math.max(1000, duration*1000));
 }
 
-/* ===== Ghost (θύμηση) + επάνω pills m₁’, D₁’, E’ ===== */
+/* ===== Ghost (θύμηση) + επάνω pills σε 2 σειρές ===== */
 A2.memory = {
   active:false, ghostActor:null, ghostSpring:null, labelEl:null,
-  pointer:null, tickL:null, tickR:null, energyEl:null,
-  stat_m1:null, stat_d1:null, stat_Eg:null,
+  pointer:null, tickL:null, tickR:null,
+  statsWrap:null, /* << container με δύο σειρές (m’,D’) / (E’) */
   scale:1.5, t0:0, dur:9000, energyVal:0
 };
 function startMemoryOverlay(ampScale=1.5, durationSec=9, label='θύμηση: ίδιο T₀, μεγαλύτερο A'){
@@ -257,58 +253,44 @@ function startMemoryOverlay(ampScale=1.5, durationSec=9, label='θύμηση: ί
   if (!M.labelEl){ const lab=document.createElement('div'); lab.className='ghost-label'; stage.appendChild(lab); M.labelEl=lab; }
   M.labelEl.textContent = label; M.labelEl.style.display='block';
 
-  if (!M.energyEl){
-    const pill = document.createElement('div');
-    pill.className = 'ghost-energy';
-    pill.textContent = `E’ (τότε): ${Math.round(M.energyVal)} J`;
-    stage.appendChild(pill);
-    M.energyEl = pill;
-  } else {
-    M.energyEl.textContent = `E’ (τότε): ${Math.round(M.energyVal)} J`;
-    M.energyEl.style.display = 'block';
+  /* NEW: wrap με 2 σειρές: (m’,D’) πάνω — (E’) κάτω */
+  if (!M.statsWrap){
+    const wrap=document.createElement('div');
+    wrap.className='ghost-stats-wrap';
+    wrap.innerHTML=`
+      <div class="row1">
+        <span class="ghost-stat m1">m₁’ = ${A2.m} kg</span>
+        <span class="ghost-stat d1">D₁’ = ${A2.D} N/m</span>
+      </div>
+      <div class="row2">
+        <span class="ghost-stat eg">E’ (τότε) = ${Math.round(M.energyVal)} J</span>
+      </div>`;
+    curtainTop.appendChild(wrap);
+    M.statsWrap=wrap;
   }
-
-  /* NEW: επάνω pills πάνω στην κουρτίνα */
-  if (!M.stat_m1){ const s=document.createElement('div'); s.className='ghost-stat m1'; s.textContent=`m₁’ = ${A2.m} kg`; curtainTop.appendChild(s); M.stat_m1=s; }
-  if (!M.stat_d1){ const s=document.createElement('div'); s.className='ghost-stat d1'; s.textContent=`D₁’ = ${A2.D} N/m`; curtainTop.appendChild(s); M.stat_d1=s; }
-  if (!M.stat_Eg){ const s=document.createElement('div'); s.className='ghost-stat eg'; s.textContent=`E’ = ${Math.round(M.energyVal)} J`; curtainTop.appendChild(s); M.stat_Eg=s; }
-
   positionGhostTopPills(); /* αρχική τοποθέτηση */
 }
 function stopMemoryOverlay(){
   const M=A2.memory; if (!M.active) return;
-  ['ghostActor','ghostSpring','labelEl','pointer','tickL','tickR','energyEl','stat_m1','stat_d1','stat_Eg'].forEach(k=>{
+  ['ghostActor','ghostSpring','labelEl','pointer','tickL','tickR','statsWrap'].forEach(k=>{
     if (M[k]){ M[k].remove ? M[k].remove() : (M[k].style.display='none'); M[k]=null; }
   });
   M.active=false;
 }
-/* Τοποθέτηση pills κοντά στις h2/h3 με μικρά offsets */
+/* Τοποθέτηση του wrap δίπλα από το h2 (δεξιά) — η 2η σειρά μένει ακριβώς από κάτω */
 function positionGhostTopPills(){
-  const M = A2.memory; if (!M.active) return;
+  const M = A2.memory; if (!M.active || !M.statsWrap) return;
   const h2 = signboard.querySelector('h2');
-  const h3 = signboard.querySelector('h3');
-  if (!h2 || !h3) return;
+  if (!h2) return;
 
-  const sbRect = signboard.getBoundingClientRect();
-  const h2r = h2.getBoundingClientRect();
-  const h3r = h3.getBoundingClientRect();
   const ctRect = curtainTop.getBoundingClientRect();
+  const h2r    = h2.getBoundingClientRect();
 
   const offLeft = (r)=> (r.left - ctRect.left);
   const offTop  = (r)=> (r.top  - ctRect.top);
 
-  if (M.stat_m1){
-    M.stat_m1.style.left = (offLeft(h2r) + h2r.width + 8) + 'px'; /* δίπλα δεξιά του h2 */
-    M.stat_m1.style.top  = (offTop(h2r) - 2) + 'px';
-  }
-  if (M.stat_d1){
-    M.stat_d1.style.left = (offLeft(h2r) + h2r.width + 8) + 'px';
-    M.stat_d1.style.top  = (offTop(h2r) + 20) + 'px';  /* λίγο πιο κάτω από m1’ */
-  }
-  if (M.stat_Eg){
-    M.stat_Eg.style.left = (offLeft(h3r) + h3r.width + 8) + 'px'; /* δίπλα στο h3 */
-    M.stat_Eg.style.top  = (offTop(h3r) - 2) + 'px';
-  }
+  M.statsWrap.style.left = (offLeft(h2r) + h2r.width + 8) + 'px';
+  M.statsWrap.style.top  = (offTop(h2r) - 2) + 'px';
 }
 
 /* ===== Timeline (Act II) ===== */
@@ -321,7 +303,7 @@ const thoughtScriptAct2 = [
   { kind:'bubble', atT:0.9, viewer:2, lane:'top', duration:3, text:'ωπ! δεμένος σε ελατήριο είναι ο m₁D₁!' },
   { kind:'bubble', atT:3.6, viewer:0, lane:'low', duration:3, text:'αυτόν ακριβώς τον m₁D₁ τον έχω ξαναδεί σε άλλη παράσταση αλλά με άλλον παραγωγό' },
   { kind:'bubble', atT:6.6, viewer:4, lane:'top', duration:3, text:'ναι, κι εκεί με ίδια περίοδο κινήθηκε αλλά με μεγαλύτερο πλάτος A!' },
-  /* Ghost θύμηση με πάνω pills m₁’, D₁’, E’ */
+  /* Ghost θύμηση με wrap δύο σειρών */
   { kind:'memory', atT:8.4, ampScale:1.5, duration:9.0, label:'θύμηση: ίδιο T₀, μεγαλύτερο A' },
   { kind:'bubble', atT:18.0, viewer:1, lane:'top', duration:3, text:'Πρωταγωνιστής είναι ο κινούμενος και τα εργαλεία του μαζί!' },
   { kind:'bubble', atT:21.0, viewer:3, lane:'low', duration:3, text:'Τώρα καταλαβαίνω γιατί τον λένε m₁,D₁…' },
@@ -357,7 +339,7 @@ function animate(now){
     springEl.style.width = springW + 'px';
   }
 
-  /* Ghost ενημέρωση */
+  /* Ghost ενημέρωση θέσης/δεικτών */
   if (A2.memory.active){
     const M = A2.memory;
     const gx = (A2.Apx * M.scale) * Math.sin(A2.omega*t + A2.phi0);
@@ -375,23 +357,7 @@ function animate(now){
       M.labelEl.style.left = (gCx - 60)+'px';
       M.labelEl.style.top  = (baseline - 30)+'px';
     }
-    if (M.energyEl){
-      M.energyEl.textContent = `E’ (τότε): ${Math.round(M.energyVal)} J`;
-      M.energyEl.style.left = (gCx + 8)+'px';
-      M.energyEl.style.top  = (baseline - 56)+'px';
-    }
-    if (M.pointer){ 
-      if (!M.pointer){ const p=document.createElement('div'); p.className='ghost-pointer'; stage.appendChild(p); M.pointer=p; }
-      M.pointer.style.left = (gCx) + 'px'; 
-    }
-    if (M.tickL && M.tickR){
-      const Aghost = A2.Apx * M.scale;
-      const cMid = stageRect.width/2 - 20;
-      M.tickL.style.left = (cMid - Aghost) + 'px';
-      M.tickR.style.left = (cMid + Aghost) + 'px';
-    }
-    /* ενημέρωση θέσης των πάνω pills σε κάθε frame (robust σε resize) */
-    positionGhostTopPills();
+    positionGhostTopPills(); /* διατηρούμε σωστή θέση των top pills */
 
     if (now - M.t0 > M.dur) stopMemoryOverlay();
   }
