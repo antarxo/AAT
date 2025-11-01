@@ -5,9 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Πράξη 2η — Η Δυναμική στα … Αλγεβρικά!</title>
 <style>
-  :root{
-    --open-offset: 10px; /* όταν ανοίγει η κουρτίνα, μένει 10px χαμηλότερα */
-  }
+  :root{ --open-offset: 10px; }
   html,body{margin:0;height:100%;font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;background:#000;}
   .stage{
     position:relative;width:100vw;height:100vh;overflow:hidden;
@@ -18,47 +16,38 @@
     position:absolute;top:0;left:0;right:0;height:28%;
     background:linear-gradient(to bottom,#230000,#180000);
     box-shadow:0 5px 18px rgba(0,0,0,.85);
-    z-index:40; /* πάνω από όλα τα σκηνικά (τίτλοι μπαίνουν μέσα της) */
-    display:flex;align-items:flex-start;justify-content:center;
+    z-index:40; display:flex;align-items:flex-start;justify-content:center;
   }
   .curtain-upper{
     position:absolute;left:0;right:0;top:28%;height:40%;
     background:linear-gradient(to bottom,#8b0000,#400000);
-    transform:translateY(0);
-    transition:transform 1.0s cubic-bezier(.2,.9,.2,1);
-    z-index:16; /* κινητή κουρτίνα */
+    transform:translateY(0); transition:transform 1.0s cubic-bezier(.2,.9,.2,1);
+    z-index:16;
   }
-  .curtain-upper.open{
-    transform:translateY(calc(-100% + var(--open-offset)));
-  }
-  /* Πλάγιες σταθερές κουρτίνες */
+  .curtain-upper.open{ transform:translateY(calc(-100% + var(--open-offset))); }
+
   .curtain-side{
     position:absolute;top:0;height:100%;width:18%;
     background:linear-gradient(to right,#300000,#1a0000);
     box-shadow: inset -6px 0 10px rgba(0,0,0,.6);
     z-index:14;
   }
-  .curtain-side.right{
-    right:0;left:auto;background:linear-gradient(to left,#300000,#1a0000);
-    box-shadow:inset 6px 0 10px rgba(0,0,0,.6);
-  }
-  .curtain-side.left{left:0;}
+  .curtain-side.right{ right:0;left:auto;background:linear-gradient(to left,#300000,#1a0000); box-shadow:inset 6px 0 10px rgba(0,0,0,.6); }
+  .curtain-side.left{ left:0; }
 
-  /* Τίτλος (3 γραμμές) πάνω στην ακίνητη πάνω κουρτίνα */
+  /* Τίτλος (3 γραμμές) */
   .signboard{
     position:absolute;top:6px;left:50%;transform:translateX(-50%);
-    color:#eee;text-align:center;line-height:1.35;z-index:41;
-    pointer-events:none;user-select:none;
+    color:#eee;text-align:center;line-height:1.35;z-index:41;pointer-events:none;user-select:none;
   }
   .signboard h1{margin:0;font-weight:800;font-size:28px;color:#fff;}
   .signboard h2{margin:4px 0 0 0;font-size:16px;}
   .signboard h3{margin:4px 0 0 0;font-size:15px;color:#ffd27a;}
 
-  /* Σκηνικά: κοινό + πάτωμα */
+  /* Κοινό & πάτωμα */
   .audience{
-    position:absolute;left:18%;right:18%;bottom:8vh; /* μέσα στα όρια κουρτινών */
-    height:60px;object-fit:contain;object-position:center;z-index:150;
-    filter:brightness(0.85) contrast(1.05) saturate(0.9);
+    position:absolute;left:18%;right:18%;bottom:8vh;height:63px; /* +3px όπως ζητήθηκε νωρίτερα */
+    object-fit:contain;object-position:center;z-index:150;filter:brightness(0.85) contrast(1.05) saturate(0.9);
   }
   .audience.fallback{background:repeating-linear-gradient(90deg,#333 0 8px,#222 8px 16px);}
   .floor-line{
@@ -66,49 +55,59 @@
     bottom:calc(32vh - 8px);height:2px;background:#9aa0a6;opacity:.9;z-index:120;
   }
 
-  /* Actor + ελατήριο */
+  /* Actor & spring */
   .actor{
     position:absolute;bottom:calc(32vh);left:50%;
     width:180px;height:auto;transform:translateX(-50%);
-    z-index:110;pointer-events:none;image-rendering:auto;
-    filter:drop-shadow(0 4px 6px rgba(0,0,0,.6));
+    z-index:110;pointer-events:none;filter:drop-shadow(0 4px 6px rgba(0,0,0,.6));
   }
   .actor.fallback{background:#5aa; width:120px; height:90px; border-radius:10px;}
   .spring{
-    position:absolute;bottom:calc(32vh + 60px); /* άξονας ~ μέσο ύψους skater */
-    left:18%;height:26px;transform-origin:left center;z-index:100; 
-    image-rendering:auto;
+    position:absolute;bottom:calc(32vh + 60px);
+    left:18%;height:26px;transform-origin:left center;z-index:100;
   }
   .spring.fallback{height:6px;background:repeating-linear-gradient(90deg,#8cf 0 8px,#46a 8px 16px);}
 
-  /* Ghost “θύμηση” */
-  .ghost-actor,.ghost-spring{
-    opacity:.35;filter:hue-rotate(180deg) saturate(1.1);pointer-events:none;
-  }
+  /* Ghost “θύμηση”: μπροστά από τον κανονικό */
+  .ghost-actor{ opacity:.38; filter:hue-rotate(180deg) saturate(1.1); pointer-events:none; z-index:130; }
+  .ghost-spring{ opacity:.32; filter:hue-rotate(180deg) saturate(1.1); pointer-events:none; z-index:112; }
+
   .ghost-label{
     position:absolute;font:600 12px/1.2 Inter,system-ui,sans-serif;
-    color:#d0e7ff;text-shadow:0 1px 2px #000;pointer-events:none;z-index:60;
+    color:#d0e7ff;text-shadow:0 1px 2px #000;pointer-events:none;z-index:131;
   }
 
-  /* Πίνακας Νόμων (αριστερά, μέσα στην αριστερή κουρτίνα) */
+  /* Δείκτης θέσης ghost + ticks πλάτους A′ */
+  .ghost-pointer{
+    position:absolute; bottom:calc(32vh - 8px + 2px); /* κάθεται πάνω στο πάτωμα */
+    width:0; height:18px; border-left:2px solid #7ad9ff; z-index:131; transform:translateX(-1px);
+  }
+  .ghost-pointer::after{ /* μικρή μύτη */
+    content:''; position:absolute; bottom:-5px; left:-4px; border-left:4px solid transparent; border-right:4px solid transparent; border-top:5px solid #7ad9ff;
+  }
+  .amp-tick{
+    position:absolute; bottom:calc(32vh - 8px + 1px);
+    width:2px; height:10px; background:#7ad9ff; z-index:121; transform:translateX(-1px);
+    opacity:.9;
+  }
+
+  /* Νόμοι */
   .laws{
-    position:absolute;left:2%;top:32%;width:14%;
-    max-height:60%;overflow:auto;z-index:18;
+    position:absolute;left:2%;top:32%;width:14%;max-height:60%;overflow:auto;z-index:18;
     color:#eaeaea;background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.08);
     border-radius:10px;padding:8px 10px;backdrop-filter:blur(2px);
   }
   .laws h4{margin:0 0 6px 0;font-size:14px;color:#ffd27a}
   .laws .law{margin:4px 0;padding:4px 6px;border-left:3px solid #ffd27a;background:rgba(255,210,122,.06);}
 
-  /* Bubbles (διάσπαρτα, μέσα στα όρια δεξιάς κουρτίνας) */
+  /* Bubbles */
   .bubble{
     position:absolute;max-width:36ch;padding:10px 12px;border-radius:12px;
     background:rgba(30,30,35,.85);color:#e9eef5;z-index:70;
     border:2px dotted #b7c7ff; box-shadow:0 6px 18px rgba(0,0,0,.35);
     transition:opacity .35s ease, transform .35s ease; pointer-events:auto;
-    font-size:14px;
+    font-size:13.5px;
   }
-  .bubble.small{font-size:13px;}
   .bubble.hidden{opacity:0;transform:translateY(6px);}
   .bubble .ok{
     margin-top:8px;padding:4px 8px;border:1px solid #b7c7ff;border-radius:8px;
@@ -117,20 +116,14 @@
   .bubble.checked{border-style:dashed;}
   .bubble .checkmark{display:inline-block;margin-left:6px;color:#9cff9c;}
 
-  /* Κουμπιά ελέγχου */
+  /* Κουμπιά */
   .controls{
     position:absolute;left:50%;bottom:16px;transform:translateX(-50%);
     display:flex;gap:10px;z-index:100;
   }
-  .btn{
-    background:#700;color:#fff;border:none;border-radius:8px;padding:10px 14px;
-    font-size:14px;cursor:pointer;box-shadow:0 0 10px #300;
-  }
-  .btn.alt{background:#2f5;}
-  .btn.warn{background:#f55;}
-  .btn:disabled{opacity:.5;cursor:not-allowed}
+  .btn{ background:#700;color:#fff;border:none;border-radius:8px;padding:10px 14px;font-size:14px;cursor:pointer;box-shadow:0 0 10px #300; }
+  .btn.alt{background:#2f5;} .btn.warn{background:#f55;} .btn:disabled{opacity:.5;cursor:not-allowed}
 
-  /* Ρολόι επάνω δεξιά (μέσα στην πάνω κουρτίνα) */
   .chrono{
     position:absolute;top:8px;right:8px;color:#fff;background:rgba(0,0,0,.35);
     border:1px solid rgba(255,255,255,.12);padding:6px 8px;border-radius:8px;
@@ -140,7 +133,7 @@
 </head>
 <body>
 <div class="stage" id="stage">
-  <!-- Ακίνητη πάνω κουρτίνα + τίτλος -->
+  <!-- Πάνω ακίνητη κουρτίνα -->
   <div class="curtain-top">
     <div class="signboard" id="signboard">
       <h1>Πράξη 2η: Η Δυναμική στα ... Αλγεβρικά!</h1>
@@ -150,20 +143,17 @@
     <div class="chrono" id="chrono" hidden>t = 0.00 s</div>
   </div>
 
-  <!-- Κινητή κεντρική κουρτίνα -->
+  <!-- Κινητή -->
   <div class="curtain-upper" id="curtainUpper"></div>
 
-  <!-- Πλάγιες σταθερές -->
+  <!-- Πλάγιες -->
   <div class="curtain-side left"></div>
   <div class="curtain-side right"></div>
 
-  <!-- Πίνακας Νόμων -->
-  <div class="laws" id="laws">
-    <h4>Νόμοι</h4>
-    <div id="lawsList"></div>
-  </div>
+  <!-- Νόμοι -->
+  <div class="laws" id="laws"><h4>Νόμοι</h4><div id="lawsList"></div></div>
 
-  <!-- Πάτωμα & Κοινό -->
+  <!-- Πάτωμα & κοινό -->
   <div class="floor-line" id="floor"></div>
   <img id="audience" class="audience" src="koino.png" alt="κοινό" onerror="this.classList.add('fallback'); this.removeAttribute('src');"/>
 
@@ -180,24 +170,17 @@
 </div>
 
 <script>
-/* ============ Παράμετροι Συστήματος (Act II) ============ */
+/* ===== Παράμετροι Συστήματος ===== */
 const A2 = {
-  m: 70,           // kg
-  T: 6.0,          // s  (ιδιοπερίοδος)
-  A_m: 3.0,        // m  (πλάτος επί σκηνής για run)
-  phi0: 0.3,       // rad
-  pxPerMeter: 50,  // scale → 1 m = 50 px
-  // Χρωματικά/ρυθμίσεις bubble
-  bubbleClampPadding: 16,
-  bubbleTopY: 0.18,  // ως ποσοστό ύψους σκηνής (για lane 'top' στη δεξιά κουρτίνα)
-  bubbleLowY: 0.28   // "
+  m: 70, T: 6.0, A_m: 3.0, phi0: 0.3, pxPerMeter: 50,
+  bubbleClampPadding: 16, bubbleTopY: 0.18, bubbleLowY: 0.28
 };
 A2.omega = 2*Math.PI/A2.T;
 A2.D = Math.round(A2.m * A2.omega * A2.omega);
-A2.E = 0.5 * A2.D * A2.A_m * A2.A_m; // J
+A2.E = 0.5 * A2.D * A2.A_m * A2.A_m;
 A2.Apx = A2.A_m * A2.pxPerMeter;
 
-/* ============ DOM refs ============ */
+/* ===== DOM ===== */
 const stage = document.getElementById('stage');
 const signboard = document.getElementById('signboard');
 const chrono = document.getElementById('chrono');
@@ -209,35 +192,25 @@ const btnOpen = document.getElementById('btnOpen');
 const btnAct2 = document.getElementById('btnAct2');
 const btnReset = document.getElementById('btnReset');
 
-/* ============ Κατάσταση/Χρόνος ============ */
-let rafId = null;
-let t0 = performance.now();
-let last = performance.now();
-let play = true;
+/* ===== State/Time ===== */
+let rafId = null, t0 = performance.now(), last = performance.now();
+let play = true, act2Started = false, act2StartT = 0, timelineIdx = 0;
 
-let act2Started = false;
-let act2StartT = 0;
-let timelineIdx = 0;
-
-/* ============ Βοηθητικά ============ */
-function fmt(n, d=2){ return n.toFixed(d); }
+/* ===== Helpers ===== */
+const fmt = (n,d=2)=>n.toFixed(d);
 function updateTitle(lines){
-  const h1 = signboard.querySelector('h1');
-  const h2 = signboard.querySelector('h2');
-  const h3 = signboard.querySelector('h3');
+  const [h1,h2,h3] = ['h1','h2','h3'].map(s=>signboard.querySelector(s));
   if (lines[0]!=null) h1.textContent = lines[0];
   if (lines[1]!=null) h2.textContent = lines[1];
   if (lines[2]!=null) h3.textContent = lines[2];
 }
 function addLaw(text){
   const div = document.createElement('div');
-  div.className = 'law';
-  div.textContent = text;
+  div.className = 'law'; div.textContent = text;
   lawsList.appendChild(div);
   lawsList.parentElement.scrollTop = lawsList.parentElement.scrollHeight;
 }
 function addBubble(text, lane='top', viewerIndex=2, duration=3){
-  // Δεξιά κουρτίνα όρια για clamp
   const stageRect = stage.getBoundingClientRect();
   const leftCurtainW = stageRect.width * 0.18;
   const rightCurtainX = stageRect.width * 0.82;
@@ -245,124 +218,87 @@ function addBubble(text, lane='top', viewerIndex=2, duration=3){
   const maxX = rightCurtainX - A2.bubbleClampPadding;
 
   const bub = document.createElement('div');
-  bub.className = 'bubble small hidden';
+  bub.className = 'bubble hidden';
   bub.innerHTML = `<div class="txt">${text}</div><button class="ok">συνέχεια</button>`;
   stage.appendChild(bub);
 
-  // Θέση: “θεατής” → διασπορά μέσα στα όρια κουρτίνας δεξιά
   const viewerSlots = 5;
-  const frac = (viewerIndex%viewerSlots + 0.5)/viewerSlots; // 0..1
+  const frac = (viewerIndex%viewerSlots + 0.5)/viewerSlots;
   const cx = minX + frac*(maxX-minX);
   const y = (lane==='top'? A2.bubbleTopY: A2.bubbleLowY) * stageRect.height;
   bub.style.left = Math.round(cx - bub.clientWidth/2) + 'px';
   bub.style.top  = Math.round(y) + 'px';
-
-  // Εμφάνιση
   requestAnimationFrame(()=>bub.classList.remove('hidden'));
 
-  // “συνέχεια” → check + fade out (και auto-timeout)
   const btn = bub.querySelector('.ok');
   let cleared = false;
-  function kill(){
-    if (cleared) return; cleared = true;
-    bub.classList.add('checked');
-    btn.insertAdjacentHTML('beforeend','<span class="checkmark">✔</span>');
+  const kill = ()=>{ if(cleared) return; cleared=true;
+    bub.classList.add('checked'); btn.insertAdjacentHTML('beforeend','<span class="checkmark">✔</span>');
     setTimeout(()=>{ bub.classList.add('hidden'); setTimeout(()=>bub.remove(), 350); }, 300);
-  }
+  };
   btn.addEventListener('click', kill);
   setTimeout(kill, Math.max(1000, duration*1000));
 }
-function startMemoryOverlay(ampScale=1.35, durationSec=5, label='θύμηση: ίδιο T₀, μεγαλύτερο A'){
-  A2.memory = {
-    active:true, t0:performance.now(), dur:durationSec*1000,
-    scale:ampScale, labelEl: null, ghostActor:null, ghostSpring:null
-  };
-  // ghost actor
-  if (!A2.memory.ghostActor){
-    const ga = actor.cloneNode(true);
-    ga.id = 'ghostActor';
-    ga.classList.add('ghost-actor');
-    actor.parentNode.appendChild(ga);
-    A2.memory.ghostActor = ga;
-  }
-  // ghost spring (αν υπάρχει εικόνα)
-  if (springEl && !A2.memory.ghostSpring){
-    const gs = springEl.cloneNode(true);
-    gs.id = 'ghostSpring';
-    gs.classList.add('ghost-spring');
-    springEl.parentNode.appendChild(gs);
-    A2.memory.ghostSpring = gs;
-  }
-  if (!A2.memory.labelEl){
-    const lab = document.createElement('div');
-    lab.className = 'ghost-label';
-    stage.appendChild(lab);
-    A2.memory.labelEl = lab;
-  }
-  A2.memory.labelEl.textContent = label;
-  A2.memory.labelEl.style.display = 'block';
+
+/* ===== Ghost (θύμηση) με δείκτη & ticks πλάτους ===== */
+A2.memory = { active:false, ghostActor:null, ghostSpring:null, labelEl:null, pointer:null, tickL:null, tickR:null, scale:1.35, t0:0, dur:9000 };
+function startMemoryOverlay(ampScale=1.5, durationSec=9, label='θύμηση: ίδιο T₀, μεγαλύτερο A'){
+  const M = A2.memory; M.active=true; M.scale=ampScale; M.t0=performance.now(); M.dur=durationSec*1000;
+
+  if (!M.ghostActor){ const ga = actor.cloneNode(true); ga.id='ghostActor'; ga.classList.add('ghost-actor'); actor.parentNode.appendChild(ga); M.ghostActor=ga; }
+  if (springEl && !M.ghostSpring){ const gs = springEl.cloneNode(true); gs.id='ghostSpring'; gs.classList.add('ghost-spring'); springEl.parentNode.appendChild(gs); M.ghostSpring=gs; }
+  if (!M.labelEl){ const lab=document.createElement('div'); lab.className='ghost-label'; stage.appendChild(lab); M.labelEl=lab; }
+  M.labelEl.textContent = label; M.labelEl.style.display='block';
+
+  if (!M.pointer){ const p=document.createElement('div'); p.className='ghost-pointer'; stage.appendChild(p); M.pointer=p; }
+  if (!M.tickL){ const tl=document.createElement('div'); tl.className='amp-tick'; stage.appendChild(tl); M.tickL=tl; }
+  if (!M.tickR){ const tr=document.createElement('div'); tr.className='amp-tick'; stage.appendChild(tr); M.tickR=tr; }
 }
 function stopMemoryOverlay(){
-  if (!A2.memory) return;
-  if (A2.memory.ghostActor) { A2.memory.ghostActor.remove(); A2.memory.ghostActor = null;}
-  if (A2.memory.ghostSpring){ A2.memory.ghostSpring.remove(); A2.memory.ghostSpring = null;}
-  if (A2.memory.labelEl){ A2.memory.labelEl.style.display='none'; }
-  A2.memory.active = false;
+  const M=A2.memory; if (!M.active) return;
+  ['ghostActor','ghostSpring','labelEl','pointer','tickL','tickR'].forEach(k=>{
+    if (M[k]){ M[k].remove ? M[k].remove() : (M[k].style.display='none'); M[k]=null; }
+  });
+  M.active=false;
 }
 
-/* ============ Timeline Πράξης 2 ============ */
-/* Βήματα 1..19 όπως τα έδωσες */
+/* ===== Timeline (όπως συμφωνήθηκε) ===== */
 const thoughtScriptAct2 = [
-  // 1–2 Τίτλος 3 γραμμών
   { kind:'title', atT:0.2, lines:[
     'Πράξη 2η: Η Δυναμική στα ... Αλγεβρικά!',
     `m₁ = ${A2.m} kg , D₁ = ${A2.D} N/m`,
     `Eμηχ = ${Math.round(A2.E)} J`
   ]},
-  // 3–5 διαλόγοι
-  { kind:'bubble', atT:0.9, viewer:2, lane:'top', duration:3,
-    text:'ωπ! δεμένος σε ελατήριο είναι ο m₁D₁!' },
-  { kind:'bubble', atT:3.6, viewer:0, lane:'low', duration:3,
-    text:'αυτόν ακριβώς τον m₁D₁ τον έχω ξαναδεί σε άλλη παράσταση αλλά με άλλον παραγωγό' },
-  { kind:'bubble', atT:6.6, viewer:4, lane:'top', duration:3,
-    text:'ναι, κι εκεί με ίδια περίοδο κινήθηκε αλλά με μεγαλύτερο πλάτος A!' },
-  // 6 θύμηση (ghost): ίδιο Τ₀, μεγαλύτερο Α
-  { kind:'memory', atT:8.4, ampScale:1.35, duration:5.0, label:'θύμηση: ίδιο T₀, μεγαλύτερο A' },
-  // 7–12 ταυτότητα m,D
-  { kind:'bubble', atT:14.0, viewer:1, lane:'top', duration:3,
-    text:'Πρωταγωνιστής είναι ο κινούμενος και τα εργαλεία του μαζί!' },
-  { kind:'bubble', atT:17.0, viewer:3, lane:'low', duration:3,
-    text:'Τώρα καταλαβαίνω γιατί τον λένε m₁,D₁…' },
-  { kind:'bubble', atT:20.0, viewer:2, lane:'top', duration:3,
-    text:'…το m₁ είναι η μάζα του, αλλά ως ταλαντωτής συνοδεύεται από ελαστικό αίτιο-δύναμη (D₁)' },
-  { kind:'bubble', atT:23.0, viewer:0, lane:'low', duration:3,
-    text:'…m₁ και D₁ πάνε πακέτο!' },
-  { kind:'bubble', atT:26.0, viewer:4, lane:'top', duration:3,
-    text:'…γι’ αυτό σαν αριθμό μητρώου έχει τα mD!' },
-  // 13–19 Δυναμική & μορφές
-  { kind:'bubble', atT:29.0, viewer:1, lane:'low', duration:3,
-    text:'Πώς γράφεται ο 2ος Νόμος του Νεύτωνα για τον ταλαντωτή;' },
-  { kind:'law',    atT:31.0, lawText:'ΣF = m·a' },
-  { kind:'law',    atT:32.4, lawText:'(3)  a(t) = −ω²A·ημ(ωt+φ₀)' },
-  { kind:'law',    atT:34.0, lawText:'(5)  ΣF = −m·ω²·A·ημ(ωt+φ₀)' },
-  { kind:'law',    atT:36.0, lawText:'(6)  με x=A·ημ(ωt+φ₀):  ΣF = −m·ω²·x' },
-  { kind:'law',    atT:38.0, lawText:'Η (6) περιέχει “σωματότυπο” (m) και “εμμονή” (ω)' },
-  { kind:'law',    atT:40.0, lawText:'Ορισμός:  D = m·ω²' },
-  { kind:'law',    atT:41.6, lawText:'(7)  Άρα:  ΣF = −D·x' },
-  // Κλείσιμο
-  { kind:'close',  atT:46.0 }
+  { kind:'bubble', atT:0.9, viewer:2, lane:'top', duration:3, text:'ωπ! δεμένος σε ελατήριο είναι ο m₁D₁!' },
+  { kind:'bubble', atT:3.6, viewer:0, lane:'low', duration:3, text:'αυτόν ακριβώς τον m₁D₁ τον έχω ξαναδεί σε άλλη παράσταση αλλά με άλλον παραγωγό' },
+  { kind:'bubble', atT:6.6, viewer:4, lane:'top', duration:3, text:'ναι, κι εκεί με ίδια περίοδο κινήθηκε αλλά με μεγαλύτερο πλάτος A!' },
+  /* Ghost θύμηση μπροστά + δείκτης & ticks πλάτους */
+  { kind:'memory', atT:8.4, ampScale:1.5, duration:9.0, label:'θύμηση: ίδιο T₀, μεγαλύτερο A' },
+  { kind:'bubble', atT:18.0, viewer:1, lane:'top', duration:3, text:'Πρωταγωνιστής είναι ο κινούμενος και τα εργαλεία του μαζί!' },
+  { kind:'bubble', atT:21.0, viewer:3, lane:'low', duration:3, text:'Τώρα καταλαβαίνω γιατί τον λένε m₁,D₁…' },
+  { kind:'bubble', atT:24.0, viewer:2, lane:'top', duration:3, text:'…το m₁ είναι η μάζα του, αλλά ως ταλαντωτής συνοδεύεται από ελαστικό αίτιο-δύναμη (D₁)' },
+  { kind:'bubble', atT:27.0, viewer:0, lane:'low', duration:3, text:'…m₁ και D₁ πάνε πακέτο!' },
+  { kind:'bubble', atT:30.0, viewer:4, lane:'top', duration:3, text:'…γι’ αυτό σαν αριθμό μητρώου έχει τα mD!' },
+  { kind:'bubble', atT:33.0, viewer:1, lane:'low', duration:3, text:'Πώς γράφεται ο 2ος Νόμος του Νεύτωνα για τον ταλαντωτή;' },
+  { kind:'law',    atT:35.0, lawText:'ΣF = m·a' },
+  { kind:'law',    atT:36.4, lawText:'(3)  a(t) = −ω²A·ημ(ωt+φ₀)' },
+  { kind:'law',    atT:38.0, lawText:'(5)  ΣF = −m·ω²·A·ημ(ωt+φ₀)' },
+  { kind:'law',    atT:40.0, lawText:'(6)  με x=A·ημ(ωt+φ₀):  ΣF = −m·ω²·x' },
+  { kind:'law',    atT:42.0, lawText:'Η (6) περιέχει “σωματότυπο” (m) και “εμμονή” (ω)' },
+  { kind:'law',    atT:44.0, lawText:'Ορισμός:  D = m·ω²' },
+  { kind:'law',    atT:45.6, lawText:'(7)  Άρα:  ΣF = −D·x' },
+  { kind:'close',  atT:49.0 }
 ];
 
-/* ============ Animation Skater & Spring ============ */
+/* ===== Animation ===== */
 function animate(now){
   rafId = requestAnimationFrame(animate);
   if (!play) return;
 
   const t = (now - t0)/1000;
   const x = A2.Apx * Math.sin(A2.omega*t + A2.phi0); // px
-  // Η θέση του skater: κάτω μέρος (32vh) + οριζόντιο x
-  actor.style.left = `calc(50% + ${x - 20}px)`; // -20px μικρό “δέσιμο” offset
-  // Ελατήριο: αγκυρωμένο στο δεξί άκρο της αριστερής κουρτίνας (18% πλάτος)
+  actor.style.left = `calc(50% + ${x - 20}px)`;
+
   const stageRect = stage.getBoundingClientRect();
   const leftAnchor = stageRect.width * 0.18;
   const actorCx = stageRect.width/2 + x - 20;
@@ -372,93 +308,79 @@ function animate(now){
     springEl.style.width = springW + 'px';
   }
 
-  // Ghost “θύμηση”: ίδιο ω, κλίμακα A
-  if (A2.memory && A2.memory.active){
+  /* Ghost ενημέρωση (μπροστά + δείκτης + ticks) */
+  if (A2.memory.active){
     const gx = (A2.Apx * A2.memory.scale) * Math.sin(A2.omega*t + A2.phi0);
+    const gCx = stageRect.width/2 + gx - 20;
     if (A2.memory.ghostActor)  A2.memory.ghostActor.style.left = `calc(50% + ${gx - 20}px)`;
-    if (A2.memory.ghostSpring) {
-      const gCx = stageRect.width/2 + gx - 20;
+    if (A2.memory.ghostSpring){
       const gw = Math.max(0, gCx - leftAnchor);
       A2.memory.ghostSpring.style.left = `calc(18%)`;
       A2.memory.ghostSpring.style.width = gw + 'px';
       A2.memory.ghostSpring.style.bottom = springEl.style.bottom;
     }
     if (A2.memory.labelEl){
-      const cx = stageRect.left + stageRect.width/2 + gx - 20;
       const baseline = stageRect.bottom - (0.32*stageRect.height);
-      A2.memory.labelEl.style.left = (cx - 60)+'px';
+      A2.memory.labelEl.style.left = (gCx - 60)+'px';
       A2.memory.labelEl.style.top  = (baseline - 30)+'px';
+    }
+    if (A2.memory.pointer){
+      A2.memory.pointer.style.left = (gCx) + 'px';
+    }
+    if (A2.memory.tickL && A2.memory.tickR){
+      const Aghost = A2.Apx * A2.memory.scale;
+      const cMid = stageRect.width/2 - 20;
+      A2.memory.tickL.style.left = (cMid - Aghost) + 'px';
+      A2.memory.tickR.style.left = (cMid + Aghost) + 'px';
     }
     if (now - A2.memory.t0 > A2.memory.dur) stopMemoryOverlay();
   }
 
-  // Χρονόμετρο (Act 2)
   if (act2Started){
     const tAct2 = (now - act2StartT)/1000;
     chrono.textContent = `t = ${fmt(tAct2,2)} s`;
-    // Εκτέλεση timeline
     while (timelineIdx < thoughtScriptAct2.length &&
            thoughtScriptAct2[timelineIdx].atT <= tAct2){
-      const ev = thoughtScriptAct2[timelineIdx++];
-      handleEvent(ev);
+      handleEvent(thoughtScriptAct2[timelineIdx++]);
     }
   }
 }
 
+/* ===== Events ===== */
 function handleEvent(ev){
   switch (ev.kind){
-    case 'title':
-      updateTitle(ev.lines || []);
-      break;
-    case 'bubble':
-      addBubble(ev.text || '', ev.lane || 'top', ev.viewer ?? 2, ev.duration ?? 3);
-      break;
-    case 'law':
-      addLaw(ev.lawText || '');
-      break;
-    case 'memory':
-      startMemoryOverlay(ev.ampScale || 1.35, ev.duration || 5, ev.label || '');
-      break;
-    case 'close':
-      curtainUpper.classList.remove('open'); // κλείσιμο
-      break;
+    case 'title':  updateTitle(ev.lines || []); break;
+    case 'bubble': addBubble(ev.text||'', ev.lane||'top', ev.viewer??2, ev.duration??3); break;
+    case 'law':    addLaw(ev.lawText||''); break;
+    case 'memory': startMemoryOverlay(ev.ampScale||1.5, ev.duration||9.0, ev.label||''); break;
+    case 'close':  curtainUpper.classList.remove('open'); break;
   }
 }
 
-/* ============ Κουμπιά / Ροή ============ */
+/* ===== Κουμπιά ===== */
 btnOpen.addEventListener('click', ()=>{
-  curtainUpper.classList.add('open'); // άνοιγμα
+  curtainUpper.classList.add('open');
   btnAct2.disabled = false;
 });
-
 btnAct2.addEventListener('click', ()=>{
-  // Ρύθμιση τίτλου με πραγματικές τιμές
   updateTitle([
     'Πράξη 2η: Η Δυναμική στα ... Αλγεβρικά!',
     `m₁ = ${A2.m} kg , D₁ = ${A2.D} N/m`,
     `Eμηχ = ${Math.round(A2.E)} J`
   ]);
-  // Εμφάνιση ρολογιού (μέσα στην πάνω κουρτίνα)
   chrono.hidden = false;
-
-  // Έναρξη Act 2
-  act2Started = true;
-  act2StartT = performance.now();
-  timelineIdx = 0;
-
-  btnAct2.disabled = true; // δεν χρειάζεται 2η φορά
+  act2Started = true; act2StartT = performance.now(); timelineIdx = 0;
+  btnAct2.disabled = true;
 });
-
 btnReset.addEventListener('click', ()=>{
-  // Σταματάμε ghost, καθαρίζουμε νόμους, κλείνουμε κουρτίνα, μηδενίζουμε χρόνο
   stopMemoryOverlay();
   lawsList.innerHTML = '';
   curtainUpper.classList.remove('open');
-  act2Started = false; chrono.hidden = true;
-  timelineIdx = 0;
+  act2Started = false; chrono.hidden = true; timelineIdx = 0;
   t0 = performance.now();
 });
 
+/* Start loop */
 t0 = performance.now();
 rafId = requestAnimationFrame(animate);
 </script>
