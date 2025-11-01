@@ -58,7 +58,7 @@
   .measure-box{position:absolute;left:calc(82vw + 9vw);transform:translateX(-50%);top:54px;width:calc(18vw - 16px);z-index:262;background:rgba(0,0,0,.45);color:#fff;border:1px solid rgba(255,255,255,.25);border-radius:8px;padding:6px 8px;display:none;height:50vh;overflow-y:auto}
   .laws{position:absolute;left:2%;top:44px;width:16%;max-height:30vh;overflow:auto;background:rgba(20,0,0,.6);color:#fff;border:1px solid rgba(255,200,200,.3);border-radius:8px;padding:6px 8px;font-size:16px;line-height:1.5;z-index:260;display:none}
   .laws h4{margin:0 0 6px 0}
-  .params-box{position:absolute;top:8px;z-index:268;background:rgba(0,0,0,.5);color:#fff;border:1px solid rgba(255,255,255,.25);border-radius:8px;padding:6px 10px;font-size:16px;line-height:1.45;display:none}
+  .params-box{position:absolute;top:33px; /* +25px χαμηλότερα */ z-index:268;background:rgba(0,0,0,.5);color:#fff;border:1px solid rgba(255,255,255,.25);border-radius:8px;padding:6px 10px;font-size:16px;line-height:1.45;display:none}
 
   #xtChart{position:absolute;display:none;z-index:266;pointer-events:none;border:1px dashed rgba(255,255,255,.25)}
   .uplot{background:rgba(0,0,0,.2);border:1px solid rgba(255,255,255,.2);border-radius:6px}
@@ -287,7 +287,36 @@ const i18n = {
       t18: "Τέλεια! όλο το σετ νόμων της Α.Α.Τ!"
     }
   },
-  en: { }
+  en: {
+    actTitle:"Act I: Kinematics in… Algebraic Form",
+    massLine:`m₁ = ${m} kg`,
+    kLine:`D₁ = ${D} N/m`,
+    emech:`E_mech = ${Math.round(E_mech)} J`,
+    startBtn:"Start",
+    cdMain:"The show is about to start…",
+    cdSub:"time to grab paper & pencil!",
+    measurementsTitle:"Measurements",
+    lawsTitle:"S.H.M. Laws",
+    actBreakTitle:"End of Act I",
+    actBreakMsg:"m,D keeps moving. Ready for Act II?",
+    act2Btn:"Start Act II",
+    thoughts: {
+      t1:  "m1D1 was already moving!",
+      t2:  "…time origin t₀=0 at the curtain opening!",
+      t3:  "…the motion is linear and back-and-forth!",
+      t4:  "…repeating, periodic — so it’s oscillation!",
+      t5:  "Could it be Simple Harmonic Motion?",
+      t6:  "…if it’s SHM, then x must match x=A·sin(ωt+φ₀)!",
+      t7:  "…let’s plot x–t; that will confirm it!",
+      t9phi: (x0, phi) => `…indeed SHM, since x₀=${x0} ⇒ φ₀=${phi}°. One down!`,
+      t7A:   (A)       => `…with A=${A}!`,
+      t8Tw:  (Tval,om) => `…and T=${Tval}, hence ω=${om}!`,
+      t11: "…thus v(t)=ωA·cos(ωt+φ₀)!",
+      t13: "…and a(t)=−ω²A·sin(ωt+φ₀)!",
+      t15: "But x=A·sin(ωt+φ₀) implies a=−ω²x!",
+      t18: "Perfect — the full SHM law set!"
+    }
+  }
 };
 let LANG='gr', firstLawShown=false;
 const langSwitch = document.getElementById('langSwitch');
@@ -355,7 +384,7 @@ function positionParamsBox(){
   const rightEdge = stage.clientWidth*0.82; // δεξί όριο κεντρικής σκηνής
   const w = paramsBoxEl.offsetWidth || 180;
   paramsBoxEl.style.left = (rightEdge - w - 6) + 'px';
-  paramsBoxEl.style.top  = '8px';
+  paramsBoxEl.style.top  = '33px'; /* +25px κάτω */
 }
 
 /* Ρυθμίσεις ροής */
@@ -384,7 +413,6 @@ const thoughtScriptBase=[
   {kind:'bubbleDyn', atT:5.20, viewer:2, what:'A',   yOffset:135, xShift:  0},
   {kind:'bubbleDyn', atT:5.70, viewer:4, what:'Tw',  yOffset:135, xShift: 20},
   {kind:'law',       atT:6.10, lawText:'x(t) = A·ημ(ωt + φ₀)', alsoParams:true},
-  /* ΝΕΟ: πρώτα ο νόμος v(t), μετά το γράφημά του */
   {kind:'bubble',    atT:6.60, viewer:1, key:'t11', yOffset:130, xShift:-20},
   {kind:'law',       atT:6.90, lawText:'v(t) = ωA·cos(ωt + φ₀)'},
   {kind:'lawPlot',   atT:7.00, plot:'v'},
@@ -542,31 +570,62 @@ requestAnimationFrame(animate);
 
 /* Bubbles */
 const BASE_BUBBLE_LIFT=96;
+let bubbleAltLower=false; // εναλλάξ κατακόρυφη μετατόπιση
+function randInt(a,b){ return Math.floor(a + Math.random()*(b-a+1)); }
+
 function showThoughtForViewer(viewerIdx,text,durationSecs,customLift,xShift=0){
   const viewerEl=document.querySelector(`.viewer[data-idx="${viewerIdx}"]`);
   if(!viewerEl) return;
   bubbleEl.querySelector('.text').textContent=text||'';
+
+  // Υπολογισμοί ορίων (κέντρο bubble ≥ αριστερό όριο δεξιάς κουρτίνας)
+  const W=stage.clientWidth;
+  const curtainLeft=W*0.82;
+  const pad=12;
+
+  // Βάση από θεατή (αν δεν χρειαστεί, θα κλαμπαριστεί δεξιά)
   const vRect=viewerEl.getBoundingClientRect(); const sRect=stage.getBoundingClientRect();
-  const baseX=(vRect.left+vRect.width/2 - sRect.left);
-  let leftPx= baseX + (xShift||0);
-  const minLeft = stage.clientWidth*0.18 + 20;
-  const maxLeft = stage.clientWidth*0.82 - 20;
-  leftPx = Math.max(minLeft, Math.min(maxLeft, leftPx));
-  const lift=(typeof customLift==='number'?customLift:BASE_BUBBLE_LIFT);
-  let topPx=(vRect.top - sRect.top - lift); topPx=Math.max(10,topPx);
-  bubbleEl.style.left=leftPx+'px'; bubbleEl.style.top =topPx +'px';
-  bubbleEl.style.display='block'; void bubbleEl.offsetWidth;
-  bubbleEl.classList.add('active'); isBubbleActive=true; setMode('slow');
+  const viewerCenterX=(vRect.left+vRect.width/2 - sRect.left);
+  let desiredCenterX = viewerCenterX + (xShift||0);
+
+  // Προσωρινή εμφάνιση για να μετρήσουμε πλάτος
+  bubbleEl.style.display='block'; bubbleEl.style.opacity='0'; bubbleEl.style.left='0px'; bubbleEl.style.top='0px';
+  const bw = bubbleEl.offsetWidth || 240;
+
+  // Clamp κέντρο: τουλάχιστον στο αριστερό όριο της δεξιάς κουρτίνας
+  const minCenter = curtainLeft + pad;
+  const maxCenter = W - pad;
+  if(desiredCenterX < minCenter) desiredCenterX = minCenter;
+  if(desiredCenterX > maxCenter) desiredCenterX = maxCenter;
+
+  // Τελικό left από το κέντρο
+  let leftPx = desiredCenterX - bw/2;
+
+  // Κατακόρυφο: εναλλάξ + τυχαίο downshift 15–30px
+  const baseLift=(typeof customLift==='number'?customLift:BASE_BUBBLE_LIFT);
+  const downShift = bubbleAltLower ? randInt(15,30) : 0;
+  bubbleAltLower = !bubbleAltLower; // εναλλάξ
+  let topPx=(vRect.top - sRect.top - baseLift + downShift);
+  topPx=Math.max(10,topPx);
+
+  // Απόδοση
+  bubbleEl.style.left=leftPx+'px';
+  bubbleEl.style.top =topPx +'px';
+  void bubbleEl.offsetWidth; // reflow
+  bubbleEl.classList.add('active'); bubbleEl.style.opacity='1';
+  isBubbleActive=true; setMode('slow');
+
   const dur=(typeof durationSecs==='number'?durationSecs:bubbleDurationSec);
   if(bubbleAutoTimer){ clearTimeout(bubbleAutoTimer); bubbleAutoTimer=null; }
   bubbleAutoTimer=setTimeout(()=>{ resumeFromBubble('run'); }, Math.max(0.5,dur)*1000);
 }
+
 function resumeFromBubble(nextMode='run'){
   if(bubbleAutoTimer){ clearTimeout(bubbleAutoTimer); bubbleAutoTimer=null; }
   bubbleEl.classList.add('checked');
   setTimeout(()=>{ bubbleEl.classList.add('closing'); },200);
   setTimeout(()=>{
-    bubbleEl.classList.remove('active'); bubbleEl.style.display='none';
+    bubbleEl.classList.remove('active'); bubbleEl.style.display='none'; bubbleEl.style.opacity='0';
     bubbleEl.classList.remove('checked','closing');
     isBubbleActive=false;
   },800);
@@ -606,6 +665,7 @@ function buildSeriesData(){
 }
 function x0Val(){ return A_m*Math.sin(omega*(0+obsStartPlaybackOffset)); }
 
+let uXT=null;
 function initXTChart(){
   if(uXT) return; if(!window.uPlot){ if(graphEnabled){ pendingGraph=true; } return; }
   xtChart.style.display='block'; positionRightPanel();
@@ -714,7 +774,6 @@ function positionLawCharts(){
   if(aCan) drawA(aCan);
   if(axCan) drawAX(axCan);
 }
-function makeLawCanvas(id){ const c=document.createElement('canvas'); c.id=id; lawCharts.appendChild(c); sizeLawCanvas(c); return c; }
 function drawAxes(ctx,w,h,xLabel,yLabel){
   ctx.clearRect(0,0,w,h);
   ctx.fillStyle='rgba(255,255,255,0.08)'; ctx.fillRect(0,0,w,h);
@@ -722,9 +781,10 @@ function drawAxes(ctx,w,h,xLabel,yLabel){
   for(let i=0;i<=6;i++){ const x=i*(w/6); ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,h); ctx.stroke(); }
   for(let j=0;j<=4;j++){ const y=j*(h/4); ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(w,y); ctx.stroke(); }
   ctx.fillStyle='#fff'; ctx.font='11px Inter, system-ui';
-  ctx.textAlign='center'; ctx.fillText(yLabel ? xLabel : xLabel, w/2, h-6);
+  ctx.textAlign='center'; ctx.fillText(xLabel, w/2, h-6);
   ctx.save(); ctx.translate(10,h/2); ctx.rotate(-Math.PI/2); ctx.textAlign='center'; ctx.fillText(yLabel || '',0,0); ctx.restore();
 }
+function makeLawCanvas(id){ const c=document.createElement('canvas'); c.id=id; lawCharts.appendChild(c); sizeLawCanvas(c); return c; }
 function drawV(c){
   sizeLawCanvas(c);
   const ctx=c.getContext('2d'); const w=c.width, h=c.height;
@@ -848,13 +908,13 @@ function resetShow(){
   measureBox.style.display='none';
   paramsBoxEl.style.display='none';
   markerEl.style.opacity='0';
-  bubbleEl.classList.remove('active','checked','closing'); bubbleEl.style.display='none';
+  bubbleEl.classList.remove('active','checked','closing'); bubbleEl.style.display='none'; bubbleEl.style.opacity='0';
   actBreak.style.display='none';
   settingsPanel.style.display='none';
   measureTBody.innerHTML='';
   lawsList.innerHTML=''; lawsPane.style.display='none';
   lawCharts.innerHTML='';
-  vCan=null; aCan=null; axCan=null;         /* <-- καθαρισμός καμβάδων νόμων */
+  vCan=null; aCan=null; axCan=null;
   if(uXT){ try{ uXT.destroy(); }catch(e){}; uXT=null; }
   const fb=document.getElementById('xtFallback'); if(fb) fb.remove();
   xtChart.style.display='none';
