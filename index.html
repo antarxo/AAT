@@ -21,7 +21,8 @@
     background:url('courtin.png') center top/cover no-repeat, linear-gradient(to bottom,#8b0000,#400000);
     transform-origin:top; z-index:160
   }
-  .open .curtain-upper{ transform: translateY(calc(-100% - 30px)); }
+  /* ΑΝΤΙΚΑΤΑΣΤΑΣΗ: -30px -> -20px  (μένει 10px χαμηλότερα) */
+  .open .curtain-upper{ transform: translateY(calc(-100% - 20px)); }
   .curtain-upper.slow-close{ transition: transform 1.8s cubic-bezier(.2,.9,.2,1), opacity 1.2s; }
 
   .curtain-side{top:0;height:100%;width:18%;z-index:160}
@@ -286,9 +287,10 @@ const i18n = {
       t9phi:(x0,phi)=>`… όντως είναι ΑΑΤ και αφού το x₀=${x0} υπάρχει φ₀=${phi}°. Χαχα, ένα το κρατούμενο!`,
       t7A:(A)=>`…με A=${A}!`,
       t8Tw:(Tval,om)=>`… και T=${Tval} και επομένως ω=${om}!`,
-      t11:"… επομένως η ταχύτητα δίνεται από τον νόμο v=ωAημ(ωt+φ₀)!",
-      t13:"…και η επιτάχυνση από τον τύπο a=−ω²Aημ(ωt+φ₀)!",
-      t15:"Αλλά η σχέση χ=Αημ(ωt+φ₀) (1) περιέχεται στην (3) δηλαδή a=−ω²Aημ(ωt+φ₀)=−ω²x!",
+      /* ΔΙΟΡΘΩΣΗ: συν αντί για cos/ημ */
+      t11:"… επομένως η ταχύτητα δίνεται από τον νόμο v=ωA·συν(ωt+φ₀)!",
+      t13:"…και η επιτάχυνση από τον τύπο a=−ω²A·ημ(ωt+φ₀)!",
+      t15:"Αλλά η σχέση χ=Α·ημ(ωt+φ₀) (1) περιέχεται στην (3) δηλαδή a=−ω²A·ημ(ωt+φ₀)=−ω²x!",
       t18:"Τέλεια! όλο το σετ νόμων της Α.Α.Τ!"
     }
   },
@@ -420,8 +422,8 @@ const thoughtScriptBase=[
   {kind:'bubbleDyn', atT:5.20, viewer:2, what:'A',   yOffset:135, xShift:  0},
   {kind:'bubbleDyn', atT:5.70, viewer:4, what:'Tw',  yOffset:135, xShift: 20},
   {kind:'law',       atT:6.10, lawText:'x(t) = A·ημ(ωt + φ₀)', alsoParams:true},
-  {kind:'bubble',    atT:6.60, viewer:1, key:'t11', yOffset:130, xShift:-20},
-  {kind:'law',       atT:6.90, lawText:'v(t) = ωA·cos(ωt + φ₀)'},
+  /* ΔΙΟΡΘΩΣΗ: v με συν */
+  {kind:'law',       atT:6.90, lawText:'v(t) = ωA·συν(ωt + φ₀)'},
   {kind:'lawPlot',   atT:7.00, plot:'v'},
   {kind:'bubble',    atT:7.60, viewer:3, key:'t13', yOffset:140, xShift: 10},
   {kind:'law',       atT:7.85, lawText:'a(t) = −ω²A·ημ(ωt + φ₀)'},
@@ -636,13 +638,20 @@ function resumeFromBubble(nextMode='run'){
 
 /* Νόμοι + μικρο-γραφικά */
 let lawCount=0;
+/* Μικρό mapping για EN */
+function mapLawForLang(txt){
+  if(LANG==='en'){
+    return txt.replaceAll('ημ','sin').replaceAll('συν','cos');
+  }
+  return txt;
+}
 function addLaw(txt){
   if(!firstLawShown){
     firstLawShown=true;
     lawsTitle.textContent=i18n[LANG].lawsTitle;
     lawsPane.style.display='block';
   }
-  const li=document.createElement('li'); li.textContent=txt; lawsList.appendChild(li);
+  const li=document.createElement('li'); li.textContent=mapLawForLang(txt); lawsList.appendChild(li);
   lawCount++; positionLawCharts();
 }
 
@@ -666,8 +675,8 @@ function buildSeriesData(){
   return [tArr,xArr];
 }
 function x0Val(){ return A_m*Math.sin(omega*(0+obsStartPlaybackOffset)); }
+let graphEnabled=false, uXT=null, pendingGraph=false; /* (βεβαιωμένο: μονή δήλωση) */
 
-/* (ΜΟΝΟ μία δήλωση uXT υπάρχει ψηλά) */
 function initXTChart(){
   if(uXT) return; if(!window.uPlot){ if(graphEnabled){ pendingGraph=true; } return; }
   xtChart.style.display='block'; positionRightPanel();
@@ -722,8 +731,8 @@ function renderXTCanvasFallback(){
   xtChart.style.display='block'; positionRightPanel();
   let c=document.getElementById('xtFallback');
   if(!c){ c=document.createElement('canvas'); c.id='xtFallback'; xtChart.appendChild(c); }
-  c.width = Math.max(200, xtChart.clientWidth|0);
-  c.height= Math.max(120, xtChart.clientHeight|0);
+  c.width = Math.max(200,xtChart.clientWidth|0);
+  c.height= Math.max(120,xtChart.clientHeight|0);
   drawFallbackOnce();
 }
 function drawFallbackOnce(){
