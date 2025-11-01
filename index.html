@@ -43,7 +43,7 @@
     object-fit:contain; object-position:bottom center;
     z-index:158;pointer-events:none;filter:contrast(1.05) brightness(.95)
   }
-  .viewers{position:absolute;left:18%;width:64%;bottom:0;display:flex;justify-content:center;gap:3vw;z-index:159;padding-bottom:12px}
+  .viewers{position:absolute;left:18%;width:64%;bottom:0;display:flex;justify-content:space-between;z-index:159;padding:0 4vw 12px}
   .viewer{width:60px;height:100px;background:url('https://upload.wikimedia.org/wikipedia/commons/f/f9/Silhouette_icon.svg') no-repeat center/contain;filter:grayscale(1) brightness(.6);opacity:.75}
 
   /* Τίτλοι */
@@ -58,7 +58,7 @@
   .measure-box{position:absolute;left:calc(82vw + 9vw);transform:translateX(-50%);top:54px;width:calc(18vw - 16px);z-index:262;background:rgba(0,0,0,.45);color:#fff;border:1px solid rgba(255,255,255,.25);border-radius:8px;padding:6px 8px;display:none;height:50vh;overflow-y:auto}
   .laws{position:absolute;left:2%;top:44px;width:16%;max-height:30vh;overflow:auto;background:rgba(20,0,0,.6);color:#fff;border:1px solid rgba(255,200,200,.3);border-radius:8px;padding:6px 8px;font-size:16px;line-height:1.5;z-index:260;display:none}
   .laws h4{margin:0 0 6px 0}
-  .params-box{position:absolute;top:8px;left:50%;transform:translateX(220px);z-index:268;background:rgba(0,0,0,.5);color:#fff;border:1px solid rgba(255,255,255,.25);border-radius:8px;padding:6px 10px;font-size:16px;line-height:1.45;display:none}
+  .params-box{position:absolute;top:8px;z-index:268;background:rgba(0,0,0,.5);color:#fff;border:1px solid rgba(255,255,255,.25);border-radius:8px;padding:6px 10px;font-size:16px;line-height:1.45;display:none}
 
   #xtChart{position:absolute;display:none;z-index:266;pointer-events:none;border:1px dashed rgba(255,255,255,.25)}
   .uplot{background:rgba(0,0,0,.2);border:1px solid rgba(255,255,255,.2);border-radius:6px}
@@ -350,6 +350,14 @@ const measureTBody=document.getElementById('measureTBody');
 const actBreak=document.getElementById('actBreak');
 const curtainUpper=document.querySelector('.curtain-upper');
 
+/* Position helpers */
+function positionParamsBox(){
+  const rightEdge = stage.clientWidth*0.82; // δεξί όριο κεντρικής σκηνής
+  const w = paramsBoxEl.offsetWidth || 180;
+  paramsBoxEl.style.left = (rightEdge - w - 6) + 'px';
+  paramsBoxEl.style.top  = '8px';
+}
+
 /* Ρυθμίσεις ροής */
 const DEFAULT_FIRST_MUL=1.1;
 let firstThoughtMul=parseFloat(slFirst.value);
@@ -364,27 +372,29 @@ btnSettings.addEventListener('click',()=>{ settingsPanel.style.display=(settings
 
 /* Timeline Πράξης 1 */
 const thoughtScriptBase=[
-  {kind:'bubble',    atT:1.05, viewer:2, key:'t1',  yOffset:120},
-  {kind:'bubble',    atT:1.15, viewer:1, key:'t2',  yOffset:125},
-  {kind:'bubble',    atT:1.80, viewer:0, key:'t3',  yOffset:130},
-  {kind:'bubble',    atT:2.30, viewer:3, key:'t4',  yOffset:130},
-  {kind:'bubble',    atT:2.90, viewer:2, key:'t5',  yOffset:135},
-  {kind:'bubble',    atT:3.40, viewer:4, key:'t6',  yOffset:135},
-  {kind:'bubble',    atT:3.80, viewer:1, key:'t7',  yOffset:135},
+  {kind:'bubble',    atT:1.05, viewer:0, key:'t1',  yOffset:120, xShift:-40},
+  {kind:'bubble',    atT:1.15, viewer:1, key:'t2',  yOffset:125, xShift:-20},
+  {kind:'bubble',    atT:1.80, viewer:3, key:'t3',  yOffset:130, xShift: 10},
+  {kind:'bubble',    atT:2.30, viewer:4, key:'t4',  yOffset:130, xShift: 30},
+  {kind:'bubble',    atT:2.90, viewer:2, key:'t5',  yOffset:135, xShift:-30},
+  {kind:'bubble',    atT:3.40, viewer:1, key:'t6',  yOffset:135, xShift:-10},
+  {kind:'bubble',    atT:3.80, viewer:3, key:'t7',  yOffset:135, xShift: 10},
   {kind:'graph',     atT:4.00},
-  {kind:'bubbleDyn', atT:4.60, viewer:2, what:'phi', yOffset:135},
-  {kind:'bubbleDyn', atT:5.20, viewer:1, what:'A',   yOffset:135},
-  {kind:'bubbleDyn', atT:5.70, viewer:3, what:'Tw',  yOffset:135},
+  {kind:'bubbleDyn', atT:4.60, viewer:0, what:'phi', yOffset:135, xShift:-20},
+  {kind:'bubbleDyn', atT:5.20, viewer:2, what:'A',   yOffset:135, xShift:  0},
+  {kind:'bubbleDyn', atT:5.70, viewer:4, what:'Tw',  yOffset:135, xShift: 20},
   {kind:'law',       atT:6.10, lawText:'x(t) = A·ημ(ωt + φ₀)', alsoParams:true},
-  {kind:'bubble',    atT:6.70, viewer:0, key:'t11', yOffset:130},
+  /* ΝΕΟ: πρώτα ο νόμος v(t), μετά το γράφημά του */
+  {kind:'bubble',    atT:6.60, viewer:1, key:'t11', yOffset:130, xShift:-20},
+  {kind:'law',       atT:6.90, lawText:'v(t) = ωA·cos(ωt + φ₀)'},
   {kind:'lawPlot',   atT:7.00, plot:'v'},
-  {kind:'bubble',    atT:7.60, viewer:3, key:'t13', yOffset:140},
+  {kind:'bubble',    atT:7.60, viewer:3, key:'t13', yOffset:140, xShift: 10},
   {kind:'law',       atT:7.85, lawText:'a(t) = −ω²A·ημ(ωt + φ₀)'},
-  {kind:'lawPlot',   atT:7.90, plot:'a'},
-  {kind:'bubble',    atT:8.50, viewer:1, key:'t15', yOffset:125},
+  {kind:'lawPlot',   atT:7.95, plot:'a'},
+  {kind:'bubble',    atT:8.50, viewer:0, key:'t15', yOffset:125, xShift:-30},
   {kind:'law',       atT:8.80, lawText:'a(x) = −ω²·x'},
   {kind:'lawPlot',   atT:9.10, plot:'ax'},
-  {kind:'bubble',    atT:9.60, viewer:2, key:'t18', yOffset:130},
+  {kind:'bubble',    atT:9.60, viewer:2, key:'t18', yOffset:130, xShift:  0},
   {kind:'close',     atT:10.20}
 ];
 let thoughtScript=[...thoughtScriptBase];
@@ -448,6 +458,7 @@ function positionRightPanel(){
     if(c){ c.width=Math.max(200,xtChart.clientWidth|0); c.height=Math.max(120,xtChart.clientHeight|0); drawFallbackOnce(); }
   }
   positionLawCharts();
+  positionParamsBox();
 }
 window.addEventListener('resize', positionRightPanel);
 
@@ -536,8 +547,8 @@ function showThoughtForViewer(viewerIdx,text,durationSecs,customLift,xShift=0){
   if(!viewerEl) return;
   bubbleEl.querySelector('.text').textContent=text||'';
   const vRect=viewerEl.getBoundingClientRect(); const sRect=stage.getBoundingClientRect();
-  const extraX=(viewerIdx-2)*60 - 30 + (xShift||0) - 20;
-  let leftPx=(vRect.left+vRect.width/2 - sRect.left)+extraX;
+  const baseX=(vRect.left+vRect.width/2 - sRect.left);
+  let leftPx= baseX + (xShift||0);
   const minLeft = stage.clientWidth*0.18 + 20;
   const maxLeft = stage.clientWidth*0.82 - 20;
   leftPx = Math.max(minLeft, Math.min(maxLeft, leftPx));
@@ -581,6 +592,7 @@ function showCurtainParams(){
   document.getElementById('paramW').textContent  =`ω = ${omega.toFixed(3)} rad/s`;
   document.getElementById('paramPhi').textContent=`φ₀ = ${phi0deg.toFixed(1)}°`;
   paramsBoxEl.style.display='block';
+  positionParamsBox();
 }
 
 /* uPlot – x(t) */
@@ -790,13 +802,13 @@ function handleTimelineEvent(th){
     showThoughtForViewer(th.viewer,txt,bubbleDurationSec,th.yOffset,th.xShift||0);
   }else if(th.kind==='bubbleDyn'){
     if(th.what==='A'){
-      showThoughtForViewer(th.viewer, i18n[LANG].thoughts.t7A(A_m.toFixed(2)), bubbleDurationSec, th.yOffset);
+      showThoughtForViewer(th.viewer, i18n[LANG].thoughts.t7A(A_m.toFixed(2)), bubbleDurationSec, th.yOffset, th.xShift||0);
     }else if(th.what==='Tw'){
-      showThoughtForViewer(th.viewer, i18n[LANG].thoughts.t8Tw(T.toFixed(2), omega.toFixed(3)), bubbleDurationSec, th.yOffset);
+      showThoughtForViewer(th.viewer, i18n[LANG].thoughts.t8Tw(T.toFixed(2), omega.toFixed(3)), bubbleDurationSec, th.yOffset, th.xShift||0);
     }else if(th.what==='phi'){
       const x0 = x0Val().toFixed(2);
       const phi0deg=((omega*obsStartPlaybackOffset)*180/Math.PI + 360)%360;
-      showThoughtForViewer(th.viewer, i18n[LANG].thoughts.t9phi(x0, phi0deg.toFixed(1)), bubbleDurationSec, th.yOffset);
+      showThoughtForViewer(th.viewer, i18n[LANG].thoughts.t9phi(x0, phi0deg.toFixed(1)), bubbleDurationSec, th.yOffset, th.xShift||0);
     }
   }else if(th.kind==='graph'){
     graphEnabled=true; ensureXTReady();
@@ -826,7 +838,7 @@ function resetShow(){
   thoughtScript=[...thoughtScriptBase];
   nextThoughtIdx=0; isBubbleActive=false;
   measureRowIdx=0; lastSampleObsTime=-Infinity;
-  graphEnabled=false; firstLawShown=false; lawCount=0;
+  graphEnabled=false; pendingGraph=false; firstLawShown=false; lawCount=0;
   obsStarted=false; obsStartPlaybackOffset=0;
   mode='run'; setMode('run');
   stage.classList.remove('open');
@@ -842,10 +854,11 @@ function resetShow(){
   measureTBody.innerHTML='';
   lawsList.innerHTML=''; lawsPane.style.display='none';
   lawCharts.innerHTML='';
+  vCan=null; aCan=null; axCan=null;         /* <-- καθαρισμός καμβάδων νόμων */
   if(uXT){ try{ uXT.destroy(); }catch(e){}; uXT=null; }
   const fb=document.getElementById('xtFallback'); if(fb) fb.remove();
   xtChart.style.display='none';
-  springEl.style.display='none';       // Πράξη 1: κρυφό ελατήριο
+  springEl.style.display='none';            // Πράξη 1: κρυφό ελατήριο
   t0=performance.now(); lastFrame=t0; playbackTime=0;
 }
 document.getElementById('btnReset').addEventListener('click', resetShow);
@@ -882,7 +895,7 @@ startBtn.addEventListener('click', startShowCountdown);
 /* Παρατηρητής μεγέθους */
 const ro=new ResizeObserver(()=>{ positionRightPanel();
   if(uXT){ drawXTChart(); } else if(document.getElementById('xtFallback')){ drawFallbackOnce(); }
-  positionLawCharts();
+  positionLawCharts(); positionParamsBox();
 });
 ro.observe(stage);
 
