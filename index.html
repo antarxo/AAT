@@ -18,7 +18,7 @@
   .curtain-side.right { right: 0; background: linear-gradient(to left,  #300000, #1a0000);  box-shadow: inset  6px 0 10px rgba(0,0,0,0.6); }
 
   /* Άνοιγμα / Κλείσιμο σκηνής */
-  .open .curtain-upper { transform: translateY(calc(-100% - 20px)); } /* leave 10px lower at final open position */
+  .open .curtain-upper { transform: translateY(calc(-100% - 20px)); } /* αφήνει ~10px χαμηλότερα απ' το full-up (όπως συμφωνήθηκε) */
   .open .curtain-lower { transform: translateY(100%); }
 
   /* Ειδική κλάση: μετά το κλείσιμο, ο skater & το ελατήριο παραμένουν ορατά */
@@ -283,49 +283,49 @@
   const measureBox = document.getElementById('measureBox');
   const measureTBody = document.getElementById('measureTBody');
 
-  // Timeline – οι ατάκες σου
+  // Timeline – οι ατάκες (Act-based)
   let thoughtScript = [];
-const ACTS = {
-  1: {
-    showSpring: false,
-    showParams: false,
-    timeline: [
-      { kind:'bubble', at: 1.0,  viewer:1, duration:3, text:'η κίνηση είναι ευθύγραμμη παλινδρομική!' },
-    { kind:'bubble', at: 3.6,  viewer:3, duration:3, text:'… και επαναλαμβανόμενη-περιοδική, άρα ταλάντωση!' },
-    { kind:'bubble', at: 6.2,  viewer:0, duration:3, text:'Μήπως είναι Απλή Αρμονική Ταλάντωση;' },
-    { kind:'bubble', at: 8.8,  viewer:4, duration:3, text:'… αν είναι Α.Α.Τ. τότε οι τιμές που μετράμε πρέπει να επαληθεύουν την χ=Αημ(ωt+φ₀)!' },
-    { kind:'bubble', at: 11.4, viewer:2, duration:2.5, text:'Να κάνουμε διάγραμμα x–t, αυτό θα δείξει!' },
-    { kind:'graph',  at: 14.5 },
-    { kind:'bubble', at: 16.8, viewer:1, duration:3, dynamic:'params' },
-    { kind:'law',    at: 18.4, lawText: 'x(t) = A·ημ(ωt + φ₀)' },
+  const ACTS = {
+    1: {
+      showSpring: false,
+      showParams: false,
+      timeline: [
+        { kind:'bubble', at: 1.0,  viewer:1, duration:3, text:'η κίνηση είναι ευθύγραμμη παλινδρομική!' },
+        { kind:'bubble', at: 3.6,  viewer:3, duration:3, text:'… και επαναλαμβανόμενη-περιοδική, άρα ταλάντωση!' },
+        { kind:'bubble', at: 6.2,  viewer:0, duration:3, text:'Μήπως είναι Απλή Αρμονική Ταλάντωση;' },
+        { kind:'bubble', at: 8.8,  viewer:4, duration:3, text:'… αν είναι Α.Α.Τ. τότε οι τιμές που μετράμε πρέπει να επαληθεύουν την χ=Αημ(ωt+φ₀)!' },
+        { kind:'bubble', at: 11.4, viewer:2, duration:2.5, text:'Να κάνουμε διάγραμμα x–t, αυτό θα δείξει!' },
+        { kind:'graph',  at: 14.5 },
+        { kind:'bubble', at: 16.8, viewer:1, duration:3, dynamic:'params' },
+        { kind:'law',    at: 18.4, lawText: 'x(t) = A·ημ(ωt + φ₀)' },
 
-    { kind:'bubble', at: 20.6, viewer:0, duration:2.5, text:'Επομένως η ταχύτητα δίνεται από τον νόμο υ=ωA·συν(ωt+φ₀)!' },
-    { kind:'law',    at: 22.0, lawText: 'v(t) = ωA·συν(ωt + φ₀)' },
+        { kind:'bubble', at: 20.6, viewer:0, duration:2.5, text:'Επομένως η ταχύτητα δίνεται από τον νόμο υ=ωA·συν(ωt+φ₀)!' },
+        { kind:'law',    at: 22.0, lawText: 'v(t) = ωA·συν(ωt + φ₀)' },
 
-    { kind:'bubble', at: 23.8, viewer:4, duration:2.5, text:'…και η επιτάχυνση από τον τύπο a = −ω²A·ημ(ωt+φ₀)!' },
-    { kind:'law',    at: 25.2, lawText: 'a(t) = −ω²A·ημ(ωt + φ₀)' },
+        { kind:'bubble', at: 23.8, viewer:4, duration:2.5, text:'…και η επιτάχυνση από τον τύπο a = −ω²A·ημ(ωt+φ₀)!' },
+        { kind:'law',    at: 25.2, lawText: 'a(t) = −ω²A·ημ(ωt + φ₀)' },
 
-    { kind:'bubble', at: 26.8, viewer:2, duration:2.5, text:'Αλλά η σχέση (1) περιέχεται στην (3), δηλαδή a = −ω²·x!' },
-    { kind:'law',    at: 28.2, lawText: 'a = −ω²·x' },
+        { kind:'bubble', at: 26.8, viewer:2, duration:2.5, text:'Αλλά η σχέση (1) περιέχεται στην (3), δηλαδή a = −ω²·x!' },
+        { kind:'law',    at: 28.2, lawText: 'a = −ω²·x' },
 
-    { kind:'close',  at: 31.2 }
-    ]
-  },
-  2: {
-    showSpring: true,
-    showParams: true,
-    timeline: [
-      { kind:'bubble', at: 1.0, viewer:2, duration:3, text:'Πράξη 2: Δυναμική – το ελατήριο στη σκηνή από την αρχή.' },
-      { kind:'graph',  at: 4.0 },
-      { kind:'law',    at: 6.0, lawText: 'F = −D·x' }
-    ]
-  }
-};
-let currentAct = 1;
+        { kind:'close',  at: 31.2 }
+      ]
+    },
+    2: {
+      showSpring: true,
+      showParams: true,
+      timeline: [
+        { kind:'bubble', at: 1.0, viewer:2, duration:3, text:'Πράξη 2: Δυναμική – το ελατήριο στη σκηνή από την αρχή.' },
+        { kind:'graph',  at: 4.0 },
+        { kind:'law',    at: 6.0, lawText: 'F = −D·x' }
+      ]
+    }
+  };
+  let currentAct = 1;
   let nextThoughtIdx = 0; let isBubbleActive = false; let bubbleAutoTimer = null;
   let measureRowIdx = 0;
 
-  // Μετρήσεις – sample ελέγχου (αν αργότερα επαναφέρουμε πίνακα)
+  // Μετρήσεις – sample ελέγχου
   let lastSampleObsTime = -Infinity; const sampleInterval = 0.25; // s
 
   // Ρολόι & play state
@@ -431,7 +431,7 @@ let currentAct = 1;
     const viewerEl = document.querySelector(`.viewer[data-idx="${viewerIdx}"]`); if (!viewerEl || !bubbleEl) return;
     const txtNode = bubbleEl.querySelector('.text'); if (txtNode) txtNode.textContent = text || '';
     const vRect = viewerEl.getBoundingClientRect(); const sRect = stage.getBoundingClientRect();
-    const extraX = (viewerIdx - 2) * 90 + 60; // διασπορά δεξιότερα
+    const extraX = (viewerIdx - 2) * 90 + 60; // διασπορά
     let leftPx = (vRect.left + vRect.width/2 - sRect.left) + extraX;
     leftPx = Math.min(stage.clientWidth - 40, Math.max(40, leftPx));
     bubbleEl.style.left = leftPx + 'px';
@@ -442,13 +442,17 @@ let currentAct = 1;
   }
   function resumeFromBubble(nextMode='run'){
     if (bubbleAutoTimer) { clearTimeout(bubbleAutoTimer); bubbleAutoTimer = null; }
-    if (bubbleEl){ bubbleEl.classList.add('checked'); setTimeout(()=>{ bubbleEl.classList.add('closing'); }, 200); setTimeout(()=>{ bubbleEl.classList.remove('active'); bubbleEl.style.display = 'none'; bubbleEl.classList.remove('checked'); bubbleEl.classList.remove('closing'); isBubbleActive = false; }, 800); } else { isBubbleActive = false; }
+    if (bubbleEl){
+      bubbleEl.classList.add('checked');
+      setTimeout(()=>{ bubbleEl.classList.add('closing'); }, 200);
+      setTimeout(()=>{ bubbleEl.classList.remove('active'); bubbleEl.style.display = 'none'; bubbleEl.classList.remove('checked'); bubbleEl.classList.remove('closing'); isBubbleActive = false; }, 800);
+    } else { isBubbleActive = false; }
     setMode(nextMode==='slow' ? 'slow' : 'run');
   }
 
   function addLaw(txt){ const lawsList = document.getElementById('lawsList'); if (!lawsList) return; const li = document.createElement('li'); li.textContent = txt; lawsList.appendChild(li); }
 
-  // Ζητούμενο #2: τιμές Α, ω, φ₀ πάνω δεξιά μετά το γράφημα
+  // Τιμές A, ω, φ₀ πάνω δεξιά μετά το γράφημα
   function showCurtainParams(){
     if (!paramsBoxEl) return;
     const phi0deg = ((omega * obsStartPlaybackOffset) * 180/Math.PI + 360) % 360;
@@ -458,10 +462,9 @@ let currentAct = 1;
     paramsBoxEl.style.display = 'block';
   }
 
-  // Ζητούμενο #3: ετικέτες x(m), t(s) + εμφάνιση A και T στο διάγραμμα
+  // Διάγραμμα x–t
   function showXTGraph(){
     if (!xtCanvas) return;
-    // βεβαιώσου ότι έχει σωστές διαστάσεις/θέση πριν το render
     positionRightPanel();
     const ctx = xtCanvas.getContext('2d');
     const W = xtCanvas.width, H = xtCanvas.height;
@@ -503,7 +506,7 @@ let currentAct = 1;
     xtCanvas.style.display = 'block';
   }
 
-  // Ζητούμενο #1: στο κλείσιμο κρύψε τον δείκτη, συνέχισε mD, κράτα ορατά skater/spring πίσω από τις κλειστές κουρτίνες
+  // Κλείσιμο 1ης πράξης
   function closeCurtains(){
     stage.classList.remove('open');
     stage.classList.add('closed-show-actors');
@@ -511,7 +514,7 @@ let currentAct = 1;
     setMode('run');
     const act2Btn = document.getElementById('startAct2Btn');
     if (act2Btn){ act2Btn.style.display = 'block'; }
-  } setMode('run'); }
+  }
 
   function handleTimelineEvent(th){
     if (th.kind === 'bubble'){
@@ -539,17 +542,11 @@ let currentAct = 1;
     if (lawsEl){  lawsEl.style.display  = 'block'; }
     if (measureBox){ measureBox.style.display = 'block'; }
     if (markerEl){ markerEl.style.opacity = '1'; }
-    // Αν η πράξη ζητάει παραμέτρους από την αρχή
     const cfg = ACTS[currentAct] || {};
     if (cfg.showParams){ showCurtainParams(); }
     positionRightPanel();
   }
-    if (clockEl){ clockEl.style.display = 'block'; }
-    if (lawsEl){  lawsEl.style.display  = 'block'; }
-    if (measureBox){ measureBox.style.display = 'block'; }
-    if (markerEl){ markerEl.style.opacity = '1'; }
-    positionRightPanel();
-  }
+
   function startShowCountdown(){
     startBtn.style.display = 'none'; if (countdownOverlay){ countdownOverlay.style.display = 'flex'; }
     let remaining = 5; if (countdownTimerEl){ countdownTimerEl.textContent = remaining; }
@@ -568,7 +565,6 @@ let currentAct = 1;
   function applyActConfig(cfg){
     if (!cfg) cfg = {};
     if (springEl){ springEl.style.display = cfg.showSpring ? 'block' : 'none'; }
-    // params box shown later by showCurtainParams unless act wants it from t=0
     if (!cfg.showParams && paramsBoxEl){ paramsBoxEl.style.display = 'none'; }
   }
   function resetAct(){
@@ -600,8 +596,13 @@ let currentAct = 1;
     applyActConfig(cfg);
   }
 
-  // Self-check
-  (function(){ const must = {stage, actor, springEl, startBtn, clockEl, rulerEl, markerEl, bubbleEl, btnPause, btnSlow, btnPlay, xtCanvas, paramsBoxEl}; const miss = Object.entries(must).filter(([k,v]) => !v).map(([k])=>k); if (miss.length) console.error('Λείπουν στοιχεία:', miss.join(', ')); else console.log('Self-check OK'); })();
+  // Self-check & αρχικοποίηση Act 1
+  (function(){
+    const must = {stage, actor, springEl, startBtn, clockEl, rulerEl, markerEl, bubbleEl, btnPause, btnSlow, btnPlay, xtCanvas, paramsBoxEl};
+    const miss = Object.entries(must).filter(([k,v]) => !v).map(([k])=>k);
+    if (miss.length) console.error('Λείπουν στοιχεία:', miss.join(', ')); else console.log('Self-check OK');
+  })();
+  window.addEventListener('load', ()=>{ initAct(1); });
 </script>
 </body>
 </html>
