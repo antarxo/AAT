@@ -21,8 +21,8 @@
     background:url('courtin.png') center top/cover no-repeat, linear-gradient(to bottom,#8b0000,#400000);
     transform-origin:top; z-index:160
   }
-  /* ΑΝΤΙΚΑΤΑΣΤΑΣΗ: -30px -> -20px  (μένει 10px χαμηλότερα) */
-  .open .curtain-upper{ transform: translateY(calc(-100% - 20px)); }
+  /* ΖΗΤΗΘΗΚΕ: να μένει 10px χαμηλότερα στο τελικό άνοιγμα */
+  .open .curtain-upper{ transform: translateY(calc(-100% + 10px)); }
   .curtain-upper.slow-close{ transition: transform 1.8s cubic-bezier(.2,.9,.2,1), opacity 1.2s; }
 
   .curtain-side{top:0;height:100%;width:18%;z-index:160}
@@ -287,10 +287,10 @@ const i18n = {
       t9phi:(x0,phi)=>`… όντως είναι ΑΑΤ και αφού το x₀=${x0} υπάρχει φ₀=${phi}°. Χαχα, ένα το κρατούμενο!`,
       t7A:(A)=>`…με A=${A}!`,
       t8Tw:(Tval,om)=>`… και T=${Tval} και επομένως ω=${om}!`,
-      /* ΔΙΟΡΘΩΣΗ: συν αντί για cos/ημ */
+      /* ΖΗΤΗΘΗΚΕ: σωστός όρος στα ελληνικά -> συν() */
       t11:"… επομένως η ταχύτητα δίνεται από τον νόμο v=ωA·συν(ωt+φ₀)!",
       t13:"…και η επιτάχυνση από τον τύπο a=−ω²A·ημ(ωt+φ₀)!",
-      t15:"Αλλά η σχέση χ=Α·ημ(ωt+φ₀) (1) περιέχεται στην (3) δηλαδή a=−ω²A·ημ(ωt+φ₀)=−ω²x!",
+      t15:"Αλλά η σχέση χ=Αημ(ωt+φ₀) (1) περιέχεται στην (3) δηλαδή a=−ω²Aημ(ωt+φ₀)=−ω²x!",
       t18:"Τέλεια! όλο το σετ νόμων της Α.Α.Τ!"
     }
   },
@@ -350,6 +350,18 @@ langSwitch.addEventListener('click',(e)=>{
   [...langSwitch.querySelectorAll('button')].forEach(b=>b.classList.toggle('on', b===btn));
   setLang(btn.dataset.lang);
 });
+
+/* === Localize trig notations in law strings (ΖΗΤΗΘΗΚΕ) === */
+function localizeTrig(txt){
+  if(!txt) return txt;
+  if (LANG==='gr'){
+    // Latin → Greek
+    return txt.replaceAll('sin','ημ').replaceAll('cos','συν');
+  } else {
+    // Greek → Latin
+    return txt.replaceAll('ημ','sin').replaceAll('συν','cos');
+  }
+}
 
 /* ====== DOM ====== */
 const stage=document.getElementById('stage');
@@ -421,12 +433,13 @@ const thoughtScriptBase=[
   {kind:'bubbleDyn', atT:4.60, viewer:0, what:'phi', yOffset:135, xShift:-20},
   {kind:'bubbleDyn', atT:5.20, viewer:2, what:'A',   yOffset:135, xShift:  0},
   {kind:'bubbleDyn', atT:5.70, viewer:4, what:'Tw',  yOffset:135, xShift: 20},
-  {kind:'law',       atT:6.10, lawText:'x(t) = A·ημ(ωt + φ₀)', alsoParams:true},
-  /* ΔΙΟΡΘΩΣΗ: v με συν */
-  {kind:'law',       atT:6.90, lawText:'v(t) = ωA·συν(ωt + φ₀)'},
+  /* Στα lawText κρατάμε λατινικό sin/cos και τοπικοποιούμε με localizeTrig */
+  {kind:'law',       atT:6.10, lawText:'x(t) = A·sin(ωt + φ₀)', alsoParams:true},
+  {kind:'bubble',    atT:6.60, viewer:1, key:'t11', yOffset:130, xShift:-20},
+  {kind:'law',       atT:6.90, lawText:'v(t) = ωA·cos(ωt + φ₀)'},
   {kind:'lawPlot',   atT:7.00, plot:'v'},
   {kind:'bubble',    atT:7.60, viewer:3, key:'t13', yOffset:140, xShift: 10},
-  {kind:'law',       atT:7.85, lawText:'a(t) = −ω²A·ημ(ωt + φ₀)'},
+  {kind:'law',       atT:7.85, lawText:'a(t) = −ω²A·sin(ωt + φ₀)'},
   {kind:'lawPlot',   atT:7.95, plot:'a'},
   {kind:'bubble',    atT:8.50, viewer:0, key:'t15', yOffset:125, xShift:-30},
   {kind:'law',       atT:8.80, lawText:'a(x) = −ω²·x'},
@@ -638,20 +651,13 @@ function resumeFromBubble(nextMode='run'){
 
 /* Νόμοι + μικρο-γραφικά */
 let lawCount=0;
-/* Μικρό mapping για EN */
-function mapLawForLang(txt){
-  if(LANG==='en'){
-    return txt.replaceAll('ημ','sin').replaceAll('συν','cos');
-  }
-  return txt;
-}
 function addLaw(txt){
   if(!firstLawShown){
     firstLawShown=true;
     lawsTitle.textContent=i18n[LANG].lawsTitle;
     lawsPane.style.display='block';
   }
-  const li=document.createElement('li'); li.textContent=mapLawForLang(txt); lawsList.appendChild(li);
+  const li=document.createElement('li'); li.textContent=txt; lawsList.appendChild(li);
   lawCount++; positionLawCharts();
 }
 
@@ -675,8 +681,8 @@ function buildSeriesData(){
   return [tArr,xArr];
 }
 function x0Val(){ return A_m*Math.sin(omega*(0+obsStartPlaybackOffset)); }
-let graphEnabled=false, uXT=null, pendingGraph=false; /* (βεβαιωμένο: μονή δήλωση) */
 
+/* (ΜΟΝΟ μία δήλωση uXT υπάρχει ψηλά) */
 function initXTChart(){
   if(uXT) return; if(!window.uPlot){ if(graphEnabled){ pendingGraph=true; } return; }
   xtChart.style.display='block'; positionRightPanel();
@@ -731,8 +737,8 @@ function renderXTCanvasFallback(){
   xtChart.style.display='block'; positionRightPanel();
   let c=document.getElementById('xtFallback');
   if(!c){ c=document.createElement('canvas'); c.id='xtFallback'; xtChart.appendChild(c); }
-  c.width = Math.max(200,xtChart.clientWidth|0);
-  c.height= Math.max(120,xtChart.clientHeight|0);
+  c.width = Math.max(200, xtChart.clientWidth|0);
+  c.height= Math.max(120, xtChart.clientHeight|0);
   drawFallbackOnce();
 }
 function drawFallbackOnce(){
@@ -799,7 +805,7 @@ function makeLawCanvas(id){ const c=document.createElement('canvas'); c.id=id; l
 function drawV(c){
   sizeLawCanvas(c);
   const ctx=c.getContext('2d'); const w=c.width, h=c.height;
-  drawAxes(ctx,w,h,'t (s)','v (m/s)');
+  drawAxes(ctx,w,h,'t (s)', (LANG==='gr'?'v (m/s)':'v (m/s)'));
   ctx.strokeStyle='#7fd7ff'; ctx.lineWidth=2; ctx.beginPath();
   const N=240;
   for(let i=0;i<=N;i++){
@@ -814,7 +820,7 @@ function drawV(c){
 function drawA(c){
   sizeLawCanvas(c);
   const ctx=c.getContext('2d'); const w=c.width, h=c.height;
-  drawAxes(ctx,w,h,'t (s)','a (m/s²)');
+  drawAxes(ctx,w,h,'t (s)', (LANG==='gr'?'a (m/s²)':'a (m/s²)'));
   ctx.strokeStyle='#ff9aa2'; ctx.lineWidth=2; ctx.beginPath();
   const N=240;
   for(let i=0;i<=N;i++){
@@ -829,7 +835,7 @@ function drawA(c){
 function drawAX(c){
   sizeLawCanvas(c);
   const ctx=c.getContext('2d'); const w=c.width, h=c.height;
-  drawAxes(ctx,w,h,'x (m)','a (m/s²)');
+  drawAxes(ctx,w,h, (LANG==='gr'?'x (m)':'x (m)'), (LANG==='gr'?'a (m/s²)':'a (m/s²)'));
   ctx.strokeStyle='rgba(255,255,255,0.5)'; ctx.setLineDash([4,3]);
   ctx.beginPath(); ctx.moveTo(0,h/2); ctx.lineTo(w,h/2); ctx.stroke();
   ctx.beginPath(); ctx.moveTo(w/2,0); ctx.lineTo(w/2,h); ctx.stroke();
@@ -884,7 +890,8 @@ function handleTimelineEvent(th){
   }else if(th.kind==='graph'){
     graphEnabled=true; ensureXTReady();
   }else if(th.kind==='law'){
-    addLaw(th.lawText);
+    /* ΖΗΤΗΘΗΚΕ: trig τοπικοποίηση για GR/EN */
+    addLaw(localizeTrig(th.lawText));
     if(th.alsoParams){ showCurtainParams(); }
   }else if(th.kind==='lawPlot'){
     if(th.plot==='v') ensureVelocityChart();
