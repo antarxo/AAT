@@ -406,7 +406,7 @@ slDur.addEventListener('input',()=>{ bubbleDurationSec=parseFloat(slDur.value); 
 slSlow.addEventListener('input',()=>{ slowFactor=parseFloat(slSlow.value); valSlow.textContent=`${slowFactor.toFixed(2)}×`; });
 btnSettings.addEventListener('click',()=>{ settingsPanel.style.display=(settingsPanel.style.display==='block'?'none':'block'); });
 
-/* Timeline Πράξης 1 (όπως πριν) */
+/* Timeline Πράξης 1 */
 const thoughtScriptBase=[
   {kind:'bubble',    atT:1.05, viewer:0, key:'t1',  yOffset:120, xShift:-40},
   {kind:'bubble',    atT:1.15, viewer:1, key:'t2',  yOffset:125, xShift:-20},
@@ -580,9 +580,9 @@ const BASE_BUBBLE_LIFT=96;
 let bubbleAltLower=false;
 function randInt(a,b){ return Math.floor(a + Math.random()*(b-a+1)); }
 
-/* >>> ΔΙΟΡΘΩΣΗ ΟΡΙΩΝ BUBBLE <<< */
-function showThoughtForViewer(viewerIdx,text,durationSecs,customLift,xShift=0){
-  const viewerEl=document.querySelector(`.viewer[data-idx="${viewerIdx}"]`);
+/* Clamp για bubbles στα όρια σκηνής */
+function showThoughtForViewer(vIdx,text,durationSecs,customLift,xShift=0){
+  const viewerEl=document.querySelector(`.viewer[data-idx="${vIdx}"]`);
   if(!viewerEl) return;
   bubbleEl.querySelector('.text').textContent=text||'';
 
@@ -601,7 +601,6 @@ function showThoughtForViewer(viewerIdx,text,durationSecs,customLift,xShift=0){
   const minLeft = leftCurtainRight + pad;
   const maxLeft = rightCurtainLeft - pad - bw;
 
-  // clamp με βάση ΑΡΙΣΤΕΡΟ ΟΡΙΟ αριστερής κουρτίνας ΚΑΙ ΔΕΞΙΟ ΟΡΙΟ δεξιάς κουρτίνας
   let leftPx = desiredCenterX - bw/2;
   if(leftPx < minLeft) leftPx = minLeft;
   if(leftPx > maxLeft) leftPx = maxLeft;
@@ -635,7 +634,7 @@ function resumeFromBubble(nextMode='run'){
   setMode(nextMode==='slow'?'slow':'run');
 }
 
-/* Νόμοι + μικρο-γραφικά (όπως πριν) */
+/* Νόμοι + μικρο-γραφικά */
 let lawCount=0;
 function addLaw(txt){
   if(!firstLawShown){
@@ -668,7 +667,7 @@ function buildSeriesData(){
 }
 function x0Val(){ return A_m*Math.sin(omega*(0+obsStartPlaybackOffset)); }
 
-let uXT=null;
+/* (ΜΟΝΟ μία δήλωση uXT υπάρχει ψηλά) */
 function initXTChart(){
   if(uXT) return; if(!window.uPlot){ if(graphEnabled){ pendingGraph=true; } return; }
   xtChart.style.display='block'; positionRightPanel();
