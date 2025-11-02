@@ -127,6 +127,7 @@
 </style>
 </head>
 <body>
+  
   <div class="stage" id="stage">
     <div class="curtain-top"></div>
     <div class="curtain-upper"></div>
@@ -1039,5 +1040,12 @@ setTimeout(()=>{ if(!window.uPlot && graphEnabled){ renderXTCanvasFallback(); } 
   resetShow();
 })();
 </script>
+  <!-- Root της Πράξης 2 (μένει κρυφό μέχρι να ξεκινήσει) -->
+<div id="act2-root" hidden></div>
+
+<!-- ES module της Πράξης 2: δεν αγγίζει τίποτα μέχρι να του δοθεί σήμα -->
+<script type="module" src="act2.js" defer></script>
+
 </body>
 </html>
+
