@@ -7,7 +7,7 @@
 
 <link rel="stylesheet" href="https://unpkg.com/uplot@1.6.30/dist/uPlot.min.css">
 <script src="https://unpkg.com/uplot@1.6.30/dist/uPlot.iife.min.js"></script>
-<script src="act1-config.js" defer></script>
+
 <style>
   body{margin:0;background:radial-gradient(circle at center,#222 0%,#000 100%);overflow:hidden;font-family:Inter,system-ui,sans-serif}
   .stage{position:relative;width:100vw;height:100vh;overflow:hidden}
@@ -21,10 +21,8 @@
     background:url('courtin.png') center top/cover no-repeat, linear-gradient(to bottom,#8b0000,#400000);
     transform-origin:top; z-index:160
   }
-  /* ΖΗΤΗΘΗΚΕ: να μένει 10px χαμηλότερα στο τελικό άνοιγμα */
   .open .curtain-upper{ transform: translateY(calc(-100% + 10px)); }
   .curtain-upper.slow-close{ transition: transform 1.8s cubic-bezier(.2,.9,.2,1), opacity 1.2s; }
-
   .curtain-side{top:0;height:100%;width:18%;z-index:160}
   .curtain-side.left{left:0;background:linear-gradient(to right,#300000,#1a0000);box-shadow:inset -6px 0 10px rgba(0,0,0,.6)}
   .curtain-side.right{right:0;background:linear-gradient(to left,#300000,#1a0000);box-shadow:inset 6px 0 10px rgba(0,0,0,.6)}
@@ -218,9 +216,9 @@
 
     <!-- Εικόνες & Πάτωμα & Κοινό -->
     <img id="spring" class="spring" src="spring.png" alt="ελατήριο">
-    <div class="actor" id="actor"><img src="skater.png" alt="Skater"></div>
+    <div class="actor" id="actor"><img id="actorImg" src="skater.png" alt="Skater"></div>
     <div class="floor"></div>
-    <img class="audience" src="koino.png" alt="κοινό">
+    <img class="audience" id="audienceImg" src="koino.png" alt="κοινό">
 
     <!-- Anchors θεατών -->
     <div class="viewers">
@@ -253,14 +251,47 @@
   </div>
 
 <script>
-/* ====== ΦΥΣΙΚΑ ====== */
-const m=70, T=6.0, A_m=3.0;
-const omega=2*Math.PI/T;
-const D=Math.round(m*omega*omega);
-const E_mech=0.5*D*A_m*A_m;
-const pxPerMeter=50; let A_px=pxPerMeter*A_m;
+/* =========================================================
+   CONFIG LOADER – override από act1.config.json (optional)
+   ========================================================= */
+async function loadAct1Config(){
+  try{
+    const res = await fetch('act1.config.json', {cache:'no-store'});
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const cfg = await res.json();
+    applyConfig(cfg);
+    console.log('Config loaded:', cfg);
+  }catch(e){
+    console.warn('No external config found or failed to load. Using defaults.', e);
+  }
+}
+function deepMerge(target, source){
+  if(!source || typeof source!=='object') return target;
+  for(const k of Object.keys(source)){
+    const sv = source[k];
+    if(sv && typeof sv==='object' && !Array.isArray(sv)){
+      if(!target[k] || typeof target[k]!=='object') target[k] = {};
+      deepMerge(target[k], sv);
+    }else{
+      target[k] = sv;
+    }
+  }
+  return target;
+}
 
-/* ====== I18N ====== */
+/* ====== ΦΥΣΙΚΑ (defaults) ====== */
+let m=70, T=6.0, A_m=3.0;
+let pxPerMeter=50;
+let omega=0, D=0, E_mech=0, A_px=0;
+function recomputePhysics(){
+  omega=2*Math.PI/T;
+  D=Math.round(m*omega*omega);
+  E_mech=0.5*D*A_m*A_m;
+  A_px=pxPerMeter*A_m;
+}
+recomputePhysics();
+
+/* ====== I18N (defaults, override από JSON) ====== */
 const i18n = {
   gr: {
     actTitle:"Πράξη 1η: Η Κινηματική στα ... Αλγεβρικά",
@@ -284,10 +315,6 @@ const i18n = {
       t5:"Μήπως είναι Απλή Αρμονική Ταλάντωση;",
       t6:"… αν είναι Α.Α.Τ. τότε οι τιμές που μετράμε πρέπει να επαληθεύουν την χ=Αημ(ωt+φ₀)!",
       t7:"… αν κάνουμε διάγραμμα x–t, αυτό θα το επιβεβαιώσει!",
-      t9phi:(x0,phi)=>`… όντως είναι ΑΑΤ και αφού το x₀=${x0} υπάρχει φ₀=${phi}°. Χαχα, ένα το κρατούμενο!`,
-      t7A:(A)=>`…με A=${A}!`,
-      t8Tw:(Tval,om)=>`… και T=${Tval} και επομένως ω=${om}!`,
-      /* ΖΗΤΗΘΗΚΕ: σωστός όρος στα ελληνικά -> συν() */
       t11:"… επομένως η ταχύτητα δίνεται από τον νόμο v=ωA·συν(ωt+φ₀)!",
       t13:"…και η επιτάχυνση από τον τύπο a=−ω²A·ημ(ωt+φ₀)!",
       t15:"Αλλά η σχέση χ=Αημ(ωt+φ₀) (1) περιέχεται στην (3) δηλαδή a=−ω²Aημ(ωt+φ₀)=−ω²x!",
@@ -316,9 +343,6 @@ const i18n = {
       t5:"Could it be Simple Harmonic Motion?",
       t6:"…if it’s SHM, then x must match x=A·sin(ωt+φ₀)!",
       t7:"…let’s plot x–t; that will confirm it!",
-      t9phi:(x0,phi)=>`…indeed SHM, since x₀=${x0} ⇒ φ₀=${phi}°. One down!`,
-      t7A:(A)=>`…with A=${A}!`,
-      t8Tw:(Tval,om)=>`…and T=${Tval}, hence ω=${om}!`,
       t11:"…thus v(t)=ωA·cos(ωt+φ₀)!",
       t13:"…and a(t)=−ω²A·sin(ωt+φ₀)!",
       t15:"But x=A·sin(ωt+φ₀) implies a=−ω²x!",
@@ -327,46 +351,21 @@ const i18n = {
   }
 };
 let LANG='gr', firstLawShown=false;
-const langSwitch = document.getElementById('langSwitch');
-function setLang(lang){
-  LANG=lang;
-  document.documentElement.lang=(lang==='en'?'en':'el');
-  document.querySelector('[data-i18n="actTitle"]').textContent=i18n[lang].actTitle;
-  document.getElementById('sbLineA').textContent = i18n[lang].sbA;
-  document.getElementById('sbLineB').innerHTML  = i18n[lang].sbB;
-  document.getElementById('sbLineC').textContent = i18n[lang].sbC;
-  document.getElementById('sbLineD').textContent = i18n[lang].sbD;
-  document.getElementById('startBtn').textContent=i18n[lang].startBtn;
-  document.getElementById('cdMain').textContent=i18n[lang].cdMain;
-  document.getElementById('cdSub').textContent=i18n[lang].cdSub;
-  document.getElementById('mbTitle').textContent=i18n[lang].measurementsTitle;
-  document.getElementById('actBreakTitle').textContent=i18n[lang].actBreakTitle;
-  document.getElementById('actBreakMsg').textContent=i18n[lang].actBreakMsg;
-  document.getElementById('btnAct2').textContent=i18n[lang].act2Btn;
-  if(firstLawShown) document.getElementById('lawsTitle').textContent=i18n[lang].lawsTitle;
-}
-langSwitch.addEventListener('click',(e)=>{
-  const btn=e.target.closest('button[data-lang]'); if(!btn) return;
-  [...langSwitch.querySelectorAll('button')].forEach(b=>b.classList.toggle('on', b===btn));
-  setLang(btn.dataset.lang);
-});
 
-/* === Localize trig notations in law strings (ΖΗΤΗΘΗΚΕ) === */
+/* === Localize trig notations in law strings === */
 function localizeTrig(txt){
   if(!txt) return txt;
-  if (LANG==='gr'){
-    // Latin → Greek
-    return txt.replaceAll('sin','ημ').replaceAll('cos','συν');
-  } else {
-    // Greek → Latin
-    return txt.replaceAll('ημ','sin').replaceAll('συν','cos');
-  }
+  return (LANG==='gr')
+    ? txt.replaceAll('sin','ημ').replaceAll('cos','συν')
+    : txt.replaceAll('ημ','sin').replaceAll('συν','cos');
 }
 
-/* ====== DOM ====== */
+/* ====== DOM refs ====== */
 const stage=document.getElementById('stage');
 const actor=document.getElementById('actor');
+const actorImg=document.getElementById('actorImg');
 const springEl=document.getElementById('spring');
+const audienceImg=document.getElementById('audienceImg');
 const spotlight=document.getElementById('spotlight');
 const startBtn=document.getElementById('startBtn');
 const clockEl=document.getElementById('clock');
@@ -399,29 +398,17 @@ const measureBox=document.getElementById('measureBox');
 const measureTBody=document.getElementById('measureTBody');
 const actBreak=document.getElementById('actBreak');
 const curtainUpper=document.querySelector('.curtain-upper');
+const langSwitch=document.getElementById('langSwitch');
 
-/* Position helpers */
-function positionParamsBox(){
-  const rightEdge = stage.clientWidth*0.82;
-  const w = paramsBoxEl.offsetWidth || 180;
-  paramsBoxEl.style.left = (rightEdge - w - 6) + 'px';
-  paramsBoxEl.style.top  = '33px';
-}
-
-/* Ρυθμίσεις ροής */
+/* ====== UI state (defaults) – override από JSON ====== */
 const DEFAULT_FIRST_MUL=1.1;
-let firstThoughtMul=parseFloat(slFirst.value);
-let timelineScale=parseFloat(slScale.value);
-let bubbleDurationSec=parseFloat(slDur.value);
-let slowFactor=parseFloat(slSlow.value);
-slFirst.addEventListener('input',()=>{ firstThoughtMul=parseFloat(slFirst.value); valFirst.textContent=`${firstThoughtMul.toFixed(1)}·T`; });
-slScale.addEventListener('input',()=>{ timelineScale=parseFloat(slScale.value); valScale.textContent=`${timelineScale.toFixed(1)}×`; });
-slDur.addEventListener('input',()=>{ bubbleDurationSec=parseFloat(slDur.value); valDur.textContent=`${bubbleDurationSec.toFixed(1)}s`; });
-slSlow.addEventListener('input',()=>{ slowFactor=parseFloat(slSlow.value); valSlow.textContent=`${slowFactor.toFixed(2)}×`; });
-btnSettings.addEventListener('click',()=>{ settingsPanel.style.display=(settingsPanel.style.display==='block'?'none':'block'); });
+let firstThoughtMul=1.1;
+let timelineScale=1.0;
+let bubbleDurationSec=3.0;
+let slowFactor=1.0;
 
-/* Timeline Πράξης 1 */
-const thoughtScriptBase=[
+/* ====== Timeline (defaults) – override από JSON ====== */
+let thoughtScriptBase=[
   {kind:'bubble',    atT:1.05, viewer:0, key:'t1',  yOffset:120, xShift:-40},
   {kind:'bubble',    atT:1.15, viewer:1, key:'t2',  yOffset:125, xShift:-20},
   {kind:'bubble',    atT:1.80, viewer:3, key:'t3',  yOffset:130, xShift: 10},
@@ -433,7 +420,6 @@ const thoughtScriptBase=[
   {kind:'bubbleDyn', atT:4.60, viewer:0, what:'phi', yOffset:135, xShift:-20},
   {kind:'bubbleDyn', atT:5.20, viewer:2, what:'A',   yOffset:135, xShift:  0},
   {kind:'bubbleDyn', atT:5.70, viewer:4, what:'Tw',  yOffset:135, xShift: 20},
-  /* Στα lawText κρατάμε λατινικό sin/cos και τοπικοποιούμε με localizeTrig */
   {kind:'law',       atT:6.10, lawText:'x(t) = A·sin(ωt + φ₀)', alsoParams:true},
   {kind:'bubble',    atT:6.60, viewer:1, key:'t11', yOffset:130, xShift:-20},
   {kind:'law',       atT:6.90, lawText:'v(t) = ωA·cos(ωt + φ₀)'},
@@ -447,18 +433,72 @@ const thoughtScriptBase=[
   {kind:'bubble',    atT:9.60, viewer:2, key:'t18', yOffset:130, xShift:  0},
   {kind:'close',     atT:10.20}
 ];
-let thoughtScript=[...thoughtScriptBase];
-let nextThoughtIdx=0;
-let isBubbleActive=false;
-let bubbleAutoTimer=null;
-let measureRowIdx=0;
 
-/* Ρολόι & play state */
-let t0=performance.now(), lastFrame=performance.now();
-let playbackTime=0, mode='run', obsStarted=false, obsStartPlaybackOffset=0;
+/* ====== Εφαρμογή Config ====== */
+function applyConfig(cfg){
+  if(!cfg || typeof cfg!=='object') return;
+  if(cfg.physics){
+    if(typeof cfg.physics.m ==='number') m = cfg.physics.m;
+    if(typeof cfg.physics.T ==='number') T = cfg.physics.T;
+    if(typeof cfg.physics.A_m ==='number') A_m = cfg.physics.A_m;
+    if(typeof cfg.physics.pxPerMeter ==='number') pxPerMeter = cfg.physics.pxPerMeter;
+    recomputePhysics();
+  }
+  if(cfg.ui){
+    if(typeof cfg.ui.firstThoughtMul==='number'){ firstThoughtMul=cfg.ui.firstThoughtMul; slFirst.value=firstThoughtMul; valFirst.textContent=firstThoughtMul.toFixed(1)+'·T'; }
+    if(typeof cfg.ui.timelineScale==='number'){ timelineScale=cfg.ui.timelineScale; slScale.value=timelineScale; valScale.textContent=timelineScale.toFixed(1)+'×'; }
+    if(typeof cfg.ui.bubbleDurationSec==='number'){ bubbleDurationSec=cfg.ui.bubbleDurationSec; slDur.value=bubbleDurationSec; valDur.textContent=bubbleDurationSec.toFixed(1)+'s'; }
+    if(typeof cfg.ui.slowFactor==='number'){ slowFactor=cfg.ui.slowFactor; slSlow.value=slowFactor; valSlow.textContent=slowFactor.toFixed(2)+'×'; }
+  }
+  if(cfg.assets){
+    if(cfg.assets.spring)   springEl.src = cfg.assets.spring;
+    if(cfg.assets.skater)   actorImg.src = cfg.assets.skater;
+    if(cfg.assets.audience) audienceImg.src = cfg.assets.audience;
+    if(cfg.assets.curtainImage){
+      curtainUpper.style.backgroundImage = `url('${cfg.assets.curtainImage}'), linear-gradient(to bottom,#8b0000,#400000)`;
+    }
+  }
+  if(cfg.i18n){
+    if(cfg.i18n.gr) deepMerge(i18n.gr, cfg.i18n.gr);
+    if(cfg.i18n.en) deepMerge(i18n.en, cfg.i18n.en);
+  }
+  if(Array.isArray(cfg.timeline) && cfg.timeline.length){
+    thoughtScriptBase = cfg.timeline.map(e=>Object.assign({}, e));
+  }
+}
 
-/* Μετρήσεις */
-let lastSampleObsTime=-Infinity; const sampleInterval=0.25;
+/* ====== Γλώσσα ====== */
+function setLang(lang){
+  LANG=lang;
+  document.documentElement.lang=(lang==='en'?'en':'el');
+  document.querySelector('[data-i18n="actTitle"]').textContent=i18n[lang].actTitle;
+  document.getElementById('sbLineA').textContent = i18n[lang].sbA;
+  document.getElementById('sbLineB').innerHTML  = i18n[lang].sbB;
+  document.getElementById('sbLineC').textContent = i18n[lang].sbC;
+  document.getElementById('sbLineD').textContent = i18n[lang].sbD;
+  document.getElementById('startBtn').textContent=i18n[lang].startBtn;
+  document.getElementById('cdMain').textContent=i18n[lang].cdMain;
+  document.getElementById('cdSub').textContent=i18n[lang].cdSub;
+  document.getElementById('mbTitle').textContent=i18n[lang].measurementsTitle;
+  document.getElementById('actBreakTitle').textContent=i18n[lang].actBreakTitle;
+  document.getElementById('actBreakMsg').textContent=i18n[lang].actBreakMsg;
+  document.getElementById('btnAct2').textContent=i18n[lang].act2Btn;
+  if(firstLawShown) document.getElementById('lawsTitle').textContent=i18n[lang].lawsTitle;
+}
+langSwitch.addEventListener('click',(e)=>{
+  const btn=e.target.closest('button[data-lang]'); if(!btn) return;
+  [...langSwitch.querySelectorAll('button')].forEach(b=>b.classList.toggle('on', b===btn));
+  setLang(btn.dataset.lang);
+});
+
+/* ====== Layout helpers (ίδια με βάση) ====== */
+function positionParamsBox(){
+  const rightEdge = stage.clientWidth*0.82;
+  const w = paramsBoxEl.offsetWidth || 180;
+  paramsBoxEl.style.left = (rightEdge - w - 6) + 'px';
+  paramsBoxEl.style.top  = '33px';
+}
+window.addEventListener('resize', positionRightPanel);
 
 /* Χάρακας −7…+7 m */
 let lastRulerW=0;
@@ -481,7 +521,7 @@ function updateRuler(){
   }
 }
 
-/* Δεξιά κουρτίνα & x–t */
+/* Δεξιά panel & x–t */
 let graphEnabled=false, uXT=null, pendingGraph=false;
 function positionRightPanel(){
   const W=stage.clientWidth, H=stage.clientHeight;
@@ -510,12 +550,13 @@ function positionRightPanel(){
   positionLawCharts();
   positionParamsBox();
 }
-window.addEventListener('resize', positionRightPanel);
 
 /* Αγκύρωση ελατηρίου */
 function anchorX(){ return stage.clientWidth*0.18; }
 
-/* Καταγραφή μέτρησης */
+/* Μετρήσεις */
+let lastSampleObsTime=-Infinity; const sampleInterval=0.25;
+let measureRowIdx=0;
 function logMeasurement(tObs,xMeters){
   if(!obsStarted || mode==='pause') return;
   if(tObs-lastSampleObsTime<sampleInterval) return; lastSampleObsTime=tObs;
@@ -528,7 +569,9 @@ function logMeasurement(tObs,xMeters){
   try{ measureBox.scrollTop=measureBox.scrollHeight; }catch(e){}
 }
 
-/* Mode */
+/* Play state */
+let t0=performance.now(), lastFrame=performance.now();
+let playbackTime=0, mode='run', obsStarted=false, obsStartPlaybackOffset=0;
 function setMode(newMode){
   mode=newMode;
   btnSlow.classList.toggle('active', mode==='slow');
@@ -536,249 +579,7 @@ function setMode(newMode){
   slowHint.textContent = (mode==='slow' && slowFactor<1) ? `SLOW-MO ×${slowFactor.toFixed(2)}` : '';
 }
 
-/* Κύριο animation */
-let L0_px; let skaterWidthPx; let hookOffsetPx;
-function animate(now){
-  const realDt=(now-lastFrame)/1000; lastFrame=now;
-  positionRightPanel(); updateRuler();
-
-  const tPhys=(now-t0)/1000;
-  if(!obsStarted){ playbackTime=tPhys; }
-  else{ playbackTime += (mode==='run'? realDt : (mode==='slow'? realDt*slowFactor : 0)); }
-
-  const tObs= obsStarted ? (playbackTime-obsStartPlaybackOffset) : 0;
-  clockEl.textContent='t = '+tObs.toFixed(2)+' s';
-
-  if(pendingGraph && graphEnabled){
-    if(window.uPlot){ try{ ensureXTReady(); pendingGraph=false; }catch(e){ console.error('deferred graph init',e); } }
-    else{ renderXTCanvasFallback(); }
-  }
-
-  if(obsStarted && !isBubbleActive && nextThoughtIdx<thoughtScript.length){
-    const th=thoughtScript[nextThoughtIdx];
-    const shiftMul=(firstThoughtMul-DEFAULT_FIRST_MUL);
-    const baseMul=(th.atT??0);
-    const eventAtSec=(baseMul+shiftMul)*T*timelineScale;
-    if(tObs>=eventAtSec){
-      try{ handleTimelineEvent(th); nextThoughtIdx+=1; }catch(e){ console.error('timeline event error:',e); nextThoughtIdx+=1; }
-    }
-  }
-
-  const springRect=springEl.getBoundingClientRect();
-  const skRect=actor.getBoundingClientRect();
-  if(!L0_px && springRect.width>0){ L0_px=springRect.width; }
-  if(skRect.width>0){ skaterWidthPx=skRect.width; hookOffsetPx=skaterWidthPx/2; }
-
-  { // δέσιμο + spotlight + δείκτης
-    const ax=anchorX();
-    const centerX=stage.clientWidth/2;
-    const skaterHookX=centerX + A_px*Math.sin(omega*playbackTime);
-    const distance=skaterHookX-ax;
-    const scale=(L0_px && L0_px>0) ? (distance/L0_px) : 1;
-    springEl.style.left=ax+'px';
-    springEl.style.transform=`scaleX(${scale})`;
-    actor.style.transform='none';
-    actor.style.left=(skaterHookX-hookOffsetPx)+'px';
-    markerEl.style.left=skaterHookX+'px';
-    spotlight.style.background=`radial-gradient(220px 140px at ${skaterHookX}px ${stage.clientHeight*0.62}px, rgba(255,255,220,.65), rgba(255,255,220,0) 70%)`;
-
-    const xMeters=(skaterHookX-centerX)/pxPerMeter;
-    logMeasurement(tObs,xMeters);
-  }
-
-  requestAnimationFrame(animate);
-}
-requestAnimationFrame(animate);
-
-/* Bubbles */
-const BASE_BUBBLE_LIFT=96;
-let bubbleAltLower=false;
-function randInt(a,b){ return Math.floor(a + Math.random()*(b-a+1)); }
-
-/* Clamp για bubbles στα όρια σκηνής */
-function showThoughtForViewer(vIdx,text,durationSecs,customLift,xShift=0){
-  const viewerEl=document.querySelector(`.viewer[data-idx="${vIdx}"]`);
-  if(!viewerEl) return;
-  bubbleEl.querySelector('.text').textContent=text||'';
-
-  const W=stage.clientWidth;
-  const leftCurtainRight = W*0.18;
-  const rightCurtainLeft = W*0.82;
-  const pad=12;
-
-  const vRect=viewerEl.getBoundingClientRect(); const sRect=stage.getBoundingClientRect();
-  const viewerCenterX=(vRect.left+vRect.width/2 - sRect.left);
-  let desiredCenterX = viewerCenterX + (xShift||0);
-
-  bubbleEl.style.display='block'; bubbleEl.style.opacity='0'; bubbleEl.style.left='0px'; bubbleEl.style.top='0px';
-  const bw = bubbleEl.offsetWidth || 240;
-
-  const minLeft = leftCurtainRight + pad;
-  const maxLeft = rightCurtainLeft - pad - bw;
-
-  let leftPx = desiredCenterX - bw/2;
-  if(leftPx < minLeft) leftPx = minLeft;
-  if(leftPx > maxLeft) leftPx = maxLeft;
-
-  const baseLift=(typeof customLift==='number'?customLift:BASE_BUBBLE_LIFT);
-  const downShift = bubbleAltLower ? randInt(15,30) : 0;
-  bubbleAltLower = !bubbleAltLower;
-  let topPx=(vRect.top - sRect.top - baseLift + downShift);
-  topPx=Math.max(10,topPx);
-
-  bubbleEl.style.left=leftPx+'px';
-  bubbleEl.style.top =topPx +'px';
-  void bubbleEl.offsetWidth;
-  bubbleEl.classList.add('active'); bubbleEl.style.opacity='1';
-  isBubbleActive=true; setMode('slow');
-
-  const dur=(typeof durationSecs==='number'?durationSecs:bubbleDurationSec);
-  if(bubbleAutoTimer){ clearTimeout(bubbleAutoTimer); bubbleAutoTimer=null; }
-  bubbleAutoTimer=setTimeout(()=>{ resumeFromBubble('run'); }, Math.max(0.5,dur)*1000);
-}
-
-function resumeFromBubble(nextMode='run'){
-  if(bubbleAutoTimer){ clearTimeout(bubbleAutoTimer); bubbleAutoTimer=null; }
-  bubbleEl.classList.add('checked');
-  setTimeout(()=>{ bubbleEl.classList.add('closing'); },200);
-  setTimeout(()=>{
-    bubbleEl.classList.remove('active'); bubbleEl.style.display='none'; bubbleEl.style.opacity='0';
-    bubbleEl.classList.remove('checked','closing');
-    isBubbleActive=false;
-  },800);
-  setMode(nextMode==='slow'?'slow':'run');
-}
-
-/* Νόμοι + μικρο-γραφικά */
-let lawCount=0;
-function addLaw(txt){
-  if(!firstLawShown){
-    firstLawShown=true;
-    lawsTitle.textContent=i18n[LANG].lawsTitle;
-    lawsPane.style.display='block';
-  }
-  const li=document.createElement('li'); li.textContent=txt; lawsList.appendChild(li);
-  lawCount++; positionLawCharts();
-}
-
-/* Παράμετροι A, ω, φ0 */
-function showCurtainParams(){
-  const phi0deg=((omega*obsStartPlaybackOffset)*180/Math.PI + 360)%360;
-  document.getElementById('paramA').textContent  =`A = ${A_m.toFixed(2)} m`;
-  document.getElementById('paramW').textContent  =`ω = ${omega.toFixed(3)} rad/s`;
-  document.getElementById('paramPhi').textContent=`φ₀ = ${phi0deg.toFixed(1)}°`;
-  paramsBoxEl.style.display='block';
-  positionParamsBox();
-}
-
-/* uPlot – x(t) */
-function buildSeriesData(){
-  const N=240, tArr=new Array(N+1), xArr=new Array(N+1);
-  for(let i=0;i<=N;i++){
-    const tloc=(i/N)*T;
-    tArr[i]=tloc; xArr[i]=A_m*Math.sin(omega*(tloc+obsStartPlaybackOffset));
-  }
-  return [tArr,xArr];
-}
-function x0Val(){ return A_m*Math.sin(omega*(0+obsStartPlaybackOffset)); }
-
-/* (ΜΟΝΟ μία δήλωση uXT υπάρχει ψηλά) */
-function initXTChart(){
-  if(uXT) return; if(!window.uPlot){ if(graphEnabled){ pendingGraph=true; } return; }
-  xtChart.style.display='block'; positionRightPanel();
-  let w=Math.floor(xtChart.clientWidth)||260, h=Math.floor(xtChart.clientHeight)||140;
-  const xData=buildSeriesData();
-  const opts={
-    width:w, height:h,
-    scales:{ x:{time:false, range:[0,T]}, y:{range:[-A_m*1.1, A_m*1.1]} },
-    axes:[
-      { stroke:"#fff", grid:{show:true, stroke:"rgba(255,255,255,0.25)"},
-        values:(u,vals)=>vals.map(v=>v.toFixed(1)+" s"), label:"t (s)", labelSize:18, labelGap:6 },
-      { stroke:"#fff", grid:{show:true, stroke:"rgba(255,255,255,0.25)"},
-        values:(u,vals)=>vals.map(v=>v.toFixed(1)+" m"), label:"x (m)", labelSize:18, labelGap:8 }
-    ],
-    series:[{}, {label:"x(t)", stroke:"#ffd27a", width:2}],
-    hooks:{ draw:[(u)=>{
-      const ctx=u.ctx;
-      const x0=u.valToPos(0,'x',true);
-      const xT=u.valToPos(T,'x',true);
-      const y0=u.valToPos(0,'y',true);
-      const yA=u.valToPos(A_m,'y',true);
-      const yAm=u.valToPos(-A_m,'y',true);
-      ctx.save();
-      ctx.setLineDash([6,4]); ctx.strokeStyle="rgba(255,255,255,0.45)";
-      ctx.beginPath(); ctx.moveTo(x0,yA);  ctx.lineTo(xT,yA);  ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(x0,yAm); ctx.lineTo(xT,yAm); ctx.stroke();
-      ctx.setLineDash([4,3]); ctx.beginPath(); ctx.moveTo(xT, u.bbox.top); ctx.lineTo(xT, u.bbox.top+u.bbox.height); ctx.stroke();
-      ctx.setLineDash([]);
-      ctx.fillStyle="#fff"; ctx.font="12px Inter, system-ui";
-      ctx.textAlign="left"; ctx.textBaseline="bottom"; ctx.fillText(A_m.toFixed(2), x0+4, yA-4);
-      ctx.textBaseline="top"; ctx.fillText((-A_m).toFixed(2), x0+4, yAm+4);
-      ctx.textAlign="center"; ctx.textBaseline="top"; ctx.fillText(T.toFixed(2), xT, y0+6);
-      const yx0=u.valToPos(x0Val(),'y',true);
-      ctx.fillStyle="#ffd27a"; ctx.beginPath(); ctx.arc(x0, yx0, 3, 0, Math.PI*2); ctx.fill();
-      ctx.fillStyle="#fff"; ctx.textAlign="left"; ctx.textBaseline="middle"; ctx.fillText("x₀", x0+6, yx0);
-      ctx.textAlign="right"; ctx.fillText(x0Val().toFixed(2), x0-8, yx0);
-      ctx.restore();
-    }]}
-  };
-  uXT=new uPlot(opts, xData, xtChart);
-}
-function drawXTChart(){ if(uXT){ uXT.setData(buildSeriesData()); } }
-function ensureXTReady(){
-  if(!graphEnabled) return;
-  try{ if(window.uPlot){ initXTChart(); if(uXT){ drawXTChart(); } }
-       else{ if(graphEnabled){ pendingGraph=true; renderXTCanvasFallback(); } } }
-  catch(e){ console.error('ensureXTReady',e); if(graphEnabled){ pendingGraph=true; renderXTCanvasFallback(); } }
-}
-
-/* Fallback canvas */
-function renderXTCanvasFallback(){
-  xtChart.style.display='block'; positionRightPanel();
-  let c=document.getElementById('xtFallback');
-  if(!c){ c=document.createElement('canvas'); c.id='xtFallback'; xtChart.appendChild(c); }
-  c.width = Math.max(200, xtChart.clientWidth|0);
-  c.height= Math.max(120, xtChart.clientHeight|0);
-  drawFallbackOnce();
-}
-function drawFallbackOnce(){
-  const c=document.getElementById('xtFallback'); if(!c) return;
-  const ctx=c.getContext('2d'); const w=c.width, h=c.height;
-  ctx.clearRect(0,0,w,h);
-  ctx.fillStyle='rgba(255,255,255,0.08)'; ctx.fillRect(0,0,w,h);
-  ctx.strokeStyle='rgba(255,255,255,0.35)'; ctx.lineWidth=1;
-  ctx.beginPath();
-  for(let i=0;i<=6;i++){ const x=i*(w/6); ctx.moveTo(x,0); ctx.lineTo(x,h); }
-  for(let j=0;j<=4;j++){ const y=j*(h/4); ctx.moveTo(0,y); ctx.lineTo(w,y); } 
-  ctx.stroke();
-  ctx.fillStyle='#fff'; ctx.font='12px Inter, system-ui';
-  ctx.textAlign='center'; ctx.fillText('t (s)', w/2, h-6);
-  ctx.save(); ctx.translate(10,h/2); ctx.rotate(-Math.PI/2); ctx.textAlign='center'; ctx.fillText('x (m)',0,0); ctx.restore();
-  const N=240; ctx.strokeStyle='#ffd27a'; ctx.lineWidth=2; ctx.beginPath();
-  for(let i=0;i<=N;i++){
-    const tloc=(i/N)*T;
-    const x=i*(w/N);
-    const yVal= A_m*Math.sin(omega*(tloc+obsStartPlaybackOffset));
-    const y= (h/2) - (yVal/(A_m*1.1))*(h/2*0.9);
-    if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
-  }
-  ctx.stroke();
-  ctx.setLineDash([6,4]); ctx.strokeStyle='rgba(255,255,255,0.5)';
-  let yA=(h/2) - ( A_m/(A_m*1.1))*(h/2*0.9);
-  let yAm=(h/2) - (-A_m/(A_m*1.1))*(h/2*0.9);
-  ctx.beginPath(); ctx.moveTo(0,yA); ctx.lineTo(w,yA); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(0,yAm); ctx.lineTo(w,yAm); ctx.stroke();
-  ctx.setLineDash([]);
-  ctx.fillStyle='#fff'; ctx.textAlign='left'; ctx.textBaseline='bottom'; ctx.fillText(A_m.toFixed(2), 6, yA-4);
-  ctx.textBaseline='top'; ctx.fillText((-A_m).toFixed(2), 6, yAm+4);
-  ctx.textAlign='center'; ctx.textBaseline='top'; ctx.fillText(T.toFixed(2), w-6, h-18);
-  const x0x=0; const x0y=(h/2) - (x0Val()/(A_m*1.1))*(h/2*0.9);
-  ctx.fillStyle='#ffd27a'; ctx.beginPath(); ctx.arc(x0x+6,x0y,3,0,Math.PI*2); ctx.fill();
-  ctx.fillStyle='#fff'; ctx.textAlign='left'; ctx.textBaseline='middle'; ctx.fillText('x₀', x0x+12, x0y);
-  ctx.textAlign='right'; ctx.fillText(x0Val().toFixed(2), Math.min(w-6, x0x+56), x0y);
-}
-
-/* Γραφήματα Νόμων */
+/* Γραφήματα Νόμων (ίδια) */
 let vCan=null,aCan=null,axCan=null;
 function sizeLawCanvas(c){ const w=Math.floor(stage.clientWidth*0.16); const h=140; c.width=w; c.height=h; c.style.width=w+'px'; c.style.height=h+'px'; }
 function positionLawCharts(){
@@ -839,8 +640,7 @@ function drawAX(c){
   ctx.strokeStyle='rgba(255,255,255,0.5)'; ctx.setLineDash([4,3]);
   ctx.beginPath(); ctx.moveTo(0,h/2); ctx.lineTo(w,h/2); ctx.stroke();
   ctx.beginPath(); ctx.moveTo(w/2,0); ctx.lineTo(w/2,h); ctx.stroke();
-  ctx.setLineDash([]);
-  ctx.strokeStyle='#c6ff7f'; ctx.lineWidth=2; ctx.beginPath();
+  ctx.setLineDash([]); ctx.strokeStyle='#c6ff7f'; ctx.lineWidth=2; ctx.beginPath();
   const gainX=(w/2)/(A_m*1.1), gainA=(h/2)/(omega*omega*A_m*1.1);
   const x1=-A_m, x2= A_m;
   const a1=-omega*omega*x1, a2=-omega*omega*x2;
@@ -851,6 +651,281 @@ function drawAX(c){
 function ensureVelocityChart(){ if(!vCan){ vCan = makeLawCanvas('lawV'); } drawV(vCan); positionLawCharts(); }
 function ensureAccelerationChart(){ if(!aCan){ aCan = makeLawCanvas('lawA'); } drawA(aCan); positionLawCharts(); }
 function ensureAxChart(){ if(!axCan){ axCan = makeLawCanvas('lawAX'); } drawAX(axCan); positionLawCharts(); }
+
+/* uPlot x(t) */
+function buildSeriesData(){
+  const N=240, tArr=new Array(N+1), xArr=new Array(N+1);
+  for(let i=0;i<=N;i++){
+    const tloc=(i/N)*T;
+    tArr[i]=tloc; xArr[i]=A_m*Math.sin(omega*(tloc+obsStartPlaybackOffset));
+  }
+  return [tArr,xArr];
+}
+function x0Val(){ return A_m*Math.sin(omega*(0+obsStartPlaybackOffset)); }
+function initXTChart(){
+  if(uXT) return; if(!window.uPlot){ if(graphEnabled){ pendingGraph=true; } return; }
+  xtChart.style.display='block'; positionRightPanel();
+  let w=Math.floor(xtChart.clientWidth)||260, h=Math.floor(xtChart.clientHeight)||140;
+  const xData=buildSeriesData();
+  const opts={
+    width:w, height:h,
+    scales:{ x:{time:false, range:[0,T]}, y:{range:[-A_m*1.1, A_m*1.1]} },
+    axes:[
+      { stroke:"#fff", grid:{show:true, stroke:"rgba(255,255,255,0.25)"},
+        values:(u,vals)=>vals.map(v=>v.toFixed(1)+" s"), label:"t (s)", labelSize:18, labelGap:6 },
+      { stroke:"#fff", grid:{show:true, stroke:"rgba(255,255,255,0.25)"},
+        values:(u,vals)=>vals.map(v=>v.toFixed(1)+" m"), label:"x (m)", labelSize:18, labelGap:8 }
+    ],
+    series:[{}, {label:"x(t)", stroke:"#ffd27a", width:2}],
+    hooks:{ draw:[(u)=>{
+      const ctx=u.ctx;
+      const x0=u.valToPos(0,'x',true);
+      const xT=u.valToPos(T,'x',true);
+      const y0=u.valToPos(0,'y',true);
+      const yA=u.valToPos(A_m,'y',true);
+      const yAm=u.valToPos(-A_m,'y',true);
+      ctx.save();
+      ctx.setLineDash([6,4]); ctx.strokeStyle="rgba(255,255,255,0.45)";
+      ctx.beginPath(); ctx.moveTo(x0,yA);  ctx.lineTo(xT,yA);  ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x0,yAm); ctx.lineTo(xT,yAm); ctx.stroke();
+      ctx.setLineDash([4,3]); ctx.beginPath(); ctx.moveTo(xT, u.bbox.top); ctx.lineTo(xT, u.bbox.top+u.bbox.height); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle="#fff"; ctx.font="12px Inter, system-ui";
+      ctx.textAlign="left"; ctx.textBaseline="bottom"; ctx.fillText(A_m.toFixed(2), x0+4, yA-4);
+      ctx.textBaseline="top"; ctx.fillText((-A_m).toFixed(2), x0+4, yAm+4);
+      ctx.textAlign="center"; ctx.textBaseline="top"; ctx.fillText(T.toFixed(2), xT, y0+6);
+      const yx0=u.valToPos(x0Val(),'y',true);
+      ctx.fillStyle="#ffd27a"; ctx.beginPath(); ctx.arc(x0, yx0, 3, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle="#fff"; ctx.textAlign="left"; ctx.textBaseline="middle"; ctx.fillText("x₀", x0+6, yx0);
+      ctx.textAlign="right"; ctx.fillText(x0Val().toFixed(2), x0-8, yx0);
+      ctx.restore();
+    }]}
+  };
+  uXT=new uPlot(opts, xData, xtChart);
+}
+function drawXTChart(){ if(uXT){ uXT.setData(buildSeriesData()); } }
+function ensureXTReady(){
+  if(!graphEnabled) return;
+  try{ if(window.uPlot){ initXTChart(); if(uXT){ drawXTChart(); } }
+       else{ if(graphEnabled){ pendingGraph=true; renderXTCanvasFallback(); } } }
+  catch(e){ console.error('ensureXTReady',e); if(graphEnabled){ pendingGraph=true; renderXTCanvasFallback(); } }
+}
+function renderXTCanvasFallback(){
+  xtChart.style.display='block'; positionRightPanel();
+  let c=document.getElementById('xtFallback');
+  if(!c){ c=document.createElement('canvas'); c.id='xtFallback'; xtChart.appendChild(c); }
+  c.width = Math.max(200, xtChart.clientWidth|0);
+  c.height= Math.max(120, xtChart.clientHeight|0);
+  drawFallbackOnce();
+}
+function drawFallbackOnce(){
+  const c=document.getElementById('xtFallback'); if(!c) return;
+  const ctx=c.getContext('2d'); const w=c.width, h=c.height;
+  ctx.clearRect(0,0,w,h);
+  ctx.fillStyle='rgba(255,255,255,0.08)'; ctx.fillRect(0,0,w,h);
+  ctx.strokeStyle='rgba(255,255,255,0.35)'; ctx.lineWidth=1;
+  ctx.beginPath();
+  for(let i=0;i<=6;i++){ const x=i*(w/6); ctx.moveTo(x,0); ctx.lineTo(x,h); }
+  for(let j=0;j<=4;j++){ const y=j*(h/4); ctx.moveTo(0,y); ctx.lineTo(w,y); } 
+  ctx.stroke();
+  ctx.fillStyle='#fff'; ctx.font='12px Inter, system-ui';
+  ctx.textAlign='center'; ctx.fillText('t (s)', w/2, h-6);
+  ctx.save(); ctx.translate(10,h/2); ctx.rotate(-Math.PI/2); ctx.textAlign='center'; ctx.fillText('x (m)',0,0); ctx.restore();
+  const N=240; ctx.strokeStyle='#ffd27a'; ctx.lineWidth=2; ctx.beginPath();
+  for(let i=0;i<=N;i++){
+    const tloc=(i/N)*T;
+    const x=i*(w/N);
+    const yVal= A_m*Math.sin(omega*(tloc+obsStartPlaybackOffset));
+    const y= (h/2) - (yVal/(A_m*1.1))*(h/2*0.9);
+    if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  }
+  ctx.stroke();
+  ctx.setLineDash([6,4]); ctx.strokeStyle='rgba(255,255,255,0.5)';
+  let yA=(h/2) - ( A_m/(A_m*1.1))*(h/2*0.9);
+  let yAm=(h/2) - (-A_m/(A_m*1.1))*(h/2*0.9);
+  ctx.beginPath(); ctx.moveTo(0,yA); ctx.lineTo(w,yA); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(0,yAm); ctx.lineTo(w,yAm); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle='#fff'; ctx.textAlign='left'; ctx.textBaseline='bottom'; ctx.fillText(A_m.toFixed(2), 6, yA-4);
+  ctx.textBaseline='top'; ctx.fillText((-A_m).toFixed(2), 6, yAm+4);
+  ctx.textAlign='center'; ctx.textBaseline='top'; ctx.fillText(T.toFixed(2), w-6, h-18);
+  const x0x=0; const x0y=(h/2) - (x0Val()/(A_m*1.1))*(h/2*0.9);
+  ctx.fillStyle='#ffd27a'; ctx.beginPath(); ctx.arc(x0x+6,x0y,3,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='#fff'; ctx.textAlign='left'; ctx.textBaseline='middle'; ctx.fillText('x₀', x0x+12, x0y);
+  ctx.textAlign='right'; ctx.fillText(x0Val().toFixed(2), Math.min(w-6, x0x+56), x0y);
+}
+
+/* Bubble control */
+const BASE_BUBBLE_LIFT=96;
+let bubbleAltLower=false;
+function randInt(a,b){ return Math.floor(a + Math.random()*(b-a+1)); }
+let isBubbleActive=false;
+function showThoughtForViewer(vIdx,text,durationSecs,customLift,xShift=0){
+  const viewerEl=document.querySelector(`.viewer[data-idx="${vIdx}"]`);
+  if(!viewerEl) return;
+  bubbleEl.querySelector('.text').textContent=text||'';
+
+  const W=stage.clientWidth;
+  const leftCurtainRight = W*0.18;
+  const rightCurtainLeft = W*0.82;
+  const pad=12;
+
+  const vRect=viewerEl.getBoundingClientRect(); const sRect=stage.getBoundingClientRect();
+  const viewerCenterX=(vRect.left+vRect.width/2 - sRect.left);
+  let desiredCenterX = viewerCenterX + (xShift||0);
+
+  bubbleEl.style.display='block'; bubbleEl.style.opacity='0'; bubbleEl.style.left='0px'; bubbleEl.style.top='0px';
+  const bw = bubbleEl.offsetWidth || 240;
+
+  const minLeft = leftCurtainRight + pad;
+  const maxLeft = rightCurtainLeft - pad - bw;
+
+  let leftPx = desiredCenterX - bw/2;
+  if(leftPx < minLeft) leftPx = minLeft;
+  if(leftPx > maxLeft) leftPx = maxLeft;
+
+  const baseLift=(typeof customLift==='number'?customLift:BASE_BUBBLE_LIFT);
+  const downShift = bubbleAltLower ? randInt(15,30) : 0;
+  bubbleAltLower = !bubbleAltLower;
+  let topPx=(vRect.top - sRect.top - baseLift + downShift);
+  topPx=Math.max(10,topPx);
+
+  bubbleEl.style.left=leftPx+'px';
+  bubbleEl.style.top =topPx +'px';
+  void bubbleEl.offsetWidth;
+  bubbleEl.classList.add('active'); bubbleEl.style.opacity='1';
+  isBubbleActive=true; setMode('slow');
+
+  const dur=(typeof durationSecs==='number'?durationSecs:bubbleDurationSec);
+  if(bubbleAutoTimer){ clearTimeout(bubbleAutoTimer); bubbleAutoTimer=null; }
+  bubbleAutoTimer=setTimeout(()=>{ resumeFromBubble('run'); }, Math.max(0.5,dur)*1000);
+}
+function resumeFromBubble(nextMode='run'){
+  if(bubbleAutoTimer){ clearTimeout(bubbleAutoTimer); bubbleAutoTimer=null; }
+  bubbleEl.classList.add('checked');
+  setTimeout(()=>{ bubbleEl.classList.add('closing'); },200);
+  setTimeout(()=>{
+    bubbleEl.classList.remove('active'); bubbleEl.style.display='none'; bubbleEl.style.opacity='0';
+    bubbleEl.classList.remove('checked','closing');
+    isBubbleActive=false;
+  },800);
+  setMode(nextMode==='slow'?'slow':'run');
+}
+
+/* Νόμοι */
+let lawCount=0;
+function addLaw(txt){
+  if(!firstLawShown){
+    firstLawShown=true;
+    lawsTitle.textContent=i18n[LANG].lawsTitle;
+    lawsPane.style.display='block';
+  }
+  const li=document.createElement('li'); li.textContent=txt; lawsList.appendChild(li);
+  lawCount++; positionLawCharts();
+}
+function showCurtainParams(){
+  const phi0deg=((omega*obsStartPlaybackOffset)*180/Math.PI + 360)%360;
+  paramAEl.textContent  =`A = ${A_m.toFixed(2)} m`;
+  paramWEl.textContent  =`ω = ${omega.toFixed(3)} rad/s`;
+  paramPhiEl.textContent=`φ₀ = ${phi0deg.toFixed(1)}°`;
+  paramsBoxEl.style.display='block';
+  positionParamsBox();
+}
+
+/* Timeline state */
+let thoughtScript=[...thoughtScriptBase];
+let nextThoughtIdx=0;
+let bubbleAutoTimer=null;
+
+/* Animation */
+let L0_px; let skaterWidthPx; let hookOffsetPx;
+function animate(now){
+  const realDt=(now-lastFrame)/1000; lastFrame=now;
+  positionRightPanel(); updateRuler();
+
+  const tPhys=(now-t0)/1000;
+  if(!obsStarted){ playbackTime=tPhys; }
+  else{ playbackTime += (mode==='run'? realDt : (mode==='slow'? realDt*slowFactor : 0)); }
+
+  const tObs= obsStarted ? (playbackTime-obsStartPlaybackOffset) : 0;
+  clockEl.textContent='t = '+tObs.toFixed(2)+' s';
+
+  if(pendingGraph && graphEnabled){
+    if(window.uPlot){ try{ ensureXTReady(); pendingGraph=false; }catch(e){ console.error('deferred graph init',e); } }
+    else{ renderXTCanvasFallback(); }
+  }
+
+  if(obsStarted && !isBubbleActive && nextThoughtIdx<thoughtScript.length){
+    const th=thoughtScript[nextThoughtIdx];
+    const shiftMul=(firstThoughtMul-DEFAULT_FIRST_MUL);
+    const baseMul=(th.atT??0);
+    const eventAtSec=(baseMul+shiftMul)*T*timelineScale;
+    if(tObs>=eventAtSec){
+      try{ handleTimelineEvent(th); nextThoughtIdx+=1; }catch(e){ console.error('timeline event error:',e); nextThoughtIdx+=1; }
+    }
+  }
+
+  const springRect=springEl.getBoundingClientRect();
+  const skRect=actor.getBoundingClientRect();
+  if(!L0_px && springRect.width>0){ L0_px=springRect.width; }
+  if(skRect.width>0){ skaterWidthPx=skRect.width; hookOffsetPx=skaterWidthPx/2; }
+
+  { // δέσιμο + spotlight + δείκτης
+    const ax=anchorX();
+    const centerX=stage.clientWidth/2;
+    const skaterHookX=centerX + A_px*Math.sin(omega*playbackTime);
+    const distance=skaterHookX-ax;
+    const scale=(L0_px && L0_px>0) ? (distance/L0_px) : 1;
+    springEl.style.left=ax+'px';
+    springEl.style.transform=`scaleX(${scale})`;
+    actor.style.transform='none';
+    actor.style.left=(skaterHookX-hookOffsetPx)+'px';
+    markerEl.style.left=skaterHookX+'px';
+    spotlight.style.background=`radial-gradient(220px 140px at ${skaterHookX}px ${stage.clientHeight*0.62}px, rgba(255,255,220,.65), rgba(255,255,220,0) 70%)`;
+
+    const xMeters=(skaterHookX-centerX)/pxPerMeter;
+    logMeasurement(tObs,xMeters);
+  }
+
+  requestAnimationFrame(animate);
+}
+requestAnimationFrame(animate);
+
+/* Timeline handler */
+function handleTimelineEvent(th){
+  if(th.kind==='bubble'){
+    const txt = (i18n[LANG].thoughts[th.key]||'');
+    showThoughtForViewer(th.viewer,txt,bubbleDurationSec,th.yOffset,th.xShift||0);
+  }else if(th.kind==='bubbleDyn'){
+    if(th.what==='A'){
+      showThoughtForViewer(th.viewer, (LANG==='gr'
+        ? `…με A=${A_m.toFixed(2)}!` : `…with A=${A_m.toFixed(2)}!`), bubbleDurationSec, th.yOffset, th.xShift||0);
+    }else if(th.what==='Tw'){
+      showThoughtForViewer(th.viewer, (LANG==='gr'
+        ? `… και T=${T.toFixed(2)} και επομένως ω=${omega.toFixed(3)}!`
+        : `…and T=${T.toFixed(2)}, hence ω=${omega.toFixed(3)}!`), bubbleDurationSec, th.yOffset, th.xShift||0);
+    }else if(th.what==='phi'){
+      const x0 = x0Val().toFixed(2);
+      const phi0deg=((omega*obsStartPlaybackOffset)*180/Math.PI + 360)%360;
+      const tmpl = (LANG==='gr'
+        ? "… όντως είναι ΑΑΤ και αφού το x₀={x0} υπάρχει φ₀={phi}°. Χαχα, ένα το κρατούμενο!"
+        : "…indeed SHM, since x₀={x0} ⇒ φ₀={phi}°. One down!");
+      const txt = tmpl.replace('{x0}',x0).replace('{phi}',phi0deg.toFixed(1));
+      showThoughtForViewer(th.viewer, txt, bubbleDurationSec, th.yOffset, th.xShift||0);
+    }
+  }else if(th.kind==='graph'){
+    graphEnabled=true; ensureXTReady();
+  }else if(th.kind==='law'){
+    addLaw(localizeTrig(th.lawText));
+    if(th.alsoParams){ showCurtainParams(); }
+  }else if(th.kind==='lawPlot'){
+    if(th.plot==='v') ensureVelocityChart();
+    else if(th.plot==='a') ensureAccelerationChart();
+    else if(th.plot==='ax') ensureAxChart();
+  }else if(th.kind==='close'){
+    closeCurtainsSequence();
+  }
+}
 
 /* Κλείσιμο αυλαίας + actBreak */
 function closeCurtainsSequence(){
@@ -870,36 +945,6 @@ function closeCurtainsSequence(){
     actBreak.style.display='flex';
     curtainUpper.classList.remove('slow-close');
   }, 1500);
-}
-
-/* Timeline handler */
-function handleTimelineEvent(th){
-  if(th.kind==='bubble'){
-    const txt = (i18n[LANG].thoughts[th.key]||'');
-    showThoughtForViewer(th.viewer,txt,bubbleDurationSec,th.yOffset,th.xShift||0);
-  }else if(th.kind==='bubbleDyn'){
-    if(th.what==='A'){
-      showThoughtForViewer(th.viewer, i18n[LANG].thoughts.t7A(A_m.toFixed(2)), bubbleDurationSec, th.yOffset, th.xShift||0);
-    }else if(th.what==='Tw'){
-      showThoughtForViewer(th.viewer, i18n[LANG].thoughts.t8Tw(T.toFixed(2), omega.toFixed(3)), bubbleDurationSec, th.yOffset, th.xShift||0);
-    }else if(th.what==='phi'){
-      const x0 = x0Val().toFixed(2);
-      const phi0deg=((omega*obsStartPlaybackOffset)*180/Math.PI + 360)%360;
-      showThoughtForViewer(th.viewer, i18n[LANG].thoughts.t9phi(x0, phi0deg.toFixed(1)), bubbleDurationSec, th.yOffset, th.xShift||0);
-    }
-  }else if(th.kind==='graph'){
-    graphEnabled=true; ensureXTReady();
-  }else if(th.kind==='law'){
-    /* ΖΗΤΗΘΗΚΕ: trig τοπικοποίηση για GR/EN */
-    addLaw(localizeTrig(th.lawText));
-    if(th.alsoParams){ showCurtainParams(); }
-  }else if(th.kind==='lawPlot'){
-    if(th.plot==='v') ensureVelocityChart();
-    else if(th.plot==='a') ensureAccelerationChart();
-    else if(th.plot==='ax') ensureAxChart();
-  }else if(th.kind==='close'){
-    closeCurtainsSequence();
-  }
 }
 
 /* Κουμπιά */
@@ -970,7 +1015,7 @@ function startShowCountdown(){
 }
 startBtn.addEventListener('click', startShowCountdown);
 
-/* Παρατηρητής μεγέθους */
+/* Resize observer */
 const ro=new ResizeObserver(()=>{ positionRightPanel();
   if(uXT){ drawXTChart(); } else if(document.getElementById('xtFallback')){ drawFallbackOnce(); }
   positionLawCharts(); positionParamsBox();
@@ -987,9 +1032,12 @@ ro.observe(stage);
 /* Fallback αν δεν φορτώσει uPlot */
 setTimeout(()=>{ if(!window.uPlot && graphEnabled){ renderXTCanvasFallback(); } }, 2500);
 
-/* Αρχικοποίηση */
-setLang('gr');
-resetShow();
+/* ====== Εκκίνηση: φορτώνω JSON, μετά setLang+reset ====== */
+(async function(){
+  await loadAct1Config();   // αν βγει σφάλμα → απλώς μένουν τα defaults
+  setLang('gr');
+  resetShow();
+})();
 </script>
 </body>
 </html>
