@@ -945,6 +945,7 @@ function closeCurtainsSequence(){
     actBreak.style.height = cuRect.height + 'px';
     actBreak.style.display='flex';
     curtainUpper.classList.remove('slow-close');
+    document.dispatchEvent(new Event('act1:ended'));
   }, 1500);
 }
 
@@ -1048,4 +1049,5 @@ setTimeout(()=>{ if(!window.uPlot && graphEnabled){ renderXTCanvasFallback(); } 
 
 </body>
 </html>
+
 
