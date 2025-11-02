@@ -1,0 +1,107 @@
+{
+  "title": {
+    "h1": "Πράξη 1η: Η Κινηματική στα ... Αλγεβρικά",
+    "h2Format": "m₁ = {m} kg, D₁ = {D} N/m",
+    "h3Format": "Eμηχ = {E} J"
+  },
+  "physics": {
+    "m": 70,
+    "T": 6.0,
+    "A_m": 3.0,
+    "phi0": 0.3,
+    "pxPerMeter": 50
+  },
+  "ui": {
+    "curtains": {
+      "topHeightPct": 28,
+      "upperTopPct": 28,
+      "upperHeightPct": 40,
+      "lowerHeightPct": 32,
+      "sideWidthPct": 18,
+      "openOffsetPx": 10,
+      "topOffsetAdjustPx": 7
+    },
+    "zIndex": {
+      "curtainTop": 40,
+      "curtainUpper": 16,
+      "curtainSide": 14,
+      "signboard": 41,
+      "chrono": 41,
+      "floor": 120,
+      "audience": 150,
+      "actor": 110,
+      "spring": 100,
+      "bubbles": 70,
+      "laws": 41,
+      "startBtn": 100
+    },
+    "floor": {
+      "bottomCalc": "calc(32vh - 8px)",
+      "heightPx": 2,
+      "color": "#9aa0a6"
+    },
+    "audience": {
+      "src": "koino.png",
+      "heightPx": 63,
+      "bottomVh": 8
+    },
+    "actor": {
+      "src": "skater.png",
+      "widthPx": 180,
+      "offsetLeftPx": -20,
+      "raisePx": 3
+    },
+    "startButtonText": "Έναρξη"
+  },
+  "ruler": {
+    "enabled": true,
+    "min": -7,
+    "max": 7,
+    "tick": 1,
+    "showBeforeStart": true,
+    "baselineBottomVH": 32,
+    "arrowOffsetPx": 0
+  },
+  "measurement": {
+    "enabled": true,
+    "rowEveryMs": 200,
+    "tableMaxRows": 1000,
+    "heightVH": 50,
+    "columns": ["#", "t (s)", "x (m)"],
+    "stickyHeader": true,
+    "scrollToLast": true
+  },
+  "chartXT": {
+    "enabled": true,
+    "showAtT": 6.0,
+    "heightPx": 240,
+    "widthPct": 100,
+    "labels": { "x": "t (s)", "y": "x (m)" },
+    "showAandTOnAxes": true,
+    "showX0": true
+  },
+  "bubbles": [
+    { "at": 6.2,  "lane": "top", "viewerIndex": 2, "duration": 3, "text": "η κίνηση είναι ευθύγραμμη παλινδρομική!" },
+    { "at": 8.8,  "lane": "low", "viewerIndex": 0, "duration": 3, "text": "… και επαναλαμβανόμενη, περιοδική, άρα ταλάντωση!" },
+    { "at": 11.6, "lane": "top", "viewerIndex": 4, "duration": 3, "text": "Μήπως είναι Απλή Αρμονική Ταλάντωση;" },
+    { "at": 14.2, "lane": "low", "viewerIndex": 1, "duration": 3, "text": "… αν είναι Α.Α.Τ. τότε χ=Α·ημ(ωt+φ₀) πρέπει να ταιριάζει!" },
+    { "at": 16.0, "lane": "top", "viewerIndex": 3, "duration": 3, "text": "Ας κάνουμε διάγραμμα x–t, αυτό θα το δείξει!" }
+  ],
+  "i18n": {
+    "lang": "el",
+    "sinLabel": "ημ",
+    "cosLabel": "συν",
+    "en": {
+      "sinLabel": "sin",
+      "cosLabel": "cos"
+    }
+  },
+  "labels": {
+    "countdownTop": "Η παράσταση αρχίζει...",
+    "countdownSub": "Ώρα για χαρτί & μολύβι!",
+    "pause": "Παύση",
+    "resume": "Συνέχεια",
+    "slow": "Αργή κίνηση",
+    "reset": "Reset"
+  }
+}
