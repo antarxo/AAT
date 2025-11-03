@@ -77,66 +77,7 @@
     });
     window.addEventListener('resize', layoutInitial);
 
-    // Controls
-    const ctrls = el('div','ctrls');
-    css(ctrls,{position:'absolute', right:'18px', top:'18px', display:'flex', gap:'8px', pointerEvents:'auto'});
-    function mkBtn(txt){ const b=el('button',null,txt); css(b,{padding:'8px 10px',borderRadius:'10px',border:'1px solid #888',background:'#111',color:'#fff',cursor:'pointer'}); return b; }
-    const btnPrev=mkBtn('← Πίσω'), btnNext=mkBtn('Επόμ.'), btnPlay=mkBtn('Auto ▶'), btnReset=mkBtn('Reset'), btnClose=mkBtn('Κλείσιμο');
-    foyer.append(ctrls); ctrls.append(btnPrev,btnNext,btnPlay,btnReset,btnClose);
-
-    // Chalk + MathJax
-    const useTex = (PROOFS && (PROOFS.render==='tex'));
-    function chalkLine(text, boxed=false){
-      const row = el('div','chalk');
-      if(useTex){
-        const s = (text.trim().startsWith('\\(') || text.trim().startsWith('\\[')) ? text : `\\(${text}\\)`;
-        row.innerHTML = boxed ? `⟦ ${s} ⟧` : s;
-      } else {
-        row.textContent = boxed ? `⟦ ${text} ⟧` : text;
-      }
-      css(row,{whiteSpace:'pre-wrap',borderLeft:'3px solid rgba(255,255,255,0.25)',padding:'4px 8px',margin:'4px 0',
-               font:'15px/1.55 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace'});
-      bb.append(row);
-      row.animate([{opacity:0, filter:'blur(2px)'},{opacity:1, filter:'blur(0)'}],{duration:220, easing:'ease-out'});
-      if(useTex && window.MathJax && window.MathJax.typesetPromise){ window.MathJax.typesetPromise([row]); }
-    }
-
-    const addLaw = window.addLaw;
-    const showThoughtForViewer = window.showThoughtForViewer;
-    let proofIdx=0, stepIdx=0, autoTimer=null, rot=0;
-    const fallbackViewers=[0,2,4,1,3];
-
-    function cur(){ return PROOFS.proofs[proofIdx] || {title:'', steps:[]}; }
-    function renderTitle(){ chalkLine(`• ${cur().title || 'Πράξη 3η — Φουαγιέ'}`); }
-    function clearBoard(){ bb.innerHTML=''; }
-
-    function doStep(s){
-      if(!s) return;
-      if(s.type==='say'){
-        const idx = (typeof s.viewer==='number') ? s.viewer : fallbackViewers[rot % fallbackViewers.length];
-        rot++;
-        showThoughtForViewer?.(idx, s.text, s.dur? s.dur : 3.0, 125, 0);
-      } else if(s.type==='write' || s.type==='derive'){
-        chalkLine(s.text);
-      } else if(s.type==='box'){
-        chalkLine(s.text, true);
-        addLaw?.(typeof s.lawText==='string' ? s.lawText : s.text);
-      }
-    }
-
-    function next(){
-      const p=cur();
-      if(stepIdx===0) renderTitle();
-      if(stepIdx < p.steps.length){ doStep(p.steps[stepIdx]); stepIdx++; }
-      else if(proofIdx < PROOFS.proofs.length-1){ proofIdx++; stepIdx=0; clearBoard(); renderTitle(); }
-    }
-    function prev(){
-      if(stepIdx>0){ stepIdx-=1; clearBoard(); renderTitle(); const p=cur(); for(let i=0;i<stepIdx;i++) doStep(p.steps[i]); }
-    }
-    function reset(){ stepIdx=0; clearBoard(); renderTitle(); }
-    function toggleAuto(){ if(autoTimer){ clearInterval(autoTimer); autoTimer=null; btnPlay.textContent='Auto ▶'; } else { btnPlay.textContent='Auto ⏸'; autoTimer=setInterval(next, 1200); } }
-
-    btnPrev.onclick=prev; btnNext.onclick=next; btnPlay.onclick=toggleAuto; btnReset.onclick=reset; btnClose.onclick=hide;
+    // Controls removed — auto‑run; no UI buttons.
   }
 
   function prepareSceneForAct3(){
@@ -149,6 +90,6 @@
     }
   }
 
-  async function runAct3(){ await loadProofs(); prepareSceneForAct3(); buildOverlay(); show(); }
+  async function runAct3(){ await loadProofs(); prepareSceneForAct3(); buildOverlay(); show(); /* curtains stay closed; no UI */ autoRunAll(); }
   document.addEventListener('act3-start', runAct3);
 })();

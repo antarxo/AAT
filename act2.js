@@ -72,15 +72,24 @@
     try { addLawOriginal(txt); } finally { slideChartsByLawsHeight(); }
   };
 
+  function closeCurtainThenBreak(){
+    try{
+      const curtainUpper = document.querySelector('.curtain-upper');
+      const stage = document.getElementById('stage');
+      if(curtainUpper && stage){
+        curtainUpper.classList.add('slow-close');
+        stage.classList.remove('open');
+        setTimeout(()=>{ endAct2WithBreak(); }, 1200);
+        return;
+      }
+    }catch{}
+    endAct2WithBreak();
+  }
+
   function endAct2WithBreak(){
     // Unified transition panel
     if(window.showActTransition){
-      window.showActTransition({
-        title:'Τέλος Πράξης 2',
-        msg:'Διάλειμμα. Πάμε Φουαγιέ (Πράξη 3);',
-        buttonText:'Έναρξη Πράξης 3',
-        onClick:()=>document.dispatchEvent(new Event('act3-start'))
-      });
+      window.showActTransition({ title:'Τέλος Πράξης 2', msg:'Διάλειμμα — Φουαγιέ', buttonText:'Είσοδος στο Φουαγιέ', onClick:()=>document.dispatchEvent(new Event('act3-start')) });
       return;
     }
     // Fallback (if helper missing)
@@ -119,7 +128,7 @@
     { atMul:3.30, fn:()=> showThoughtForViewer?.(2, '…χμμμ, γι’ αυτό τον λένε και (m, D)!', 2.0, 125, 0) },
     { atMul:3.55, fn:()=> window.addLaw?.('Θέτω D = mω²') },
     { atMul:3.75, fn:()=> window.addLaw?.('⇒ ΣF = −D·x') },
-    { atMul:4.20, fn:()=> { endAct2WithBreak(); } }
+    { atMul:4.20, fn:()=> { closeCurtainThenBreak(); } }
   ];
   events.forEach(e=>e.fired=false);
 
