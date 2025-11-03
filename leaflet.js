@@ -1,4 +1,4 @@
-// leaflet.js
+// leaflet.js (banner + σύντομη περιγραφή + start)
 (() => {
   const root = document.getElementById('leaflet-root') || (() => {
     const d = document.createElement('div');

@@ -1,4 +1,4 @@
-// act3.js
+// act3.js (bubbles=διάλογοι, blackboard=τύποι)
 (() => {
   const A3 = { m: 70, T: 6.0, A: 3.0 };
   A3.omega = 2*Math.PI/A3.T;

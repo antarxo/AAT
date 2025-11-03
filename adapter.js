@@ -1,3 +1,4 @@
+
 // adapter.js
 (() => {
   async function loadJSON() {
@@ -49,15 +50,11 @@
   document.addEventListener('DOMContentLoaded', async ()=>{
     const cfg = await loadJSON();
     applyConfig(cfg);
-
     ensureRoot('act2-root');
     ensureRoot('foyer-root');
-
     ensureModule('act2.js');
     ensureModule('act3.js');
     ensureModule('leaflet.js');
-
-    // Hook existing Act 2 button to our custom event
     const b2 = document.getElementById('btnAct2');
     if(b2) b2.addEventListener('click', ()=> document.dispatchEvent(new Event('act2-start')));
   });

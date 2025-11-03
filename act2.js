@@ -1,4 +1,4 @@
-// act2.js
+// act2.js (transparent overlay panel — same stage)
 const A2 = { m:70, T:6.0, A:3.0 };
 A2.omega = 2*Math.PI/A2.T;
 A2.D = A2.m * A2.omega * A2.omega;
@@ -33,8 +33,14 @@ async function loadTimeline(){
 
 function baseUI2(){
   root2.innerHTML='';
-  css(root2,{position:'fixed',inset:'0',zIndex:'600',display:'grid',gridTemplateRows:'auto 1fr auto',gap:'10px',
-    background:'rgba(0,0,0,0.72)',color:'#fff',font:'14px/1.45 system-ui,Inter',padding:'16px'});
+  css(root2,{position:'fixed',inset:'0',zIndex:'600',pointerEvents:'none',background:'transparent'});
+
+  const panel = el('div','panel');
+  css(panel,{position:'absolute', right:'16px', top:'16px', width:'min(520px, 40vw)',
+    background:'rgba(0,0,0,0.70)', color:'#fff', border:'1px solid rgba(255,255,255,0.25)',
+    borderRadius:'12px', padding:'14px', backdropFilter:'blur(2px)', pointerEvents:'auto',
+    display:'grid', gridTemplateRows:'auto 1fr auto', gap:'10px', maxHeight:'80vh', overflow:'auto'});
+  root2.append(panel);
 
   const [L1,L2,L3] = META2.title?.lines || [];
   const hdr = el('div','hdr',`
@@ -43,42 +49,44 @@ function baseUI2(){
     <div class="t3" style="opacity:.85">${L3||"Εμηχ = … J"}</div>
   `);
 
-  const mid = el('div','mid'); css(mid,{display:'grid',gridTemplateColumns:'1fr 360px',gap:'16px',alignItems:'start'});
+  const mid = el('div','mid'); css(mid,{display:'grid',gridTemplateColumns:'1fr',gap:'12px',alignItems:'start'});
   const left = el('div','left'); const thoughtsList = el('ul','thoughts'); css(thoughtsList,{margin:'0',padding:'0 0 0 18px'}); left.append(thoughtsList);
   const right = el('div','right');
 
   const fxTitle = el('div',null,'<b>Γραφική F–x (κλίση −D)</b>');
-  const fxCanvas = el('canvas','fx'); css(fxCanvas,{width:'100%',height:'220px',background:'rgba(255,255,255,0.06)',borderRadius:'8px',marginBottom:'8px'});
+  const fxCanvas = el('canvas','fx'); css(fxCanvas,{width:'100%',height:'200px',background:'rgba(255,255,255,0.06)',borderRadius:'8px',marginBottom:'8px'});
 
   const flashTitle = el('div',null,'<b>Flashback: x–t (A’ &gt; A)</b>');
-  const flashCanvas = el('canvas','flash'); css(flashCanvas,{width:'100%',height:'120px',background:'rgba(255,255,255,0.06)',borderRadius:'8px'});
+  const flashCanvas = el('canvas','flash'); css(flashCanvas,{width:'100%',height:'110px',background:'rgba(255,255,255,0.06)',borderRadius:'8px'});
 
   if(META2.features?.showFx){ right.append(fxTitle, fxCanvas, el('div',null,`<small>D=${A2.D.toFixed(2)} N/m</small>`)); }
   if(META2.features?.showFlashback){ right.append(flashTitle, flashCanvas); }
 
-  const ctrls = el('div','ctrls'); css(ctrls,{display:'flex',gap:'8px',justifyContent:'flex-end'});
+  const twoCol = el('div'); css(twoCol,{display:'grid',gridTemplateColumns:'1fr',gap:'12px'});
+  twoCol.append(left, right);
+  panel.append(hdr, twoCol);
+
+  const ctrls = el('div','ctrls'); css(ctrls,{display:'flex',gap:'8px',justifyContent:'flex-end',marginTop:'6px'});
   const btnClose = el('button',null,'Κλείσιμο');
   const btnEnd   = el('button',null,'Τέλος Πράξης 2 (Κουρτίνα)');
   [btnClose,btnEnd].forEach(b=>css(b,{padding:'8px 12px',borderRadius:'8px',border:'1px solid #888',background:'#111',color:'#fff',cursor:'pointer'}));
   btnClose.onclick=()=>hide();
   btnEnd.onclick=()=>endAct2Curtain();
-
-  root2.append(hdr, mid, ctrls);
-  mid.append(left, right);
+  panel.append(ctrls); ctrls.append(btnClose, btnEnd);
 
   function setAutoTitle(){
     if(!META2.title?.autoFill) return;
-    const t2 = root2.querySelector('.t2');
-    const t3 = root2.querySelector('.t3');
+    const t2 = panel.querySelector('.t2');
+    const t3 = panel.querySelector('.t3');
     if(t2) t2.textContent = `m₁ = ${A2.m.toFixed(2)} kg , D₁ = ${A2.D.toFixed(2)} N/m`;
     if(t3) t3.textContent = `Εμηχ = ${A2.E.toFixed(2)} J`;
   }
   function addThought(txt){ const li=el('li',null,txt); thoughtsList.append(li); }
   function bubble(txt,ms=2400){
     const b=el('div','bubble',txt);
-    css(b,{position:'fixed',left:'50%',top:'18%',transform:'translateX(-50%)',maxWidth:'min(780px,82vw)',padding:'12px 14px',
-      background:'rgba(255,255,255,0.10)',border:'1px dashed rgba(255,255,255,0.35)',borderRadius:'12px',backdropFilter:'blur(2px)'});
-    root2.append(b); setTimeout(()=>b.remove(), ms);
+    css(b,{position:'absolute',left:'50%',top:'-8px',transform:'translate(-50%,-100%)',maxWidth:'min(780px,82vw)',padding:'10px 12px',
+      background:'rgba(0,0,0,0.60)',border:'1px dashed rgba(255,255,255,0.35)',borderRadius:'10px',backdropFilter:'blur(2px)'});
+    panel.append(b); setTimeout(()=>b.remove(), ms);
   }
   function drawFx(){
     if(!META2.features?.showFx) return;
@@ -149,6 +157,7 @@ function endAct2Curtain(){
 }
 function breakPanel2(){
   root2.innerHTML='';
+  css(root2,{pointerEvents:'auto', background:'rgba(0,0,0,0.50)'});
   const wrap = el('div','break2',`
     <h2 style="margin:0 0 8px">Τέλος Πράξης 2</h2>
     <div style="opacity:.9;margin-bottom:10px">Ο m,D συνεχίζει στο βάθος — σειρά του Φουαγιέ.</div>
@@ -156,12 +165,12 @@ function breakPanel2(){
   const btn3 = el('button',null,'Έναρξη Πράξης 3');
   const btnClose = el('button',null,'Κλείσιμο');
   [btn3,btnClose].forEach(b=>css(b,{padding:'10px 14px',borderRadius:'10px',border:'1px solid #888',background:'#111',color:'#fff',cursor:'pointer',marginRight:'8px'}));
-  btn3.onclick=()=>{ hide(); document.dispatchEvent(new Event('act3-start')); };
-  btnClose.onclick=()=>hide();
-  css(root2,{display:'grid',placeItems:'center',background:'rgba(0,0,0,0.75)'});
-  css(wrap,{textAlign:'center',padding:'18px 22px',border:'1px solid rgba(255,255,255,0.25)',borderRadius:'14px',background:'rgba(0,0,0,0.35)',backdropFilter:'blur(3px)'});
-  wrap.append(btn3, btnClose);
-  root2.append(wrap);
+  btn3.onclick=()=>{ hide(); css(root2,{pointerEvents:'none', background:'transparent'}); document.dispatchEvent(new Event('act3-start')); };
+  btnClose.onclick=()=>{ hide(); css(root2,{pointerEvents:'none', background:'transparent'}); };
+  const center = el('div'); css(center,{position:'absolute', inset:'0', display:'grid', placeItems:'center'});
+  const card = el('div'); css(card,{textAlign:'center',padding:'18px 22px',border:'1px solid rgba(255,255,255,0.25)',borderRadius:'14px',background:'rgba(0,0,0,0.35)',backdropFilter:'blur(3px)'});
+  card.append(wrap, btn3, btnClose);
+  center.append(card); root2.append(center);
 }
 
 const t2ms = mul => Math.max(0, mul*A2.T*1000);
