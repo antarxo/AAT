@@ -1,4 +1,4 @@
-// leaflet.js (banner + σύντομη περιγραφή + start)
+// leaflet.js — banner + short intro + start CTA
 (() => {
   const root = document.getElementById('leaflet-root') || (() => {
     const d = document.createElement('div');

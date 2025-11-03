@@ -1,4 +1,4 @@
-// act2.js — Act 2: ONLY left (central) diagrams slide; right side stays put.
+// act2.js — ONLY left (central) diagrams slide; right side stays put.
 (() => {
   const stage        = document.getElementById('stage');
   const curtainUpper = document.querySelector('.curtain-upper');
@@ -47,8 +47,7 @@
     const stepPx = 56;
     const shift  = Math.max(0, lc * stepPx);
     xtChart.style.transition = xtChart.style.transition || 'transform .6s ease, opacity .6s ease';
-    // διατηρούμε το αρχικό translateX(-50%)
-    xtChart.style.transform  = `translateX(-50%) translateY(${shift}px)`;
+    xtChart.style.transform  = `translateX(-50%) translateY(${shift}px)`; // keep center align if originally translateX(-50%)
     const rect = xtChart.getBoundingClientRect();
     const vh   = window.innerHeight || document.documentElement.clientHeight;
     const off  = (rect.top + rect.height + 24) > vh;

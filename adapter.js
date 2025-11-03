@@ -1,4 +1,3 @@
-
 // adapter.js
 (() => {
   async function loadJSON() {

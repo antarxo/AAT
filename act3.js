@@ -1,5 +1,4 @@
-<script>
-// act3.js — Blackboard ΜΟΝΟ στον χώρο τίτλων+σκηνής, ΧΩΡΙΣ να καλύπτει τις κουρτίνες
+// act3.js — Blackboard ONLY in the titles+stage area, NOT covering the two curtains
 (() => {
   const stage        = document.getElementById('stage');
   const curtainUpper = document.querySelector('.curtain-upper');
@@ -24,9 +23,9 @@
     try { const r=await fetch('act3_proofs.json',{cache:'no-cache'}); if(r.ok) PROOFS=await r.json(); } catch {}
   }
 
-  const rect = el => (el && el.getBoundingClientRect) ? el.getBoundingClientRect() : null;
-  const vw = ()=> window.innerWidth  || document.documentElement.clientWidth  || 1024;
-  const vh = ()=> window.innerHeight || document.documentElement.clientHeight || 768;
+  function rect(el){ try{ return el.getBoundingClientRect(); }catch(_){ return null; } }
+  function vw(){ return window.innerWidth || document.documentElement.clientWidth || 1024; }
+  function vh(){ return window.innerHeight || document.documentElement.clientHeight || 768; }
 
   function layoutBoard(bb){
     const pad = 8;
@@ -42,10 +41,10 @@
 
     const left   = Math.max(pad, stR.left + pad);
     const right  = Math.max(pad, vw() - stR.right + pad);
-    const top    = Math.max(stR.top + pad, (upR ? upR.bottom + pad : 0)); // ΚΑΤΩ από την πάνω κουρτίνα
+    const top    = Math.max(stR.top + pad, (upR ? upR.bottom + pad : 0)); // below upper curtain
     let bottomPx;
     if(loR){
-      bottomPx = Math.max(pad, vh() - loR.top + pad); // ΠΑΝΩ από την κάτω κουρτίνα
+      bottomPx = Math.max(pad, vh() - loR.top + pad); // above lower curtain
     } else {
       const aR = rect(audImg);
       bottomPx = aR? Math.max(pad, (vh() - aR.top) + pad) : Math.floor(vh()*0.18);
@@ -60,7 +59,7 @@
     const bb = el('div','blackboard');
     css(bb,{
       position:'absolute',
-      background:'rgba(0,0,0,0.45)',  // διαφανές, να φαίνεται το σκηνικό πίσω
+      background:'rgba(0,0,0,0.45)',
       border:'1px solid rgba(255,255,255,0.25)',
       borderRadius:'12px',
       boxShadow:'inset 0 0 80px rgba(0,0,0,0.35)',
@@ -73,29 +72,30 @@
     foyer.append(bb);
     layoutBoard(bb);
 
-    // Controls πάνω δεξιά στον πίνακα
+    // Controls top-right inside board
     const ctrls = el('div','ctrls');
     css(ctrls,{position:'absolute', right:'18px', top:'18px', display:'flex', gap:'8px', pointerEvents:'auto'});
-    const mkBtn = t => { const b=el('button',null,t); css(b,{padding:'8px 10px',borderRadius:'10px',border:'1px solid #888',background:'#111',color:'#fff',cursor:'pointer'}); return b; };
+    function mkBtn(txt){ const b=el('button',null,txt); css(b,{padding:'8px 10px',borderRadius:'10px',border:'1px solid #888',background:'#111',color:'#fff',cursor:'pointer'}); return b; }
     const btnPrev=mkBtn('← Πίσω'), btnNext=mkBtn('Επόμ.'), btnPlay=mkBtn('Auto ▶'), btnReset=mkBtn('Reset'), btnClose=mkBtn('Κλείσιμο');
     foyer.append(ctrls); ctrls.append(btnPrev,btnNext,btnPlay,btnReset,btnClose);
 
     // Helpers
-    const addLaw = window.addLaw;
-    const showThoughtForViewer = window.showThoughtForViewer;
-    const chalkLine = (text, box=false) => {
-      const row = el('div','chalk', box ? `⟦ ${text} ⟧` : text);
+    function chalkLine(text, isBox=false){
+      const row = el('div','chalk', isBox ? `⟦ ${text} ⟧` : text);
       css(row,{whiteSpace:'pre-wrap',borderLeft:'3px solid rgba(255,255,255,0.25)',padding:'4px 8px',margin:'4px 0',
                font:'15px/1.55 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace'});
       bb.append(row);
       row.animate([{opacity:0, filter:'blur(2px)'},{opacity:1, filter:'blur(0)'}],{duration:220, easing:'ease-out'});
-    };
+    }
 
+    const addLaw = window.addLaw;
+    const showThoughtForViewer = window.showThoughtForViewer;
     let proofIdx=0, stepIdx=0, autoTimer=null, rot=0;
     const fallbackViewers=[0,2,4,1,3];
-    const cur = () => PROOFS.proofs[proofIdx] || {title:'', steps:[]};
-    const renderTitle = () => chalkLine(`• ${cur().title || 'Πράξη 3η — Φουαγιέ'}`);
-    const clearBoard  = () => { bb.innerHTML=''; };
+
+    function cur(){ return PROOFS.proofs[proofIdx] || {title:'', steps:[]}; }
+    function renderTitle(){ chalkLine(`• ${cur().title || 'Πράξη 3η — Φουαγιέ'}`); }
+    function clearBoard(){ bb.innerHTML=''; }
 
     function doStep(s){
       if(!s) return;
@@ -107,7 +107,7 @@
         chalkLine(s.text);
       } else if(s.type==='box'){
         chalkLine(s.text, true);
-        addLaw?.(s.text); // τελικά αποτελέσματα → στους «Νόμους» αριστερά
+        addLaw?.(s.text);
       }
     }
 
@@ -125,18 +125,16 @@
 
     btnPrev.onclick=prev; btnNext.onclick=next; btnPlay.onclick=toggleAuto; btnReset.onclick=reset; btnClose.onclick=hide;
 
-    // Re-layout σε resize/loads
     const relayout = ()=> layoutBoard(bb);
     window.addEventListener('resize', relayout);
-    audImg?.addEventListener('load', relayout);
-    curtainUpper?.addEventListener('load', relayout);
-    curtainLower?.addEventListener('load', relayout);
-    setTimeout(relayout,0);
+    if(audImg) audImg.addEventListener('load', relayout);
+    if(curtainUpper) curtainUpper.addEventListener('load', relayout);
+    if(curtainLower) curtainLower.addEventListener('load', relayout);
+    setTimeout(relayout, 0);
   }
 
   function prepareSceneForAct3(){
-    // Κουρτίνες κλειστές (παραμένουν ορατές), κοινό -> koino2.png (fallback αν λείπει)
-    stage?.classList.remove('open');
+    if(stage) stage.classList.remove('open'); // curtains closed but visible
     if(audImg){
       const orig = audImg.getAttribute('src') || '';
       audImg.dataset.origSrc = orig;
@@ -148,4 +146,3 @@
   async function runAct3(){ await loadProofs(); prepareSceneForAct3(); buildOverlay(); show(); }
   document.addEventListener('act3-start', runAct3);
 })();
-</script>
