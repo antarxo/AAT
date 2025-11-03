@@ -73,6 +73,17 @@
   };
 
   function endAct2WithBreak(){
+    // Unified transition panel
+    if(window.showActTransition){
+      window.showActTransition({
+        title:'Τέλος Πράξης 2',
+        msg:'Διάλειμμα. Πάμε Φουαγιέ (Πράξη 3);',
+        buttonText:'Έναρξη Πράξης 3',
+        onClick:()=>document.dispatchEvent(new Event('act3-start'))
+      });
+      return;
+    }
+    // Fallback (if helper missing)
     const actBreak   = document.getElementById('actBreak');
     const actBrTitle = document.getElementById('actBreakTitle');
     const actBrMsg   = document.getElementById('actBreakMsg');
@@ -89,7 +100,7 @@
     }
   }
 
-  // Events (unchanged timing with Act 1)
+  // Events (same timing as Act 1)
   const events = [
     { atMul:0.05, fn:()=> showThoughtForViewer?.(0, 'ωπ! δεμένος σε ελατήριο είναι ο m₁D₁!', 2.2, 125, -10) },
     { atMul:0.35, fn:()=> showThoughtForViewer?.(2, 'αυτόν ακριβώς τον m₁D₁ τον έχω ξαναδεί σε άλλη παράσταση αλλά με άλλον παραγωγό', 2.4, 130, 0) },
@@ -108,13 +119,7 @@
     { atMul:3.30, fn:()=> showThoughtForViewer?.(2, '…χμμμ, γι’ αυτό τον λένε και (m, D)!', 2.0, 125, 0) },
     { atMul:3.55, fn:()=> window.addLaw?.('Θέτω D = mω²') },
     { atMul:3.75, fn:()=> window.addLaw?.('⇒ ΣF = −D·x') },
-    { atMul:4.20, fn:()=> {
-      if(curtainUpper && stage){
-        curtainUpper.classList.add('slow-close');
-        stage.classList.remove('open');
-        setTimeout(()=>{ curtainUpper.classList.remove('slow-close'); endAct2WithBreak(); }, 1200);
-      } else { endAct2WithBreak(); }
-    }}
+    { atMul:4.20, fn:()=> { endAct2WithBreak(); } }
   ];
   events.forEach(e=>e.fired=false);
 

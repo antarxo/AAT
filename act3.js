@@ -1,4 +1,4 @@
-// act3.js — Blackboard: x=16%, y=0, width=68%, height up to (rulerY + 20px); draggable freely; starts via event (like Act 2)
+// act3.js — Blackboard: x=16%, y=0, width=68%, height up to (rulerY + 20px); draggable freely; starts via event
 (() => {
   const audImg = document.querySelector('.audience');
   const foyer = document.getElementById('foyer-root') || (() => {
@@ -140,7 +140,7 @@
   }
 
   function prepareSceneForAct3(){
-    // Start via event (like Act 2). Optional audience change.
+    // Start via event; optional audience change to koino2.png
     if(audImg){
       const orig = audImg.getAttribute('src') || '';
       audImg.dataset.origSrc = orig;
