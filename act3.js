@@ -1,12 +1,14 @@
-// act3.js — Same stage, closed curtains; audience switches to koino2.png; top blackboard overlay
+// act3.js — Transparent blackboard over curtains; always shows header; audience visible
 (() => {
-  const stage  = document.getElementById('stage');
-  const audImg = document.querySelector('.audience');
+  const stage        = document.getElementById('stage');
+  const curtainUpper = document.querySelector('.curtain-upper');
+  const curtainLower = document.querySelector('.curtain-lower');
+  const audImg       = document.querySelector('.audience');
 
   const foyer = document.getElementById('foyer-root') || (() => {
     const d = document.createElement('div');
     d.id = 'foyer-root';
-    Object.assign(d.style, { position:'fixed', inset:'0', zIndex:'650', display:'none', pointerEvents:'none' });
+    Object.assign(d.style, { position:'fixed', inset:'0', zIndex:'1200', display:'none', pointerEvents:'none' });
     document.body.appendChild(d);
     return d;
   })();
@@ -21,80 +23,95 @@
     try { const r=await fetch('act3_proofs.json',{cache:'no-cache'}); if(r.ok) PROOFS=await r.json(); } catch {}
   }
 
-  // build overlay: blackboard occupying top area (titles+stage), leave audience visible
   function buildOverlay(){
     foyer.innerHTML='';
     foyer.style.pointerEvents='none';
 
-    // top blackboard covering down to top of audience image
-    const bb = el('div','blackboard');
+    // compute bottom based on audience height (leave audience visible)
     const audH = (audImg && audImg.clientHeight) ? audImg.clientHeight : Math.floor(window.innerHeight*0.18);
+
+    // semi‑transparent blackboard covering titles+stage (both curtains included)
+    const bb = el('div','blackboard');
     css(bb,{
-      position:'absolute', left:0, right:0, top:0, bottom: (audH + 12) +'px',
-      background:'radial-gradient(800px 420px at 20% 10%, rgba(255,255,255,0.05), rgba(0,0,0,0.92)), #0c0f10',
-      border:'1px solid rgba(255,255,255,0.15)', borderRadius:'12px', margin:'8px',
-      boxShadow:'inset 0 0 80px rgba(0,0,0,0.6)', overflow:'auto', color:'#fff',
-      pointerEvents:'auto'
+      position:'absolute', left:'8px', right:'8px', top:'8px', bottom: (audH + 12) +'px',
+      background:'rgba(0,0,0,0.45)',           // true transparency so σκηνικό φαίνεται πίσω
+      border:'1px solid rgba(255,255,255,0.25)',
+      borderRadius:'12px', boxShadow:'inset 0 0 80px rgba(0,0,0,0.35)', color:'#fff',
+      overflow:'auto', padding:'10px 12px', pointerEvents:'auto', backdropFilter:'blur(1px)'
     });
     foyer.append(bb);
 
-    // controls floating (play/next/prev/reset/close) — top-right on the board
+    // controls floating on the board
     const ctrls = el('div','ctrls');
     css(ctrls,{position:'absolute', right:'18px', top:'18px', display:'flex', gap:'8px', pointerEvents:'auto'});
     function mkBtn(txt){ const b=el('button',null,txt); css(b,{padding:'8px 10px',borderRadius:'10px',border:'1px solid #888',background:'#111',color:'#fff',cursor:'pointer'}); return b; }
     const btnPrev=mkBtn('← Πίσω'), btnNext=mkBtn('Επόμ.'), btnPlay=mkBtn('Auto ▶'), btnReset=mkBtn('Reset'), btnClose=mkBtn('Κλείσιμο');
     foyer.append(ctrls); ctrls.append(btnPrev,btnNext,btnPlay,btnReset,btnClose);
 
-    // bubbles host (over the board)
-    const bHost = el('div','bHost');
-    css(bHost,{position:'absolute', left:0, right:0, top:0, bottom:(audH+12)+'px', pointerEvents:'none'});
-    foyer.append(bHost);
-
     // chalk line helper
     function chalkLine(text, isBox=false){
       const row = el('div','chalk', isBox ? `⟦ ${text} ⟧` : text);
-      css(row,{whiteSpace:'pre-wrap',borderLeft:'3px solid rgba(255,255,255,0.2)',padding:'4px 8px',margin:'4px 0',
-               font:'15px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace'});
+      css(row,{whiteSpace:'pre-wrap',borderLeft:'3px solid rgba(255,255,255,0.25)',padding:'4px 8px',margin:'4px 0',
+               font:'15px/1.55 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace'});
       bb.append(row);
-      row.animate([{opacity:0, filter:'blur(3px)'},{opacity:1, filter:'blur(0)'}],{duration:220, easing:'ease-out'});
-    }
-    function say(text, ms=2800){
-      const b=el('div','bubble',text);
-      css(b,{position:'absolute',left:'50%',top:'14%',transform:'translateX(-50%)',maxWidth:'min(840px,84vw)',padding:'12px 14px',color:'#fff',
-             background:'rgba(0,0,0,0.55)',border:'1px dashed rgba(255,255,255,0.35)',borderRadius:'12px',backdropFilter:'blur(2px)'});
-      bHost.append(b);
-      setTimeout(()=>{try{b.remove()}catch(_){}} , ms);
+      row.animate([{opacity:0, filter:'blur(2px)'},{opacity:1, filter:'blur(0)'}],{duration:220, easing:'ease-out'});
     }
 
+    // audience-style bubbles for dialogues (Acts 1&2 style)
+    const showThoughtForViewer = window.showThoughtForViewer;
+    const addLaw = window.addLaw;
+
     // controller
-    let proofIdx=0, stepIdx=0, autoTimer=null;
+    let proofIdx=0, stepIdx=0, autoTimer=null, rot=0;
+    const fallbackViewers=[0,2,4,1,3];
+
     function cur(){ return PROOFS.proofs[proofIdx] || {title:"", steps:[]}; }
-    function renderTitle(){ chalkLine(`• ${cur().title}`); }
+    function renderTitle(){ chalkLine(`• ${cur().title || 'Πράξη 3η — Φουαγιέ'}`); }
     function clearBoard(){ bb.innerHTML=''; }
+
+    // Always render a visible header even if no proofs loaded
+    renderTitle();
+    if(!PROOFS.proofs || PROOFS.proofs.length===0){
+      chalkLine('— Περιμένω αποδείξεις από act3_proofs.json — πάτα «Κλείσιμο» ή χρησιμοποίησε τα κουμπιά.', false);
+    }
+
     function doStep(s){
       if(!s) return;
-      if(s.type==='say'){ say(s.text, s.dur? s.dur*1000 : 2800); }
-      else if(s.type==='write'){ chalkLine(s.text); }
-      else if(s.type==='derive'){ chalkLine(s.text); }
-      else if(s.type==='box'){ chalkLine(s.text, true); window.addLaw?.(s.text); } // τελικό αποτέλεσμα → στους νόμους αριστερά
+      if(s.type==='say'){
+        const idx = (typeof s.viewer==='number') ? s.viewer : fallbackViewers[rot % fallbackViewers.length];
+        rot++;
+        showThoughtForViewer?.(idx, s.text, s.dur? s.dur:2.6, 125, 0);
+      } else if(s.type==='write'){
+        chalkLine(s.text);
+      } else if(s.type==='derive'){
+        chalkLine(s.text);
+      } else if(s.type==='box'){
+        chalkLine(s.text, true);
+        addLaw?.(s.text);
+      }
     }
+
     function next(){
       const p=cur();
-      if(stepIdx===0) renderTitle();
       if(stepIdx < p.steps.length){ doStep(p.steps[stepIdx]); stepIdx++; }
-      else { proofIdx = Math.min(PROOFS.proofs.length-1, proofIdx+1); stepIdx=0; clearBoard(); renderTitle(); }
+      else {
+        if(proofIdx < (PROOFS.proofs.length-1)){ proofIdx++; stepIdx=0; clearBoard(); renderTitle(); }
+      }
     }
     function prev(){
       if(stepIdx>0){ stepIdx-=1; clearBoard(); renderTitle(); const p=cur(); for(let i=0;i<stepIdx;i++) doStep(p.steps[i]); }
     }
     function reset(){ stepIdx=0; clearBoard(); renderTitle(); }
     function toggleAuto(){ if(autoTimer){ clearInterval(autoTimer); autoTimer=null; btnPlay.textContent='Auto ▶'; } else { btnPlay.textContent='Auto ⏸'; autoTimer=setInterval(next, 1200); } }
+
     btnPrev.onclick=prev; btnNext.onclick=next; btnPlay.onclick=toggleAuto; btnReset.onclick=reset; btnClose.onclick=hide;
   }
 
   function prepareSceneForAct3(){
-    // Close curtains and update audience src to koino2.png (fallback to original if missing)
+    // close curtains, change audience
     if(stage) stage.classList.remove('open');
+    if(curtainUpper) curtainUpper.classList.remove('slow-close'); // ensure static
+    if(curtainLower) curtainLower.classList.remove('slow-close');
     if(audImg){
       const orig = audImg.getAttribute('src') || '';
       audImg.dataset.origSrc = orig;

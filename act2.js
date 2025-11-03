@@ -1,4 +1,4 @@
-// act2.js — Act 2 continues on same stage; charts slide down & fade as laws append
+// act2.js — Act 2: ONLY left (central) diagrams slide; right side stays put.
 (() => {
   const stage        = document.getElementById('stage');
   const curtainUpper = document.querySelector('.curtain-upper');
@@ -6,8 +6,7 @@
   const markerEl     = document.getElementById('marker');
   const lawsPane     = document.getElementById('laws');
   const lawsTitle    = document.getElementById('lawsTitle');
-  const xtChart      = document.getElementById('xtChart');
-  const lawCharts    = document.getElementById('lawCharts');
+  const xtChart      = document.getElementById('xtChart');  // κεντρικό/αριστερό διάγραμμα
   const signboard    = document.querySelector('.signboard');
 
   const showThoughtForViewer = window.showThoughtForViewer;
@@ -41,33 +40,28 @@
 
   function ensureSpringVisible(){ if(springEl) springEl.style.display = 'block'; }
 
-  // Charts slide logic: after each law added, push xtChart down by step and fade/disappear when off-screen
-  function slideChartsAfterLaw(){
-    const lc = (window.lawCount||0);
+  // ONLY left-side (central) diagram slides down as laws append
+  function slideLeftAfterLaw(){
     if(!xtChart) return;
-    const stepPx = 56;                       // ~line height + spacing
-    const shift  = Math.max(0, lc * stepPx); // how much to push down
+    const lc = (window.lawCount||0);
+    const stepPx = 56;
+    const shift  = Math.max(0, lc * stepPx);
     xtChart.style.transition = xtChart.style.transition || 'transform .6s ease, opacity .6s ease';
-    // preserve existing translateX(-50%)
-    xtChart.style.transform = `translateX(-50%) translateY(${shift}px)`;
-    // if pushed beyond viewport, fade & hide
+    // διατηρούμε το αρχικό translateX(-50%)
+    xtChart.style.transform  = `translateX(-50%) translateY(${shift}px)`;
     const rect = xtChart.getBoundingClientRect();
     const vh   = window.innerHeight || document.documentElement.clientHeight;
     const off  = (rect.top + rect.height + 24) > vh;
     if(off){
       xtChart.style.opacity = '0';
-      // after transition, set display none
       setTimeout(()=>{ xtChart.style.display='none'; }, 620);
     }
   }
 
-  // Monkey-patch addLaw to also slide charts (only during Act 2)
-  if(typeof addLawOriginal === 'function' && !window.__ACT2_PATCHED__){
-    window.addLaw = function(txt){
-      try { addLawOriginal(txt); } finally { slideChartsAfterLaw(); }
-    };
-    window.__ACT2_PATCHED__ = true;
-  }
+  // Patch addLaw for Act 2
+  window.addLaw = function(txt){
+    try { addLawOriginal(txt); } finally { slideLeftAfterLaw(); }
+  };
 
   function endAct2WithBreak(){
     const actBreak   = document.getElementById('actBreak');
