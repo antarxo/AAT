@@ -1,4 +1,4 @@
-// act2.js — ONLY left (central) diagrams slide; right side stays put.
+// act2.js — Laws list grows (no scrollbar); right-side lawCharts descend accordingly and fade out off-screen.
 (() => {
   const stage        = document.getElementById('stage');
   const curtainUpper = document.querySelector('.curtain-upper');
@@ -6,7 +6,7 @@
   const markerEl     = document.getElementById('marker');
   const lawsPane     = document.getElementById('laws');
   const lawsTitle    = document.getElementById('lawsTitle');
-  const xtChart      = document.getElementById('xtChart');  // κεντρικό/αριστερό διάγραμμα
+  const lawCharts    = document.getElementById('lawCharts'); // δεξί/πλάι διάγραμμα Νόμων
   const signboard    = document.querySelector('.signboard');
 
   const showThoughtForViewer = window.showThoughtForViewer;
@@ -40,26 +40,34 @@
 
   function ensureSpringVisible(){ if(springEl) springEl.style.display = 'block'; }
 
-  // ONLY left-side (central) diagram slides down as laws append
-  function slideLeftAfterLaw(){
-    if(!xtChart) return;
-    const lc = (window.lawCount||0);
-    const stepPx = 56;
-    const shift  = Math.max(0, lc * stepPx);
-    xtChart.style.transition = xtChart.style.transition || 'transform .6s ease, opacity .6s ease';
-    xtChart.style.transform  = `translateX(-50%) translateY(${shift}px)`; // keep center align if originally translateX(-50%)
-    const rect = xtChart.getBoundingClientRect();
+  // Capture baseline Laws height at Act2 start; translate right-side charts by delta height
+  let baselineLawsH = null;
+  function slideChartsByLawsHeight(){
+    if(!lawCharts || !lawsPane) return;
+    if(baselineLawsH == null) baselineLawsH = lawsPane.getBoundingClientRect().height;
+    // ensure laws have no internal scrollbar and can grow
+    lawsPane.style.overflow = 'visible';
+    lawsPane.style.maxHeight = 'none';
+    const curH = lawsPane.getBoundingClientRect().height;
+    const delta = Math.max(0, curH - baselineLawsH);
+    lawCharts.style.transition = lawCharts.style.transition || 'transform .6s ease, opacity .6s ease';
+    lawCharts.style.transform  = `translateY(${Math.round(delta)}px)`;
+    // fade out when pushed below viewport
+    const rect = lawCharts.getBoundingClientRect();
     const vh   = window.innerHeight || document.documentElement.clientHeight;
-    const off  = (rect.top + rect.height + 24) > vh;
+    const off  = (rect.top + rect.height + 16) > vh;
     if(off){
-      xtChart.style.opacity = '0';
-      setTimeout(()=>{ xtChart.style.display='none'; }, 620);
+      lawCharts.style.opacity = '0';
+      setTimeout(()=>{ lawCharts.style.display='none'; }, 620);
+    } else {
+      lawCharts.style.opacity = '1';
+      if(lawCharts.style.display==='none') lawCharts.style.display='';
     }
   }
 
-  // Patch addLaw for Act 2
+  // Patch addLaw: append law as usual, then update charts position
   window.addLaw = function(txt){
-    try { addLawOriginal(txt); } finally { slideLeftAfterLaw(); }
+    try { addLawOriginal(txt); } finally { slideChartsByLawsHeight(); }
   };
 
   function endAct2WithBreak(){
@@ -112,7 +120,13 @@
     ensureSpringVisible();
     if(stage) stage.classList.add('open');
     if(markerEl) markerEl.style.opacity = '1';
-    if(lawsPane){ lawsPane.style.display='block'; lawsTitle.textContent = 'Νόμοι Πράξης 2'; }
+    if(lawsPane){ 
+      lawsPane.style.display='block'; 
+      lawsPane.style.overflow='visible'; 
+      lawsPane.style.maxHeight='none';
+      lawsTitle.textContent = 'Νόμοι Πράξης 2'; 
+    }
+    baselineLawsH = lawsPane ? lawsPane.getBoundingClientRect().height : null;
 
     const Tsec = CLOCK.getT();
     const startMs = CLOCK.nowMs();

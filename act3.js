@@ -1,4 +1,4 @@
-// act3.js — Blackboard ONLY in the titles+stage area, NOT covering the two curtains
+// act3.js — Blackboard inside stage (between curtains/sides), draggable within that area; curtains closed; koino2 audience
 (() => {
   const stage        = document.getElementById('stage');
   const curtainUpper = document.querySelector('.curtain-upper');
@@ -27,30 +27,17 @@
   function vw(){ return window.innerWidth || document.documentElement.clientWidth || 1024; }
   function vh(){ return window.innerHeight || document.documentElement.clientHeight || 768; }
 
-  function layoutBoard(bb){
+  function stageBounds(){
     const pad = 8;
     const stR = rect(stage);
-    if(!stR){
-      const aR = rect(audImg);
-      const bottom = aR? Math.max(pad, (vh() - aR.top) + pad) : Math.floor(vh()*0.18);
-      css(bb,{ left: pad+'px', right: pad+'px', top: pad+'px', bottom: bottom+'px' });
-      return;
-    }
     const upR = rect(curtainUpper);
     const loR = rect(curtainLower);
-
-    const left   = Math.max(pad, stR.left + pad);
-    const right  = Math.max(pad, vw() - stR.right + pad);
-    const top    = Math.max(stR.top + pad, (upR ? upR.bottom + pad : 0)); // below upper curtain
-    let bottomPx;
-    if(loR){
-      bottomPx = Math.max(pad, vh() - loR.top + pad); // above lower curtain
-    } else {
-      const aR = rect(audImg);
-      bottomPx = aR? Math.max(pad, (vh() - aR.top) + pad) : Math.floor(vh()*0.18);
-    }
-
-    css(bb,{ left:left+'px', right:right+'px', top:top+'px', bottom:bottomPx+'px' });
+    if(!stR) return { left: pad, right: vw()-pad, top: pad, bottom: vh()-pad };
+    const left = Math.max(pad, stR.left + pad);
+    const right = Math.min(vw()-pad, stR.right - pad);
+    const top = Math.max(stR.top + pad, (upR ? upR.bottom + pad : stR.top + pad));
+    const bottom = Math.min(vh()-pad, (loR ? loR.top - pad : (rect(audImg) ? rect(audImg).top - pad : vh()*0.82)));
+    return { left, right, top, bottom };
   }
 
   function buildOverlay(){
@@ -70,9 +57,41 @@
       backdropFilter:'blur(1px)'
     });
     foyer.append(bb);
-    layoutBoard(bb);
 
-    // Controls top-right inside board
+    // initial fit inside stage
+    const B = stageBounds();
+    css(bb,{ left:B.left+'px', right:(vw()-B.right)+'px', top:B.top+'px', bottom:(vh()-B.bottom)+'px' });
+
+    // make draggable inside bounds
+    let dragging=false, dx=0, dy=0, startX=0, startY=0, bbStartLeft=0, bbStartTop=0;
+    function onPointerDown(ev){
+      dragging=true;
+      bb.setPointerCapture(ev.pointerId);
+      const r = bb.getBoundingClientRect();
+      startX = ev.clientX; startY = ev.clientY;
+      bbStartLeft = r.left; bbStartTop = r.top;
+      dx = startX - r.left; dy = startY - r.top;
+      ev.preventDefault();
+    }
+    function onPointerMove(ev){
+      if(!dragging) return;
+      const B = stageBounds();
+      const r = bb.getBoundingClientRect();
+      let nx = ev.clientX - dx, ny = ev.clientY - dy;
+      nx = Math.max(B.left, Math.min(nx, B.right - r.width));
+      ny = Math.max(B.top,  Math.min(ny, B.bottom - r.height));
+      // set via left/top + reset right/bottom to auto
+      css(bb,{ left:nx+'px', top:ny+'px', right:'auto', bottom:'auto' });
+    }
+    function onPointerUp(ev){
+      dragging=false;
+      try{ bb.releasePointerCapture(ev.pointerId); }catch(_){}
+    }
+    bb.addEventListener('pointerdown', onPointerDown);
+    window.addEventListener('pointermove', onPointerMove);
+    window.addEventListener('pointerup', onPointerUp);
+
+    // Controls inside board
     const ctrls = el('div','ctrls');
     css(ctrls,{position:'absolute', right:'18px', top:'18px', display:'flex', gap:'8px', pointerEvents:'auto'});
     function mkBtn(txt){ const b=el('button',null,txt); css(b,{padding:'8px 10px',borderRadius:'10px',border:'1px solid #888',background:'#111',color:'#fff',cursor:'pointer'}); return b; }
@@ -125,16 +144,23 @@
 
     btnPrev.onclick=prev; btnNext.onclick=next; btnPlay.onclick=toggleAuto; btnReset.onclick=reset; btnClose.onclick=hide;
 
-    const relayout = ()=> layoutBoard(bb);
+    const relayout = ()=>{
+      const B = stageBounds();
+      const r = bb.getBoundingClientRect();
+      // clamp current position inside new bounds
+      let nx = Math.max(B.left, Math.min(r.left, B.right - r.width));
+      let ny = Math.max(B.top,  Math.min(r.top,  B.bottom - r.height));
+      css(bb,{ left:nx+'px', top:ny+'px', right:'auto', bottom:'auto' });
+    };
     window.addEventListener('resize', relayout);
-    if(audImg) audImg.addEventListener('load', relayout);
-    if(curtainUpper) curtainUpper.addEventListener('load', relayout);
-    if(curtainLower) curtainLower.addEventListener('load', relayout);
+    audImg?.addEventListener('load', relayout);
+    curtainUpper?.addEventListener('load', relayout);
+    curtainLower?.addEventListener('load', relayout);
     setTimeout(relayout, 0);
   }
 
   function prepareSceneForAct3(){
-    if(stage) stage.classList.remove('open'); // curtains closed but visible
+    stage?.classList.remove('open'); // curtains closed but visible
     if(audImg){
       const orig = audImg.getAttribute('src') || '';
       audImg.dataset.origSrc = orig;
