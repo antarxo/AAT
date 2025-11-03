@@ -1,10 +1,6 @@
-// act3.js — Blackboard inside stage (between curtains/sides), draggable within that area; curtains closed; koino2 audience
+// act3.js — Blackboard: x=16%, y=0, width=68%, height up to (rulerY + 20px); draggable freely; starts via event (like Act 2)
 (() => {
-  const stage        = document.getElementById('stage');
-  const curtainUpper = document.querySelector('.curtain-upper');
-  const curtainLower = document.querySelector('.curtain-lower');
-  const audImg       = document.querySelector('.audience');
-
+  const audImg = document.querySelector('.audience');
   const foyer = document.getElementById('foyer-root') || (() => {
     const d = document.createElement('div');
     d.id = 'foyer-root';
@@ -18,26 +14,22 @@
   const show=()=>{ foyer.style.display='block'; };
   const hide=()=>{ foyer.style.display='none'; };
 
-  let PROOFS = { render:"plain", params:{}, proofs:[] };
-  async function loadProofs(){
-    try { const r=await fetch('act3_proofs.json',{cache:'no-cache'}); if(r.ok) PROOFS=await r.json(); } catch {}
+  function getRulerYpx(){
+    const vh = window.innerHeight || document.documentElement.clientHeight || 800;
+    let v = 60;
+    const style = getComputedStyle(document.documentElement).getPropertyValue('--axis-y');
+    if(style && style.includes('vh')){
+      const n = parseFloat(style);
+      if(!isNaN(n)) v = n;
+    } else if(typeof window.A1_JSON_CFG === 'object' && window.A1_JSON_CFG.ui && typeof window.A1_JSON_CFG.ui.axisYvh === 'number'){
+      v = window.A1_JSON_CFG.ui.axisYvh;
+    }
+    return (v/100) * vh;
   }
 
-  function rect(el){ try{ return el.getBoundingClientRect(); }catch(_){ return null; } }
-  function vw(){ return window.innerWidth || document.documentElement.clientWidth || 1024; }
-  function vh(){ return window.innerHeight || document.documentElement.clientHeight || 768; }
-
-  function stageBounds(){
-    const pad = 8;
-    const stR = rect(stage);
-    const upR = rect(curtainUpper);
-    const loR = rect(curtainLower);
-    if(!stR) return { left: pad, right: vw()-pad, top: pad, bottom: vh()-pad };
-    const left = Math.max(pad, stR.left + pad);
-    const right = Math.min(vw()-pad, stR.right - pad);
-    const top = Math.max(stR.top + pad, (upR ? upR.bottom + pad : stR.top + pad));
-    const bottom = Math.min(vh()-pad, (loR ? loR.top - pad : (rect(audImg) ? rect(audImg).top - pad : vh()*0.82)));
-    return { left, right, top, bottom };
+  let PROOFS = { render:"tex", params:{}, proofs:[] };
+  async function loadProofs(){
+    try { const r=await fetch('act3_proofs.json',{cache:'no-cache'}); if(r.ok) PROOFS=await r.json(); } catch {}
   }
 
   function buildOverlay(){
@@ -58,53 +50,55 @@
     });
     foyer.append(bb);
 
-    // initial fit inside stage
-    const B = stageBounds();
-    css(bb,{ left:B.left+'px', right:(vw()-B.right)+'px', top:B.top+'px', bottom:(vh()-B.bottom)+'px' });
-
-    // make draggable inside bounds
-    let dragging=false, dx=0, dy=0, startX=0, startY=0, bbStartLeft=0, bbStartTop=0;
-    function onPointerDown(ev){
-      dragging=true;
-      bb.setPointerCapture(ev.pointerId);
-      const r = bb.getBoundingClientRect();
-      startX = ev.clientX; startY = ev.clientY;
-      bbStartLeft = r.left; bbStartTop = r.top;
-      dx = startX - r.left; dy = startY - r.top;
-      ev.preventDefault();
+    function layoutInitial(){
+      const W = window.innerWidth  || document.documentElement.clientWidth  || 1024;
+      const H = window.innerHeight || document.documentElement.clientHeight || 768;
+      const left = Math.round(0.16 * W);
+      const width = Math.round(0.68 * W);
+      const top = 0;
+      const bottomPx = Math.max(8, H - (getRulerYpx() + 20));
+      css(bb,{ left:left+'px', width:width+'px', top:top+'px', bottom:bottomPx+'px', right:'auto' });
     }
-    function onPointerMove(ev){
+    layoutInitial();
+
+    // draggable ANYWHERE
+    let dragging=false, dx=0, dy=0;
+    bb.addEventListener('pointerdown', ev=>{
+      dragging=true; bb.setPointerCapture(ev.pointerId);
+      const r=bb.getBoundingClientRect(); dx=ev.clientX-r.left; dy=ev.clientY-r.top; ev.preventDefault();
+    });
+    window.addEventListener('pointermove', ev=>{
       if(!dragging) return;
-      const B = stageBounds();
-      const r = bb.getBoundingClientRect();
-      let nx = ev.clientX - dx, ny = ev.clientY - dy;
-      nx = Math.max(B.left, Math.min(nx, B.right - r.width));
-      ny = Math.max(B.top,  Math.min(ny, B.bottom - r.height));
-      // set via left/top + reset right/bottom to auto
+      const nx = ev.clientX - dx, ny = ev.clientY - dy;
       css(bb,{ left:nx+'px', top:ny+'px', right:'auto', bottom:'auto' });
-    }
-    function onPointerUp(ev){
-      dragging=false;
-      try{ bb.releasePointerCapture(ev.pointerId); }catch(_){}
-    }
-    bb.addEventListener('pointerdown', onPointerDown);
-    window.addEventListener('pointermove', onPointerMove);
-    window.addEventListener('pointerup', onPointerUp);
+    });
+    window.addEventListener('pointerup', ev=>{
+      dragging=false; try{ bb.releasePointerCapture(ev.pointerId); }catch(_){}
+    });
+    window.addEventListener('resize', layoutInitial);
 
-    // Controls inside board
+    // Controls
     const ctrls = el('div','ctrls');
     css(ctrls,{position:'absolute', right:'18px', top:'18px', display:'flex', gap:'8px', pointerEvents:'auto'});
     function mkBtn(txt){ const b=el('button',null,txt); css(b,{padding:'8px 10px',borderRadius:'10px',border:'1px solid #888',background:'#111',color:'#fff',cursor:'pointer'}); return b; }
     const btnPrev=mkBtn('← Πίσω'), btnNext=mkBtn('Επόμ.'), btnPlay=mkBtn('Auto ▶'), btnReset=mkBtn('Reset'), btnClose=mkBtn('Κλείσιμο');
     foyer.append(ctrls); ctrls.append(btnPrev,btnNext,btnPlay,btnReset,btnClose);
 
-    // Helpers
-    function chalkLine(text, isBox=false){
-      const row = el('div','chalk', isBox ? `⟦ ${text} ⟧` : text);
+    // Chalk + MathJax
+    const useTex = (PROOFS && (PROOFS.render==='tex'));
+    function chalkLine(text, boxed=false){
+      const row = el('div','chalk');
+      if(useTex){
+        const s = (text.trim().startsWith('\\(') || text.trim().startsWith('\\[')) ? text : `\\(${text}\\)`;
+        row.innerHTML = boxed ? `⟦ ${s} ⟧` : s;
+      } else {
+        row.textContent = boxed ? `⟦ ${text} ⟧` : text;
+      }
       css(row,{whiteSpace:'pre-wrap',borderLeft:'3px solid rgba(255,255,255,0.25)',padding:'4px 8px',margin:'4px 0',
                font:'15px/1.55 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace'});
       bb.append(row);
       row.animate([{opacity:0, filter:'blur(2px)'},{opacity:1, filter:'blur(0)'}],{duration:220, easing:'ease-out'});
+      if(useTex && window.MathJax && window.MathJax.typesetPromise){ window.MathJax.typesetPromise([row]); }
     }
 
     const addLaw = window.addLaw;
@@ -126,7 +120,7 @@
         chalkLine(s.text);
       } else if(s.type==='box'){
         chalkLine(s.text, true);
-        addLaw?.(s.text);
+        addLaw?.(typeof s.lawText==='string' ? s.lawText : s.text);
       }
     }
 
@@ -143,29 +137,15 @@
     function toggleAuto(){ if(autoTimer){ clearInterval(autoTimer); autoTimer=null; btnPlay.textContent='Auto ▶'; } else { btnPlay.textContent='Auto ⏸'; autoTimer=setInterval(next, 1200); } }
 
     btnPrev.onclick=prev; btnNext.onclick=next; btnPlay.onclick=toggleAuto; btnReset.onclick=reset; btnClose.onclick=hide;
-
-    const relayout = ()=>{
-      const B = stageBounds();
-      const r = bb.getBoundingClientRect();
-      // clamp current position inside new bounds
-      let nx = Math.max(B.left, Math.min(r.left, B.right - r.width));
-      let ny = Math.max(B.top,  Math.min(r.top,  B.bottom - r.height));
-      css(bb,{ left:nx+'px', top:ny+'px', right:'auto', bottom:'auto' });
-    };
-    window.addEventListener('resize', relayout);
-    audImg?.addEventListener('load', relayout);
-    curtainUpper?.addEventListener('load', relayout);
-    curtainLower?.addEventListener('load', relayout);
-    setTimeout(relayout, 0);
   }
 
   function prepareSceneForAct3(){
-    stage?.classList.remove('open'); // curtains closed but visible
+    // Start via event (like Act 2). Optional audience change.
     if(audImg){
       const orig = audImg.getAttribute('src') || '';
       audImg.dataset.origSrc = orig;
       audImg.onerror = ()=>{ try{ audImg.src = orig; }catch(_){} };
-      audImg.src = 'koino2.png';
+      try{ audImg.src = 'koino2.png'; }catch(_){}
     }
   }
 

@@ -1,4 +1,4 @@
-// act2.js — Laws list grows (no scrollbar); right-side lawCharts descend accordingly and fade out off-screen.
+// act2.js — Laws grow w/o scroll; right lawCharts descend by Δheight and fade/hide; laws pane nudged left
 (() => {
   const stage        = document.getElementById('stage');
   const curtainUpper = document.querySelector('.curtain-upper');
@@ -6,13 +6,12 @@
   const markerEl     = document.getElementById('marker');
   const lawsPane     = document.getElementById('laws');
   const lawsTitle    = document.getElementById('lawsTitle');
-  const lawCharts    = document.getElementById('lawCharts'); // δεξί/πλάι διάγραμμα Νόμων
+  const lawCharts    = document.getElementById('lawCharts');
   const signboard    = document.querySelector('.signboard');
 
   const showThoughtForViewer = window.showThoughtForViewer;
   const addLawOriginal       = window.addLaw;
 
-  // Sync clock with Act 1
   const CLOCK = (()=>{
     const has = typeof window.ACT1_CLOCK === 'object' && window.ACT1_CLOCK;
     const nowMs = has && typeof window.ACT1_CLOCK.nowMs === 'function'
@@ -40,32 +39,35 @@
 
   function ensureSpringVisible(){ if(springEl) springEl.style.display = 'block'; }
 
-  // Capture baseline Laws height at Act2 start; translate right-side charts by delta height
   let baselineLawsH = null;
   function slideChartsByLawsHeight(){
     if(!lawCharts || !lawsPane) return;
     if(baselineLawsH == null) baselineLawsH = lawsPane.getBoundingClientRect().height;
-    // ensure laws have no internal scrollbar and can grow
-    lawsPane.style.overflow = 'visible';
-    lawsPane.style.maxHeight = 'none';
+    // grow laws, no scroll; nudge left w/o width change
+    Object.assign(lawsPane.style, { overflow:'visible', maxHeight:'none', position:'relative', left:'-18px' });
+
     const curH = lawsPane.getBoundingClientRect().height;
-    const delta = Math.max(0, curH - baselineLawsH);
-    lawCharts.style.transition = lawCharts.style.transition || 'transform .6s ease, opacity .6s ease';
-    lawCharts.style.transform  = `translateY(${Math.round(delta)}px)`;
-    // fade out when pushed below viewport
+    const delta = Math.max(0, Math.round(curH - baselineLawsH));
+
+    lawCharts.style.willChange = 'transform, opacity';
+    lawCharts.style.transition = 'transform .5s ease, opacity .35s ease';
+    lawCharts.style.transform  = `translateY(${delta}px)`;
+
+    // robust off-screen detection
     const rect = lawCharts.getBoundingClientRect();
     const vh   = window.innerHeight || document.documentElement.clientHeight;
-    const off  = (rect.top + rect.height + 16) > vh;
-    if(off){
+    const fullyBelow = rect.top >= vh - 2;
+    if(fullyBelow){
       lawCharts.style.opacity = '0';
-      setTimeout(()=>{ lawCharts.style.display='none'; }, 620);
+      clearTimeout(lawCharts._hideTimer);
+      lawCharts._hideTimer = setTimeout(()=>{ lawCharts.style.display='none'; }, 380);
     } else {
-      lawCharts.style.opacity = '1';
+      clearTimeout(lawCharts._hideTimer);
       if(lawCharts.style.display==='none') lawCharts.style.display='';
+      lawCharts.style.opacity = '1';
     }
   }
 
-  // Patch addLaw: append law as usual, then update charts position
   window.addLaw = function(txt){
     try { addLawOriginal(txt); } finally { slideChartsByLawsHeight(); }
   };
@@ -77,7 +79,7 @@
     const btnAct2    = document.getElementById('btnAct2');
     if(actBreak && actBrTitle && actBrMsg && btnAct2){
       actBrTitle.textContent = 'Τέλος Πράξης 2';
-      actBrMsg.textContent   = 'Διάλειμμα με κλειστές κουρτίνες. Πάμε Φουαγιέ (Πράξη 3);';
+      actBrMsg.textContent   = 'Διάλειμμα. Πάμε Φουαγιέ (Πράξη 3);';
       btnAct2.textContent    = 'Έναρξη Πράξης 3';
       btnAct2.onclick = () => {
         actBreak.style.display='none';
@@ -87,6 +89,7 @@
     }
   }
 
+  // Events (unchanged timing with Act 1)
   const events = [
     { atMul:0.05, fn:()=> showThoughtForViewer?.(0, 'ωπ! δεμένος σε ελατήριο είναι ο m₁D₁!', 2.2, 125, -10) },
     { atMul:0.35, fn:()=> showThoughtForViewer?.(2, 'αυτόν ακριβώς τον m₁D₁ τον έχω ξαναδεί σε άλλη παράσταση αλλά με άλλον παραγωγό', 2.4, 130, 0) },
@@ -109,7 +112,7 @@
       if(curtainUpper && stage){
         curtainUpper.classList.add('slow-close');
         stage.classList.remove('open');
-        setTimeout(()=>{ curtainUpper.classList.remove('slow-close'); endAct2WithBreak(); }, 1500);
+        setTimeout(()=>{ curtainUpper.classList.remove('slow-close'); endAct2WithBreak(); }, 1200);
       } else { endAct2WithBreak(); }
     }}
   ];
@@ -121,9 +124,7 @@
     if(stage) stage.classList.add('open');
     if(markerEl) markerEl.style.opacity = '1';
     if(lawsPane){ 
-      lawsPane.style.display='block'; 
-      lawsPane.style.overflow='visible'; 
-      lawsPane.style.maxHeight='none';
+      Object.assign(lawsPane.style, { display:'block', overflow:'visible', maxHeight:'none', position:'relative', left:'-18px' });
       lawsTitle.textContent = 'Νόμοι Πράξης 2'; 
     }
     baselineLawsH = lawsPane ? lawsPane.getBoundingClientRect().height : null;
@@ -131,18 +132,16 @@
     const Tsec = CLOCK.getT();
     const startMs = CLOCK.nowMs();
 
-    function raf(){
-      const now = CLOCK.nowMs();
-      const elapsed = (now - startMs) / 1000.0;
+    const step = ()=>{
+      const elapsed = (CLOCK.nowMs() - startMs) / 1000.0;
       for(const e of events){
         if(!e.fired && elapsed >= e.atMul * Tsec){
-          e.fired = true;
-          try{ e.fn(); }catch{}
+          e.fired = true; try{ e.fn(); }catch{}
         }
       }
-      if(events.some(ev=>!ev.fired)) requestAnimationFrame(raf);
-    }
-    requestAnimationFrame(raf);
+      if(events.some(ev=>!ev.fired)) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
   }
 
   document.addEventListener('act2-start', runAct2);
