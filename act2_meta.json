@@ -1,0 +1,24 @@
+{
+  "features": {
+    "showSpringOnOpen": true,
+    "showMarker": true,
+    "showSpotlight": true,
+    "showFx": true,
+    "showFlashback": true,
+    "graphs": {
+      "xt": false,
+      "vt": false,
+      "at": false,
+      "ax": false
+    }
+  },
+  "title": {
+    "autoFill": true,
+    "lines": [
+      "Πράξη 2η: Η Δυναμική στα ... Αλγεβρικά!",
+      "m₁ = … kg , D₁ = … N/m",
+      "Εμηχ = … J"
+    ]
+  },
+  "flashbackAmpFactor": 1.5
+}
