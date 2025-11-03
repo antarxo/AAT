@@ -1,206 +1,99 @@
-// act2.js (transparent overlay panel — same stage)
-const A2 = { m:70, T:6.0, A:3.0 };
-A2.omega = 2*Math.PI/A2.T;
-A2.D = A2.m * A2.omega * A2.omega;
-A2.E = 0.5 * A2.D * A2.A * A2.A;
+// act2.js — Πράξη 2 πάνω στο ίδιο σκηνικό της Πράξης 1
+(() => {
+  // Χρησιμοποιούμε τις Πράξης 1 global: m, T, omega, D, E_mech, A_m
+  const stage        = document.getElementById('stage');
+  const curtainUpper = document.querySelector('.curtain-upper');
+  const springEl     = document.getElementById('spring');
+  const markerEl     = document.getElementById('marker');
+  const lawsPane     = document.getElementById('laws');
+  const lawsTitle    = document.getElementById('lawsTitle');
+  const lawsList     = document.getElementById('lawsList');
+  const bubbleEl     = document.getElementById('bubble0');
+  const signboard    = document.querySelector('.signboard');
 
-const root2 = document.getElementById('act2-root');
-const stage = document.getElementById('stage');
-const curtainUpper = document.querySelector('.curtain-upper');
-const springEl = document.getElementById('spring');
-const markerEl = document.getElementById('marker');
-const spotlight = document.getElementById('spotlight');
+  // Helper από Πρ.1
+  const showThoughtForViewer = window.showThoughtForViewer;
+  const addLaw = window.addLaw;
 
-const css = (el,o)=>Object.assign(el.style,o);
-const el  = (t,c,h)=>{ const e=document.createElement(t); if(c) e.className=c; if(h!=null) e.innerHTML=h; return e; };
-const show=()=>root2.hidden=false;
-const hide=()=>root2.hidden=true;
-
-let META2 = {
-  features:{ showSpringOnOpen:true, showMarker:true, showSpotlight:true, showFx:true, showFlashback:true, graphs:{xt:false,vt:false,at:false,ax:false} },
-  title:{ autoFill:true, lines:["Πράξη 2η: Η Δυναμική στα ... Αλγεβρικά!","m₁ = … kg , D₁ = … N/m","Εμηχ = … J"] },
-  flashbackAmpFactor:1.5
-};
-let timeline2 = [];
-let tickerId=null;
-
-async function loadMeta(){
-  try{ const r=await fetch('act2_meta.json',{cache:'no-cache'}); if(r.ok) META2 = await r.json(); }catch{}
-}
-async function loadTimeline(){
-  try{ const r=await fetch('act2_timeline.json',{cache:'no-cache'}); timeline2 = r.ok ? await r.json() : []; }catch{ timeline2=[]; }
-}
-
-function baseUI2(){
-  root2.innerHTML='';
-  css(root2,{position:'fixed',inset:'0',zIndex:'600',pointerEvents:'none',background:'transparent'});
-
-  const panel = el('div','panel');
-  css(panel,{position:'absolute', right:'16px', top:'16px', width:'min(520px, 40vw)',
-    background:'rgba(0,0,0,0.70)', color:'#fff', border:'1px solid rgba(255,255,255,0.25)',
-    borderRadius:'12px', padding:'14px', backdropFilter:'blur(2px)', pointerEvents:'auto',
-    display:'grid', gridTemplateRows:'auto 1fr auto', gap:'10px', maxHeight:'80vh', overflow:'auto'});
-  root2.append(panel);
-
-  const [L1,L2,L3] = META2.title?.lines || [];
-  const hdr = el('div','hdr',`
-    <div class="t1" style="font-weight:700;font-size:18px">${L1||"Πράξη 2η: Η Δυναμική στα ... Αλγεβρικά!"}</div>
-    <div class="t2" style="opacity:.9">${L2||"m₁ = … kg , D₁ = … N/m"}</div>
-    <div class="t3" style="opacity:.85">${L3||"Εμηχ = … J"}</div>
-  `);
-
-  const mid = el('div','mid'); css(mid,{display:'grid',gridTemplateColumns:'1fr',gap:'12px',alignItems:'start'});
-  const left = el('div','left'); const thoughtsList = el('ul','thoughts'); css(thoughtsList,{margin:'0',padding:'0 0 0 18px'}); left.append(thoughtsList);
-  const right = el('div','right');
-
-  const fxTitle = el('div',null,'<b>Γραφική F–x (κλίση −D)</b>');
-  const fxCanvas = el('canvas','fx'); css(fxCanvas,{width:'100%',height:'200px',background:'rgba(255,255,255,0.06)',borderRadius:'8px',marginBottom:'8px'});
-
-  const flashTitle = el('div',null,'<b>Flashback: x–t (A’ &gt; A)</b>');
-  const flashCanvas = el('canvas','flash'); css(flashCanvas,{width:'100%',height:'110px',background:'rgba(255,255,255,0.06)',borderRadius:'8px'});
-
-  if(META2.features?.showFx){ right.append(fxTitle, fxCanvas, el('div',null,`<small>D=${A2.D.toFixed(2)} N/m</small>`)); }
-  if(META2.features?.showFlashback){ right.append(flashTitle, flashCanvas); }
-
-  const twoCol = el('div'); css(twoCol,{display:'grid',gridTemplateColumns:'1fr',gap:'12px'});
-  twoCol.append(left, right);
-  panel.append(hdr, twoCol);
-
-  const ctrls = el('div','ctrls'); css(ctrls,{display:'flex',gap:'8px',justifyContent:'flex-end',marginTop:'6px'});
-  const btnClose = el('button',null,'Κλείσιμο');
-  const btnEnd   = el('button',null,'Τέλος Πράξης 2 (Κουρτίνα)');
-  [btnClose,btnEnd].forEach(b=>css(b,{padding:'8px 12px',borderRadius:'8px',border:'1px solid #888',background:'#111',color:'#fff',cursor:'pointer'}));
-  btnClose.onclick=()=>hide();
-  btnEnd.onclick=()=>endAct2Curtain();
-  panel.append(ctrls); ctrls.append(btnClose, btnEnd);
-
-  function setAutoTitle(){
-    if(!META2.title?.autoFill) return;
-    const t2 = panel.querySelector('.t2');
-    const t3 = panel.querySelector('.t3');
-    if(t2) t2.textContent = `m₁ = ${A2.m.toFixed(2)} kg , D₁ = ${A2.D.toFixed(2)} N/m`;
-    if(t3) t3.textContent = `Εμηχ = ${A2.E.toFixed(2)} J`;
-  }
-  function addThought(txt){ const li=el('li',null,txt); thoughtsList.append(li); }
-  function bubble(txt,ms=2400){
-    const b=el('div','bubble',txt);
-    css(b,{position:'absolute',left:'50%',top:'-8px',transform:'translate(-50%,-100%)',maxWidth:'min(780px,82vw)',padding:'10px 12px',
-      background:'rgba(0,0,0,0.60)',border:'1px dashed rgba(255,255,255,0.35)',borderRadius:'10px',backdropFilter:'blur(2px)'});
-    panel.append(b); setTimeout(()=>b.remove(), ms);
-  }
-  function drawFx(){
-    if(!META2.features?.showFx) return;
-    const c=fxCanvas, dpi=window.devicePixelRatio||1, W=(c.clientWidth|0), H=(c.clientHeight|0);
-    c.width=W*dpi; c.height=H*dpi; const ctx=c.getContext('2d'); ctx.scale(dpi,dpi);
-    ctx.fillStyle='rgba(255,255,255,0.06)'; ctx.fillRect(0,0,W,H);
-    ctx.strokeStyle='rgba(255,255,255,0.35)'; ctx.lineWidth=1;
-    ctx.beginPath(); for(let i=0;i<=6;i++){ const x=i*(W/6); ctx.moveTo(x,0); ctx.lineTo(x,H);} for(let j=0;j<=4;j++){ const y=j*(H/4); ctx.moveTo(0,y); ctx.lineTo(W,y);} ctx.stroke();
-    const D=A2.D, A=A2.A, xMin=-A, xMax=A;
-    const x2px = x => (x-xMin)/(xMax-xMin)*W;
-    const F = x => -D*x;
-    const Fmax=D*A, F2py = Fv => { const FMin=-Fmax, FMax=Fmax; return H - (Fv-FMin)/(FMax-FMin)*H; };
-    ctx.strokeStyle='#ffd27a'; ctx.lineWidth=2; ctx.beginPath();
-    ctx.moveTo(x2px(xMin), F2py(F(xMin))); ctx.lineTo(x2px(xMax), F2py(F(xMax))); ctx.stroke();
-    ctx.fillStyle='#fff'; ctx.font='12px system-ui';
-    ctx.fillText('x (m)', 8, H-6); ctx.fillText('F (N)', W-40, 14);
-    ctx.setLineDash([5,4]); ctx.strokeStyle='rgba(255,255,255,0.5)';
-    const y0=F2py(0), x0=x2px(0); ctx.beginPath(); ctx.moveTo(0,y0); ctx.lineTo(W,y0); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(x0,0); ctx.lineTo(x0,H); ctx.stroke(); ctx.setLineDash([]);
-    ctx.fillText(`κλίση = -D = ${(-D).toFixed(2)} N/m`, 10, 18);
-  }
-  function drawFlashback(){
-    if(!META2.features?.showFlashback) return;
-    const c=flashCanvas, dpi=window.devicePixelRatio||1, W=(c.clientWidth|0), H=(c.clientHeight|0);
-    c.width=W*dpi; c.height=H*dpi; const ctx=c.getContext('2d'); ctx.scale(dpi,dpi);
-    ctx.clearRect(0,0,W,H);
-    ctx.strokeStyle='rgba(255,255,255,0.25)'; ctx.lineWidth=1; ctx.beginPath();
-    for(let i=0;i<=6;i++){ const x=i*(W/6); ctx.moveTo(x,0); ctx.lineTo(x,H); }
-    for(let j=0;j<=2;j++){ const y=j*(H/2); ctx.moveTo(0,y); ctx.lineTo(W,y); } ctx.stroke();
-    const N=240, T=A2.T, w=A2.omega, A=A2.A, Apr=(META2.flashbackAmpFactor||1.5)*A;
-    ctx.lineWidth=2;
-    const drawSine=(Aamp, stroke)=>{
-      ctx.strokeStyle=stroke; ctx.beginPath();
-      for(let i=0;i<=N;i++){
-        const t=(i/N)*T, x=i*(W/N), y=H/2 - (Aamp===0?0:(Aamp/(1.6*Apr)))*(H*0.9)*Math.sin(w*t);
-        if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
-      }
-      ctx.stroke();
-    };
-    drawSine(A,'#7fd7ff');
-    drawSine(Apr,'#ffd27a');
-    ctx.fillStyle='#fff'; ctx.font='12px system-ui';
-    ctx.fillText('τρέχον A', 8, 14);
-    ctx.fillText('flashback A′ > A', 8, 28);
+  function setSignboardAct2(){
+    if(!signboard) return;
+    const h1  = signboard.querySelector('h1');
+    const lA  = document.getElementById('sbLineA');
+    const lB  = document.getElementById('sbLineB');
+    const lC  = document.getElementById('sbLineC');
+    if(h1) h1.textContent = 'Πράξη 2η: Η Δυναμική στα ... Αλγεβρικά!';
+    if(lA) lA.textContent = `m₁ = ${m.toFixed(2)} kg , D₁ = ${D.toFixed(2)} N/m`;
+    if(lB) lB.textContent = `Eμηχ = ${E_mech.toFixed(2)} J`;
+    if(lC) lC.textContent = '—';
   }
 
-  return { setAutoTitle, addThought, bubble, drawFx, drawFlashback };
+  function ensureSpringVisible(){
+    if(springEl) springEl.style.display = 'block';
+  }
 
-  function setAutoTitle(){}
-  function addThought(){}
-  function bubble(){}
-  function drawFx(){}
-  function drawFlashback(){}
-}
-
-function openCurtains2(){
-  if(stage) stage.classList.add('open');
-  if(springEl) springEl.style.display = META2.features?.showSpringOnOpen ? 'block' : 'none';
-  if(markerEl) markerEl.style.opacity = META2.features?.showMarker ? '1' : '0';
-  if(spotlight) spotlight.style.display = META2.features?.showSpotlight ? 'block' : 'none';
-}
-function endAct2Curtain(){
-  if(!stage || !curtainUpper) return breakPanel2();
-  curtainUpper.classList.add('slow-close');
-  stage.classList.remove('open');
-  if(markerEl) markerEl.style.opacity='0';
-  setTimeout(()=>{ curtainUpper.classList.remove('slow-close'); breakPanel2(); }, 1500);
-}
-function breakPanel2(){
-  root2.innerHTML='';
-  css(root2,{pointerEvents:'auto', background:'rgba(0,0,0,0.50)'});
-  const wrap = el('div','break2',`
-    <h2 style="margin:0 0 8px">Τέλος Πράξης 2</h2>
-    <div style="opacity:.9;margin-bottom:10px">Ο m,D συνεχίζει στο βάθος — σειρά του Φουαγιέ.</div>
-  `);
-  const btn3 = el('button',null,'Έναρξη Πράξης 3');
-  const btnClose = el('button',null,'Κλείσιμο');
-  [btn3,btnClose].forEach(b=>css(b,{padding:'10px 14px',borderRadius:'10px',border:'1px solid #888',background:'#111',color:'#fff',cursor:'pointer',marginRight:'8px'}));
-  btn3.onclick=()=>{ hide(); css(root2,{pointerEvents:'none', background:'transparent'}); document.dispatchEvent(new Event('act3-start')); };
-  btnClose.onclick=()=>{ hide(); css(root2,{pointerEvents:'none', background:'transparent'}); };
-  const center = el('div'); css(center,{position:'absolute', inset:'0', display:'grid', placeItems:'center'});
-  const card = el('div'); css(card,{textAlign:'center',padding:'18px 22px',border:'1px solid rgba(255,255,255,0.25)',borderRadius:'14px',background:'rgba(0,0,0,0.35)',backdropFilter:'blur(3px)'});
-  card.append(wrap, btn3, btnClose);
-  center.append(card); root2.append(center);
-}
-
-const t2ms = mul => Math.max(0, mul*A2.T*1000);
-
-async function runAct2(){
-  await loadMeta();
-  await loadTimeline();
-  const ui = baseUI2(); show();
-  ui.setAutoTitle();
-
-  const t0 = performance.now();
-  function tick(){
-    const now = performance.now(); const t = now - t0;
-    for(const e of timeline2){
-      if(e._done) continue;
-      if(t >= t2ms(e.atMul||0)){
-        e._done = true;
-        if(e.kind==='openCurtain'){ openCurtains2(); }
-        else if(e.kind==='title'){ ui.setAutoTitle(); }
-        else if(e.kind==='thought'){ ui.addThought(e.text); }
-        else if(e.kind==='bubble'){ ui.bubble(e.text, (e.dur?e.dur*1000:2400)); }
-        else if(e.kind==='flashback'){ ui.drawFlashback(); }
-        else if(e.kind==='graphFx'){ ui.drawFx(); }
-        else if(e.kind==='law'){ ui.addThought(e.text); }
-        else if(e.kind==='endCurtain'){ endAct2Curtain(); }
-      }
+  // Τέλος πράξης 2 — ενιαία λογική με actBreak (χωρίς νέα DOM)
+  function endAct2WithBreak(){
+    const actBreak   = document.getElementById('actBreak');
+    const actBrTitle = document.getElementById('actBreakTitle');
+    const actBrMsg   = document.getElementById('actBreakMsg');
+    const btnAct2    = document.getElementById('btnAct2'); // ξαναχρησιμοποιείται ως CTA για Πρ.3
+    if(actBreak && actBrTitle && actBrMsg && btnAct2){
+      actBrTitle.textContent = 'Τέλος Πράξης 2';
+      actBrMsg.textContent   = 'Οι θεαποιοί μεταφέρονται στο Φουαγιέ. Προχωράμε στην Πράξη 3;';
+      btnAct2.textContent    = 'Έναρξη Πράξης 3';
+      btnAct2.onclick = () => {
+        actBreak.style.display='none';
+        document.dispatchEvent(new Event('act3-start'));
+      };
+      actBreak.style.display='block';
     }
-    tickerId = requestAnimationFrame(tick);
   }
-  tickerId = requestAnimationFrame(tick);
-}
 
-document.addEventListener('act2-start', runAct2);
+  // Χρονοπρογραμματιστής με μονάδα k·T
+  function scheduleK(mul, fn){
+    const t = Math.max(0, mul * T * 1000);
+    setTimeout(fn, t);
+  }
+
+  function runAct2(){
+    setSignboardAct2();
+    ensureSpringVisible();
+    if(stage) stage.classList.add('open');
+    if(markerEl) markerEl.style.opacity = '1';
+    if(lawsPane){ lawsPane.style.display='block'; lawsTitle.textContent = 'Νόμοι Πράξης 2'; }
+
+    // Χρονοσειρά Πρ.2 (βασισμένη στο σενάριο που έδωσες)
+    const Y0 = 125; // βασική ανύψωση για bubble
+    scheduleK(0.05, ()=> showThoughtForViewer(0, 'ωπ! δεμένος σε ελατήριο είναι ο m₁D₁!', 2.2, Y0, -10));
+    scheduleK(0.35, ()=> showThoughtForViewer(2, 'αυτόν ακριβώς τον m₁D₁ τον έχω ξαναδεί σε άλλη παράσταση αλλά με άλλον παραγωγό', 2.4, Y0+5, 0));
+    scheduleK(0.55, ()=> showThoughtForViewer(3, '…ναι και εκεί πάλι με την ίδια περίοδο κινήθηκε αλλά με μεγαλύτερο πλάτος A′', 2.6, Y0+10, 10));
+    scheduleK(0.80, ()=> showThoughtForViewer(1, 'Πρωταγωνιστής επομένως είναι ο κινούμενος και τα εργαλεία του μαζί!', 2.2, Y0, -20));
+    scheduleK(1.05, ()=> showThoughtForViewer(4, 'Τώρα καταλαβαίνω γιατί τον λένε m₁, D₁…', 2.0, Y0, 20));
+    scheduleK(1.25, ()=> showThoughtForViewer(0, '…το m₁ είναι η μάζα του, στο D₁ αναφέρεται το «ελαστικό» αίτιο-δύναμη', 2.4, Y0+6, -30));
+    scheduleK(1.45, ()=> showThoughtForViewer(2, '…m₁ και D₁ πάνε πακέτο!', 2.0, Y0, 0));
+    scheduleK(1.65, ()=> showThoughtForViewer(3, '…κάθε ταλαντωτής χαρακτηρίζεται από τη μάζα του και το ελαστικό αίτιο που ρυθμίζει την ταλάντωση', 2.6, Y0+8, 10));
+    scheduleK(1.90, ()=> showThoughtForViewer(1, '…γι’ αυτό σαν αριθμό μητρώου έχει τα mD!', 2.2, Y0, -10));
+
+    // Νόμοι στον πίνακα αριστερά (χωρίς extra γραφήματα)
+    scheduleK(2.15, ()=> addLaw('ΣF = m·a (γενικά)'));
+    scheduleK(2.35, ()=> addLaw('ΣF(t) = −mω²A·ημ(ωt + φ₀)'));
+    scheduleK(2.60, ()=> addLaw('ΣF(t) = −mω²x(t)'));
+    scheduleK(2.85, ()=> showThoughtForViewer(4, 'Η ΣF=−mω²x περιέχει τον «σωματότυπο» (m) και την «εμμονή» (ω)', 2.6, Y0, 18));
+    scheduleK(3.10, ()=> showThoughtForViewer(0, 'Να κάνουμε τις δύο σταθερές μία: D = mω²', 2.2, Y0, -18));
+    scheduleK(3.30, ()=> showThoughtForViewer(2, '…χμμμ, γι’ αυτό τον λένε και (m, D)!', 2.0, Y0, 0));
+    scheduleK(3.55, ()=> addLaw('Θέτω D = mω²'));
+    scheduleK(3.75, ()=> addLaw('⇒ ΣF = −D·x'));
+    // Αυλαία / break προς Πρ.3
+    scheduleK(4.20, ()=> {
+      if(curtainUpper && stage){
+        curtainUpper.classList.add('slow-close');
+        stage.classList.remove('open');
+        setTimeout(()=>{ curtainUpper.classList.remove('slow-close'); endAct2WithBreak(); }, 1500);
+      }else{
+        endAct2WithBreak();
+      }
+    });
+  }
+
+  document.addEventListener('act2-start', runAct2);
+})();
