@@ -9,7 +9,7 @@
     let r=document.getElementById('intro-root');
     if(r) return r;
     r=document.createElement('div'); r.id='intro-root';
-    Object.assign(r.style,{position:'fixed',inset:'0',zIndex:'900',display:'none',background:'rgba(0,0,0,.92)'});
+    Object.assign(r.style,{position:'fixed',inset:'0',zIndex:'5000',display:'none',background:'rgba(0,0,0,.92)'});
     document.body.appendChild(r); return r;
   }
   function el(t,c,h){ const e=document.createElement(t); if(c) e.className=c; if(h!=null) e.innerHTML=h; return e; }
@@ -21,7 +21,8 @@
   async function init(){
     const cfg = await loadCfg();
     const disabledLS = localStorage.getItem('intro:disable') === '1';
-    if(qsNoIntro || !cfg || cfg.enabled === false || disabledLS) return;
+    const respectDisable = !!(cfg && cfg.respectDisable);
+    if(qsNoIntro || !cfg || cfg.enabled === false || (respectDisable && disabledLS)) return;
 
     root = rootEl();
     root.innerHTML='';

@@ -1,16 +1,21 @@
-// transitions.js — unified panel for act transitions
+// transitions.js — unified panel for act transitions (centered)
 (() => {
   function ensurePanel(){
     let p=document.getElementById('actBreak');
     if(p) return p;
     p=document.createElement('div'); p.id='actBreak';
-    Object.assign(p.style,{position:'fixed',inset:'0',zIndex:'850',display:'none',background:'rgba(0,0,0,.82)',color:'#fff'});
+    Object.assign(p.style,{
+      position:'fixed', inset:'0', zIndex:'850',
+      display:'none', background:'rgba(0,0,0,.82)', color:'#fff'
+    });
     p.innerHTML = `
-      <div style="position:absolute;left:50%;top:40%;transform:translate(-50%,-50%);min-width:min(560px,90vw);max-width:90vw;background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.25);border-radius:14px;padding:16px 18px;box-shadow:0 10px 40px rgba(0,0,0,.55)">
-        <h3 id="actBreakTitle" style="margin:0 0 8px">Μετάβαση</h3>
-        <p id="actBreakMsg" style="margin:0 0 12px;opacity:.9">—</p>
-        <div style="display:flex;justify-content:flex-end;gap:8px">
-          <button id="btnAct2" style="padding:10px 14px;border-radius:10px;border:1px solid #7a0;background:#171;color:#fff;cursor:pointer">Συνέχεια</button>
+      <div id="actBreakBox" style="display:grid;place-items:center;min-height:100vh;padding:16px">
+        <div style="min-width:min(560px,90vw);max-width:90vw;background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.25);border-radius:14px;padding:16px 18px;box-shadow:0 10px 40px rgba(0,0,0,.55)">
+          <h3 id="actBreakTitle" style="margin:0 0 8px;text-align:center">Μετάβαση</h3>
+          <p id="actBreakMsg" style="margin:0 0 12px;opacity:.9;text-align:center">—</p>
+          <div style="display:flex;justify-content:center;gap:8px">
+            <button id="btnAct2" style="padding:10px 14px;border-radius:10px;border:1px solid #7a0;background:#171;color:#fff;cursor:pointer">Συνέχεια</button>
+          </div>
         </div>
       </div>`;
     document.body.appendChild(p);

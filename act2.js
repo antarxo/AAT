@@ -133,6 +133,13 @@
   events.forEach(e=>e.fired=false);
 
   function runAct2(){
+    // close curtain quickly to visually end Act 1 before starting Act 2
+    try{
+      const curtainUpper = document.querySelector('.curtain-upper');
+      const stageEl = document.getElementById('stage');
+      if(curtainUpper && stageEl){ curtainUpper.classList.add('slow-close'); stageEl.classList.remove('open'); }
+    }catch{}
+
     setSignboardAct2();
     ensureSpringVisible();
     if(stage) stage.classList.add('open');

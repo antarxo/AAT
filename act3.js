@@ -1,4 +1,4 @@
-// act3.js — Blackboard: x=16%, y=0, width=68%, height up to (rulerY + 20px); draggable freely; starts via event
+// act3.js — Foyer: auto-run, no controls; blackboard x=16%, y=0, width=68%, height up to (rulerY + 20px) +30px; curtains stay closed
 (() => {
   const audImg = document.querySelector('.audience');
   const foyer = document.getElementById('foyer-root') || (() => {
@@ -27,7 +27,7 @@
     return (v/100) * vh;
   }
 
-  let PROOFS = { render:"tex", params:{}, proofs:[] };
+  let PROOFS = { render:'tex', params:{}, proofs:[] };
   async function loadProofs(){
     try { const r=await fetch('act3_proofs.json',{cache:'no-cache'}); if(r.ok) PROOFS=await r.json(); } catch {}
   }
@@ -56,32 +56,70 @@
       const left = Math.round(0.16 * W);
       const width = Math.round(0.68 * W);
       const top = 0;
-      const bottomPx = Math.max(8, H - (getRulerYpx() + 20));
+      const bottomPx = Math.max(0, H - (getRulerYpx() + 20) - 30); // taller by 30px
       css(bb,{ left:left+'px', width:width+'px', top:top+'px', bottom:bottomPx+'px', right:'auto' });
     }
     layoutInitial();
-
-    // draggable ANYWHERE
-    let dragging=false, dx=0, dy=0;
-    bb.addEventListener('pointerdown', ev=>{
-      dragging=true; bb.setPointerCapture(ev.pointerId);
-      const r=bb.getBoundingClientRect(); dx=ev.clientX-r.left; dy=ev.clientY-r.top; ev.preventDefault();
-    });
-    window.addEventListener('pointermove', ev=>{
-      if(!dragging) return;
-      const nx = ev.clientX - dx, ny = ev.clientY - dy;
-      css(bb,{ left:nx+'px', top:ny+'px', right:'auto', bottom:'auto' });
-    });
-    window.addEventListener('pointerup', ev=>{
-      dragging=false; try{ bb.releasePointerCapture(ev.pointerId); }catch(_){}
-    });
     window.addEventListener('resize', layoutInitial);
 
-    // Controls removed — auto‑run; no UI buttons.
+    const useTex = (PROOFS && (PROOFS.render==='tex'));
+    function chalkLine(text, boxed=false){
+      const row = el('div','chalk');
+      if(useTex){
+        const s = (text.trim().startsWith('\\(') || text.trim().startsWith('\\[')) ? text : `\\(${text}\\)`;
+        row.innerHTML = boxed ? `⟦ ${s} ⟧` : s;
+      } else {
+        row.textContent = boxed ? `⟦ ${text} ⟧` : text;
+      }
+      css(row,{whiteSpace:'pre-wrap',borderLeft:'3px solid rgba(255,255,255,0.25)',padding:'4px 8px',margin:'4px 0',
+               font:'15px/1.55 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace'});
+      bb.append(row);
+      row.animate([{opacity:0, filter:'blur(2px)'},{opacity:1, filter:'blur(0)'}],{duration:220, easing:'ease-out'});
+      if(useTex && window.MathJax && window.MathJax.typesetPromise){ window.MathJax.typesetPromise([row]); }
+    }
+
+    const addLaw = window.addLaw;
+    const showThoughtForViewer = window.showThoughtForViewer;
+
+    // Auto sequence
+    function autoRunAll(){
+      const STEP_MS = 1200;
+      let t = 0;
+      const proofs = Array.isArray(PROOFS.proofs) ? PROOFS.proofs : [];
+      proofs.forEach((p) => {
+        const steps = Array.isArray(p.steps) ? p.steps : [];
+        setTimeout(()=>{ bb.innerHTML=''; chalkLine(`• ${p.title || 'Πράξη 3η — Φουαγιέ'}`); }, t); t += STEP_MS;
+        steps.forEach(s => {
+          setTimeout(()=>{
+            if(s.type==='say'){
+              const idx = (typeof s.viewer==='number') ? s.viewer : 0;
+              showThoughtForViewer && showThoughtForViewer(idx, s.text, s.dur? s.dur : 3.0, 125, 0);
+            } else if(s.type==='write' || s.type==='derive'){
+              chalkLine(s.text);
+            } else if(s.type==='box'){
+              chalkLine(s.text, true);
+              addLaw && addLaw(typeof s.lawText==='string' ? s.lawText : s.text);
+            }
+          }, t); t += STEP_MS;
+        });
+      });
+      setTimeout(()=>{
+        const endTitle = el('div','finale','ΤΕΛΟΣ ΠΑΡΑΣΤΑΣΗΣ');
+        css(endTitle,{
+          position:'absolute', left:'50%', top:'-42px', transform:'translateX(-50%)',
+          font:'700 20px/1.2 system-ui, sans-serif', letterSpacing:'1px',
+          padding:'6px 10px', borderRadius:'10px', background:'rgba(0,0,0,.6)',
+          border:'1px solid rgba(255,255,255,.25)', color:'#fff', textShadow:'0 2px 8px rgba(0,0,0,.8)'
+        });
+        foyer.append(endTitle);
+        endTitle.animate([{opacity:0, transform:'translate(-50%,-8px)'},{opacity:1, transform:'translate(-50%,0)'}],{duration:420, easing:'ease-out'});
+      }, t + 400);
+    }
+
+    autoRunAll();
   }
 
   function prepareSceneForAct3(){
-    // Start via event; optional audience change to koino2.png
     if(audImg){
       const orig = audImg.getAttribute('src') || '';
       audImg.dataset.origSrc = orig;
@@ -90,6 +128,6 @@
     }
   }
 
-  async function runAct3(){ await loadProofs(); prepareSceneForAct3(); buildOverlay(); show(); /* curtains stay closed; no UI */ autoRunAll(); }
+  async function runAct3(){ await loadProofs(); prepareSceneForAct3(); buildOverlay(); show(); }
   document.addEventListener('act3-start', runAct3);
 })();
