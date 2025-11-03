@@ -76,6 +76,8 @@
     try{
       const curtainUpper = document.querySelector('.curtain-upper');
       const stage = document.getElementById('stage');
+      const marker = document.getElementById('marker');
+      if(marker){ marker.style.opacity='0'; marker.style.zIndex='0'; } // don't show in front
       if(curtainUpper && stage){
         curtainUpper.classList.add('slow-close');
         stage.classList.remove('open');
@@ -150,11 +152,11 @@
     }
     baselineLawsH = lawsPane ? lawsPane.getBoundingClientRect().height : null;
 
-    const Tsec = CLOCK.getT();
     const startMs = CLOCK.nowMs();
 
     const step = ()=>{
       const elapsed = (CLOCK.nowMs() - startMs) / 1000.0;
+      const Tsec = CLOCK.getT();
       for(const e of events){
         if(!e.fired && elapsed >= e.atMul * Tsec){
           e.fired = true; try{ e.fn(); }catch{}
