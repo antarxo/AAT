@@ -1,10 +1,10 @@
 // transitions.js — ενιαίο κεντραρισμένο panel μετάβασης
 (() => {
   function ensurePanel(){
-    let p = document.getElementById('actBreak');
-    if (p) return p;
-    p = document.createElement('div'); p.id='actBreak';
-    Object.assign(p.style, {
+    let p=document.getElementById('actBreak');
+    if(p) return p;
+    p=document.createElement('div'); p.id='actBreak';
+    Object.assign(p.style,{
       position:'fixed', inset:'0', zIndex:'5000',
       display:'none', background:'rgba(0,0,0,.82)', color:'#fff'
     });
@@ -23,17 +23,17 @@
   }
 
   function showActTransition({title,msg,buttonText,onClick}){
-    const p = ensurePanel();
-    const t = p.querySelector('#actBreakTitle');
-    const m = p.querySelector('#actBreakMsg');
-    const b = p.querySelector('#btnAct2');
-    if (t) t.textContent = title || 'Μετάβαση';
-    if (m) m.textContent = msg || '';
-    if (b) {
+    const p=ensurePanel();
+    const t=p.querySelector('#actBreakTitle');
+    const m=p.querySelector('#actBreakMsg');
+    const b=p.querySelector('#btnAct2');
+    if(t) t.textContent = title || 'Μετάβαση';
+    if(m) m.textContent = msg || '';
+    if(b){
       b.textContent = buttonText || 'Συνέχεια';
-      b.onclick = () => { p.style.display = 'none'; try{ onClick && onClick(); }catch{} };
+      b.onclick = ()=>{ p.style.display='none'; try{ onClick && onClick(); }catch{} };
     }
-    p.style.display = 'block';
+    p.style.display='block';
   }
 
   window.showActTransition = showActTransition;
