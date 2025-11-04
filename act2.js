@@ -1,9 +1,10 @@
-// act2.js — Πράξη 2 FULL SYNC με Πράξη 1
-// Φόρμουλα χρονισμού: (atT + (firstThoughtMul - 1.1)) * T * timelineScale
-// Ρολόι: tObs = playbackTime - obsStartPlaybackOffset (fallback: local clock)
-// Gate: !isBubbleActive (όπως Act 1). Διάρκεια bubble: bubbleDurationSec (slider).
-// Laws: χωρίς scroll, τα ΑΡΙΣΤΕΡΑ διαγράμματα κατεβαίνουν και σβήνουν όταν φύγουν κάτω.
-// Τέλος: κλείσιμο αυλαίας → panel “Διάλειμμα — Φουαγιέ”.
+// act2.js — Πράξη 2 σε strict sync με Πράξη 1
+// Χρονισμός: (atT + (firstThoughtMul - 1.1)) * T * timelineScale
+// Ρολόι: tObs = playbackTime - obsStartPlaybackOffset (όπως Act 1)
+// Gate: !isBubbleActive (όπως Act 1)
+// Διάρκεια bubble: bubbleDurationSec (slider γραναζιού)
+// Laws: χωρίς scroll, ΑΡΙΣΤΕΡΑ διαγράμματα κατεβαίνουν & σβήνουν όταν φύγουν κάτω
+// Τέλος: κλείσιμο αυλαίας → “Διάλειμμα — Φουαγιέ”
 
 (() => {
   if (window.__ACT2_INSTALLED__) return;
@@ -11,41 +12,33 @@
 
   const DEFAULT_FIRST_MUL = 1.1;
 
-  // ===== Hooks Πρ.1 (όπως υπάρχουν στο index) =====
-  const getT             = () => (typeof window.T === 'number' ? window.T : 6.0);
+  // ===== hooks Πράξης 1 =====
+  const getT             = () => (typeof window.T === 'number' ? window.T : 6);
   const getFirstMul      = () => (typeof window.firstThoughtMul === 'number' ? window.firstThoughtMul : DEFAULT_FIRST_MUL);
   const getTimelineScale = () => (typeof window.timelineScale === 'number' ? window.timelineScale : 1);
-  const getBubbleDur     = () => (typeof window.bubbleDurationSec === 'number' ? window.bubbleDurationSec : 2.0);
+  const getBubbleDur     = () => (typeof window.bubbleDurationSec === 'number' ? window.bubbleDurationSec : 2);
 
-  const hasObs = () =>
-    (typeof window.obsStarted === 'boolean' && window.obsStarted) &&
-    (typeof window.playbackTime === 'number') &&
-    (typeof window.obsStartPlaybackOffset === 'number');
+  const tObs = () => (window.obsStarted ? (window.playbackTime - window.obsStartPlaybackOffset) : 0);
+  const atT_to_sec = (atT) => ( (atT + (getFirstMul() - DEFAULT_FIRST_MUL)) * getT() * getTimelineScale() );
 
-  const tObsNow = () => (window.playbackTime - window.obsStartPlaybackOffset);
+  // ===== DOM refs =====
+  const stage      = document.getElementById('stage');
+  const curtainUp  = document.querySelector('.curtain-upper');
+  const springEl   = document.getElementById('spring');
+  const markerEl   = document.getElementById('marker');
+  const signboard  = document.querySelector('.signboard');
+  const lawsPane   = document.getElementById('laws');
+  const lawsTitle  = document.getElementById('lawsTitle');
 
-  // ίδια φόρμουλα χρονισμού με Πρ.1
-  const atT_to_sec = (atT) =>
-    ((atT + (getFirstMul() - DEFAULT_FIRST_MUL)) * getT() * getTimelineScale());
+  // Αριστερά διαγράμματα (πιάσε ό,τι υπάρχει)
+  const leftCharts = document.querySelector(
+    '#leftCharts, #chartsLeft, #lawChartsLeft, .left-charts, .charts-left, #lawCharts'
+  );
 
-  // ===== Refs DOM =====
-  const stage        = document.getElementById('stage');
-  const curtainUp    = document.querySelector('.curtain-upper');
-  const springEl     = document.getElementById('spring');
-  const markerEl     = document.getElementById('marker');
-  const signboard    = document.querySelector('.signboard');
-  const lawsPane     = document.getElementById('laws');
-  const lawsTitle    = document.getElementById('lawsTitle');
+  const showThought = window.showThoughtForViewer;
+  const addLawOrig  = window.addLaw;
 
-  // ΑΡΙΣΤΕΡΑ διαγράμματα (δοκιμάζω γνωστά ids/classes – παίρνω ό,τι υπάρχει πρώτο)
-  const leftCharts =
-      document.querySelector('#leftCharts, #chartsLeft, #lawChartsLeft, .left-charts, .charts-left')
-      || null;
-
-  const showThought  = window.showThoughtForViewer;
-  const addLawOrig   = window.addLaw;
-
-  // ===== Laws: χωρίς scroll + τα ΑΡΙΣΤΕΡΑ διαγράμματα κατεβαίνουν/σβήνουν =====
+  // ===== Laws χωρίς scroll + slide/hide αριστερών διαγραμμάτων =====
   let baselineLawsH = null;
   function slideLeftChartsByLawsHeight(){
     if(!leftCharts || !lawsPane) return;
@@ -73,15 +66,13 @@
       leftCharts.style.opacity = '1';
     }
   }
-  // Hook μία φορά
+
   if (!window.__ACT2_ADDLAW_HOOKED__) {
     window.__ACT2_ADDLAW_HOOKED__ = true;
-    window.addLaw = function(txt){
-      try { addLawOrig(txt); } finally { slideLeftChartsByLawsHeight(); }
-    };
+    window.addLaw = function(txt){ try{ addLawOrig(txt); } finally{ slideLeftChartsByLawsHeight(); } };
   }
 
-  // ===== Script Πρ.2 (atT = πολλαπλάσια T). ΔΕΝ δίνω ρητή διάρκεια → παίρνει bubbleDurationSec =====
+  // ===== Σενάριο Πράξης 2 (atT = πολλαπλάσια T) =====
   const S = [
     { atT:0.05, run:()=> showThought?.(0,'ωπ! δεμένος σε ελατήριο είναι ο m₁D₁!', getBubbleDur(),125,-10) },
     { atT:0.35, run:()=> showThought?.(2,'αυτόν ακριβώς τον m₁D₁ τον έχω ξαναδεί σε άλλη παράσταση αλλά με άλλον παραγωγό', getBubbleDur(),130,  0) },
@@ -102,7 +93,6 @@
     { atT:3.75, run:()=> window.addLaw?.('⇒ ΣF = −D·x') },
     { atT:4.20, run:()=> endAct2() }
   ];
-  S.forEach(e => e.fired = false);
 
   // ===== Τέλος Πρ.2 → Διάλειμμα—Φουαγιέ =====
   function endAct2(){
@@ -116,18 +106,6 @@
           buttonText:'Είσοδος στο Φουαγιέ',
           onClick: () => document.dispatchEvent(new Event('act3-start'))
         });
-      } else {
-        const p = document.getElementById('actBreak');
-        const t = document.getElementById('actBreakTitle');
-        const m = document.getElementById('actBreakMsg');
-        const b = document.getElementById('btnAct2');
-        if (p && t && m && b){
-          t.textContent='Τέλος Πράξης 2';
-          m.textContent='Διάλειμμα — Φουαγιέ';
-          b.textContent='Είσοδος στο Φουαγιέ';
-          b.onclick=()=>{ p.style.display='none'; document.dispatchEvent(new Event('act3-start')); };
-          p.style.display='block';
-        }
       }
     }, 1200);
   }
@@ -148,41 +126,31 @@
     }catch{}
   }
 
-  function runAct2(){
-    // ίδια σκηνή με Πρ.1 + ελατήριο ορατό
+  document.addEventListener('act2-start', () => {
     try{ stage?.classList.add('open'); }catch{}
     try{ if(springEl) springEl.style.display='block'; }catch{}
     setSignboardAct2();
 
     if(lawsPane){
-      Object.assign(lawsPane.style, { display:'block', overflow:'visible', maxHeight:'none', position:'relative', left:'-18px' });
+      Object.assign(lawsPane.style,{ display:'block', overflow:'visible', maxHeight:'none', position:'relative', left:'-18px' });
       if(lawsTitle) lawsTitle.textContent = 'Νόμοι Πράξης 2';
       baselineLawsH = lawsPane.getBoundingClientRect().height;
     }
 
-    // Reference χρόνου: ίδιο tObs με Πρ.1 αν υπάρχει, αλλιώς local clock
-    const t0Obs   = hasObs() ? tObsNow() : 0;
-    const t0Local = performance.now();
+    const thresholds = S.map(s => atT_to_sec(s.atT));
+    const t0 = tObs(); // ίδια αναφορά με Act 1
 
     let i = 0;
     function loop(){
-      const rel = hasObs()
-        ? (tObsNow() - t0Obs)
-        : ((performance.now() - t0Local) / 1000);
+      const rel = tObs() - t0;
+      const busy = (typeof window.isBubbleActive === 'boolean') ? window.isBubbleActive : false;
 
-      const busy = (typeof window.isBubbleActive === 'boolean')
-        ? window.isBubbleActive
-        : (typeof window.isBubbleActive === 'function' ? window.isBubbleActive() : false);
-
-      // catch-up fire (αν αλλάξεις sliders on-the-fly)
-      while(!busy && i < S.length && rel >= atT_to_sec(S[i].atT)){
+      if (!busy && i < S.length && rel >= thresholds[i]) {
         try{ S[i].run(); }catch(e){ console.error('act2 run error', e); }
         i++;
       }
-      if(i < S.length) requestAnimationFrame(loop);
+      if (i < S.length) requestAnimationFrame(loop);
     }
     requestAnimationFrame(loop);
-  }
-
-  document.addEventListener('act2-start', runAct2);
+  });
 })();
