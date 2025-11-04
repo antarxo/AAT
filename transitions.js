@@ -1,4 +1,3 @@
-<script type="module">
 // transitions.js — ενιαίο κεντραρισμένο panel μετάβασης
 (() => {
   function ensurePanel(){
@@ -40,4 +39,3 @@
   window.showActTransition = showActTransition;
   document.addEventListener('DOMContentLoaded', ensurePanel);
 })();
-</script>
