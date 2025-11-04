@@ -1,7 +1,5 @@
-<script type="module">
 // act2.js — Πρ.2: ίδιο tempo με Πρ.1, laws χωρίς scroll, charts κατεβαίνουν, σωστό κλείσιμο αυλαίας
 (() => {
-  // ---- helpers / refs
   const stage        = document.getElementById('stage');
   const curtainUpper = document.querySelector('.curtain-upper');
   const springEl     = document.getElementById('spring');
@@ -14,26 +12,28 @@
   const showThoughtForViewer = window.showThoughtForViewer;
   const addLawOriginal       = window.addLaw;
 
-  // Ενιαίο ρολόι, όπως στην Πρ.1
+  // Ρολόι Πρ.1
   const CLOCK = (()=> {
     const has = typeof window.ACT1_CLOCK === 'object' && window.ACT1_CLOCK;
     const nowMs = has && typeof window.ACT1_CLOCK.nowMs === 'function'
       ? () => window.ACT1_CLOCK.nowMs()
       : () => performance.now();
-    const getT = has && typeof window.ACT1_CLOCK.getT === 'function'
+    const getTraw = has && typeof window.ACT1_CLOCK.getT === 'function'
       ? () => window.ACT1_CLOCK.getT()
       : () => (typeof window.T === 'number' ? window.T : 6.0);
-    return { nowMs, getT };
+    return { nowMs, getTraw };
   })();
 
-  // Αν υπάρχει global scale/tempo από την Πρ.1 (slider/κουμπί), πιάστο
-  function getTempoScale() {
+  // Προσπαθώ να πιάσω ΑΚΡΙΒΩΣ το «effective» T που χρησιμοποιεί η Πρ.1
+  function getEffectiveT(){
+    if (typeof window.ACT1_THOUGHT_T === 'number') return window.ACT1_THOUGHT_T;
     const C = window.ACT1_CLOCK;
-    if (C && typeof C.getTempoScale === 'function') return Math.max(0.1, C.getTempoScale());
-    if (C && typeof C.tempoScale === 'number')      return Math.max(0.1, C.tempoScale);
-    if (typeof window.uXT === 'number')             return Math.max(0.1, window.uXT);        // συχνό pattern
-    if (typeof window.ACT1_THOUGHT_SCALE === 'number') return Math.max(0.1, window.ACT1_THOUGHT_SCALE);
-    return 1;
+    let T = CLOCK.getTraw();
+    if (C && typeof C.getTempoScale === 'function') T *= Math.max(0.1, C.getTempoScale());
+    else if (C && typeof C.tempoScale === 'number') T *= Math.max(0.1, C.tempoScale);
+    else if (typeof window.ACT1_THOUGHT_SCALE === 'number') T *= Math.max(0.1, window.ACT1_THOUGHT_SCALE);
+    else if (typeof window.uXT === 'number') T *= Math.max(0.1, window.uXT);
+    return T;
   }
 
   function setSignboardAct2(){
@@ -52,7 +52,7 @@
 
   function ensureSpringVisible(){ if(springEl) springEl.style.display = 'block'; }
 
-  // Laws pane: no scroll + ελαφρύ αριστερό nudge
+  // Laws pane: no scroll + αριστερό nudge
   let baselineLawsH = null;
   function slideChartsByLawsHeight(){
     if(!lawCharts || !lawsPane) return;
@@ -81,12 +81,10 @@
     }
   }
 
-  // Hook για laws ώστε να κατεβαίνουν τα charts κάθε φορά
   window.addLaw = function(txt){
     try { addLawOriginal(txt); } finally { slideChartsByLawsHeight(); }
   };
 
-  // Κλείσιμο Πρ.2: κλείνω αυλαία, κρύβω marker, και εμφανίζω centered διάλειμμα-φουαγιέ
   function endAct2WithBreak(){
     if(window.showActTransition){
       window.showActTransition({
@@ -97,7 +95,7 @@
       });
       return;
     }
-    // Fallback (σπάνιο)
+    // Fallback
     const p = document.getElementById('actBreak');
     const t = document.getElementById('actBreakTitle');
     const m = document.getElementById('actBreakMsg');
@@ -113,7 +111,7 @@
 
   function closeCurtainThenBreak(){
     try{
-      if(markerEl){ markerEl.style.opacity='0'; markerEl.style.zIndex='0'; markerEl.style.display='none'; } // να μη «βγαίνει» μπροστά
+      if(markerEl){ markerEl.style.opacity='0'; markerEl.style.zIndex='0'; markerEl.style.display='none'; }
       if(curtainUpper && stage){
         curtainUpper.classList.add('slow-close');
         stage.classList.remove('open');
@@ -124,7 +122,7 @@
     endAct2WithBreak();
   }
 
-  // Γεγονότα Πρ.2 — χρονίζονται σε πολλαπλάσια του T * tempoScale (όπως στην Πρ.1)
+  // Χρονισμός: πολλαπλάσια του effective T (ίδιο με Πρ.1)
   const events = [
     { atMul:0.05, fn:()=> showThoughtForViewer?.(0, 'ωπ! δεμένος σε ελατήριο είναι ο m₁D₁!', 2.2, 125, -10) },
     { atMul:0.35, fn:()=> showThoughtForViewer?.(2, 'αυτόν ακριβώς τον m₁D₁ τον έχω ξαναδεί σε άλλη παράσταση αλλά με άλλον παραγωγό', 2.4, 130, 0) },
@@ -163,11 +161,11 @@
     }
     baselineLawsH = lawsPane ? lawsPane.getBoundingClientRect().height : null;
 
-    const startMs = CLOCK.nowMs();
+    const startMs = (typeof CLOCK.nowMs === 'function' ? CLOCK.nowMs() : performance.now());
 
     const step = () => {
-      const elapsed = (CLOCK.nowMs() - startMs) / 1000.0;
-      const Tsec    = CLOCK.getT() * getTempoScale();   // ίδιος ρυθμός με Πρ.1
+      const elapsed = ((typeof CLOCK.nowMs === 'function' ? CLOCK.nowMs() : performance.now()) - startMs) / 1000.0;
+      const Tsec = getEffectiveT();              // ίδιος ρυθμός με Πρ.1
       for(const e of events){
         if(!e.fired && elapsed >= e.atMul * Tsec){
           e.fired = true;
@@ -181,4 +179,3 @@
 
   document.addEventListener('act2-start', runAct2);
 })();
-</script>
