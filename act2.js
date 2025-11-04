@@ -1,4 +1,4 @@
-// act2.js — Πρ.2: ίδιο tempo με Πρ.1 (T, firstThoughtMul, timelineScale, slowFactor), laws χωρίς scroll, charts κατεβαίνουν, σωστό κλείσιμο αυλαίας
+// act2.js — Πρ.2: ίδιο tempo & διάρκεια bubble με Πρ.1, laws χωρίς scroll, charts κατεβαίνουν, σωστό κλείσιμο αυλαίας/transition
 (() => {
   // refs
   const stage        = document.getElementById('stage');
@@ -13,38 +13,39 @@
   const showThoughtForViewer = window.showThoughtForViewer;
   const addLawOriginal       = window.addLaw;
 
-  // ===== Ρυθμός όπως στην Πρ.1 =====
-  // Χρησιμοποιώ *ακριβώς* τα ίδια globals από την Πρ.1.
+  // === Χρησιμοποιώ ακριβώς τα ίδια globals της Πρ.1 ===
   const DEFAULT_FIRST_MUL = 1.1;
 
-  function effectiveT() {
-    // Δεν “μαντεύω” το mode· διαβάζω playbackTime της Πρ.1 για τέλειο sync.
-    // Το threshold κάθε event θα είναι απόλυτος χρόνος (σε s) ως προς t0Obs.
+  // Τ = περίοδος της Πρ.1 (global σου)
+  function getT() {
     return (typeof T === 'number' ? T : 6.0);
   }
 
-  function getFirstMul() {
-    return (typeof firstThoughtMul === 'number' ? firstThoughtMul : DEFAULT_FIRST_MUL);
-  }
-  function getTimelineScale() {
-    return (typeof timelineScale === 'number' ? timelineScale : 1);
+  // sliders του γραναζιού
+  function getFirstMul()     { return (typeof firstThoughtMul  === 'number' ? firstThoughtMul  : DEFAULT_FIRST_MUL); }
+  function getTimelineScale(){ return (typeof timelineScale    === 'number' ? timelineScale    : 1); }
+
+  // observer time της Πρ.1 (αυτό συγκρίνει και Act 1)
+  function getObsTime() {
+    const pt = (typeof playbackTime === 'number') ? playbackTime : 0;
+    const off = (typeof obsStartPlaybackOffset === 'number') ? obsStartPlaybackOffset : 0;
+    const started = (typeof obsStarted === 'boolean') ? obsStarted : false;
+    return started ? (pt - off) : 0;
   }
 
-  // Μετατροπή από atMul (πολλαπλάσιο του T στην Πρ.1) → απόλυτος χρόνος (s) για Πρ.2
+  // Μετατροπή atT (πολλαπλάσια Τ) → δευτερόλεπτα, με τα sliders της 1ης
   function mulToSeconds(atMul) {
-    const Tsec = effectiveT();
-    // Act1 λογική: shift = (firstThoughtMul - DEFAULT_FIRST_MUL), scale = timelineScale
-    const mulAdj = (atMul - DEFAULT_FIRST_MUL) * getTimelineScale() + getFirstMul();
-    return mulAdj * Tsec;
+    const shiftMul = (getFirstMul() - DEFAULT_FIRST_MUL);
+    return (atMul + shiftMul) * getT() * getTimelineScale();
   }
 
-  // ===== Laws pane & charts =====
+  // Laws pane: no scroll + αριστερό nudge + κίνηση charts
   let baselineLawsH = null;
-  function slideChartsByLawsHeight() {
-    if (!lawCharts || !lawsPane) return;
-    if (baselineLawsH == null) baselineLawsH = lawsPane.getBoundingClientRect().height;
+  function slideChartsByLawsHeight(){
+    if(!lawCharts || !lawsPane) return;
+    if(baselineLawsH == null) baselineLawsH = lawsPane.getBoundingClientRect().height;
 
-    Object.assign(lawsPane.style, { overflow: 'visible', maxHeight: 'none', position: 'relative', left: '-18px' });
+    Object.assign(lawsPane.style, { overflow:'visible', maxHeight:'none', position:'relative', left:'-18px' });
 
     const curH = lawsPane.getBoundingClientRect().height;
     const delta = Math.max(0, Math.round(curH - baselineLawsH));
@@ -59,21 +60,21 @@
     if (fullyBelow) {
       lawCharts.style.opacity = '0';
       clearTimeout(lawCharts._hideTimer);
-      lawCharts._hideTimer = setTimeout(() => { lawCharts.style.display = 'none'; }, 380);
+      lawCharts._hideTimer = setTimeout(()=>{ lawCharts.style.display='none'; }, 380);
     } else {
       clearTimeout(lawCharts._hideTimer);
-      if (lawCharts.style.display === 'none') lawCharts.style.display = '';
+      if (lawCharts.style.display==='none') lawCharts.style.display='';
       lawCharts.style.opacity = '1';
     }
   }
 
-  // Hook για addLaw
-  window.addLaw = function (txt) {
+  // Hook για addLaw, ώστε κάθε νέο law να σπρώχνει κάτω τα charts
+  window.addLaw = function(txt){
     try { addLawOriginal(txt); } finally { slideChartsByLawsHeight(); }
   };
 
-  // ===== Τέλος Πρ.2 → Διάλειμμα–Φουαγιέ (panel στο κέντρο) =====
-  function endAct2WithBreak() {
+  // Τέλος Πρ.2 → Διάλειμμα—Φουαγιέ (κουρτίνα κλειστή, panel κεντραρισμένο)
+  function endAct2WithBreak(){
     if (window.showActTransition) {
       window.showActTransition({
         title: 'Τέλος Πράξης 2',
@@ -83,109 +84,107 @@
       });
       return;
     }
-    // Fallback (αν ποτέ λείψει το transitions.js)
+    // Fallback
     const p = document.getElementById('actBreak');
     const t = document.getElementById('actBreakTitle');
     const m = document.getElementById('actBreakMsg');
     const b = document.getElementById('btnAct2');
     if (p && t && m && b) {
-      t.textContent = 'Τέλος Πράξης 2';
-      m.textContent = 'Διάλειμμα — Φουαγιέ';
-      b.textContent = 'Είσοδος στο Φουαγιέ';
-      b.onclick = () => { p.style.display = 'none'; document.dispatchEvent(new Event('act3-start')); };
-      p.style.display = 'block';
+      t.textContent='Τέλος Πράξης 2';
+      m.textContent='Διάλειμμα — Φουαγιέ';
+      b.textContent='Είσοδος στο Φουαγιέ';
+      b.onclick=()=>{ p.style.display='none'; document.dispatchEvent(new Event('act3-start')); };
+      p.style.display='block';
     }
   }
 
-  function closeCurtainThenBreak() {
-    try {
-      if (markerEl) { markerEl.style.opacity = '0'; markerEl.style.zIndex = '0'; markerEl.style.display = 'none'; }
-      if (curtainUpper && stage) {
+  function closeCurtainThenBreak(){
+    try{
+      if (markerEl){ markerEl.style.opacity='0'; markerEl.style.zIndex='0'; markerEl.style.display='none'; }
+      if (curtainUpper && stage){
         curtainUpper.classList.add('slow-close');
         stage.classList.remove('open');
-        setTimeout(() => { endAct2WithBreak(); }, 1200);
+        setTimeout(()=>{ endAct2WithBreak(); }, 1200);
         return;
       }
-    } catch {}
+    }catch{}
     endAct2WithBreak();
   }
 
-  // ===== Σενάριο Πρ.2 (atMul = πολλαπλάσια T όπως στην Πρ.1) =====
+  // Σενάριο Πρ.2 — ΧΩΡΙΣ ρητή διάρκεια (3ο όρισμα) για να ισχύει το slider `bubbleDurationSec`
   const script = [
-    { atMul:0.05, fn:() => showThoughtForViewer?.(0, 'ωπ! δεμένος σε ελατήριο είναι ο m₁D₁!', 2.2, 125, -10) },
-    { atMul:0.35, fn:() => showThoughtForViewer?.(2, 'αυτόν ακριβώς τον m₁D₁ τον έχω ξαναδεί σε άλλη παράσταση αλλά με άλλον παραγωγό', 2.4, 130, 0) },
-    { atMul:0.55, fn:() => showThoughtForViewer?.(3, '…ναι και εκεί πάλι με την ίδια περίοδο κινήθηκε αλλά με μεγαλύτερο πλάτος A′', 2.6, 135, 10) },
-    { atMul:0.80, fn:() => showThoughtForViewer?.(1, 'Πρωταγωνιστής επομένως είναι ο κινούμενος και τα εργαλεία του μαζί!', 2.2, 125, -20) },
-    { atMul:1.05, fn:() => showThoughtForViewer?.(4, 'Τώρα καταλαβαίνω γιατί τον λένε m₁, D₁…', 2.0, 125, 20) },
-    { atMul:1.25, fn:() => showThoughtForViewer?.(0, '…το m₁ είναι η μάζα του, στο D₁ αναφέρεται το «ελαστικό» αίτιο-δύναμη', 2.4, 131, -30) },
-    { atMul:1.45, fn:() => showThoughtForViewer?.(2, '…m₁ και D₁ πάνε πακέτο!', 2.0, 125, 0) },
-    { atMul:1.65, fn:() => showThoughtForViewer?.(3, '…κάθε ταλαντωτής χαρακτηρίζεται από τη μάζα του και το ελαστικό αίτιο που ρυθμίζει την ταλάντωση', 2.6, 133, 10) },
-    { atMul:1.90, fn:() => showThoughtForViewer?.(1, '…γι’ αυτό σαν αριθμό μητρώου έχει τα mD!', 2.2, 125, -10) },
-    { atMul:2.15, fn:() => window.addLaw?.('ΣF = m·a (γενικά)') },
-    { atMul:2.35, fn:() => window.addLaw?.('ΣF(t) = −mω²A·ημ(ωt + φ₀)') },
-    { atMul:2.60, fn:() => window.addLaw?.('ΣF(t) = −mω²x(t)') },
-    { atMul:2.85, fn:() => showThoughtForViewer?.(4, 'Η ΣF=−mω²x περιέχει τον «σωματότυπο» (m) και την «εμμονή» (ω)', 2.6, 125, 18) },
-    { atMul:3.10, fn:() => showThoughtForViewer?.(0, 'Να κάνουμε τις δύο σταθερές μία: D = mω²', 2.2, 125, -18) },
-    { atMul:3.30, fn:() => showThoughtForViewer?.(2, '…χμμμ, γι’ αυτό τον λένε και (m, D)!', 2.0, 125, 0) },
-    { atMul:3.55, fn:() => window.addLaw?.('Θέτω D = mω²') },
-    { atMul:3.75, fn:() => window.addLaw?.('⇒ ΣF = −D·x') },
-    { atMul:4.20, fn:() => { closeCurtainThenBreak(); } }
+    { atT:0.05, fn:()=> showThoughtForViewer?.(0, 'ωπ! δεμένος σε ελατήριο είναι ο m₁D₁!', undefined, 125, -10) },
+    { atT:0.35, fn:()=> showThoughtForViewer?.(2, 'αυτόν ακριβώς τον m₁D₁ τον έχω ξαναδεί σε άλλη παράσταση αλλά με άλλον παραγωγό', undefined, 130, 0) },
+    { atT:0.55, fn:()=> showThoughtForViewer?.(3, '…ναι και εκεί πάλι με την ίδια περίοδο κινήθηκε αλλά με μεγαλύτερο πλάτος A′', undefined, 135, 10) },
+    { atT:0.80, fn:()=> showThoughtForViewer?.(1, 'Πρωταγωνιστής επομένως είναι ο κινούμενος και τα εργαλεία του μαζί!', undefined, 125, -20) },
+    { atT:1.05, fn:()=> showThoughtForViewer?.(4, 'Τώρα καταλαβαίνω γιατί τον λένε m₁, D₁…', undefined, 125, 20) },
+    { atT:1.25, fn:()=> showThoughtForViewer?.(0, '…το m₁ είναι η μάζα του, στο D₁ αναφέρεται το «ελαστικό» αίτιο-δύναμη', undefined, 131, -30) },
+    { atT:1.45, fn:()=> showThoughtForViewer?.(2, '…m₁ και D₁ πάνε πακέτο!', undefined, 125, 0) },
+    { atT:1.65, fn:()=> showThoughtForViewer?.(3, '…κάθε ταλαντωτής χαρακτηρίζεται από τη μάζα του και το ελαστικό αίτιο που ρυθμίζει την ταλάντωση', undefined, 133, 10) },
+    { atT:1.90, fn:()=> showThoughtForViewer?.(1, '…γι’ αυτό σαν αριθμό μητρώου έχει τα mD!', undefined, 125, -10) },
+    { atT:2.15, fn:()=> window.addLaw?.('ΣF = m·a (γενικά)') },
+    { atT:2.35, fn:()=> window.addLaw?.('ΣF(t) = −mω²A·ημ(ωt + φ₀)') },
+    { atT:2.60, fn:()=> window.addLaw?.('ΣF(t) = −mω²x(t)') },
+    { atT:2.85, fn:()=> showThoughtForViewer?.(4, 'Η ΣF=−mω²x περιέχει τον «σωματότυπο» (m) και την «εμμονή» (ω)', undefined, 125, 18) },
+    { atT:3.10, fn:()=> showThoughtForViewer?.(0, 'Να κάνουμε τις δύο σταθερές μία: D = mω²', undefined, 125, -18) },
+    { atT:3.30, fn:()=> showThoughtForViewer?.(2, '…χμμμ, γι’ αυτό τον λένε και (m, D)!', undefined, 125, 0) },
+    { atT:3.55, fn:()=> window.addLaw?.('Θέτω D = mω²') },
+    { atT:3.75, fn:()=> window.addLaw?.('⇒ ΣF = −D·x') },
+    { atT:4.20, fn:()=> { closeCurtainThenBreak(); } }
   ];
 
-  // Προ-υπολογισμός thresholds σε *δευτερόλεπτα* με βάση τα ίδια sliders της Πρ.1
+  // Προ-υπολογισμός thresholds (σε δευτερόλεπτα) με τη λογική της 1ης
   let thresholdsSec = null;
-  function computeThresholds() {
-    thresholdsSec = script.map(e => mulToSeconds(e.atMul));
+  function computeThresholds(){
+    thresholdsSec = script.map(e => mulToSeconds(e.atT));
   }
 
-  // ===== Εκκίνηση Πρ.2 =====
-  function setSignboardAct2() {
-    if (!signboard) return;
+  function setSignboardAct2(){
+    if(!signboard) return;
     const h1  = signboard.querySelector('h1');
     const lA  = document.getElementById('sbLineA');
     const lB  = document.getElementById('sbLineB');
     const lC  = document.getElementById('sbLineC');
-    if (h1) h1.textContent = 'Πράξη 2η: Η Δυναμική στα ... Αλγεβρικά!';
-    if (typeof m === 'number' && typeof D === 'number' && typeof E_mech === 'number') {
-      if (lA) lA.textContent = `m₁ = ${m.toFixed(2)} kg , D₁ = ${D.toFixed(2)} N/m`;
-      if (lB) lB.textContent = `Eμηχ = ${E_mech.toFixed(2)} J`;
+    if(h1) h1.textContent = 'Πράξη 2η: Η Δυναμική στα ... Αλγεβρικά!';
+    if(typeof m === 'number' && typeof D === 'number' && typeof E_mech === 'number'){
+      if(lA) lA.textContent = `m₁ = ${m.toFixed(2)} kg , D₁ = ${D.toFixed(2)} N/m`;
+      if(lB) lB.textContent = `Eμηχ = ${E_mech.toFixed(2)} J`;
     }
-    if (lC) lC.textContent = '—';
+    if(lC) lC.textContent = '—';
   }
 
-  function ensureSpringVisible() { if (springEl) springEl.style.display = 'block'; }
+  function ensureSpringVisible(){ if(springEl) springEl.style.display = 'block'; }
 
-  function runAct2() {
+  function runAct2(){
     // Οπτικό κλείσιμο Πρ.1 πριν ξεκινήσει η 2
-    try { if (curtainUpper && stage) { curtainUpper.classList.add('slow-close'); stage.classList.remove('open'); } } catch {}
+    try{ if(curtainUpper && stage){ curtainUpper.classList.add('slow-close'); stage.classList.remove('open'); } }catch{}
 
     setSignboardAct2();
     ensureSpringVisible();
-    if (stage) stage.classList.add('open');
-    if (markerEl) markerEl.style.opacity = '1';
-    if (lawsPane) {
-      Object.assign(lawsPane.style, { display: 'block', overflow: 'visible', maxHeight: 'none', position: 'relative', left: '-18px' });
-      if (lawsTitle) lawsTitle.textContent = 'Νόμοι Πράξης 2';
+    if(stage) stage.classList.add('open');
+    if(markerEl) markerEl.style.opacity = '1';
+    if(lawsPane){
+      Object.assign(lawsPane.style,{ display:'block', overflow:'visible', maxHeight:'none', position:'relative', left:'-18px' });
+      if(lawsTitle) lawsTitle.textContent = 'Νόμοι Πράξης 2';
     }
 
     computeThresholds();
 
-    // Sync με Act1: μετράω με βάση το *ίδιο* playbackTime
-    const t0Obs = (typeof playbackTime === 'number') ? playbackTime : 0;
+    // Χρονοπρογραμματισμός πάνω στο ΙΔΙΟ tObs της 1ης
+    const t0Obs = getObsTime(); // reference
     script.forEach(e => e.fired = false);
 
-    function step() {
-      const tObs = (typeof playbackTime === 'number') ? playbackTime : ((performance.now())/1000); // fallback
-      const tRel = tObs - t0Obs;
-
-      for (let i = 0; i < script.length; i++) {
+    function step(){
+      const tObs = getObsTime();
+      const rel  = tObs - t0Obs;
+      for(let i=0;i<script.length;i++){
         const e = script[i];
-        if (!e.fired && tRel >= thresholdsSec[i]) {
+        if(!e.fired && rel >= thresholdsSec[i]){
           e.fired = true;
-          try { e.fn(); } catch {}
+          try{ e.fn(); }catch{}
         }
       }
-      if (script.some(ev => !ev.fired)) requestAnimationFrame(step);
+      if(script.some(ev=>!ev.fired)) requestAnimationFrame(step);
     }
     requestAnimationFrame(step);
   }
