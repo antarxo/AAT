@@ -1,9 +1,12 @@
-// act2.js — Πράξη 2 (final strict)
-// Απαιτήσεις: 1) Κουρτίνα κλείνει & ΔΕΝ ξανανοίγει. 2) Βγαίνει πλαίσιο για φουαγιέ.
-// 3) Οι συλλογισμοί/σκέψεις σταματούν ΟΡΙΣΤΙΚΑ και δεν επαναλαμβάνονται.
+// act2.js — Πράξη 2 (strict) με GHOST πάνω από τον m1D1 για τρεις σκέψεις
+// Απαιτήσεις: 
+// 1) Ο ghost εμφανίζεται και ταλαντώνεται ΚΑΘΟΛΗ τη διάρκεια των 3 σκέψεων
+//    από «…τον έχω ξαναδεί…» έως «…και τα εργαλεία του μαζί!».
+// 2) Ο ghost είναι ΜΠΡΟΣΤΑ από τον m1D1 (z-index > actor).
+// 3) Τέλος πράξης: κουρτίνα κλείνει, πλαίσιο φουαγιέ, σκέψεις σταματούν οριστικά, καμία επανάληψη.
 //
-// Χρονισμός = ίδιος με Πρ.1: (atT + (firstThoughtMul - 1.1)) * T * timelineScale
-// Ρολόι = playbackTime - obsStartPlaybackOffset  | Gate = !isBubbleActive
+// Χρονισμός = (atT + (firstThoughtMul - 1.1)) * T * timelineScale
+// Ρολόι = playbackTime - obsStartPlaybackOffset | Gate = !isBubbleActive
 // Laws: χωρίς scroll, #lawCharts κατεβαίνουν & σβήνουν
 
 (() => {
@@ -12,7 +15,7 @@
 
   const DEFAULT_FIRST_MUL = 1.1;
 
-  // ===== Helpers (συμβατά με Πρ.1) =====
+  // ===== Helpers =====
   const atT_to_sec = (atT) => {
     const fMul = (typeof firstThoughtMul === 'number' ? firstThoughtMul : DEFAULT_FIRST_MUL);
     const Tloc = (typeof T === 'number' ? T : 6.0);
@@ -23,7 +26,7 @@
   const tObsNow = () => {
     if (typeof playbackTime === 'number' && typeof obsStartPlaybackOffset === 'number')
       return (playbackTime - obsStartPlaybackOffset);
-    return (performance.now() - __act2_t0Local) / 1000; // fallback
+    return (performance.now() - __act2_t0Local) / 1000;
   };
   const isBusy = () => {
     if (typeof isBubbleActive === 'boolean') return isBubbleActive;
@@ -102,61 +105,81 @@
     }catch{}
   }
 
-  // ===== Ghost ανάμνηση (A′ > A) =====
-  let ghostRunning = false;
-  function showGhostMemory(durationSec = 3.2){
-    if (ghostRunning) return;
-    ghostRunning = true;
+  // ===== GHOST (μπροστά από τον m1D1) =====
+  let ghostEl = null, ghostRAF = null, ghostActive = false, ghostStartTime = 0;
+  function startGhost(){
+    if (ghostActive) return;
+    ghostActive = true;
 
-    const ghost = document.createElement('div');
-    ghost.id = 'ghostActor';
-    ghost.style.position = 'absolute';
-    ghost.style.bottom = getComputedStyle(document.getElementById('actor')).bottom || 'calc(32vh + 133px)';
-    ghost.style.width = '144px';
-    ghost.style.height = '96px';
-    ghost.style.zIndex = '105';
-    ghost.style.pointerEvents = 'none';
-    ghost.style.opacity = '0';
-    ghost.style.filter = 'grayscale(1) brightness(1.2) drop-shadow(0 4px 8px rgba(0,0,0,.55))';
-    ghost.innerHTML = `<img src="skater.png" alt="ghost" style="width:100%;height:auto;display:block;opacity:.55;mix-blend-mode:screen">`;
-    stage.appendChild(ghost);
+    ghostEl = document.createElement('div');
+    ghostEl.id = 'ghostActor';
+    ghostEl.style.position = 'absolute';
+    ghostEl.style.bottom = getComputedStyle(document.getElementById('actor')).bottom || 'calc(32vh + 133px)';
+    ghostEl.style.width = '144px';
+    ghostEl.style.height = '96px';
+    ghostEl.style.zIndex = '200'; // > actor(110) — ΜΠΡΟΣΤΑ
+    ghostEl.style.pointerEvents = 'none';
+    ghostEl.style.opacity = '0';
+    ghostEl.style.filter = 'grayscale(1) brightness(1.15) drop-shadow(0 4px 8px rgba(0,0,0,.55))';
+    ghostEl.innerHTML = `<img src="skater.png" alt="ghost" style="width:100%;height:auto;display:block;opacity:.70;mix-blend-mode:screen">`;
+    stage.appendChild(ghostEl);
 
-    const start = performance.now();
+    ghostStartTime = performance.now();
     const centerX = stage.clientWidth/2;
     const pxPerMeterLocal = (typeof pxPerMeter === 'number') ? pxPerMeter : 50;
     const A_base = (typeof A_m === 'number') ? A_m : 3.0;
-    const Aghost_px = (A_base * 1.5) * pxPerMeterLocal;
+    const Aghost_px = (A_base * 1.5) * pxPerMeterLocal; // μεγαλύτερο πλάτος
     const omegaLoc = (typeof omega === 'number') ? omega : (2*Math.PI/6);
     const hookOffsetPx = 144/2;
 
-    function loop(now){
-      if (window.__ACT2_ENDED__) { try{ ghost.remove(); }catch{}; ghostRunning=false; return; }
-      const tPlay = (typeof playbackTime === 'number') ? playbackTime : (now-start)/1000;
+    const raf = (now)=>{
+      if (!ghostActive || window.__ACT2_ENDED__) { return; }
+      const tPlay = (typeof playbackTime === 'number') ? playbackTime : (now - ghostStartTime)/1000;
       const x = centerX + Aghost_px * Math.sin(omegaLoc * tPlay) - hookOffsetPx;
 
-      const t = (now - start)/1000;
-      const a = Math.min(1, Math.max(0, t / 0.35));
-      const b = Math.min(1, Math.max(0, (durationSec - t) / 0.45));
-      ghost.style.opacity = (Math.min(a, b) * 0.85).toFixed(2);
-      ghost.style.left = `${x}px`;
+      // Fade in ~300ms, χωρίς fade-out εδώ (το κάνει stopGhost)
+      const t = (now - ghostStartTime)/1000;
+      const op = Math.min(1, t/0.30) * 0.9;
+      ghostEl.style.opacity = op.toFixed(2);
+      ghostEl.style.left = `${x}px`;
 
-      if (t < durationSec){
-        requestAnimationFrame(loop);
-      } else {
-        try{ ghost.remove(); }catch{}
-        ghostRunning = false;
-      }
+      ghostRAF = requestAnimationFrame(raf);
+    };
+    ghostRAF = requestAnimationFrame(raf);
+  }
+  function stopGhost(){
+    if (!ghostActive) return;
+    ghostActive = false;
+    if (ghostRAF){ cancelAnimationFrame(ghostRAF); ghostRAF = null; }
+    if (ghostEl){
+      // μικρό fade-out
+      const el = ghostEl;
+      let a = parseFloat(el.style.opacity||'0.9');
+      const step = ()=> {
+        a -= 0.06;
+        if (a <= 0){ try{ el.remove(); }catch{}; return; }
+        el.style.opacity = a.toFixed(2);
+        requestAnimationFrame(step);
+      };
+      requestAnimationFrame(step);
+      ghostEl = null;
     }
-    requestAnimationFrame(loop);
   }
 
   // ===== Σενάριο Πράξης 2 =====
   const S = [
     { atT:0.05, run:()=> showThought?.(0,'ωπ! δεμένος σε ελατήριο είναι ο m₁D₁!', getBubbleDur(),125,-10) },
+
+    // GHOST: αρχή λίγο πριν/μαζί με τη 2η σκέψη (0.35)
+    { atT:0.34, run:()=> startGhost() },
+
     { atT:0.35, run:()=> showThought?.(2,'αυτόν ακριβώς τον m₁D₁ τον έχω ξαναδεί σε άλλη παράσταση αλλά με άλλον παραγωγό', getBubbleDur(),130,  0) },
     { atT:0.55, run:()=> showThought?.(3,'…ναι και εκεί πάλι με την ίδια περίοδο κινήθηκε αλλά με μεγαλύτερο πλάτος A′',       getBubbleDur(),135, 10) },
-    { atT:0.62, run:()=> showGhostMemory(getBubbleDur()+0.8) },
     { atT:0.80, run:()=> showThought?.(1,'Πρωταγωνιστής επομένως είναι ο κινούμενος και τα εργαλεία του μαζί!',               getBubbleDur(),125,-20) },
+
+    // GHOST: τέλος αμέσως μετά την 3η από τις τρεις (0.80)
+    { atT:0.90, run:()=> stopGhost() },
+
     { atT:1.05, run:()=> showThought?.(4,'Τώρα καταλαβαίνω γιατί τον λένε m₁, D₁…',                                           getBubbleDur(),125, 20) },
     { atT:1.25, run:()=> showThought?.(0,'…το m₁ είναι η μάζα του αλλά ως ταλαντωτής συνοδεύεται από «ελαστικό» αίτιο-δύναμη, στο οποίο αναφέρεται το D₁!', getBubbleDur(),131,-30) },
     { atT:1.45, run:()=> showThought?.(2,'…m₁ και D₁ πάνε πακέτο!',                                                          getBubbleDur(),125,  0) },
@@ -174,61 +197,51 @@
     { atT:4.20, run:()=> endAct2() }
   ];
 
-  // ===== Τερματισμός Πρ.2: Κλείσιμο + Πλαίσιο Φουαγιέ + ΟΡΙΣΤΙΚΟ STOP σκέψεων =====
+  // ===== Τερματισμός Πρ.2 (one-shot, χωρίς δυνατότητα επανάληψης) =====
   let __act2_t0Obs = 0;
   let __act2_t0Local = performance.now();
   let __act2_animReq = null;
   let __act2_running = false;
-  window.__ACT2_ENDED__ = false; // global flag για να μην επανεκκινήσει/επαναληφθεί
+  window.__ACT2_ENDED__ = false;
 
   function hardStopThoughts(){
-    // Καθαρισμός τυχόν ενεργού bubble timer & gate reset
     try{ if (window.bubbleAutoTimer){ clearTimeout(window.bubbleAutoTimer); window.bubbleAutoTimer = null; } }catch{}
     try{ window.isBubbleActive = false; }catch{}
   }
-
   function lockCurtainClosed(){
     window.__CURTAIN_LOCKED__ = true;
     try {
-      if (stage) stage.classList.remove('open');          // no 'open'
-      if (curtainUp) curtainUp.style.transform = '';      // κρατά το CSS default (κλειστή)
+      if (stage) stage.classList.remove('open');
+      if (curtainUp) curtainUp.style.transform = '';
       if (window.__CURTAIN_LOCK_OBS__) window.__CURTAIN_LOCK_OBS__.disconnect();
       const obs = new MutationObserver(()=>{
         if (window.__CURTAIN_LOCKED__ && stage?.classList.contains('open')){
-          stage.classList.remove('open');                 // ακυρώνει τυχόν απόπειρα ανοίγματος
+          stage.classList.remove('open');
         }
       });
       obs.observe(stage, {attributes:true, attributeFilter:['class']});
       window.__CURTAIN_LOCK_OBS__ = obs;
     } catch {}
   }
-
   function endAct2(){
-    if (window.__ACT2_ENDED__) return;           // idempotent
+    if (window.__ACT2_ENDED__) return;
     window.__ACT2_ENDED__ = true;
     __act2_running = false;
 
-    // κόψε όποιο pending RAF
     if (__act2_animReq) { cancelAnimationFrame(__act2_animReq); __act2_animReq = null; }
 
-    // σταμάτα σκέψεις ΟΡΙΣΤΙΚΑ
     hardStopThoughts();
+    stopGhost();
 
-    // κρύψε δείκτη, κλείσε κουρτίνα και ΚΛΕΙΔΩΣΕ την
     try{ if(markerEl){ markerEl.style.opacity='0'; markerEl.style.zIndex='0'; markerEl.style.display='none'; } }catch{}
     if (typeof window.closeCurtainsSequence === 'function') {
       try{ window.closeCurtainsSequence(); }catch{}
     } else {
       try{ curtainUp?.classList.add('slow-close'); stage?.classList.remove('open'); }catch{}
     }
-
-    // Κλείδωμα “να μη ξανανοίξει”
     lockCurtainClosed();
-
-    // Μετάβαση στο πλαίσιο φουαγιέ (κεντραρισμένο)
     setTimeout(setBreakPanelForFoyer, 1200);
   }
-
   function setBreakPanelForFoyer(){
     const p = document.getElementById('actBreak');
     const t = document.getElementById('actBreakTitle');
@@ -255,10 +268,9 @@
 
   // ===== Runner Πρ.2 (one-shot) =====
   function runAct2(){
-    if (window.__ACT2_ENDED__ || __act2_running) return; // ΜΗΝ επανεκκινείς
+    if (window.__ACT2_ENDED__ || __act2_running) return;
     __act2_running = true;
 
-    // Σκηνή ανοιχτή ΜΟΝΟ για την Πράξη 2, μετά θα κλειδώσει
     try{ stage?.classList.add('open'); }catch{}
     try{ if(springEl) springEl.style.display='block'; }catch{}
     setSignboardAct2();
@@ -276,25 +288,21 @@
     let i = 0;
 
     const loop = () => {
-      if (window.__ACT2_ENDED__) return; // stop immediately if ended
+      if (window.__ACT2_ENDED__) return;
       const rel = tObsNow() - __act2_t0Obs;
 
-      // fire όσο δεν έχουμε bubble & έχουμε περάσει thresholds
       while (!isBusy() && i < S.length && rel >= thresholds[i]) {
         try{ S[i].run(); }catch(e){ console.error('act2 run error', e); }
         i++;
       }
-
       if (i < S.length) {
         __act2_animReq = requestAnimationFrame(loop);
       } else {
-        // script έληξε → κλείσιμο / κλείδωμα
         endAct2();
       }
     };
     __act2_animReq = requestAnimationFrame(loop);
   }
 
-  // Start Πρ.2 όταν πατηθεί το κουμπί μετά την Πρ.1 (one-shot)
   document.addEventListener('act2-start', runAct2, { once:false });
 })();
