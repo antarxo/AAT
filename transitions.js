@@ -1,12 +1,16 @@
-// transitions.js — center panel dead-center
+<script type="module">
+// transitions.js — ενιαίο κεντραρισμένο panel μετάβασης
 (() => {
   function ensurePanel(){
     let p=document.getElementById('actBreak');
     if(p) return p;
     p=document.createElement('div'); p.id='actBreak';
-    Object.assign(p.style,{position:'fixed',inset:'0',zIndex:'3000',display:'none',background:'rgba(0,0,0,.82)',color:'#fff',display:'none'});
+    Object.assign(p.style,{
+      position:'fixed', inset:'0', zIndex:'5000',
+      display:'none', background:'rgba(0,0,0,.82)', color:'#fff'
+    });
     p.innerHTML = `
-      <div style="display:grid;place-items:center;min-height:100vh;padding:16px">
+      <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px">
         <div style="min-width:min(560px,90vw);max-width:90vw;background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.28);border-radius:14px;padding:18px 20px;box-shadow:0 10px 40px rgba(0,0,0,.55)">
           <h3 id="actBreakTitle" style="margin:0 0 8px;text-align:center">Μετάβαση</h3>
           <p id="actBreakMsg" style="margin:0 0 12px;opacity:.9;text-align:center">—</p>
@@ -18,6 +22,7 @@
     document.body.appendChild(p);
     return p;
   }
+
   function showActTransition({title,msg,buttonText,onClick}){
     const p=ensurePanel();
     const t=p.querySelector('#actBreakTitle');
@@ -31,6 +36,8 @@
     }
     p.style.display='block';
   }
+
   window.showActTransition = showActTransition;
   document.addEventListener('DOMContentLoaded', ensurePanel);
 })();
+</script>
