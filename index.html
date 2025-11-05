@@ -1077,7 +1077,7 @@ resetShow();
  <script>
 /* === A1 text/units patch v2 — υποδείκτες & μονάδες, λέξη-λέξη === */
 /* === a1_text_patch_v3.js — Πράξη 1: ακριβές κείμενο + υποδείκτες/μονάδες === */
-(function () {
+function () {
   if (!window.i18n) return;
   const gr = (i18n.gr ||= {});
 
@@ -1129,14 +1129,21 @@ resetShow();
   });
 
   // Καμία αλλαγή στη ροή: τα «Αριστερά τοποθετείται…» είναι σκηνικές ενέργειες (όχι bubbles)
-})();
-
+};
 
 
 <script src="ui_fonts_math.js"></script>
 <script src="thought_timing_strict.js"></script>
-<script src="ui_laws_layout_v4.js"></script><!-- ή v3 αν κρατάς αυτό -->
+
+<!-- ΝΕΟ: patch για υποδείκτες/μονάδες & ακριβές κείμενο Πράξης 1 -->
+<script src="a1_text_patch_v3.js"></script>
+
+<!-- Νόμοι (μία-γραμμή, χωρίς scroll/«Νόμος …») -->
+<script src="ui_laws_layout_v4.js"></script>
+
+<!-- Πράξη 2 με σωστό sequencing & ghost -->
 <script src="act2.js"></script>
+
 
 </body>
 </html>
