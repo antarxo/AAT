@@ -992,10 +992,10 @@ setLang('gr');
 resetShow();
 </script>
 
-<!-- === A1 JSON Adapter & Act II Bridge (non-invasive) === -->
+<!-- === A1 JSON Adapter & Act II Bridge (non-invasive, CLEAN) === -->
 <script>
 (()=>{
-  // Non-invasive: reads act1.json (if exists) and updates only safe UI bits.
+  // Φόρτωση act1.json (προαιρετική)
   async function loadJSON(){
     try{
       const r = await fetch('act1.json', {cache:'no-cache'});
@@ -1008,11 +1008,9 @@ resetShow();
 
   function applyConfig(cfg){
     if(!cfg) return;
-    // axis Y (vh) if provided
     if(cfg.ui && typeof cfg.ui.axisYvh === 'number'){
       setCSSVar('--axis-y', cfg.ui.axisYvh + 'vh');
     }
-    // signboard lines if match this structure
     const sb = document.querySelector('.signboard');
     if(sb && cfg.title && Array.isArray(cfg.title.lines)){
       const [h1,l1,l2,l3,l4] = cfg.title.lines;
@@ -1024,22 +1022,19 @@ resetShow();
       setText(l3el, l3 ?? (l3el? l3el.textContent : ''));
       setText(l4el, l4 ?? (l4el? l4el.textContent : ''));
     }
-    // audience height tweak if provided
     if(cfg.ui && typeof cfg.ui.audienceHpx === 'number'){
-      const aud = document.getElementById('audience');
+      const aud = document.querySelector('.audience');
       if(aud){ aud.style.height = cfg.ui.audienceHpx + 'px'; }
     }
-    // countdown (only sets a data attribute, your code may read it if supported)
     if(typeof cfg.countdown === 'number'){
       const btn = document.getElementById('btnStart');
       if(btn){ btn.dataset.countdown = String(cfg.countdown); }
     }
-    // expose config globally in case your code wants it
     window.A1_JSON_CFG = cfg;
     document.dispatchEvent(new CustomEvent('act1:config:ready', {detail: cfg}));
   }
 
-  // Bridge: dispatch act1:ended after first full open→close cycle of the center curtain
+  // Bridge: ενημερώνει πότε έκλεισε η κουρτίνα της 1ης (αν χρειαστεί)
   function mountAct2Bridge(){
     const stage = document.getElementById('stage');
     if(!stage) return;
@@ -1050,10 +1045,7 @@ resetShow();
           const isOpen = stage.classList.contains('open');
           if(!seenOpen && isOpen){ seenOpen = true; }
           if(seenOpen && !isOpen){
-            // curtains just closed: give the same delay your close routine uses (≈1500ms)
-            setTimeout(()=>{
-              try{ document.dispatchEvent(new Event('act1:ended')); }catch(_){}
-            }, 1500);
+            setTimeout(()=>{ try{ document.dispatchEvent(new Event('act1:ended')); }catch(_){ } }, 1500);
           }
         }
       }
@@ -1061,41 +1053,19 @@ resetShow();
     obs.observe(stage, {attributes:true});
   }
 
-  // Add Act II root + script hook if not present
-  function ensureAct2Hook(){
-    if(!document.getElementById('act2-root')){
-      const root = document.createElement('div');
-      root.id = 'act2-root';
-      root.hidden = true;
-      root.style.position = 'fixed';
-      root.style.inset = '0';
-      root.style.zIndex = '500';
-      document.body.appendChild(root);
-    }
-    // Only add script tag if act2.js isn't already there
-    const hasAct2 = [...document.scripts].some(s => (s.src||'').includes('act2.js'));
-    if(!hasAct2){
-      const s = document.createElement('script');
-      s.type = 'module';
-      s.src = 'act2.js';
-      s.defer = true
-      document.body.appendChild(s);
-    }
-  }
-
   document.addEventListener('DOMContentLoaded', async ()=>{
     const cfg = await loadJSON();
     applyConfig(cfg);
-    ensureAct2Hook();
     mountAct2Bridge();
+    // ΔΕΝ γίνεται καμία αυτόματη φόρτωση άλλων scripts εδώ.
   });
 })();
 </script>
 <!-- === End A1 JSON Adapter === -->
 
-
-  <script src="intro_boot.js"></script>
-  <script src="adapter.js"></script>
-  <script src="thoughts.js"></script>
+<!-- Load order: intro, external adapter (αν χρειάζεται), και ΑΜΕΣΑ act2.js -->
+<script src="intro_boot.js"></script>
+<script src="adapter.js"></script>
+<script type="module" src="act2.js"></script>
 </body>
 </html>
