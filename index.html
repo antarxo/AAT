@@ -38,12 +38,20 @@
   .floor{position:absolute;left:0;bottom:calc(32vh - 8px);width:100%;height:2px;background:#888;z-index:155;pointer-events:none}
 
   /* Κοινό */
-  .audience{
-    position:absolute;left:18%;bottom:0;width:64%;
-    height:calc(32vh - 5px);
-    object-fit:contain; object-position:bottom center;
-    z-index:158;pointer-events:none;filter:contrast(1.05) brightness(.95)
-  }
+.audience{
+  position:absolute;
+  left:18%;
+  bottom:0;          /* ακουμπάει στο κάτω μέρος */
+  width:64%;         /* ίδιο πλάτος όπως πριν */
+  height:auto;       /* χωρίς περιορισμό ύψους */
+  max-height:none;   /* no cap */
+  object-position:bottom center; /* ευθυγράμμιση στο κάτω μέρος */
+  z-index:158;
+  pointer-events:none;
+  filter:contrast(1.05) brightness(.95);
+  display:block;     /* για καθαρό box-model στο img */
+}
+
   .viewers{position:absolute;left:18%;width:64%;bottom:0;display:flex;justify-content:space-between;z-index:159;padding:0 4vw 12px}
   .viewer{width:60px;height:100px;background:url('https://upload.wikimedia.org/wikipedia/commons/f/f9/Silhouette_icon.svg') no-repeat center/contain;filter:grayscale(1) brightness(.6);opacity:.75}
 
