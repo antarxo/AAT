@@ -1071,15 +1071,15 @@ resetShow();
 </script>
 <!-- === End A1 JSON Adapter === -->
 
-<!-- Load order: intro, external adapter (αν χρειάζεται), και ΑΜΕΣΑ act2.js -->
+<!-- Load order: intro, adapter -->
 <script src="intro_boot.js"></script>
 <script src="adapter.js"></script>
- <script>
 
 <script src="ui_fonts_math.js"></script>
 <script src="thought_timing_strict.js"></script>
-  <script>
-/* a1_text_patch_v3 — inline */
+
+<!-- a1_text_patch_v3 — inline IIFE (ΜΟΝΟ αυτό, όχι και external) -->
+<script>
 (function () {
   'use strict';
   if (!window.i18n) return;
@@ -1114,10 +1114,8 @@ resetShow();
 })();
 </script>
 
-<script src="a1_text_patch_v3.js"></script>
 <script src="ui_laws_layout_v4.js"></script>
 <script src="act2.js"></script>
-
 
 </body>
 </html>
