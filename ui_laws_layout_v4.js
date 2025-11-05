@@ -12,17 +12,26 @@
   const lawCharts = document.getElementById('lawCharts');
 
   // Ασφαλιστικό CSS
-  const css = `
-    #laws{ overflow:visible!important; max-height:none!important; }
-    #lawsList{ list-style:none!important; margin:0!important; padding:0!important; }
-    #lawsList>li{ display:none!important; } /* καθάρισμα παλιών LI */
-    .law-line{
-      display:block; margin:6px 0 10px; padding:6px 8px;
-      background:rgba(0,0,0,.25); border:1px solid rgba(255,255,255,.25);
-      border-radius:8px; color:#fff; line-height:1.48; font-size:16px;
-      white-space:normal;
-    }
-  `;
+  // ...
+const css = `
+  #laws{ overflow:visible!important; max-height:none!important; }
+  #lawsList{ list-style:none!important; margin:0!important; padding:0!important; }
+  #lawsList>li{ display:none!important; }
+  .law-line{
+    display:block;
+    margin:2px 0;           /* <-- πιο σφιχτά */
+    padding:4px 6px;        /* <-- πιο διακριτικό */
+    background:rgba(0,0,0,.22);
+    border:1px solid rgba(255,255,255,.22);
+    border-radius:6px;
+    color:#fff;
+    line-height:1.42;
+    font-size:16px;
+    white-space:normal;
+  }
+`;
+// ...
+
   const st = document.createElement('style'); st.textContent = css; document.head.appendChild(st);
 
   // Container
@@ -89,3 +98,4 @@
   window.addEventListener('resize', syncCharts);
   setTimeout(syncCharts, 60);
 })();
+
