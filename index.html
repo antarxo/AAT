@@ -1074,9 +1074,46 @@ resetShow();
 <!-- Load order: intro, external adapter (αν χρειάζεται), και ΑΜΕΣΑ act2.js -->
 <script src="intro_boot.js"></script>
 <script src="adapter.js"></script>
+  <script>
+/* === A1 text/units patch === */
+(function(){
+  if(!window.i18n) return;
+  const gr = (i18n.gr ||= {});
+  gr.thoughts = Object.assign({}, gr.thoughts, {
+    t1: "Εππ! ο m₁D₁ ήταν ήδη σε κίνηση!",
+    t2: "… χρονική στιγμή t₀ = 0 s με το άνοιγμα της κουρτίνας!",
+    t3: "… και η κίνηση είναι ευθύγραμμη και παλινδρομική!",
+    t4: "… και επαναλαμβανόμενη, περιοδική, άρα ταλάντωση!",
+    t5: "Μήπως είναι Απλή Αρμονική Ταλάντωση;",
+    t6: "… αν είναι Α.Α.Τ. τότε οι τιμές που μετράμε πρέπει να επαληθεύουν την x = A·ημ(ωt + φ₀)!",
+    t7: "… αν κάνουμε διάγραμμα x–t, αυτό μπορεί να επιβεβαιωθεί!",
+    // Δυναμική φράση με δείκτες/μονάδες
+    t9phi: function(){
+      try{
+        const A = window.A_m, ω = window.omega, t0 = window.obsStartPlaybackOffset || 0;
+        const x0 =  A * Math.sin(ω * t0);
+        const v0 =  ω * A * Math.cos(ω * t0);
+        const sgn = (v0 >= 0) ? ">" : "<";
+        const φ0 = ((ω*t0)*180/Math.PI + 360) % 360;
+        return `… όντως είναι ΑΑΤ και αφού το x₀ = ${x0.toFixed(2)} m και η v₀ ${sgn} 0, υπάρχει φ₀ = ${φ0.toFixed(1)}°. Χαχαχα, ένα το κρατούμενο!`;
+      }catch(_){
+        return "… όντως είναι ΑΑΤ και υπάρχουν x₀, v₀, φ₀. Χαχαχα, ένα το κρατούμενο!";
+      }
+    },
+    t7A:  (A)=>`… με A = ${(+A).toFixed(2)} m.`,
+    t8Tw: (T,ω)=>`… και T = ${(+T).toFixed(2)} s, επομένως ω = ${(+ω).toFixed(3)} rad/s!`,
+    // Φυσικά σωστό: συν για την ταχύτητα
+    t11:  "… άρα η ταχύτητα δίνεται από τον νόμο v = ωA·συν(ωt + φ₀)!",
+    t13:  "… και η επιτάχυνση από τον τύπο a = −ω²A·ημ(ωt + φ₀)!",
+    t15:  "Αλλά η σχέση x = A·ημ(ωt + φ₀) (1) περιέχεται στην (3), δηλαδή a = −ω²A·ημ(ωt + φ₀) = −ω²x!",
+    t18:  "Τέλεια! όλο το σετ νόμων της Α.Α.Τ.!"
+  });
+})();
+</script>
+
 <script src="ui_fonts_math.js"></script>
 <script src="thought_timing_strict.js"></script>
-<script src="ui_laws_layout_v3.js"></script>
+<script src="ui_laws_layout_v4.js"></script><!-- ή v3 αν κρατάς αυτό -->
 <script src="act2.js"></script>
 
 </body>
