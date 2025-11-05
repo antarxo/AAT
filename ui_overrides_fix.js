@@ -1,28 +1,29 @@
-// ui_overrides_sync.js
-// Σκέψεις: ο χρόνος «μένω ανοιχτό» = (typewriter) + (post gap).
-// Το check/close (≈0.8s) παραμένει όπως είναι και ΜΕΤΑ τελειώνει το bubble -> τότε μόνο επιτρέπεται η επόμενη σκέψη.
-// Νόμοι: σταθερή αρίθμηση (συνεχίζει 1…N) + typewriter. Δεν αγγίζουμε ρυθμίσεις/slider.
+// thought_timing_strict.js
+// Σειριακή ροή σκέψεων: η επόμενη ξεκινά ΜΟΝΟ αφού τελειώσει:
+// (1) το typewriter, (2) το check/close, ΚΑΙ (3) ένα configurable post-close gap.
+// Δεν αλλάζουμε fonts/layout. Διορθώνουμε και αρίθμηση νόμων.
 
 (function(){
-  /* === ΡΥΘΜΙΣΕΙΣ === */
-  const TYPE_MS_PER_CHAR      = 32;   // ταχύτητα γραψίματος (ms/χαρακτ.)
-  const MIN_MS_PER_CHAR       = 10;   // κατώφλι
-  const POST_GAP_AFTER_TYPING = 0.45; // extra κενό ΜΕΤΑ το τέλος του κειμένου (s)
-  // ΣΗΜ.: το check+close (~0.80s) έρχεται ΜΕΤΑ από το παραπάνω αυτόματα από το δικό σου resumeFromBubble()
+  /* ===== ΡΥΘΜΙΣΕΙΣ ===== */
+  const TYPE_MS_PER_CHAR        = 28;   // ταχύτητα γραψίματος (ms/char)
+  const MIN_MS_PER_CHAR         = 10;   // κατώτατο όριο
+  const POST_PAUSE_BEFORE_CHECK = 0.30; // s, μικρό κενό αφού τελειώσει το γράψιμο ΠΡΙΝ το check
+  const CHECK_CLOSE_MS          = 800;  // ms, όσο κάνει το υπάρχον close animation στον κώδικά σου
+  const EXTRA_GAP_AFTER_CHECK   = 0.60; // s, επιπλέον διάκενο ΜΕΤΑ το check/close πριν επιτραπεί η επόμενη σκέψη
 
   const MAX_BUBBLE_W = 420; // ίδιο με CSS max-width του bubble
 
-  /* === helpers === */
-  function typewrite(el, fullText, msPerChar){
-    return new Promise(res=>{
-      if(!el){ res(); return; }
-      const s = String(fullText ?? '');
-      let i=0;
+  /* ===== helpers ===== */
+  function typewrite(el, text, msPerChar){
+    return new Promise(resolve=>{
+      if(!el){ resolve(); return; }
+      const s = String(text ?? '');
+      let i = 0;
       (function step(){
-        if(i<=s.length){
+        if(i <= s.length){
           el.textContent = s.slice(0, i++);
           setTimeout(()=>requestAnimationFrame(step), msPerChar);
-        } else res();
+        } else resolve();
       })();
     });
   }
@@ -35,10 +36,9 @@
     probe.style.left='-9999px';
     probe.style.top='0';
     probe.style.maxWidth = MAX_BUBBLE_W+'px';
-    probe.style.padding  = '10px 12px 12px'; // ίδιο με bubble
+    probe.style.padding  = '10px 12px 12px'; // ίδιο με .thought-bubble
     probe.style.fontSize = '16px';
     probe.style.lineHeight='1.5';
-    // κρατάει την τρέχουσα γραμματοσειρά σου (δεν την αλλάζουμε)
     probe.textContent = String(text||'');
     document.body.appendChild(probe);
     const w = Math.min(probe.offsetWidth, MAX_BUBBLE_W);
@@ -47,21 +47,19 @@
     return {w,h};
   }
 
-  /* === Σκέψεις: ακριβής διάρκεια bubble = typing + post gap === */
-  const _origShow = window.showThoughtForViewer;
-  if (typeof _origShow === 'function'){
+  /* ===== override showThoughtForViewer ===== */
+  const _origShow    = window.showThoughtForViewer;
+  const _origResume  = window.resumeFromBubble;
+
+  if (typeof _origShow === 'function' && typeof _origResume === 'function'){
     window.showThoughtForViewer = function(vIdx, text, durationSecs, customLift, xShift){
-      // βασική διάρκεια από slider (ως ΕΛΑΧΙΣΤΟ)
-      const baseDur  = (typeof durationSecs === 'number' ? durationSecs : (window.bubbleDurationSec||3));
-      const L        = Math.max(1, String(text||'').length);
-      const msPerChar= Math.max(MIN_MS_PER_CHAR, TYPE_MS_PER_CHAR);
-      const typingSec= (L * msPerChar) / 1000;
+      // 1) Άνοιξε ΑΜΕΣΑ bubble με “τεράστια” διάρκεια και ακύρωσε τον παλιό auto-timer
+      const BIG_SECS = 9999;
+      _origShow(vIdx, ' ', BIG_SECS, customLift, xShift);
+      try{ if (window.bubbleAutoTimer) { clearTimeout(window.bubbleAutoTimer); window.bubbleAutoTimer = null; } }catch(_){}
 
-      // Κλείδωμα διαστάσεων bubble ώστε να μην «φουσκώνει» όσο γράφει
-      // (ανοίγουμε το bubble άδειο, αλλά το κάνουμε στοχομετρικά sized)
-      _origShow(vIdx, ' ', Math.max(baseDur, typingSec + POST_GAP_AFTER_TYPING), customLift, xShift);
-
-      setTimeout(()=>{
+      // 2) Κλειδώνουμε διαστάσεις ώστε να μην «φουσκώνει» όσο γράφει
+      setTimeout(async ()=>{
         const bubble = document.getElementById('bubble0');
         const textEl = bubble ? bubble.querySelector('.text') : null;
         if(!bubble || !textEl) return;
@@ -70,51 +68,68 @@
         bubble.style.minWidth  = w+'px';
         bubble.style.minHeight = h+'px';
 
+        // 3) Typewriter με σταθερή ταχύτητα — duration του slider αγνοείται για συνέπεια
+        const msPerChar = Math.max(MIN_MS_PER_CHAR, TYPE_MS_PER_CHAR);
         textEl.textContent = '';
-        typewrite(textEl, text, msPerChar);
-        // ΣΗΜ.: Μετά το (typingSec + POST_GAP) θα καλεστεί το resumeFromBubble()
-        // από το original, που εμφανίζει check και 0.8s αργότερα κλείνει.
-        // Άρα το επόμενο event ΕΠΙΤΡΕΠΕΤΑΙ μόνο μετά το check+close.
+        await typewrite(textEl, text, msPerChar);
+
+        // 4) Μικρή παύση ΠΡΙΝ το check
+        await new Promise(r=>setTimeout(r, POST_PAUSE_BEFORE_CHECK*1000));
+
+        // 5) Check/close (τρέχει ~800ms μέσα στο original)
+        _origResume('run');
+
+        // 6) Όταν τελειώσει το close, κρατάμε ΤΕΧΝΗΤΑ μπλοκαρισμένη τη ροή για EXTRA_GAP_AFTER_CHECK
+        setTimeout(()=>{
+          // Βάλε πάλι gate: true, ώστε να μην επιτραπεί νέα σκέψη
+          try{ window.isBubbleActive = true; }catch(_){}
+          setTimeout(()=>{
+            try{ window.isBubbleActive = false; }catch(_){}
+          }, EXTRA_GAP_AFTER_CHECK*1000);
+        }, CHECK_CLOSE_MS + 10);
       }, 20);
     };
   }
 
-  /* === Νόμοι: σταθερή αρίθμηση + typewriter === */
+  /* ===== Νόμοι: σωστή αρίθμηση 1…N και μικρό typewriter ===== */
   const _origAddLaw = window.addLaw;
   if (typeof _origAddLaw === 'function'){
     function nextLawIndex(){
       const host = document.getElementById('lawsList');
       if(!host) return 1;
-      let maxN=0;
+      let maxN = 0;
       [...host.children].forEach(ch=>{
-        const m = /\((\d+)\)\s*$/.exec(String(ch.textContent||''));
-        if(m) maxN = Math.max(maxN, parseInt(m[1],10));
+        const m = /\((\d+)\)\s*$/.exec(String(ch.textContent || ''));
+        if(m){ maxN = Math.max(maxN, parseInt(m[1],10)); }
       });
       return maxN + 1;
+    }
+
+    function typewriteLaw(li, finalText){
+      // 0.6s περίπου συνολικός χρόνος για τον νόμο, ανεξάρτητα μήκους
+      const msPerChar = Math.max(MIN_MS_PER_CHAR, Math.floor(600 / Math.max(1, finalText.length)));
+      li.textContent = '';
+      return typewrite(li, finalText, msPerChar).then(()=>{
+        if (typeof window.positionLawCharts === 'function') window.positionLawCharts();
+      });
     }
 
     window.addLaw = function(formula){
       const host = document.getElementById('lawsList');
       const stripped = String(formula||'').replace(/\(\d+\)\s*$/,'').trim();
 
-      // φτιάξε τον νόμο με το original
+      // Αφήνουμε το original να προσθέσει DOM/τίτλους
       _origAddLaw(stripped);
 
-      // πιάσε το τελευταίο στοιχείο (ο νέος νόμος)
-      const node = host && host.lastElementChild;
-      if(!node) return;
+      // Πιάσε το τελευταίο στοιχείο (ο νέος νόμος)
+      const li = host && host.lastElementChild;
+      if(!li) return;
 
       const n = nextLawIndex();
-      const finalText = `${String(node.textContent||'').replace(/\(\d+\)\s*$/,'').trim()} (${n})`;
+      const finalText = `${String(li.textContent||'').replace(/\(\d+\)\s*$/,'').trim()} (${n})`;
+      typewriteLaw(li, finalText);
 
-      // 0.6s σύνολο για να «γραφτεί» ο νόμος (ανεξάρτητα μήκους)
-      const msPerChar = Math.max(MIN_MS_PER_CHAR, Math.floor(600/Math.max(1, finalText.length)));
-      node.textContent='';
-      typewrite(node, finalText, msPerChar).then(()=>{
-        if (typeof window.positionLawCharts === 'function') window.positionLawCharts();
-      });
-
-      // ορατότητα pane & τίτλου
+      // σιγουρέψου ότι το pane/τίτλος φαίνονται
       try{
         const pane = document.getElementById('laws'); if(pane) pane.style.display='block';
         const title= document.getElementById('lawsTitle');
