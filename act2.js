@@ -1,4 +1,6 @@
-// act2.js — Πράξη 2 με ακριβώς την ίδια λογική χρονισμού όπως η Πράξη 1
+// act2.js — ΣΕΙΡΙΑΚΗ εκτέλεση βημάτων, ανεξάρτητη από t_obs.
+// Περιμένει κάθε bubble να ολοκληρωθεί (typewriter + check/close + post-gap) και μετά συνεχίζει.
+
 (function(){
   const stage    = document.getElementById('stage');
   const springEl = document.getElementById('spring');
@@ -11,23 +13,7 @@
   const sbC  = document.getElementById('sbLineC');
   const sbD  = document.getElementById('sbLineD');
 
-  // --- helper: t_obs όπως εμφανίζεται στο ρολόι της 1ης ---
-  function getObsTime(){
-    if(!clockEl) return 0;
-    const m = /([-+]?\d+(?:\.\d+)?)\s*s/.exec(clockEl.textContent||'');
-    return m ? parseFloat(m[1]) : 0;
-  }
-  // --- mapping atT -> sec (ίδιο με 1η) ---
-  function eventAtSec(atT){
-    const Tval = (window.T || 6.0);
-    const DEF  = (window.DEFAULT_FIRST_MUL || 1.1);
-    const first= (window.firstThoughtMul || DEF);
-    const scale= (window.timelineScale || 1.0);
-    const shift= (first - DEF);
-    return ((atT||0) + shift) * Tval * scale;
-  }
-
-  // --- ghost μπροστά από m1D1 ---
+  // Ghost (πάνω από m1D1)
   let ghostEl=null, ghostRAF=null;
   function ensureGhost(){
     if(ghostEl) return;
@@ -59,97 +45,94 @@
     ghostRAF = requestAnimationFrame(loopGhost);
   }
 
-  // --- γεγονότα Πράξης 2 (atT όπως δώσατε) ---
-  const lines = [
-    {kind:'action', atT:0.10, fn:()=>{ stage.classList.add('open'); springEl.style.display='block'; }},
+  // t_obs (μόνο για ghost animation)
+  function getObsTime(){
+    if(!clockEl) return 0;
+    const m = /([-+]?\d+(?:\.\d+)?)\s*s/.exec(clockEl.textContent||'');
+    return m ? parseFloat(m[1]) : 0;
+  }
 
-    {kind:'action', atT:0.40, fn:()=>{
+  // === Βοηθητικά για σειριακή ροή ===
+  function waitBubblesIdle(){
+    return new Promise(res=>{
+      (function probe(){
+        if(!window.isBubbleActive) res(); else setTimeout(probe, 40);
+      })();
+    });
+  }
+  async function bubble(viewer, text, lift=130, xShift=0){
+    await waitBubblesIdle(); // ασφάλεια
+    window.showThoughtForViewer && window.showThoughtForViewer(viewer, text, undefined, lift, xShift);
+    await new Promise(res=>{
+      (function probe(){
+        if(!window.isBubbleActive) res(); else setTimeout(probe, 40);
+      })();
+    });
+  }
+  function law(txt){ window.addLaw && window.addLaw(txt); }
+
+  // === Βήματα Πράξης 2 (αυτολεξεί + σημεία στίξης) ===
+  const steps = [
+    // 1) Άνοιγμα σκηνής + ελατήριο
+    async ()=>{ stage.classList.add('open'); springEl.style.display='block'; },
+
+    // 2) Τίτλοι/τιμές
+    async ()=>{
       const m = (window.m || 70);
       const omega = (window.omega || 2*Math.PI/(window.T||6));
       const D = (window.D || Math.round(m*omega*omega));
       const A = (window.A_m || 3.0);
       const E = 0.5*D*A*A;
+
       if (sbH1) sbH1.textContent = 'Πράξη 2η: Η Δυναμική στα ... Αλγεβρικά!';
       if (sbA)  sbA.textContent  = `m₁ = ${m.toFixed?m.toFixed(0):m} kg , D₁ = ${D.toFixed?D.toFixed(0):D} N/m`;
       if (sbB)  sbB.textContent  = `Εμηχ = ${E.toFixed?E.toFixed(2):E} J`;
       if (sbC)  sbC.textContent  = '—';
       if (sbD)  sbD.textContent  = '—';
-    }},
+    },
 
-    {kind:'bubble', atT:1.00, viewer:1, text:'ωπ! δεμένος σε ελατήριο είναι ο m₁D₁!'},
-    {kind:'bubble', atT:1.80, viewer:3, text:'αυτόν ακριβώς τον m₁D₁ σίγουρα τον έχω ξαναδεί με το ίδιο μηχανισμό-ελατήριο σε άλλη παράσταση, αλλά με άλλον παραγωγό!', ghost:'start'},
-    {kind:'bubble', atT:2.60, viewer:4, text:'…ναι, και εκεί πάλι με την ίδια περίοδο εμμονικά κινήθηκε, αλλά με μεγαλύτερο πλάτος A!'},
-    {kind:'bubble', atT:3.40, viewer:2, text:'Χμμμ… Πρωταγωνιστής μάλλον είναι ο κινούμενος ηθοποιός και τα εργαλεία του μαζί!', ghost:'stop'},
+    // 3–7) Ghost block (3 σκέψεις με ghost on, 1 με ghost off)
+    async ()=>{ await bubble(1,'ωπ! δεμένος σε ελατήριο είναι ο m₁D₁!'); },
+    async ()=>{ ghostShow(); await bubble(3,'αυτόν ακριβώς τον m₁D₁ σίγουρα τον έχω ξαναδεί με το ίδιο μηχανισμό-ελατήριο σε άλλη παράσταση, αλλά με άλλον παραγωγό!'); },
+    async ()=>{ await bubble(4,'…ναι, και εκεί πάλι με την ίδια περίοδο όμως εμμονικά κινήθηκε, αλλά με μεγαλύτερο πλάτος A!'); },
+    async ()=>{ await bubble(2,'Χμμμ… Πρωταγωνιστής μάλλον είναι ο κινούμενος ηθοποιός και τα εργαλεία του μαζί!'); ghostHide(); },
 
-    {kind:'bubble', atT:4.30, viewer:0, text:'Τώρα καταλαβαίνω μάλλον γιατί δεν τον λένε m₁ αλλά m₁,D₁…'},
-    {kind:'bubble', atT:5.10, viewer:1, text:'… το m₁ είναι η μάζα του ηθοποιού, αλλά ως ΤΑΛΑΝΤΩΤΗΣ νοείται η σύμπραξη m₁ και «ελαστικού» αιτίου-δύναμης, στο οποίο αναφέρεται το D₁!'},
-    {kind:'bubble', atT:5.90, viewer:3, text:'…m₁ και D₁ πάνε πακέτο — μαζί είναι ο ΤΑΛΑΝΤΩΤΗΣ, ο πρωταγωνιστής!'},
-    {kind:'bubble', atT:6.70, viewer:4, text:'…δηλαδή κάθε ταλαντωτής χαρακτηρίζεται (1) από τη μάζα m και (2) από το ελαστικό αίτιο-δύναμη που του ρυθμίζει χρονικά (T) την ταλάντωση!'},
-    {kind:'bubble', atT:7.50, viewer:2, text:'… ναι, εύλογο γιατί σαν χαρακτηριστικό όνομα έχει mD — όχι σκέτο m!'},
+    // 8–12)
+    async ()=>{ await bubble(0,'Τώρα καταλαβαίνω μάλλον γιατί δεν τον λένε m₁ αλλά m₁,D₁…'); },
+    async ()=>{ await bubble(1,'… το m₁ είναι η μάζα του ηθοποιού αλλά, ως ταλαντωτής, νοείται η σύμπραξη του ηθοποιού (m₁) και του «ελαστικού» αιτίου-δύναμης, στο οποίο αναφέρεται το D₁!'); },
+    async ()=>{ await bubble(3,'…m₁ και D₁ δηλαδή πάνε παντού «πακέτο» — και τα δύο μαζί είναι ο ταλαντωτής, ο πρωταγωνιστής!'); },
+    async ()=>{ await bubble(4,'…δηλαδή κάθε ταλαντωτής χαρακτηρίζεται 1) από τη μάζα του και 2) από το ελαστικό αίτιο-δύναμη που του ρυθμίζει χρονικά (Τ) την ταλάντωση!'); },
+    async ()=>{ await bubble(2,'…αρχίζω να πείθομαι γιατί σαν χαρακτηριστικό όνομα έχει το mD — και όχι σκέτο m!'); },
 
-    {kind:'bubble', atT:8.30, viewer:0, text:'Ας δούμε πώς γράφεται ο 2ος Νόμος του Νεύτωνα για τον ταλαντωτή!'},
+    // 13–25) Νευτωνας → (5), (6), (6′), (7)
+    async ()=>{ await bubble(0,'Ας δούμε πώς γράφεται ο 2ος Νόμος του Νεύτωνα για την περίπτωση του ταλαντωτή!'); },
 
-    {kind:'bubble', atT:9.10, viewer:1, text:'ΣF = m·a γενικά, και με a(t)=−ω²A·ημ(ωt+φ₀) ⇒ ΣF = −mω²A·ημ(ωt+φ₀) (5)!'},
-    {kind:'law',    atT:9.30, formula:'ΣF(t) = −m ω² A·sin(ωt + φ₀)'},
-    {kind:'bubble', atT:10.10, viewer:3, text:'… και με βάση x(t)=A·ημ(ωt+φ₀) ⇒ ΣF = −mω²x (6)!'},
-    {kind:'law',    atT:10.30, formula:'ΣF(x) = −m ω² x'},
+    async ()=>{ await bubble(1,'ΣF = m·a γενικά, και επομένως εδώ, με τη βοήθεια της (3): ΣF = −mω²A·ημ(ωt+φ₀) (5)!'); law('ΣF(t) = −m ω² A·sin(ωt + φ₀)'); },
+    async ()=>{ await bubble(3,'… και με βάση την (4) μπορεί να γραφτεί και ως: ΣF = −mω²x (6)!'); law('ΣF(x) = −m ω² x'); },
 
-    {kind:'bubble', atT:11.10, viewer:4, text:'Όμως η (6) περιέχει δύο «σταθερές» του ηθοποιού: τον «σωματότυπο» m και την «εμμονή» ω!'},
-    {kind:'bubble', atT:11.90, viewer:2, text:'Να κάνουμε τις δύο μία: D = m·ω² (6\') ; Βγάζει νόημα;'},
-    {kind:'bubble', atT:12.70, viewer:0, text:'Αν την αποδώσουμε στο ελαστικό αίτιο ως σταθερά D, τότε με σταθερά m και D, παραμένει σταθερή η ω του ηθοποιού!'},
-    {kind:'bubble', atT:13.50, viewer:1, text:'… δικαιολογημένα λοιπόν ο ταλαντωτής (ηθοποιός + ελαστικό αίτιο) λέγεται m,D!'},
-    {kind:'bubble', atT:14.30, viewer:3, text:'…και η (6) γίνεται ΣF = −D x (7)!'},
-    {kind:'law',    atT:14.50, formula:'ΣF(x) = −D x'},
+    async ()=>{ await bubble(4,'Όμως! Η (6) περιέχει δύο σταθερές του ηθοποιού: τον «σωματότυπο» m και την «εμμονή» ω!'); },
+    async ()=>{ await bubble(2,'Να κάνουμε τις δύο σταθερές μία, την D = m·ω² (6′); βγάζει νόημα;'); },
+    async ()=>{ await bubble(0,'Αν την αποδώσουμε στο ελαστικό αίτιο ως δική του σταθερά D, τότε, με σταθερά τα m και D, σταθερή θα είναι η ω του ηθοποιού!'); },
+    async ()=>{ await bubble(1,'… χμμμ δικαιολογημένα λοιπόν τον πρωταγωνιστή-ταλαντωτή (=ηθοποιός + ελαστικό αίτιο) τον λένε m,D!'); },
+    async ()=>{ await bubble(3,'…οπότε η (6) γίνεται: ΣF = −D x (7)!'); law('ΣF(x) = −D x'); },
 
-    {kind:'action', atT:15.30, fn:()=>{
-      ghostHide();
+    // Τέλος: κλείσιμο κουρτίνας + διάλειμμα/φουαγιέ
+    async ()=>{
       if (typeof window.closeCurtainsSequence === 'function') window.closeCurtainsSequence();
-      // κείμενα φουαγιέ
       const ttl = document.getElementById('actBreakTitle');
       const msg = document.getElementById('actBreakMsg');
       const btn = document.getElementById('btnAct2');
       if (ttl) ttl.textContent = 'Διάλειμμα — Φουαγιέ';
       if (msg) msg.textContent = 'Προχωράμε στις απόψεις–αποδείξεις στο φουαγιέ.';
       if (btn) btn.textContent = 'Είσοδος στο Φουαγιέ';
-    }}
+    }
   ];
 
-  // --- αναπαραγωγή: ΜΟΝΟ ΕΝΑ event κάθε φορά • ΟΧΙ while όταν bubble είναι ενεργό ---
-  let started=false, idx=0, raf=null;
-
-  function canFire(ev){
-    // Αν υπάρχει ενεργό bubble, περίμενε (όπως στην 1η πράξη)
-    if (window.isBubbleActive) return false;
-    const tObs = getObsTime();
-    return (tObs >= eventAtSec(ev.atT));
+  let started=false;
+  async function runAct2(){
+    if(started) return; started=true;
+    for (const step of steps){ try{ await step(); }catch(e){ console.error('Act2 step error:', e); } }
   }
 
-  function handle(ev){
-    if (ev.kind==='action'){ try{ ev.fn && ev.fn(); }catch(e){ console.error(e); } }
-    else if (ev.kind==='bubble'){
-      if (ev.ghost==='start') ghostShow();
-      if (ev.ghost==='stop')  ghostHide();
-      if (typeof window.showThoughtForViewer === 'function'){
-        // ΧΩΡΙΣ custom dur → χρησιμοποιεί το slider/bubbleDurationSec όπως στην 1η
-        window.showThoughtForViewer(ev.viewer, ev.text, undefined, ev.lift||130, ev.xShift||0);
-      }
-    }
-    else if (ev.kind==='law'){
-      if (typeof window.addLaw === 'function') window.addLaw(ev.formula);
-    }
-  }
-
-  function tick(){
-    if (idx < lines.length){
-      const ev = lines[idx];
-      if (canFire(ev)){
-        idx++; handle(ev);
-      }
-    }
-    if (idx < lines.length) raf = requestAnimationFrame(tick);
-  }
-
-  function startAct2(){ if(started) return; started=true; idx=0; tick(); }
-
-  document.addEventListener('act2-start', startAct2);
+  document.addEventListener('act2-start', runAct2);
 })();
