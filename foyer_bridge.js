@@ -1,22 +1,17 @@
-/* foyer_bridge.js — μεταγωγή actBreak κουμπιού προς act3-start όταν γραφτεί "Φουαγιέ" */
-(function () {
+/* foyer_bridge.js — κουμπί τέλους 2ης → εκκινεί 3η (act3-start) */
+(function(){
   'use strict';
-  var actBreak = document.getElementById('actBreak');
-  var btn = document.getElementById('btnAct2');
-  if (!actBreak || !btn) return;
-
-  function rewireIfFoyer() {
-    var txt = (btn.textContent || '').trim();
-    if (/Φουαγιέ/i.test(txt)) {
-      var clone = btn.cloneNode(true);
-      btn.parentNode.replaceChild(clone, btn);
-      clone.addEventListener('click', function () {
-        actBreak.style.display = 'none';
-        try { document.dispatchEvent(new CustomEvent('act3-start')); } catch(_) {}
-      }, { once: true });
-    }
+  function $(id){ return document.getElementById(id); }
+  function wire(){
+    const btn = $('btnAct2');
+    if(!btn) return;
+    btn.addEventListener('click', function(){
+      // Κρύψε το πλαίσιο και δώσε σήμα για 3η πράξη
+      const actBreak = $('actBreak');
+      if (actBreak) actBreak.style.display = 'none';
+      try{ document.dispatchEvent(new CustomEvent('act3-start')); }catch(_){}
+    }, { once:true });
   }
-  var mo = new MutationObserver(rewireIfFoyer);
-  mo.observe(actBreak, { childList: true, subtree: true, characterData: true });
-  rewireIfFoyer();
+  if (document.readyState !== 'loading') wire();
+  else document.addEventListener('DOMContentLoaded', wire);
 })();

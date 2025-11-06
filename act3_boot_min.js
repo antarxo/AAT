@@ -1,50 +1,53 @@
-/* act3_boot_min.js — ελάχιστο φουαγιέ με μαυροπίνακα (τίτλοι+σκηνή, όχι πλαϊνές κουρτίνες) */
-(function () {
+/* act3_boot_min.js — μίνι μαυροπίνακας στο φουαγιέ (cover τίτλο+σκηνή, όχι πλαϊνές κουρτίνες) */
+(function(){
   'use strict';
-  function mountBlackboard() {
-    var stage  = document.getElementById('stage');
-    var ruler  = document.getElementById('ruler');
-    if (!stage || !ruler) return;
-    var bb = document.getElementById('blackboard');
-    if (!bb) {
-      bb = document.createElement('div');
-      bb.id = 'blackboard';
-      bb.style.position = 'absolute';
-      bb.style.left     = '16%';
-      bb.style.width    = '68%';
-      bb.style.top      = '0';
-      var sRect = stage.getBoundingClientRect();
-      var rRect = ruler.getBoundingClientRect();
-      var hPx   = Math.max(120, (rRect.bottom - sRect.top) + 20);
-      bb.style.height   = hPx + 'px';
-      bb.style.background = 'rgba(10,10,10,0.94)';
-      bb.style.border     = '1px solid rgba(255,255,255,0.12)';
-      bb.style.boxShadow  = '0 8px 20px rgba(0,0,0,0.6) inset, 0 0 40px rgba(0,0,0,0.4)';
-      bb.style.color      = '#e6ffd6';
-      bb.style.fontFamily = 'Inter, system-ui, sans-serif';
-      bb.style.padding    = '18px 22px';
-      bb.style.zIndex     = '300';
-      bb.style.pointerEvents = 'none';
-      bb.style.borderRadius  = '8px';
-      var h = document.createElement('div');
-      h.style.fontWeight = '700';
-      h.style.fontSize   = '20px';
-      h.style.marginBottom = '6px';
+  function mountBoard(){
+    const stage = document.getElementById('stage');
+    if (!stage) return;
+
+    // Container
+    let board = document.getElementById('foyerBoard');
+    if (!board){
+      board = document.createElement('div');
+      board.id = 'foyerBoard';
+      board.style.position = 'absolute';
+      board.style.left = '18%';          // χωρίς πλαϊνές κουρτίνες
+      board.style.top  = '0';
+      board.style.width  = '64%';
+      board.style.height = 'calc(68% - 20px)'; // μέχρι λίγο πάνω από τον χάρακα
+      board.style.background = 'rgba(10, 10, 10, 0.92)';
+      board.style.border = '2px solid rgba(255,255,255,0.18)';
+      board.style.boxShadow = '0 10px 24px rgba(0,0,0,0.55) inset';
+      board.style.borderRadius = '8px';
+      board.style.zIndex = '500'; // πάνω από σκηνικά, κάτω από modals
+      board.style.color = '#cfe9cc';
+      board.style.fontFamily = 'Georgia, serif';
+      board.style.padding = '12px 16px';
+      board.style.display = 'none';
+
+      // Header
+      const h = document.createElement('div');
       h.textContent = 'Φουαγιέ — Απόψεις & Αποδείξεις';
-      var sub = document.createElement('div');
-      sub.style.fontSize   = '14px';
-      sub.style.opacity    = '0.8';
-      sub.textContent = 'Η 3η πράξη ξεκίνησε. Ο μαυροπίνακας θα γεμίσει με τις αποδείξεις από το PDF/JSON.';
-      bb.appendChild(h); bb.appendChild(sub);
-      stage.appendChild(bb);
+      h.style.textAlign = 'center';
+      h.style.fontWeight = '700';
+      h.style.marginBottom = '8px';
+      h.style.color = '#fff';
+      board.appendChild(h);
+
+      // Γραφή τυπικού μηνύματος τέλους (placeholder, θα αντικατασταθεί με proofs json)
+      const txt = document.createElement('div');
+      txt.id = 'foyerText';
+      txt.textContent = '— (Προσεχώς: αυτόματη ροή αποδείξεων από act3_proofs.json) —';
+      txt.style.opacity = '0.85';
+      txt.style.fontSize = '16px';
+      board.appendChild(txt);
+
+      stage.appendChild(board);
     }
-    var ro = new ResizeObserver(function(){
-      var sRect = stage.getBoundingClientRect();
-      var rRect = ruler.getBoundingClientRect();
-      var hPx   = Math.max(120, (rRect.bottom - sRect.top) + 20);
-      bb.style.height = hPx + 'px';
-    });
-    ro.observe(stage);
+    board.style.display = 'block';
   }
-  document.addEventListener('act3-start', mountBlackboard);
+
+  document.addEventListener('act3-start', function(){
+    mountBoard();
+  });
 })();

@@ -1,38 +1,46 @@
-/* act2.js — Πράξη 2: τίτλοι, ελατήριο, σκέψεις, ghost, νόμοι, ομαλό κλείσιμο και πέρασμα στο φουαγιέ */
+/* act2.js — Πράξη 2: τίτλοι, ελατήριο, σκέψεις, ghost, νόμοι, κλείσιμο & πέρασμα στο φουαγιέ */
 (function(){
   'use strict';
 
-  var ACT2_STARTED = false;
-  var ACT2_DONE    = false;
-  var stage, springEl, signboard, actBreak, btnAct2, actor;
+  let ACT2_STARTED = false;
+  let ACT2_DONE    = false;
 
-  function qs(id){ return document.getElementById(id); }
+  let stage, springEl, signboard, actor;
+
+  function $(id){ return document.getElementById(id); }
+  function ensureRefs(){
+    if (!stage)     stage     = $('stage');
+    if (!springEl)  springEl  = $('spring');
+    if (!signboard) signboard = document.querySelector('.signboard');
+    if (!actor)     actor     = $('actor');
+    return !!stage; // must have stage
+  }
 
   function setSignboardAct2(){
-    if(!signboard) signboard = document.querySelector('.signboard');
-    if(!signboard) return;
-    var h1 = signboard.querySelector('h1');
-    var lA = qs('sbLineA'), lB = qs('sbLineB'), lC = qs('sbLineC');
-    if(h1) h1.textContent = 'Πράξη 2η: Η Δυναμική στα ... Αλγεβρικά!';
-    if(lA) lA.textContent = 'm₁ = … Kg , D₁ = … N/m';
-    if(lB) lB.textContent = 'Εμηχ = … J';
-    if(lC) lC.textContent = 'Παραγωγή-Σκηνοθεσία: Εμηχ. Ενεργειούλης';
+    if (!signboard) signboard = document.querySelector('.signboard');
+    if (!signboard) return;
+    const h1 = signboard.querySelector('h1');
+    const lA = $('sbLineA'), lB = $('sbLineB'), lC = $('sbLineC');
+    if (h1) h1.textContent = 'Πράξη 2η: Η Δυναμική στα ... Αλγεβρικά!';
+    if (lA) lA.textContent = 'm₁ = … Kg , D₁ = … N/m';
+    if (lB) lB.textContent = 'Εμηχ = … J';
+    if (lC) lC.textContent = 'Παραγωγή-Σκηνοθεσία: Εμηχ. Ενεργειούλης';
   }
 
   function showSpring(){
-    if(!springEl) springEl = qs('spring');
-    if(springEl){ springEl.style.display = 'block'; springEl.style.opacity = '1'; }
+    if (!springEl) springEl = $('spring');
+    if (springEl){ springEl.style.display='block'; springEl.style.opacity='1'; }
   }
 
-  // Ghost μπροστά από m1D1 για ~10s (καλύπτει 3 σκέψεις)
-  var ghostEl=null, ghostRAF=0, ghostStopTime=0;
+  // ---------- GHOST ----------
+  let ghostEl=null, ghostRAF=0, ghostStopTime=0;
   function ensureGhost(){
-    if(ghostEl) return ghostEl;
-    actor = qs('actor');
-    var g = document.createElement('img');
-    g.id = 'ghost';
+    if (ghostEl) return ghostEl;
+    if (!actor) actor = $('actor');
+    const g = document.createElement('img');
+    g.id='ghost';
     g.src = (actor && actor.querySelector('img')) ? actor.querySelector('img').src : 'skater.png';
-    g.style.position = 'absolute';
+    g.style.position='absolute';
     g.style.bottom   = getComputedStyle(actor||document.body).bottom || 'calc(32vh + 133px)';
     g.style.left     = '50%';
     g.style.transform= 'translate(-50%,0)';
@@ -40,54 +48,78 @@
     g.style.height   = 'auto';
     g.style.opacity  = '0.35';
     g.style.filter   = 'drop-shadow(0 4px 6px rgba(0,0,0,.6))';
-    g.style.zIndex   = '120'; // > actor(110)
-    g.style.pointerEvents = 'none';
+    g.style.zIndex   = '120'; // μπροστά από τον ηθοποιό (actor z≈110)
+    g.style.pointerEvents='none';
     (document.querySelector('.stage')||document.body).appendChild(g);
-    ghostEl = g;
+    ghostEl=g;
     return g;
   }
   function startGhost(durationMs){
-    if(!ghostEl) ensureGhost();
-    var t0 = performance.now();
-    var T   = (window.T || 6.0);
-    var omega = 2*Math.PI/T;
-    var Apx = (window.A_px || 150) * 1.25;
-    var centerX = (document.getElementById('stage')||document.body).clientWidth/2;
-    var hookOffset = (actor && actor.getBoundingClientRect().width ? actor.getBoundingClientRect().width/2 : 72);
+    if (!ensureRefs()) return;
+    ensureGhost();
+    const t0 = performance.now();
+    const T  = (window.T || 6.0);
+    const ω  = 2*Math.PI/T;
+    const Apx = (window.A_px || 150) * 1.25;
+    const centerX = stage.clientWidth/2;
+    const hookOffset = (actor && actor.getBoundingClientRect().width ? actor.getBoundingClientRect().width/2 : 72);
+
     function step(now){
-      var t = (now - t0)/1000;
-      var x = centerX + Apx * Math.sin(omega * t);
-      ghostEl.style.left = (x - hookOffset) + 'px';
-      if(now < ghostStopTime) ghostRAF = requestAnimationFrame(step);
-      else { cancelAnimationFrame(ghostRAF); ghostRAF=0; try{ ghostEl.remove(); }catch(_){ ghostEl.style.display='none'; } ghostEl=null; }
+      const t=(now - t0)/1000;
+      const x=centerX + Apx*Math.sin(ω*t);
+      ghostEl.style.left=(x - hookOffset)+'px';
+      if(now < ghostStopTime){
+        ghostRAF=requestAnimationFrame(step);
+      }else{
+        cancelAnimationFrame(ghostRAF); ghostRAF=0;
+        try{ ghostEl.remove(); }catch(_){ ghostEl.style.display='none'; }
+        ghostEl=null;
+      }
     }
     ghostStopTime = performance.now() + durationMs;
-    if(!ghostRAF) ghostRAF = requestAnimationFrame(step);
+    if(!ghostRAF) ghostRAF=requestAnimationFrame(step);
   }
 
+  // ---------- ΒΟΗΘΗΤΙΚΑ ----------
   function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
+
   function showBubble(viewer, text){
-    var perChar = window.TYPE_CHAR_MS || 45;
-    var gap     = window.THINK_GAP_MS || 700;
-    var durMs   = Math.max(1400, (String(text||'').length * perChar) + gap);
+    const perChar = window.TYPE_CHAR_MS || 45;
+    const gap     = window.THINK_GAP_MS || 700;
+    const durMs   = Math.max(1400, (String(text||'').length * perChar) + gap);
     if (typeof window.showThoughtForViewer === 'function') {
       window.showThoughtForViewer(viewer, text, (durMs/1000), 135, 0);
     }
     return sleep(durMs);
   }
+
   function addLawLine(txt, n){
-    if(typeof window.addLaw === 'function'){ window.addLaw(txt, n); }
+    if (typeof window.addLaw === 'function'){ window.addLaw(txt, n); }
   }
 
+  // ---------- ΚΥΡΙΟ SEQUENCE ----------
   async function playAct2(){
-    if(ACT2_DONE) return;
+    if (ACT2_DONE) return;
+    if (!ensureRefs()){ console.error('act2.js: λείπει #stage'); return; }
+
+    ACT2_STARTED = true;  // <-- JavaScript uses true/false, fix below
+  }
+})();
+
+  async function playAct2(){
+    if (ACT2_DONE) return;
+    if (!ensureRefs()){ console.error('act2.js: λείπει #stage'); return; }
+
     ACT2_STARTED = true;
+
+    // Άνοιγμα σκηνής (ίδιο “open” class με Πράξη 1)
     stage.classList.add('open');
+
     showSpring();
     setSignboardAct2();
 
     await showBubble(0, "ωπ! δεμένος σε ελατήριο είναι ο m1D1!");
-    startGhost(10000); // για τις επόμενες ~3 σκέψεις
+    startGhost(10000); // καλύπτει τις επόμενες ~3 σκέψεις
 
     await showBubble(2, "αυτόν ακριβώς τον m1D1 σίγουρα τον έχω ξαναδεί με το ίδιο μηχανισμό-ελατήριο σε άλλη παράσταση, αλλά με άλλον παραγωγό!");
     await showBubble(4, "...ναι και εκεί πάλι με την ίδια περίοδο όμως εμμονικά κινήθηκε, αλλά με μεγαλύτερο πλάτος Α!");
@@ -102,6 +134,7 @@
 
     await showBubble(2, "Ας δούμε πώς γράφεται ο 2ος Νόμος του Νεύτωνα για την περίπτωση του ταλαντωτή!");
     addLawLine("ΣF = m·a", 5);
+
     await showBubble(4, "… ΣF=ma γενικά και επομένως εδώ με τη βοήθεια της (3) ΣF = -m·ω²·A·ημ(ωt+φ₀) (5)!");
     addLawLine("ΣF = -m·ω²·A·ημ(ωt+φ₀)", 5);
 
@@ -119,29 +152,38 @@
   }
 
   function endAct2(){
-    if(ACT2_DONE) return;
+    if (ACT2_DONE) return;
     ACT2_DONE = true;
-    var stageEl = document.getElementById('stage');
-    if(stageEl){ stageEl.classList.remove('open'); }
+
+    if (ensureRefs()){
+      // Κλείσιμο αυλαίας (μην ξανανοίξει)
+      stage.classList.remove('open');
+    }
+    // Μετά από ~1.5s δείξε πλαίσιο διαλείμματος → Φουαγιέ
     setTimeout(function(){
-      var actBreak = document.getElementById('actBreak');
-      var btnAct2  = document.getElementById('btnAct2');
-      if(actBreak){
+      const actBreak = $('actBreak');
+      const btnAct2  = $('btnAct2');
+      if (actBreak){
         actBreak.style.display='flex';
-        var titleEl = document.getElementById('actBreakTitle');
-        var msgEl   = document.getElementById('actBreakMsg');
-        if(titleEl) titleEl.textContent = 'Διάλειμμα';
-        if(msgEl)   msgEl.textContent   = 'Περάστε στο Φουαγιέ για απόψεις & αποδείξεις.';
-        if(btnAct2) btnAct2.textContent = 'Είσοδος στο Φουαγιέ';
+        const titleEl = $('actBreakTitle');
+        const msgEl   = $('actBreakMsg');
+        if (titleEl) titleEl.textContent = 'Διάλειμμα';
+        if (msgEl)   msgEl.textContent   = 'Περάστε στο Φουαγιέ για απόψεις & αποδείξεις.';
+        if (btnAct2) btnAct2.textContent = 'Είσοδος στο Φουαγιέ';
       }
     }, 1500);
   }
 
   function startAct2Once(){
-    if(ACT2_STARTED || ACT2_DONE) return;
+    if (ACT2_STARTED || ACT2_DONE) return;
+    if (!ensureRefs()){ console.error('act2.js: δεν βρέθηκε #stage'); return; }
     ACT2_STARTED = true;
+    // μικρή καθυστέρηση για σταθεροποίηση layout
     setTimeout(playAct2, 300);
   }
+
+  // event από το κουμπί του intermission
   document.addEventListener('act2-start', startAct2Once);
-  document.addEventListener('act1:ended', function(){});
+  // bridge από act1 → act2 (αν εκπέμπεται)
+  document.addEventListener('act1:ended', function(){ /* no-op εδώ */ });
 })();
