@@ -1,4 +1,4 @@
-/* act2.js — Πράξη 2: τίτλοι, ελατήριο, σκέψεις, ghost, νόμοι, κλείσιμο & πέρασμα στο φουαγιέ */
+/* act2.js — Πράξη 2: sequencing, ghost, νόμοι, σωστό τέλος + ξεχωριστό overlay για Φουαγιέ */
 (function(){
   'use strict';
 
@@ -48,7 +48,7 @@
     g.style.height   = 'auto';
     g.style.opacity  = '0.35';
     g.style.filter   = 'drop-shadow(0 4px 6px rgba(0,0,0,.6))';
-    g.style.zIndex   = '120'; // μπροστά από τον ηθοποιό (actor ~110)
+    g.style.zIndex   = '120'; // μπροστά από τον ηθοποιό
     g.style.pointerEvents='none';
     (document.querySelector('.stage')||document.body).appendChild(g);
     ghostEl=g;
@@ -80,38 +80,86 @@
     if(!ghostRAF) ghostRAF=requestAnimationFrame(step);
   }
 
-  /* ---------- ΒΟΗΘΗΤΙΚΑ ---------- */
+  /* ---------- HELPERS ---------- */
   const sleep = (ms)=>new Promise(r=>setTimeout(r,ms));
-
   function showBubble(viewer, text){
     const perChar = window.TYPE_CHAR_MS || 45;
     const gap     = window.THINK_GAP_MS || 700;
-    const durMs   = Math.max(1400, (String(text||'').length * perChar) + gap);
+    const resolved = (typeof text === 'function') ? text() : text;
+    const durMs   = Math.max(1400, (String(resolved||'').length * perChar) + gap);
     if (typeof window.showThoughtForViewer === 'function') {
-      window.showThoughtForViewer(viewer, text, 135, 0);
+      window.showThoughtForViewer(viewer, resolved, 135, 0);
     }
     return sleep(durMs);
   }
-
   function addLawLine(txt, n){
     if (typeof window.addLaw === 'function'){ window.addLaw(txt, n); }
   }
 
-  /* ---------- ΚΥΡΙΟ SEQUENCE ---------- */
+  /* ---------- END + OVERLAY (Act2 → Foyer) ---------- */
+  function ensureFoyerOverlay(){
+    let ov = document.getElementById('actBreak2F');
+    if (ov) return ov;
+    ov = document.createElement('div');
+    ov.id = 'actBreak2F';
+    ov.style.position='absolute';
+    ov.style.inset='0';
+    ov.style.display='none';
+    ov.style.alignItems='center';
+    ov.style.justifyContent='center';
+    ov.style.textAlign='center';
+    ov.style.zIndex='410';
+    ov.style.background='rgba(0,0,0,.55)';
+
+    const box = document.createElement('div');
+    box.style.cssText='background:rgba(0,0,0,.7);border:1px solid rgba(255,255,255,.25);border-radius:12px;padding:16px 20px;max-width:520px;color:#fff';
+    box.innerHTML = `
+      <h3 style="margin:0 0 8px 0">Διάλειμμα</h3>
+      <p style="margin:0 0 12px 0">Περάστε στο Φουαγιέ για απόψεις & αποδείξεις.</p>
+      <button id="btnFoyer" style="background:#700;color:#fff;border:none;border-radius:8px;padding:10px 16px;font-size:16px;cursor:pointer">Είσοδος στο Φουαγιέ</button>
+    `;
+    ov.appendChild(box);
+    (document.querySelector('.stage')||document.body).appendChild(ov);
+
+    const btn = box.querySelector('#btnFoyer');
+    btn.addEventListener('click', function(){
+      ov.style.display='none';
+      try{ document.dispatchEvent(new Event('act3-start')); }catch(_){}
+    });
+
+    return ov;
+  }
+
+  function endAct2(){
+    if (ACT2_DONE) return;
+    ACT2_DONE = true;
+
+    if (ensureRefs()){
+      // κλείσιμο αυλαίας — δεν ξανανοίγει
+      stage.classList.remove('open');
+    }
+
+    // Μετά από ~1.5s εμφάνιση overlay για Φουαγιέ (ΔΕΝ αγγίζουμε το actBreak/btnAct2 της Πράξης 1)
+    setTimeout(function(){
+      const ov = ensureFoyerOverlay();
+      ov.style.display='flex';
+    }, 1500);
+  }
+
+  /* ---------- MAIN SEQUENCE ---------- */
   async function playAct2(){
     if (ACT2_DONE) return;
     if (!ensureRefs()){ console.error('act2.js: λείπει #stage'); return; }
 
     ACT2_STARTED = true;
 
-    // Άνοιγμα σκηνής
+    // Άνοιγμα σκηνής + τίτλοι + ελατήριο
     stage.classList.add('open');
-
     showSpring();
     setSignboardAct2();
 
     await showBubble(0, "ωπ! δεμένος σε ελατήριο είναι ο m1D1!");
-    startGhost(10000); // καλύπτει τις επόμενες ~3 σκέψεις
+    startGhost(10000); // καλύπτει τις 3 επόμενες σκέψεις
 
     await showBubble(2, "αυτόν ακριβώς τον m1D1 σίγουρα τον έχω ξαναδεί με το ίδιο μηχανισμό-ελατήριο σε άλλη παράσταση, αλλά με άλλον παραγωγό!");
     await showBubble(4, "...ναι και εκεί πάλι με την ίδια περίοδο όμως εμμονικά κινήθηκε, αλλά με μεγαλύτερο πλάτος Α!");
@@ -143,28 +191,6 @@
     endAct2();
   }
 
-  function endAct2(){
-    if (ACT2_DONE) return;
-    ACT2_DONE = true;
-
-    if (ensureRefs()){
-      stage.classList.remove('open'); // κλείσιμο αυλαίας — δεν ξανανοίγει
-    }
-    // Μετά από ~1.5s: πλαίσιο διαλείμματος → Φουαγιέ
-    setTimeout(function(){
-      const actBreak = $('actBreak');
-      const btnAct2  = $('btnAct2');
-      if (actBreak){
-        actBreak.style.display='flex';
-        const titleEl = $('actBreakTitle');
-        const msgEl   = $('actBreakMsg');
-        if (titleEl) titleEl.textContent = 'Διάλειμμα';
-        if (msgEl)   msgEl.textContent   = 'Περάστε στο Φουαγιέ για απόψεις & αποδείξεις.';
-        if (btnAct2) btnAct2.textContent = 'Είσοδος στο Φουαγιέ';
-      }
-    }, 1500);
-  }
-
   function startAct2Once(){
     if (ACT2_STARTED || ACT2_DONE) return;
     if (!ensureRefs()){ console.error('act2.js: δεν βρέθηκε #stage'); return; }
@@ -172,9 +198,8 @@
     setTimeout(playAct2, 300);
   }
 
-  // start από το overlay της πράξης 1 → 2
+  // ΜΟΝΟ αυτό: κουμπί μετά την 1η → 2η
   document.addEventListener('act2-start', startAct2Once);
-  // bridge ακροατής (αν χρειαστεί)
-  document.addEventListener('act1:ended', function(){ /* no-op */ });
+  // Καμία ανάμιξη με act3 εδώ.
 
 })();
