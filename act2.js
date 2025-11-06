@@ -13,7 +13,7 @@
     if (!springEl)  springEl  = $('spring');
     if (!signboard) signboard = document.querySelector('.signboard');
     if (!actor)     actor     = $('actor');
-    return !!stage; // must have stage
+    return !!stage;
   }
 
   function setSignboardAct2(){
@@ -32,7 +32,7 @@
     if (springEl){ springEl.style.display='block'; springEl.style.opacity='1'; }
   }
 
-  // ---------- GHOST ----------
+  /* ---------- GHOST ---------- */
   let ghostEl=null, ghostRAF=0, ghostStopTime=0;
   function ensureGhost(){
     if (ghostEl) return ghostEl;
@@ -48,7 +48,7 @@
     g.style.height   = 'auto';
     g.style.opacity  = '0.35';
     g.style.filter   = 'drop-shadow(0 4px 6px rgba(0,0,0,.6))';
-    g.style.zIndex   = '120'; // μπροστά από τον ηθοποιό (actor z≈110)
+    g.style.zIndex   = '120'; // μπροστά από τον ηθοποιό (actor ~110)
     g.style.pointerEvents='none';
     (document.querySelector('.stage')||document.body).appendChild(g);
     ghostEl=g;
@@ -80,15 +80,15 @@
     if(!ghostRAF) ghostRAF=requestAnimationFrame(step);
   }
 
-  // ---------- ΒΟΗΘΗΤΙΚΑ ----------
-  function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
+  /* ---------- ΒΟΗΘΗΤΙΚΑ ---------- */
+  const sleep = (ms)=>new Promise(r=>setTimeout(r,ms));
 
   function showBubble(viewer, text){
     const perChar = window.TYPE_CHAR_MS || 45;
     const gap     = window.THINK_GAP_MS || 700;
     const durMs   = Math.max(1400, (String(text||'').length * perChar) + gap);
     if (typeof window.showThoughtForViewer === 'function') {
-      window.showThoughtForViewer(viewer, text, (durMs/1000), 135, 0);
+      window.showThoughtForViewer(viewer, text, 135, 0);
     }
     return sleep(durMs);
   }
@@ -97,22 +97,14 @@
     if (typeof window.addLaw === 'function'){ window.addLaw(txt, n); }
   }
 
-  // ---------- ΚΥΡΙΟ SEQUENCE ----------
-  async function playAct2(){
-    if (ACT2_DONE) return;
-    if (!ensureRefs()){ console.error('act2.js: λείπει #stage'); return; }
-
-    ACT2_STARTED = true;  // <-- JavaScript uses true/false, fix below
-  }
-})();
-
+  /* ---------- ΚΥΡΙΟ SEQUENCE ---------- */
   async function playAct2(){
     if (ACT2_DONE) return;
     if (!ensureRefs()){ console.error('act2.js: λείπει #stage'); return; }
 
     ACT2_STARTED = true;
 
-    // Άνοιγμα σκηνής (ίδιο “open” class με Πράξη 1)
+    // Άνοιγμα σκηνής
     stage.classList.add('open');
 
     showSpring();
@@ -156,10 +148,9 @@
     ACT2_DONE = true;
 
     if (ensureRefs()){
-      // Κλείσιμο αυλαίας (μην ξανανοίξει)
-      stage.classList.remove('open');
+      stage.classList.remove('open'); // κλείσιμο αυλαίας — δεν ξανανοίγει
     }
-    // Μετά από ~1.5s δείξε πλαίσιο διαλείμματος → Φουαγιέ
+    // Μετά από ~1.5s: πλαίσιο διαλείμματος → Φουαγιέ
     setTimeout(function(){
       const actBreak = $('actBreak');
       const btnAct2  = $('btnAct2');
@@ -178,12 +169,12 @@
     if (ACT2_STARTED || ACT2_DONE) return;
     if (!ensureRefs()){ console.error('act2.js: δεν βρέθηκε #stage'); return; }
     ACT2_STARTED = true;
-    // μικρή καθυστέρηση για σταθεροποίηση layout
     setTimeout(playAct2, 300);
   }
 
-  // event από το κουμπί του intermission
+  // start από το overlay της πράξης 1 → 2
   document.addEventListener('act2-start', startAct2Once);
-  // bridge από act1 → act2 (αν εκπέμπεται)
-  document.addEventListener('act1:ended', function(){ /* no-op εδώ */ });
+  // bridge ακροατής (αν χρειαστεί)
+  document.addEventListener('act1:ended', function(){ /* no-op */ });
+
 })();
