@@ -1,40 +1,27 @@
-/* thought_typewriter_patch_v3.js — typewriter μόνο για Bubbles (Πράξη 1 & 2) */
+/* thought_typewriter_patch_v4.js — typewriter για bubbles (Act I & II), ασφαλές για functions */
 (function(){
   'use strict';
 
   function getCharMs(){ return (typeof window.TYPE_CHAR_MS === 'number' ? window.TYPE_CHAR_MS : 45); }
   function getGapMs(){  return (typeof window.THINK_GAP_MS === 'number' ? window.THINK_GAP_MS  : 700); }
 
-  function fallbackFix(s){
-    return String(s||'')
-      .replace(/m1/g,'m₁').replace(/D1/g,'D₁')
-      .replace(/t0/g,'t₀').replace(/v0/g,'v₀').replace(/x0/g,'x₀').replace(/φ0/g,'φ₀')
-      .replace(/ω\s*\^\s*2/g,'ω²').replace(/ω\s*2(?!\d)/g,'ω²');
-  }
   function fixText(s){
     try{
       if (typeof window.fixThoughtText === 'function') return window.fixThoughtText(s);
-      return fallbackFix(s);
-    }catch(_){ return fallbackFix(s); }
+      return String(s ?? '');
+    }catch(_){ return String(s ?? ''); }
   }
 
   function refs(){
-    const stage   = document.getElementById('stage');
-    const bubble  = document.getElementById('bubble0');
-    return { stage, bubble };
-  }
-
-  function safeResume(nextMode){
-    try{ if (typeof window.resumeFromBubble === 'function') window.resumeFromBubble(nextMode||'run'); }catch(_){}
-  }
-  function safeSetMode(mode){
-    try{ if (typeof window.setMode === 'function') window.setMode(mode); }catch(_){}
+    return {
+      stage:  document.getElementById('stage'),
+      bubble: document.getElementById('bubble0')
+    };
   }
 
   function placeBubble(vIdx, customLift, xShift){
     const {stage, bubble} = refs(); if(!stage || !bubble) return;
-    const viewer = document.querySelector(`.viewer[data-idx="${vIdx}"]`);
-    if(!viewer) return;
+    const viewer = document.querySelector(`.viewer[data-idx="${vIdx}"]`); if(!viewer) return;
 
     const pad=12, leftCurtR=stage.clientWidth*0.18, rightCurtL=stage.clientWidth*0.82;
     bubble.style.display='block'; bubble.style.opacity='0';
@@ -66,19 +53,28 @@
     const ms = Math.max(5, getCharMs());
     let i = 0;
     (function tick(){
-      if (i < txt.length){
+      if(i < txt.length){
         el.textContent += txt[i++];
         setTimeout(tick, ms);
-      } else {
-        if (typeof done === 'function') done();
+      }else{
+        if(typeof done === 'function') done();
       }
     })();
   }
 
+  function safeResume(nextMode){
+    try{ if (typeof window.resumeFromBubble === 'function') window.resumeFromBubble(nextMode||'run'); }catch(_){}
+  }
+  function safeSetMode(mode){
+    try{ if (typeof window.setMode === 'function') window.setMode(mode); }catch(_){}
+  }
+
+  // override που δέχεται και function ως 'text'
   function install(){
-    const original = window.showThoughtForViewer;
-    window.showThoughtForViewer = function(vIdx, text, customLift, xShift){
+    window.showThoughtForViewer = function(vIdx, text, /*durationSecs*/ customLift, xShift){
       const {bubble} = refs(); if(!bubble) return;
+      const resolved = (typeof text === 'function') ? text() : text;
+
       placeBubble(vIdx, customLift, xShift);
       safeSetMode('slow');
       if (typeof window.isBubbleActive === 'boolean') window.isBubbleActive = true;
@@ -86,7 +82,7 @@
       const textBox = bubble.querySelector('.text');
       const afterGap = Math.max(0, getGapMs());
 
-      typeText(textBox, text, function(){
+      typeText(textBox, resolved, function(){
         bubble.classList.add('checked');
         setTimeout(function(){ safeResume('run'); }, afterGap);
       });
