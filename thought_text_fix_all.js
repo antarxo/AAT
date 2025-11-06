@@ -1,12 +1,12 @@
-/* thought_text_fix_all.js — στοχευμένα subscripts/μονάδες, χωρίς αλλοίωση ελληνικών */
+/* thought_text_fix_all.js — subscripts/units only; no aggressive transforms */
 (function(){
   'use strict';
 
   function subscripts(s){
     return s
       .replace(/\bm1\b/g,'m₁').replace(/\bD1\b/g,'D₁')
-      .replace(/\bt0\b/g,'t₀').replace(/\bv0\b/g,'v₀').replace(/\bx0\b/g,'x₀').replace(/φ0/g,'φ₀')
-      .replace(/ω\s*(?:\^|\*?)\s*2/g,'ω²');
+      .replace(/\bt0\b/g,'t₀').replace(/\bv0\b/g,'v₀').replace(/\bx0\b/g,'x₀')
+      .replace(/φ0/g,'φ₀').replace(/ω\s*(?:\^|\*?)\s*2/g,'ω²');
   }
   function spaceUnits(s){
     return s
