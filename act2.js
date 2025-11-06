@@ -1,4 +1,4 @@
-/* act2.js — Πράξη 2: sequencing, ghost, νόμοι, σωστό τέλος + ξεχωριστό overlay για Φουαγιέ */
+/* act2.js — Πράξη 2 με σωστό sequencing, ghost συγχρονισμένο & ghost-spring */
 (function(){
   'use strict';
 
@@ -32,55 +32,87 @@
     if (springEl){ springEl.style.display='block'; springEl.style.opacity='1'; }
   }
 
-  /* ---------- GHOST ---------- */
-  let ghostEl=null, ghostRAF=0, ghostStopTime=0;
-  function ensureGhost(){
-    if (ghostEl) return ghostEl;
-    if (!actor) actor = $('actor');
-    const g = document.createElement('img');
-    g.id='ghost';
-    g.src = (actor && actor.querySelector('img')) ? actor.querySelector('img').src : 'skater.png';
-    g.style.position='absolute';
-    g.style.bottom   = getComputedStyle(actor||document.body).bottom || 'calc(32vh + 133px)';
-    g.style.left     = '50%';
-    g.style.transform= 'translate(-50%,0)';
-    g.style.width    = (actor && actor.offsetWidth ? actor.offsetWidth : 144) + 'px';
-    g.style.height   = 'auto';
-    g.style.opacity  = '0.35';
-    g.style.filter   = 'drop-shadow(0 4px 6px rgba(0,0,0,.6))';
-    g.style.zIndex   = '120'; // μπροστά από τον ηθοποιό
-    g.style.pointerEvents='none';
-    (document.querySelector('.stage')||document.body).appendChild(g);
-    ghostEl=g;
-    return g;
-  }
-  function startGhost(durationMs){
-    if (!ensureRefs()) return;
-    ensureGhost();
-    const t0 = performance.now();
-    const T  = (window.T || 6.0);
-    const ω  = 2*Math.PI/T;
-    const Apx = (window.A_px || 150) * 1.25;
-    const centerX = stage.clientWidth/2;
-    const hookOffset = (actor && actor.getBoundingClientRect().width ? actor.getBoundingClientRect().width/2 : 72);
+  /* ---------- GHOST (συγχρονισμένος με τον πραγματικό) ---------- */
+  let ghostEl=null, ghostSpring=null, ghostRAF=0, ghostStopTime=0;
 
-    function step(now){
-      const t=(now - t0)/1000;
-      const x=centerX + Apx*Math.sin(ω*t);
-      ghostEl.style.left=(x - hookOffset)+'px';
-      if(now < ghostStopTime){
-        ghostRAF=requestAnimationFrame(step);
+  function ensureGhostElems(){
+    if (!actor) actor = $('actor');
+    if (!springEl) springEl = $('spring');
+
+    if (!ghostEl){
+      const g = document.createElement('img');
+      g.id='ghost';
+      g.src = (actor && actor.querySelector('img')) ? actor.querySelector('img').src : 'skater.png';
+      g.style.position='absolute';
+      g.style.bottom   = getComputedStyle(actor||document.body).bottom || 'calc(32vh + 133px)';
+      g.style.left     = '50%';
+      g.style.transform= 'translate(-50%,0)';
+      g.style.width    = (actor && actor.offsetWidth ? actor.offsetWidth : 144) + 'px';
+      g.style.height   = 'auto';
+      g.style.opacity  = '0.35';
+      g.style.filter   = 'drop-shadow(0 4px 6px rgba(0,0,0,.6))';
+      g.style.zIndex   = '120'; // μπροστά από actor (~110)
+      g.style.pointerEvents='none';
+      (document.querySelector('.stage')||document.body).appendChild(g);
+      ghostEl=g;
+    }
+
+    if (!ghostSpring){
+      const gs = document.createElement('img');
+      gs.id='ghostSpring';
+      gs.src = springEl ? springEl.src : 'spring.png';
+      gs.style.position='absolute';
+      gs.style.bottom   = getComputedStyle(springEl||document.body).bottom || 'calc(32vh + 82px)';
+      gs.style.left     = (typeof window.anchorX==='function' ? window.anchorX() : (stage.clientWidth*0.18)) + 'px';
+      gs.style.height   = (springEl ? springEl.style.height || '96px' : '96px');
+      gs.style.width    = (springEl ? springEl.getBoundingClientRect().width+'px' : '160px');
+      gs.style.opacity  = '0.35';
+      gs.style.filter   = 'drop-shadow(0 4px 6px rgba(0,0,0,.55))';
+      gs.style.zIndex   = '121'; // ακριβώς πάνω από το πραγματικό ελατήριο
+      gs.style.pointerEvents='none';
+      (document.querySelector('.stage')||document.body).appendChild(gs);
+      ghostSpring=gs;
+    }
+  }
+
+  function startGhostSync(durationMs){
+    ensureGhostElems();
+    const T  = (window.T || 6.0);
+    const ω  = (window.omega || (2*Math.PI/T));
+    const centerX = stage.clientWidth/2;
+    const ApxReal = (window.A_px || 150);
+    const ApxGhost= ApxReal * 1.35; // μεγαλύτερο πλάτος (όπως ζητήθηκε)
+    const hookOffset = (actor && actor.getBoundingClientRect().width ? actor.getBoundingClientRect().width/2 : 72);
+    const ax = (typeof window.anchorX==='function' ? window.anchorX() : (stage.clientWidth*0.18));
+
+    function step(){
+      // Συγχρονισμός με την πραγματική φυσική ώρα παρατήρησης
+      const tPlay = (typeof window.playbackTime==='number') ? window.playbackTime : (performance.now()/1000);
+      const xGhostHook = centerX + ApxGhost * Math.sin(ω * tPlay);
+
+      // Skater-ghost
+      ghostEl.style.left = (xGhostHook - hookOffset) + 'px';
+
+      // Spring-ghost: «τεντώνουμε» το πλάτος ώστε να ακουμπάει στο ίδιο άγκιστρο
+      const dist = xGhostHook - ax;
+      const w = Math.max(12, dist);
+      ghostSpring.style.left  = ax + 'px';
+      ghostSpring.style.width = w  + 'px';
+
+      if (performance.now() < ghostStopTime){
+        ghostRAF = requestAnimationFrame(step);
       }else{
         cancelAnimationFrame(ghostRAF); ghostRAF=0;
         try{ ghostEl.remove(); }catch(_){ ghostEl.style.display='none'; }
-        ghostEl=null;
+        try{ ghostSpring.remove(); }catch(_){ ghostSpring.style.display='none'; }
+        ghostEl=null; ghostSpring=null;
       }
     }
     ghostStopTime = performance.now() + durationMs;
     if(!ghostRAF) ghostRAF=requestAnimationFrame(step);
   }
 
-  /* ---------- HELPERS ---------- */
+  /* ---------- HELPERs ---------- */
   const sleep = (ms)=>new Promise(r=>setTimeout(r,ms));
   function showBubble(viewer, text){
     const perChar = window.TYPE_CHAR_MS || 45;
@@ -88,6 +120,7 @@
     const resolved = (typeof text === 'function') ? text() : text;
     const durMs   = Math.max(1400, (String(resolved||'').length * perChar) + gap);
     if (typeof window.showThoughtForViewer === 'function') {
+      // customLift 135 ώστε να βγαίνει λίγο ψηλότερα στη 2η πράξη
       window.showThoughtForViewer(viewer, resolved, 135, 0);
     }
     return sleep(durMs);
@@ -96,7 +129,7 @@
     if (typeof window.addLaw === 'function'){ window.addLaw(txt, n); }
   }
 
-  /* ---------- END + OVERLAY (Act2 → Foyer) ---------- */
+  /* ---------- Overlay για Φουαγιέ ---------- */
   function ensureFoyerOverlay(){
     let ov = document.getElementById('actBreak2F');
     if (ov) return ov;
@@ -135,31 +168,29 @@
     ACT2_DONE = true;
 
     if (ensureRefs()){
-      // κλείσιμο αυλαίας — δεν ξανανοίγει
+      // Κλείσιμο αυλαίας — δεν ξανανοίγει
       stage.classList.remove('open');
     }
 
-    // Μετά από ~1.5s εμφάνιση overlay για Φουαγιέ (ΔΕΝ αγγίζουμε το actBreak/btnAct2 της Πράξης 1)
+    // Μετά από ~1.5s: δείξε overlay για Φουαγιέ
     setTimeout(function(){
       const ov = ensureFoyerOverlay();
       ov.style.display='flex';
     }, 1500);
   }
 
-  /* ---------- MAIN SEQUENCE ---------- */
+  /* ---------- SEQUENCE ---------- */
   async function playAct2(){
     if (ACT2_DONE) return;
     if (!ensureRefs()){ console.error('act2.js: λείπει #stage'); return; }
-
     ACT2_STARTED = true;
 
-    // Άνοιγμα σκηνής + τίτλοι + ελατήριο
-    stage.classList.add('open');
+    stage.classList.add('open'); // άνοιγμα κουρτίνας
     showSpring();
     setSignboardAct2();
 
     await showBubble(0, "ωπ! δεμένος σε ελατήριο είναι ο m1D1!");
-    startGhost(10000); // καλύπτει τις 3 επόμενες σκέψεις
+    startGhostSync(10000); // καλύπτει τις 3 επόμενες σκέψεις, συγχρονισμένος με πραγματικό
 
     await showBubble(2, "αυτόν ακριβώς τον m1D1 σίγουρα τον έχω ξαναδεί με το ίδιο μηχανισμό-ελατήριο σε άλλη παράσταση, αλλά με άλλον παραγωγό!");
     await showBubble(4, "...ναι και εκεί πάλι με την ίδια περίοδο όμως εμμονικά κινήθηκε, αλλά με μεγαλύτερο πλάτος Α!");
@@ -198,8 +229,6 @@
     setTimeout(playAct2, 300);
   }
 
-  // ΜΟΝΟ αυτό: κουμπί μετά την 1η → 2η
+  // εκκίνηση μόνο από το event της μετάβασης 1→2
   document.addEventListener('act2-start', startAct2Once);
-  // Καμία ανάμιξη με act3 εδώ.
-
 })();
