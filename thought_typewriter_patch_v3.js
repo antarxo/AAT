@@ -77,7 +77,7 @@
 
   function install(){
     const original = window.showThoughtForViewer;
-    window.showThoughtForViewer = function(vIdx, text, /*durationSecs*/, customLift, xShift){
+    window.showThoughtForViewer = function(vIdx, text, customLift, xShift){
       const {bubble} = refs(); if(!bubble) return;
       placeBubble(vIdx, customLift, xShift);
       safeSetMode('slow');
