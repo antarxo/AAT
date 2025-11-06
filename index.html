@@ -1075,51 +1075,14 @@ resetShow();
 
 <script src="ui_fonts_math.js"></script>
 <script src="thought_timing_strict.js"></script>
-
-
-<!-- a1_text_patch_v3 — inline IIFE (ΜΟΝΟ αυτό, όχι και external) -->
-<script>
-(function () {
-  'use strict';
-  if (!window.i18n) return;
-  const gr = (i18n.gr ||= {});
-  gr.thoughts = Object.assign({}, gr.thoughts, {
-    t1: "Εππ! ο m₁D₁ ήταν ήδη σε κίνηση!",
-    t2: "…χρονική στιγμή t₀=0s με το άνοιγμα της κουρτίνας!",
-    t3: "… και η κίνηση είναι ευθύγραμμη και παλινδρομική!",
-    t4: "… και επαναλαμβανόμενη, περιοδική, άρα ταλάντωση!",
-    t5: "Μήπως είναι Απλή Αρμονική Ταλάντωση;",
-    t6: "… αν είναι Α.Α.Τ. τότε οι τιμές που μετράμε πρέπει να επαληθεύουν την x=Αημ(ωt+φ₀)!",
-    t7: "… αν κάνουμε διάγραμμα x-t, αυτό μπορεί να  επιβεβαιωθεί!",
-    t9phi: function () {
-      try {
-        const A = window.A_m, ω = window.omega, t0 = window.obsStartPlaybackOffset || 0;
-        const x0 =  A * Math.sin(ω * t0);
-        const v0 =  ω * A * Math.cos(ω * t0);
-        const sgn = (v0 >= 0) ? ">" : "<";
-        const φ0 = ((ω * t0) * 180 / Math.PI + 360) % 360;
-        return `… όντως είναι ΑΑΤ  και αφού το x₀=${x0.toFixed(2)}m  και η v₀${sgn}0 υπάρχει φ₀=${φ0.toFixed(1)}°. Χαχαχα, ένα το κρατούμενο!`;
-      } catch (_) {
-        return "… όντως είναι ΑΑΤ  και αφού το x₀=…m  και η v₀…0 υπάρχει φ₀=….°. Χαχαχα, ένα το κρατούμενο!";
-      }
-    },
-    t7A:  (A)=>`…με Α=${(+A).toFixed(2)} m`,
-    t8Tw: (T,ω)=>`… και Τ=${(+T).toFixed(2)}s , επομένως ω=${(+ω).toFixed(3)} rad/s !`,
-    t11: "… άρα η ταχύτητα δίνεται από τον νόμο v=ωΑσυν(ωt+φ₀)!",
-    t13: "…και η επιτάχυνση από τον τύπο α=-ω²Αημ(ωt+φ₀)!",
-    t15: "Αλλά η σχέση χ=Αημ(ωt+φ₀) (1) περιέχεται στην (3) δηλαδή α= -ω²Αημ(ωt+φ₀)=-ω²χ!",
-    t18: "Τέλεια! όλο το σετ νόμων της Α.Α.Τ!"
-  });
-})();
-</script>
-
 <script src="thought_text_fix_all.js"></script>
 <script src="ui_laws_layout_v4.js"></script>
-<script src="thought_typewriter_patch_v3.js"></script>
+<script src="thought_typewriter_patch_v4.js"></script>
 
 <script src="act2.js"></script>
-<script src="foyer_bridge.js"></script>
-<script src="act3_boot_min.js"></script>
+<!-- βγάλ’ το: <script src="foyer_bridge.js"></script> -->
+<!-- το act3 θα το καλέσουμε όταν είναι έτοιμα τα proofs -->
+
 
 </body>
 </html>
