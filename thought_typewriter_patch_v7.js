@@ -1,9 +1,9 @@
-/* thought_typewriter_patch_v6.js — typewriter για bubbles με προ-μέτρηση διαστάσεων */
+/* thought_typewriter_patch_v7.js — Grapheme-safe typewriter + stable bubble sizing */
 (function(){
   'use strict';
 
-  function getCharMs(){ return (typeof window.TYPE_CHAR_MS === 'number' ? window.TYPE_CHAR_MS : 45); }
-  function getGapMs(){  return (typeof window.THINK_GAP_MS === 'number' ? window.THINK_GAP_MS  : 800); }
+  function getCharMs(){ return (typeof window.TYPE_CHAR_MS === 'number' ? window.TYPE_CHAR_MS : 50); }
+  function getGapMs(){  return (typeof window.THINK_GAP_MS === 'number' ? window.THINK_GAP_MS  : 900); }
 
   function fixText(s){
     try{ return (typeof window.fixThoughtText==='function') ? window.fixThoughtText(s) : String(s ?? ''); }
@@ -12,7 +12,9 @@
 
   (function injectCSS(){
     const css = `
-      .thought-bubble,.thought-bubble .text,.laws { font-family: Inter, system-ui, -apple-system, "Segoe UI", Arial, sans-serif !important; }
+      .thought-bubble,.thought-bubble .text,.laws {
+        font-family: "Noto Sans", system-ui, -apple-system, "Segoe UI", Arial, Helvetica, sans-serif !important;
+      }
       .thought-bubble .text{ white-space: pre-wrap; word-break: normal; hyphens: manual; }
     `;
     const st = document.createElement('style'); st.textContent = css; document.head.appendChild(st);
@@ -25,18 +27,18 @@
     };
   }
 
-  function measureBubbleSize(stage, bubble, text, maxW){
-    const clone = bubble.cloneNode(true);
-    clone.style.visibility = 'hidden';
-    clone.style.display    = 'block';
-    clone.style.opacity    = '0';
-    clone.style.left = '-9999px';
-    clone.style.top  = '0';
-    clone.querySelector('.text').textContent = text;
-    stage.appendChild(clone);
-    const bw = Math.min(clone.offsetWidth || 420, maxW);
-    clone.remove();
-    return {bw};
+  function measureBubbleWidth(stage, bubble, text, maxW){
+    const ghost = bubble.cloneNode(true);
+    ghost.style.visibility = 'hidden';
+    ghost.style.display    = 'block';
+    ghost.style.opacity    = '0';
+    ghost.style.left = '-9999px';
+    ghost.style.top  = '0';
+    ghost.querySelector('.text').textContent = text;
+    stage.appendChild(ghost);
+    const bw = Math.min(ghost.offsetWidth || 420, maxW);
+    ghost.remove();
+    return bw;
   }
 
   function placeBubble(vIdx, customLift, xShift, fixedW){
@@ -70,14 +72,25 @@
     bubble.classList.add('active');
   }
 
+  function graphemes(str){
+    try{
+      const seg = new Intl.Segmenter('el', {granularity:'grapheme'});
+      return Array.from(seg.segment(str), s => s.segment);
+    }catch(_){
+      // Fallback – better than charCode split
+      return Array.from(str);
+    }
+  }
+
   function typeText(el, fullText, done){
     const txt = fixText(fullText);
+    const glyphs = graphemes(txt);
     el.textContent = '';
     const ms = Math.max(5, getCharMs());
     let i = 0;
     (function tick(){
-      if(i < txt.length){
-        el.textContent += txt[i++];
+      if(i < glyphs.length){
+        el.textContent += glyphs[i++];
         setTimeout(tick, ms);
       }else{
         if(typeof done === 'function') done();
@@ -99,15 +112,13 @@
 
     const resolvedText = (typeof text === 'function') ? text() : text;
     const cleanText    = fixText(resolvedText);
-
-    const {bw} = measureBubbleSize(stage, bubble, cleanText, 420);
+    const bw = measureBubbleWidth(stage, bubble, cleanText, 420);
 
     bubble.querySelector('.text').textContent = '';
     placeBubble(vIdx, customLift, xShift, bw);
 
     const textBox = bubble.querySelector('.text');
-    const charMs  = Math.max(5,  getCharMs());
-    const gapMs   = Math.max(0,  getGapMs());
+    const gapMs   = (typeof window.THINK_GAP_MS === 'number') ? window.THINK_GAP_MS : 900;
 
     safeSetMode('slow');
     if (typeof window.isBubbleActive === 'boolean') window.isBubbleActive = true;
