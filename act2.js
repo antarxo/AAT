@@ -26,7 +26,7 @@
   }
   function showSpring(){ if(springEl){ springEl.style.display='block'; springEl.style.opacity='1'; } }
 
-  /* ---------- GHOST (απόλυτη συνευθυγράμμιση) ---------- */
+  /* ---------- GHOST ---------- */
   let ghostEl=null, ghostSpring=null, ghostRAF=0, ghostStopTime=0;
 
   function ensureGhostElems(){
@@ -38,7 +38,6 @@
       g.id='ghost';
       g.src = actor.querySelector('img') ? actor.querySelector('img').src : 'skater.png';
       g.style.position='absolute';
-      // ΙΔΙΑ βάση με τον πραγματικό
       g.style.bottom = getComputedStyle(actor).bottom;
       g.style.left   = '50%';
       g.style.transform='translate(-50%,0)';
@@ -76,12 +75,11 @@
     const ω  = (window.omega || (2*Math.PI/T));
     const centerX   = stage.clientWidth/2;
     const pxPerM   = window.pxPerMeter || 50;
-    const ApxGhost = 5 * pxPerM;   // ΠΛΑΤΟΣ 5 m (όπως ζητήθηκε)
+    const ApxGhost = 5 * pxPerM;   // ΠΛΑΤΟΣ 5 m
     const actorW   = (actor && actor.getBoundingClientRect().width) || 144;
     const hookOff  = actorW/2;
     const ax       = (typeof window.anchorX==='function' ? window.anchorX() : (stage.clientWidth*0.18));
 
-    // Βάση μήκους πραγματικού ελατηρίου για σωστή «τέντωμα»
     const L0 = (function(){
       const r = springEl.getBoundingClientRect();
       return r.width>0 ? r.width : 160;
@@ -91,10 +89,8 @@
       const tPlay = (typeof window.playbackTime==='number') ? window.playbackTime : (performance.now()/1000);
       const xHook = centerX + ApxGhost * Math.sin(ω * tPlay);
 
-      // Skater-ghost ακριβώς στην ίδια κατακόρυφη ευθυγράμμιση
       ghostEl.style.left = (xHook - hookOff) + 'px';
 
-      // Spring-ghost με «scale» ισοδύναμο (χρησιμοποιούμε width για οπτική αντιστοιχία)
       const dist = xHook - ax;
       const scale = Math.max(0.12, dist / L0);
       ghostSpring.style.left  = ax + 'px';
@@ -104,8 +100,8 @@
         ghostRAF = requestAnimationFrame(step);
       }else{
         cancelAnimationFrame(ghostRAF); ghostRAF=0;
-        try{ ghostEl.remove(); }catch(_){ ghostEl.style.display='none'; }
-        try{ ghostSpring.remove(); }catch(_){ ghostSpring.style.display='none'; }
+        try{ ghostEl.remove(); }catch(_){}
+        try{ ghostSpring.remove(); }catch(_){}
         ghostEl=null; ghostSpring=null;
       }
     }
@@ -113,10 +109,9 @@
     if(!ghostRAF) ghostRAF=requestAnimationFrame(step);
   }
 
-  /* ---------- Sequencing με typewriter-ουρά ---------- */
+  /* ---------- Sequencing ---------- */
   const sleep = (ms)=>new Promise(r=>setTimeout(r,ms));
   function showBubble(viewer, text){
-    // Ρυθμός ειδικά για 2η πράξη (πιο αργός/αναγνώσιμος)
     window.TYPE_CHAR_MS  = 55;
     window.THINK_GAP_MS  = 950;
 
@@ -131,7 +126,6 @@
     return sleep(durMs);
   }
   function addLawLine(txt, n){
-    // ui_laws_layout_v4.js αποδέχεται ακέραιο n για (…n)
     try{
       if (typeof window.addLaw === 'function') window.addLaw(txt, n);
     }catch(_){}
@@ -158,11 +152,11 @@
 
   async function playAct2(){
     if (!ensureRefs()) return;
-    stage.classList.add('open');     // ΑΝΟΙΓΕΙ
+    stage.classList.add('open');
     showSpring();
     setSignboardAct2();
 
-    // Ghost εμφανίζεται κατά τις τρεις σκέψεις #4–#7 ( ~10s )
+    // Ghost εμφανίζεται από #3 έως #7 περίπου (10s)
     await showBubble(0, "ωπ! δεμένος σε ελατήριο είναι ο m1D1!");
     startGhostSync(10000);
 
@@ -193,7 +187,7 @@
     await showBubble(1, "…αλλά και η (6)-μη ξεχνιόμαστε!, γίνεται ΣF = −D·x (7)!");
     addLawLine("ΣF = −D·x", 7);
 
-    // ΤΕΛΟΣ ΠΡΑΞΗΣ 2: κλείνει αυλαία, δεν ξανανοίγει
+    // Κλείσιμο αυλαίας, δεν ξανανοίγει — φουαγιέ
     stage.classList.remove('open');
     setTimeout(()=>{ ensureFoyerOverlay().style.display='flex'; ACT2_DONE = true; }, 1500);
   }
@@ -202,10 +196,8 @@
     if (ACT2_STARTED || ACT2_DONE) return;
     if (!ensureRefs()){ console.error('act2.js: λείπει #stage'); return; }
     ACT2_STARTED = true;
-    // ξεκίνα λίγο μετά ώστε να έχει «ηρεμήσει» το layout
     setTimeout(playAct2, 250);
   }
 
-  // ΜΟΝΟ από το bridge 1→2
   document.addEventListener('act2-start', startAct2Once);
 })();

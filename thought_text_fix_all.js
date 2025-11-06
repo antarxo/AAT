@@ -6,7 +6,7 @@
     return s
       .replace(/\bm1\b/g,'m₁').replace(/\bD1\b/g,'D₁')
       .replace(/\bt0\b/g,'t₀').replace(/\bv0\b/g,'v₀').replace(/\bx0\b/g,'x₀').replace(/φ0/g,'φ₀')
-      .replace(/ω\s*(?:\^|\*?)\s*2/g,'ω²'); // ω^2, ω 2, ω*2 -> ω²
+      .replace(/ω\s*(?:\^|\*?)\s*2/g,'ω²');
   }
   function spaceUnits(s){
     return s

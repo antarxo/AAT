@@ -2,17 +2,14 @@
 (function(){
   'use strict';
 
-  // Ρυθμοί (μπορείς να τους αλλάξεις global αν θες)
   function getCharMs(){ return (typeof window.TYPE_CHAR_MS === 'number' ? window.TYPE_CHAR_MS : 45); }
   function getGapMs(){  return (typeof window.THINK_GAP_MS === 'number' ? window.THINK_GAP_MS  : 800); }
 
-  // Καθαρό κείμενο (χωρίς «κινέζικα»)
   function fixText(s){
     try{ return (typeof window.fixThoughtText==='function') ? window.fixThoughtText(s) : String(s ?? ''); }
     catch(_){ return String(s ?? ''); }
   }
 
-  // Σκληρό override γραμματοσειράς – για να μη «χαλάει» τίποτα στα ελληνικά
   (function injectCSS(){
     const css = `
       .thought-bubble,.thought-bubble .text,.laws { font-family: Inter, system-ui, -apple-system, "Segoe UI", Arial, sans-serif !important; }
@@ -28,7 +25,6 @@
     };
   }
 
-  // Προ-μέτρηση ώστε το bubble να ΜΗΝ «φουσκώνει» όσο γράφει
   function measureBubbleSize(stage, bubble, text, maxW){
     const clone = bubble.cloneNode(true);
     clone.style.visibility = 'hidden';
@@ -39,9 +35,8 @@
     clone.querySelector('.text').textContent = text;
     stage.appendChild(clone);
     const bw = Math.min(clone.offsetWidth || 420, maxW);
-    const bh = clone.offsetHeight || 120;
     clone.remove();
-    return {bw, bh};
+    return {bw};
   }
 
   function placeBubble(vIdx, customLift, xShift, fixedW){
@@ -51,8 +46,8 @@
     const pad=12, leftCurtR=stage.clientWidth*0.18, rightCurtL=stage.clientWidth*0.82;
 
     bubble.style.display='block'; bubble.style.opacity='0';
-    bubble.style.width  = (fixedW|0) ? (fixedW|0)+'px' : '';     // κλείδωμα πλάτους
-    bubble.style.height = '';                                     // ύψος auto (χωρίς expand σε πλάτος)
+    bubble.style.width  = (fixedW|0) ? (fixedW|0)+'px' : '';
+    bubble.style.height = '';
 
     const bw = bubble.offsetWidth || (fixedW|0) || 360;
 
@@ -97,8 +92,6 @@
     try{ if (typeof window.setMode === 'function') window.setMode(mode); }catch(_){}
   }
 
-  // OVERRIDE συμβατό με παλιά υπογραφή:
-  // showThoughtForViewer(vIdx, text, durationSecs, customLift, xShift)
   window.showThoughtForViewer = function(vIdx, text, a3, a4, a5){
     const {stage, bubble} = refs(); if(!bubble || !stage) return;
     const customLift = (typeof a5 !== 'undefined') ? a4 : a3;
@@ -107,18 +100,14 @@
     const resolvedText = (typeof text === 'function') ? text() : text;
     const cleanText    = fixText(resolvedText);
 
-    // Προ-μέτρηση με μέγιστο W=420px
     const {bw} = measureBubbleSize(stage, bubble, cleanText, 420);
 
-    // Στήσιμο bubble με κλειδωμένο πλάτος
     bubble.querySelector('.text').textContent = '';
     placeBubble(vIdx, customLift, xShift, bw);
 
-    // Τypewriter
     const textBox = bubble.querySelector('.text');
     const charMs  = Math.max(5,  getCharMs());
     const gapMs   = Math.max(0,  getGapMs());
-    const estMs   = Math.max(1000, String(cleanText||'').length * charMs);
 
     safeSetMode('slow');
     if (typeof window.isBubbleActive === 'boolean') window.isBubbleActive = true;
@@ -127,8 +116,5 @@
       bubble.classList.add('checked');
       setTimeout(function(){ safeResume('run'); }, gapMs);
     });
-
-    // δεν κλείνουμε εμείς το bubble — το κάνει το resumeFromBubble του core
-    setTimeout(function(){/* guard */}, estMs + gapMs + 120);
   };
 })();
