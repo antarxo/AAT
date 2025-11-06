@@ -1,101 +1,43 @@
-// ui_laws_layout_v4.js — Μία γραμμή/νόμο, χωρίς «Νόμος (…)», χωρίς scroll.
-// Τα mini-γραφήματα (#lawCharts) κατεβαίνουν όσο μεγαλώνει το πλαίσιο νόμων
-// και κρύβονται όταν εξέλθουν από το ύψος της σκηνής.
-
-(function () {
+/* ui_laws_layout_v4.js — μονογραμμικοί νόμοι χωρίς «Νόμος …», χωρίς scroll, με (n) */
+(function(){
   'use strict';
+  function ready(fn){ if(document.readyState!=='loading') fn(); else document.addEventListener('DOMContentLoaded',fn); }
+  ready(function(){
+    var lawsPane   = document.getElementById('laws');
+    var lawsList   = document.getElementById('lawsList');
+    var lawsTitle  = document.getElementById('lawsTitle');
+    if(!lawsPane || !lawsList || !lawsTitle) return;
+    try{
+      lawsPane.style.overflow = 'visible';
+      lawsPane.style.maxHeight = 'none';
+      lawsList.style.listStyle = 'none';
+      lawsList.style.paddingLeft = '0';
+      lawsList.style.margin = '0';
+    }catch(_){}
 
-  const stage     = document.getElementById('stage');
-  const lawsPane  = document.getElementById('laws');
-  const lawsList  = document.getElementById('lawsList');
-  const lawsTitle = document.getElementById('lawsTitle');
-  const lawCharts = document.getElementById('lawCharts');
-
-  // Ασφαλιστικό CSS
-  // ...
-const css = `
-  #laws{ overflow:visible!important; max-height:none!important; }
-  #lawsList{ list-style:none!important; margin:0!important; padding:0!important; }
-  #lawsList>li{ display:none!important; }
-  .law-line{
-    display:block;
-    margin:2px 0;           /* <-- πιο σφιχτά */
-    padding:4px 6px;        /* <-- πιο διακριτικό */
-    background:rgba(0,0,0,.22);
-    border:1px solid rgba(255,255,255,.22);
-    border-radius:6px;
-    color:#fff;
-    line-height:1.42;
-    font-size:16px;
-    white-space:normal;
-  }
-`;
-// ...
-
-  const st = document.createElement('style'); st.textContent = css; document.head.appendChild(st);
-
-  // Container
-  let box = lawsList ? lawsList.querySelector('.law-box') : null;
-  if (lawsList && !box) {
-    box = document.createElement('div');
-    box.className = 'law-box';
-    lawsList.innerHTML = '';
-    lawsList.appendChild(box);
-  }
-
-  function ensureShown() {
-    if (!lawsPane) return;
-    lawsPane.style.display = 'block';
-    if (lawsTitle && !lawsTitle.textContent.trim()) {
-      const lang = (window.LANG || 'gr');
-      const title = (window.i18n && window.i18n[lang] && window.i18n[lang].lawsTitle) || 'Νόμοι Α.Α.Τ.';
-      lawsTitle.textContent = title;
+    if (typeof window.addLaw === 'function') {
+      var _countRef = (typeof window.lawCount === 'number') ? 'lawCount' : null;
+      var _orig = window.addLaw;
+      window.addLaw = function(txt, explicitNo){
+        try{
+          if(typeof window.firstLawShown === 'boolean' && !window.firstLawShown){
+            window.firstLawShown = true;
+            if(window.i18n && window.i18n[window.LANG||'gr'] && window.i18n[window.LANG||'gr'].lawsTitle){
+              lawsTitle.textContent = window.i18n[window.LANG||'gr'].lawsTitle;
+            }
+            lawsPane.style.display = 'block';
+          }
+        }catch(_){}
+        var n = explicitNo || ((window[_countRef]||0) + 1);
+        var line = document.createElement('div');
+        line.className = 'law-line';
+        line.style.margin = '0';
+        line.style.padding = '0';
+        line.textContent = (String(txt||'').trim()) + ' (' + n + ')';
+        lawsList.appendChild(line);
+        if(_countRef){ window[_countRef] = (window[_countRef]||0) + 1; }
+        if(typeof window.positionLawCharts === 'function'){ try{ window.positionLawCharts(); }catch(_){ } }
+      };
     }
-  }
-
-  function countLaws() {
-    return box ? box.querySelectorAll('.law-line').length : 0;
-  }
-
-  function syncCharts() {
-    if (!lawCharts || !lawsPane || !stage) return;
-    const s = stage.getBoundingClientRect();
-    const p = lawsPane.getBoundingClientRect();
-
-    lawCharts.style.position = 'absolute';
-    lawCharts.style.left = '2%';
-    lawCharts.style.top  = (p.bottom - s.top + 8) + 'px';
-
-    const out = (lawCharts.getBoundingClientRect().top - s.top) > (stage.clientHeight - 16);
-    lawCharts.style.visibility = out ? 'hidden' : 'visible';
-  }
-
-  // Αντικατάσταση του addLaw: μία γραμμή, με (n) στο τέλος.
-  const _origAdd = window.addLaw;
-  window.addLaw = function (formulaText) {
-    try {
-      ensureShown();
-      if (!box) return;
-
-      const stripped = String(formulaText || '').replace(/\(\d+\)\s*$/,'').trim();
-      const n = countLaws() + 1;
-
-      const line = document.createElement('div');
-      line.className = 'law-line';
-      const loc = (typeof window.localizeTrig === 'function') ? window.localizeTrig(stripped) : stripped;
-      line.textContent = loc + ` (${n})`;
-
-      box.appendChild(line);
-      syncCharts();
-    } catch (e) {
-      console.error('ui_laws_layout_v4 addLaw failed; fallback.', e);
-      if (typeof _origAdd === 'function') _origAdd(formulaText);
-      syncCharts();
-    }
-  };
-
-  window.positionLawCharts = syncCharts;
-  window.addEventListener('resize', syncCharts);
-  setTimeout(syncCharts, 60);
+  });
 })();
-
