@@ -628,7 +628,7 @@ function computeThoughtDuration(text){
 function showThoughtForViewer(vIdx,text,durationSecs,customLift,xShift=0){
   const viewerEl=document.querySelector(`.viewer[data-idx="${vIdx}"]`);
   if(!viewerEl) return;
-  bubbleEl.querySelector('.text').textContent=text||'';
+  bubbleEl.querySelector('.text').innerHTML=text||'';
 
   const W=stage.clientWidth;
   const leftCurtainRight = W*0.18;
