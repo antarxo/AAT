@@ -1097,19 +1097,21 @@ resetShow();
 })();
 </script>
 <!-- === End A1 JSON Adapter === -->
+<!-- (ήδη υπάρχοντα σου) -->
 <script src="intro_boot.js"></script>
 <script src="adapter.js"></script>
 
-<!-- Fix υποδεικτών & μονάδων (δεν αλλάζει κείμενο) <script src="thought_text_fix_all.js"></script>-->
+<!-- Auto-διάρκεια bubbles (χρησιμοποιεί την υπάρχουσα showThoughtForViewer για override) -->
+<script src="thought_autoduration_v1.js"></script>
 
-
-<!-- Γραφομηχανή ασφαλής για ελληνικά (grapheme-safe) <script src="thought_typewriter_patch_v7.js"></script>-->
-
-
-<!-- Νόμοι / διάταξη Act I -->
+<!-- Layout Νόμων (κρατάς τη δική σου v4) -->
 <script src="ui_laws_layout_v4.js"></script>
 
-<!-- Act II (marker on, ghost σωστά ευθυγραμμισμένος, σωστός ρυθμός) -->
+<!-- Ghost συγχρονισμένος 1:1 με τον πραγματικό, μόνο άλλο A -->
+<script src="ghost_sync_strict_v2.js"></script>
+
+<!-- Πράξη 2 (νέο sequencing, ghost window, σωστό κλείσιμο) -->
 <script src="act2.js"></script>
+
 </body>
 </html>
