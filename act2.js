@@ -1,8 +1,9 @@
-/* act2.js — ΠΡΑΞΗ 2 (mirror της λογικής του κανονικού)
-   - Ghost: ίδια φάση/περίοδος, Aghost=5 m.
-   - Το ghost-ελατήριο τεντώνει όπως το κανονικό: scaleX = dist / L0_ghost (L0_ghost μετρημένο μία φορά).
-   - Σκέψεις: πλήρες κείμενο, διάρκεια ~ μήκος (χωρίς typewriter).
-   - Νόμοι: μονοσειρά (5)(6)(6′)(7), χωρίς «Νόμος…», χωρίς κενές γραμμές.
+/* act2.js — ΠΡΑΞΗ 2 (fix hook κέντρου ghost)
+   - Ghost: Aghost=5 m, ίδια φάση/περίοδος με τον κανονικό.
+   - Τοποθέτηση ghost με translate(-50%,0) => left = hookX_ghost (ΟΧΙ -gHalf).
+   - Το ghost-spring τεντώνει μέχρι ΚΕΝΤΡΟ ghost: scaleX = (hookX_ghost - anchorX) / L0_ghost.
+   - Σκέψεις: χωρίς typewriter (καθαρό κείμενο), αυτο-διάρκεια με βάση μήκος.
+   - Νόμοι: μονοσειρά, χωρίς «Νόμος …», χωρίς κενά ανάμεσα.
    - Τέλος: κρύβει δείκτη, κλείνει κουρτίνα (μένει κλειστή), δείχνει πύλη Φουαγιέ.
 */
 (function(){
@@ -89,7 +90,6 @@
     const [xL,xR] = curtainsX();
     const pad=12;
 
-    // place bubble first
     b.querySelector('.a2text').textContent = text||'';
     b.style.display='block';
     b.style.opacity='0'; b.style.left='0px'; b.style.top='0px';
@@ -102,7 +102,6 @@
     b.style.left = leftPx+'px';
     b.style.top  = topPx +'px';
 
-    // fade in, hold, fade out
     void b.offsetWidth;
     b.style.opacity='1'; b.style.transform='translateY(-2px)';
     await sleep(durFor(text)*1000);
@@ -131,13 +130,15 @@
   // ===== GHOST (ίδιο hook με κανονικό)
   let ghost=null, ghostSpring=null, ghostRAF=0, L0_ghost=0;
   const Aghost_m = 5.0;
+  const HOOK_NUDGE_PX = 0; // αν θες 1–2px οπτική μικροδιόρθωση
 
   function ensureGhost(){
     if(!ghost){
       ghost = document.createElement('div');
       ghost.id='actorGhost';
       Object.assign(ghost.style,{
-        position:'absolute', transform:'translate(-50%,0)',
+        position:'absolute',
+        transform:'translate(-50%,0)',   // ΚΕΝΤΡΟ στο left
         zIndex:121, pointerEvents:'none', opacity:0.85,
         filter:'grayscale(1) brightness(1.2)', display:'none'
       });
@@ -161,19 +162,19 @@
       stage.appendChild(ghostSpring);
     }
 
-    // ύψη/μεγέθη για 1:1 ευθυγράμμιση
+    // ίδιο ύψος/στοίχιση με κανονικό
     const sRect = springReal.getBoundingClientRect();
     ghostSpring.style.bottom = getBottom(springReal)+'px';
     ghostSpring.style.height = sRect.height+'px';
     ghostSpring.style.left   = anchorX()+'px';
-    ghostSpring.style.transform = 'scaleX(1)'; // σημαντικό: για σωστή μέτρηση L0_ghost
+    ghostSpring.style.transform = 'scaleX(1)'; // σημαντικό για σωστή μέτρηση L0_ghost
 
     const aRect = actorEl.getBoundingClientRect();
     ghost.style.bottom = getBottom(actorEl)+'px';
     ghost.style.width  = aRect.width+'px';
     ghost.style.height = aRect.height+'px';
 
-    // μέτρηση L0_ghost ΜΟΛΙΣ οριστεί το ύψος (scaleX=1)
+    // L0_ghost: πλάτος εικόνας ελατηρίου όταν scaleX=1
     const w = ghostSpring.getBoundingClientRect().width;
     if(w>0) L0_ghost = w;
   }
@@ -193,21 +194,20 @@
       const cx    = centerX();
       const ax    = anchorX();
 
-      // hook πραγματικού (κέντρο actor, όπως στην Πράξη 1)
+      // hook πραγματικού (κέντρο actor)
       const hookX_real = (aRect.left - sRect.left) + aRect.width/2;
 
-      // ίδια φάση από κανονικό: sinθ = (x - cx)/A_real_px
+      // ίδια φάση από κανονικό
       const sinθ = Math.max(-1, Math.min(1, (hookX_real - cx) / Math.max(1, A_real_px)));
 
       // ghost hook
-      const hookX_ghost = cx + A_ghost_px * sinθ;
+      let hookX_ghost = cx + A_ghost_px * sinθ + HOOK_NUDGE_PX;
 
-      // κέντρο ghost στο hookX_ghost
-      const gRect = ghost.getBoundingClientRect();
-      const gHalf = (gRect.width || (aRect.width||0)) / 2;
-      ghost.style.left = (hookX_ghost - gHalf) + 'px';
+      // Κέντρο ghost ακριβώς στο hookX_ghost
+      // Επειδή έχουμε translate(-50%), το left ΠΡΕΠΕΙ να είναι το ΚΕΝΤΡΟ
+      ghost.style.left = hookX_ghost + 'px';
 
-      // τέντωμα ghost-spring: dist από anchor έως ΚΕΝΤΡΟ ghost
+      // τέντωμα ghost-spring: από anchor έως ΚΕΝΤΡΟ ghost
       if(L0_ghost<=0){
         const w = ghostSpring.getBoundingClientRect().width;
         if(w>0) L0_ghost = w;
@@ -341,8 +341,30 @@
   }
 
   // Mount
-  function mountFoyerGateOnce(){ if(!by('foyerGate')) ensureFoyerGate(); }
-  mountFoyerGateOnce();
+  function ensureFoyerGate(){ /* no-op, ορίζεται κάτω */ }
+  (function ensureFoyerGateMount(){
+    if(!by('foyerGate')){
+      const gate = document.createElement('div');
+      gate.id='foyerGate';
+      Object.assign(gate.style,{
+        position:'absolute', display:'none',
+        alignItems:'center', justifyContent:'center', textAlign:'center',
+        zIndex:410, background:'rgba(0,0,0,.55)'
+      });
+      const box=document.createElement('div');
+      Object.assign(box.style,{
+        background:'rgba(0,0,0,.7)', border:'1px solid rgba(255,255,255,.25)',
+        borderRadius:'12px', padding:'16px 20px', maxWidth:'520px', color:'#fff'
+      });
+      const h=document.createElement('h3'); h.textContent='Διάλειμμα — Φουαγιέ';
+      const p=document.createElement('p');  p.textContent='Οι κουρτίνες παραμένουν κλειστές. Προχωράμε στις αποδείξεις;';
+      const btn=document.createElement('button'); btn.textContent='Μετάβαση στο Φουαγιέ';
+      Object.assign(btn.style,{background:'#700',color:'#fff',border:'none',borderRadius:'8px',padding:'10px 16px',fontSize:'16px',cursor:'pointer'});
+      btn.addEventListener('click',()=>{ gate.style.display='none'; document.dispatchEvent(new Event('act3-start')); });
+      box.append(h,p,btn); gate.appendChild(box); document.body.appendChild(gate);
+    }
+  })();
+
   document.addEventListener('act2-start', playAct2, { once:true });
   const btnAct2 = by('btnAct2');
   if(btnAct2 && !btnAct2.__a2){
