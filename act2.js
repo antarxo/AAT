@@ -1,24 +1,44 @@
-/* act2.js — Act II: ίδιες θέσεις bubbles με Πράξη 1 & σωστή κάθετη ευθυγράμμιση ghost */
+/* act2.js — strictly manual start, σωστό sequencing bubbles, ghost align */
 (function () {
   'use strict';
 
-  let ACT2_STARTED = false, ACT2_DONE = false;
+  // --- ΣΚΛΗΡΟ ΦΡΕΝΟ στο auto-start: μπλοκάρουμε Ο,ΤΙ ακούει act1:ended ---
+  // (Αν υπάρχει bridge που πυροδοτεί 2η πράξη μόνος του, δεν θα περάσει)
+  document.addEventListener('act1:ended', function (e) {
+    if (!window.ALLOW_AUTO_ACT2) {
+      e.stopImmediatePropagation();
+    }
+  }, true);
 
+  // refs
   const $ = (id) => document.getElementById(id);
-  let stage, springEl, signboard, actor, marker;
+  let stage, signboard, springEl, actor, marker;
 
   function ensureRefs() {
     stage     = stage     || $('stage');
-    springEl  = springEl  || $('spring');
     signboard = signboard || document.querySelector('.signboard');
+    springEl  = springEl  || $('spring');
     actor     = actor     || $('actor');
     marker    = marker    || $('marker');
-    return !!stage && !!actor && !!springEl;
+    return !!stage && !!signboard && !!springEl && !!actor && !!marker;
   }
 
-  /* ---------- UI helpers ---------- */
+  // --- Manual-only: αντικαθιστούμε το κουμπί Act2 ώστε να μην μένουν παλιοί listeners ---
+  function hardenManualStartButton() {
+    const box = $('actBreak');
+    if (!box) return;
+    const oldBtn = box.querySelector('#btnAct2');
+    if (!oldBtn) return;
+    const clone = oldBtn.cloneNode(true);         // πετάει ΟΛΟΥΣ τους παλιούς listeners
+    oldBtn.replaceWith(clone);
+    clone.addEventListener('click', () => {
+      box.style.display = 'none';
+      try { document.dispatchEvent(new CustomEvent('act2-start-manual')); } catch (_) {}
+    }, { once: true });
+  }
+
+  // --- Signboard για Πράξη 2 ---
   function setSignboardAct2() {
-    if (!signboard) return;
     const h1 = signboard.querySelector('h1');
     const lA = $('sbLineA'), lB = $('sbLineB'), lC = $('sbLineC');
     if (h1) h1.textContent = 'Πράξη 2η: Η Δυναμική στα ... Αλγεβρικά!';
@@ -26,133 +46,117 @@
     if (lB) lB.textContent = 'Εμηχ = … J';
     if (lC) lC.textContent = 'Παραγωγή-Σκηνοθεσία: Εμηχ. Ενεργειούλης';
   }
-  function showSpring() { if (springEl) { springEl.style.display = 'block'; springEl.style.opacity = '1'; } }
-  function showMarker() { if (marker)   { marker.style.opacity  = '1'; } }
+  function showSpring() { springEl.style.display = 'block'; springEl.style.opacity = '1'; }
+  function showMarker() { marker.style.opacity   = '1'; }
 
-  /* ---------- Ghost (ίδιο ύψος με actor) ---------- */
-  let ghostEl = null, ghostSpring = null, ghostRAF = 0, ghostStopTime = 0;
-
+  // --- Ghost: ίδια βάση ύψους με actor, ίδιο T, πλάτος 5 m, μπροστά από actor ---
+  let ghostEl = null, ghostSpring = null, ghostRAF = 0, ghostStopAt = 0;
   function ensureGhostElems() {
     const stageEl = document.querySelector('.stage') || document.body;
 
-    // Ίδιο bottom με τον actor (όχι υπολογισμοί με rects)
-    const csActor   = getComputedStyle(actor);
-    const bottomPx  = parseFloat(csActor.bottom) || 0;
-    const aRect     = actor.getBoundingClientRect();
-    const actorW    = aRect.width || 144;
+    const csActor  = getComputedStyle(actor);
+    const bottomPx = parseFloat(csActor.bottom) || 0;
+    const aRect    = actor.getBoundingClientRect();
+    const aW       = aRect.width || 144;
 
     if (!ghostEl) {
       const g = document.createElement('img');
       g.id = 'ghost';
       g.src = actor.querySelector('img') ? actor.querySelector('img').src : 'skater.png';
-      g.style.position = 'absolute';
-      g.style.left     = '50%';
-      g.style.bottom   = bottomPx + 'px';               // ίδιο ύψος
-      g.style.transform= 'translate(-50%,0)';
-      g.style.width    = actorW + 'px';
-      g.style.height   = 'auto';
-      g.style.opacity  = '0.35';
-      g.style.filter   = 'drop-shadow(0 4px 6px rgba(0,0,0,.6))';
-      g.style.zIndex   = '120'; // μπροστά από actor (110)
-      g.style.pointerEvents = 'none';
+      Object.assign(g.style, {
+        position:'absolute', left:'50%', bottom: bottomPx + 'px', transform:'translate(-50%,0)',
+        width: aW + 'px', height:'auto', opacity:'0.35',
+        filter:'drop-shadow(0 4px 6px rgba(0,0,0,.6))', zIndex:'120', pointerEvents:'none'
+      });
       stageEl.appendChild(g);
       ghostEl = g;
     }
-
     if (!ghostSpring) {
-      const csSpring = getComputedStyle(springEl);
+      const csSp = getComputedStyle(springEl);
+      const spRect = springEl.getBoundingClientRect();
       const gs = document.createElement('img');
       gs.id = 'ghostSpring';
       gs.src = springEl.src;
-      gs.style.position = 'absolute';
-      gs.style.left     = (typeof window.anchorX === 'function' ? window.anchorX() : (stage.clientWidth * 0.18)) + 'px';
-      gs.style.bottom   = csSpring.bottom;               // ίδιο bottom με το κανονικό ελατήριο
-      gs.style.height   = (springEl.style.height && springEl.style.height !== '') ? springEl.style.height : (springEl.getBoundingClientRect().height + 'px');
-      gs.style.width    = (springEl.getBoundingClientRect().width || 160) + 'px';
-      gs.style.opacity  = '0.35';
-      gs.style.filter   = 'drop-shadow(0 4px 6px rgba(0,0,0,.55))';
-      gs.style.zIndex   = '121';
-      gs.style.pointerEvents = 'none';
+      Object.assign(gs.style, {
+        position:'absolute',
+        left: (typeof window.anchorX === 'function' ? window.anchorX() : stage.clientWidth * 0.18) + 'px',
+        bottom: csSp.bottom,
+        height: (spRect.height || 96) + 'px',
+        width:  (spRect.width  || 160) + 'px',
+        opacity:'0.35',
+        filter:'drop-shadow(0 4px 6px rgba(0,0,0,.55))',
+        zIndex:'121',
+        pointerEvents:'none'
+      });
       stageEl.appendChild(gs);
       ghostSpring = gs;
     }
   }
-
-  function startGhostSync(durationMs) {
+  function startGhostSync(ms) {
     ensureGhostElems();
-    const T = (window.T || 6.0);
-    const ω = (window.omega || (2 * Math.PI / T));
-    const pxPerM   = window.pxPerMeter || 50;
-    const ApxGhost = 5 * pxPerM; // πλάτος 5 m
-    const centerX  = stage.clientWidth / 2;
-
-    const actorW   = (actor && actor.getBoundingClientRect().width) || 144;
-    const hookOff  = actorW / 2;
-    const ax       = (typeof window.anchorX === 'function' ? window.anchorX() : (stage.clientWidth * 0.18));
-
-    const L0 = (function () {
-      const r = springEl.getBoundingClientRect();
-      return r.width > 0 ? r.width : 160;
-    })();
+    const T = window.T || 6.0;
+    const ω = window.omega || (2 * Math.PI / T);
+    const pxM = window.pxPerMeter || 50;
+    const Apx = 5 * pxM; // 5 m πλάτος ghost
+    const cx  = stage.clientWidth / 2;
+    const aW  = (actor.getBoundingClientRect().width || 144);
+    const hook = aW / 2;
+    const ax = (typeof window.anchorX === 'function' ? window.anchorX() : (stage.clientWidth * 0.18));
+    const L0 = Math.max(1, springEl.getBoundingClientRect().width || 160);
 
     function step() {
-      const tPlay = (typeof window.playbackTime === 'number') ? window.playbackTime : (performance.now() / 1000);
-      const xHook = centerX + ApxGhost * Math.sin(ω * tPlay);
-
-      // Ghost ηθοποιός
-      ghostEl.style.left = (xHook - hookOff) + 'px';
-
-      // Ghost ελατήριο (ίδια γεωμετρία με το κανονικό)
+      const t = (typeof window.playbackTime === 'number') ? window.playbackTime : (performance.now() / 1000);
+      const xHook = cx + Apx * Math.sin(ω * t);
+      // actor ghost
+      ghostEl.style.left = (xHook - hook) + 'px';
+      // spring ghost
       const dist  = xHook - ax;
       const scale = Math.max(0.12, dist / L0);
       ghostSpring.style.left  = ax + 'px';
       ghostSpring.style.width = (L0 * scale) + 'px';
 
-      if (performance.now() < ghostStopTime) {
+      if (performance.now() < ghostStopAt) {
         ghostRAF = requestAnimationFrame(step);
       } else {
         cancelAnimationFrame(ghostRAF); ghostRAF = 0;
-        try { ghostEl.remove(); } catch (_) {}
-        try { ghostSpring.remove(); } catch (_) {}
+        try { ghostEl.remove(); } catch(_) {}
+        try { ghostSpring.remove(); } catch(_) {}
         ghostEl = null; ghostSpring = null;
       }
     }
-    ghostStopTime = performance.now() + durationMs;
+    ghostStopAt = performance.now() + ms;
     if (!ghostRAF) ghostRAF = requestAnimationFrame(step);
   }
 
-  /* ---------- Bubbles: ίδιες θέσεις με Πράξη 1 ---------- */
-  // “Lift” ανά θεατή, αντιστοιχία με τις στάθμες που είχες στην Πράξη 1
-  function a1LiftFor(viewerIdx) {
-    const map = { 0: 120, 1: 125, 2: 135, 3: 130, 4: 130 };
-    return map.hasOwnProperty(viewerIdx) ? map[viewerIdx] : 130;
-    // αν θέλεις όλοι ίδιο: return 130;
-  }
-
-  function waitBubbleGone() {
+  // --- Bubbles: ΠΕΡΙΜΕΝΟΥΜΕ πράγματι να κλείσει το bubble (όχι isBubbleActive) ---
+  function waitBubbleClosed() {
     return new Promise((resolve) => {
-      const tick = () => {
-        if (!window.isBubbleActive) return resolve();
-        setTimeout(tick, 50);
-      };
-      tick();
+      const b = document.getElementById('bubble0');
+      if (!b) return resolve();
+      // αν ήδη κλειστό
+      const isHidden = (!b.classList.contains('active') && (b.style.display === 'none' || !b.offsetParent));
+      if (isHidden) return resolve();
+      const obs = new MutationObserver(() => {
+        const hidden = (!b.classList.contains('active') && (b.style.display === 'none' || !b.offsetParent));
+        if (hidden) { obs.disconnect(); setTimeout(resolve, 40); }
+      });
+      obs.observe(b, { attributes:true, attributeFilter:['class','style'] });
     });
   }
-
-  // Καλούμε την υπάρχουσα showThoughtForViewer του Act 1 (χωρίς typewriter/patches)
-  function showBubble(viewer, text, xShift = 0) {
-    const lift = a1LiftFor(viewer);
-    // signature: (vIdx, text, durationSecs, customLift, xShift)
+  function liftFor(viewer) {
+    // ίδιο “lift” με Πράξη 1
+    const map = { 0:120, 1:125, 2:135, 3:130, 4:130 };
+    return map.hasOwnProperty(viewer) ? map[viewer] : 130;
+  }
+  async function showBubble(viewer, text, xShift = 0) {
     if (typeof window.showThoughtForViewer === 'function') {
-      window.showThoughtForViewer(viewer, text, undefined, lift, xShift);
+      window.showThoughtForViewer(viewer, text, undefined, liftFor(viewer), xShift);
     }
-    return waitBubbleGone();
+    await waitBubbleClosed();
   }
 
   function addLawLine(txt, n) {
-    try {
-      if (typeof window.addLaw === 'function') window.addLaw(txt, n);
-    } catch (_) {}
+    try { if (typeof window.addLaw === 'function') window.addLaw(txt, n); } catch(_) {}
   }
 
   function ensureFoyerOverlay() {
@@ -172,22 +176,22 @@
     (document.querySelector('.stage') || document.body).appendChild(ov);
     box.querySelector('#btnFoyer').addEventListener('click', () => {
       ov.style.display = 'none';
-      try { document.dispatchEvent(new Event('act3-start')); } catch (_) {}
+      try { document.dispatchEvent(new Event('act3-start')); } catch(_) {}
     });
     return ov;
   }
 
-  /* ---------- Sequence ---------- */
+  let STARTED = false, FINISHED = false;
   async function playAct2() {
     if (!ensureRefs()) return;
+    STARTED = true;
 
-    // Άνοιγμα σκηνής & UI
-    stage.classList.add('open');
+    stage.classList.add('open');  // άνοιγμα σκηνής για Π2
     showSpring();
     showMarker();
     setSignboardAct2();
 
-    // Ghost επί σκηνής από #3 έως #7 (περίπου 10s)
+    // Ghost “τρέχει” για ~10s (κατά τη ροή #3..#7)
     await showBubble(0, 'ωπ! δεμένος σε ελατήριο είναι ο m1D1!');
     startGhostSync(10000);
 
@@ -218,17 +222,29 @@
     await showBubble(1, '…αλλά και η (6)-μη ξεχνιόμαστε!, γίνεται ΣF = −D·x (7)!');
     addLawLine('ΣF = −D·x', 7);
 
-    // Κλείσιμο αυλαίας, δεν ξανανοίγει — φουαγιέ
+    // Κλείσιμο κουρτίνας & πέρασμα φουαγιέ
     stage.classList.remove('open');
-    setTimeout(() => { ensureFoyerOverlay().style.display = 'flex'; ACT2_DONE = true; }, 1500);
+    setTimeout(() => { ensureFoyerOverlay().style.display = 'flex'; FINISHED = true; }, 1500);
   }
 
   function startAct2Once() {
-    if (ACT2_STARTED || ACT2_DONE) return;
+    if (STARTED || FINISHED) return;
     if (!ensureRefs()) { console.error('act2.js: λείπουν στοιχεία σκηνής'); return; }
-    ACT2_STARTED = true;
-    setTimeout(playAct2, 250);
+    STARTED = true;
+    setTimeout(playAct2, 200);
   }
 
-  document.addEventListener('act2-start', startAct2Once);
+  // Σώνει-δένει: manual-only
+  document.addEventListener('DOMContentLoaded', () => {
+    hardenManualStartButton();
+  });
+
+  // ΑΚΟΥΜΕ ΜΟΝΟ manual event
+  document.addEventListener('act2-start-manual', startAct2Once);
+
+  // (προαιρετικά) ΑΝ ΘΕΣ να τιθασεύσεις τυχόν λάθος ‘act2-start’ από αλλού, το αγνοούμε:
+  document.addEventListener('act2-start', (e) => {
+    // αγνόησέ το, εκτός αν σηκώσεις ρητά ALLOW_AUTO_ACT2=true
+    if (window.ALLOW_AUTO_ACT2) startAct2Once();
+  });
 })();
