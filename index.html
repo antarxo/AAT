@@ -603,6 +603,74 @@ const BASE_BUBBLE_LIFT=96;
 let bubbleAltLower=false;
 function randInt(a,b){ return Math.floor(a + Math.random()*(b-a+1)); }
 
+/* === Auto-διάρκεια σκέψης βάσει κειμένου === */
+function computeThoughtDuration(text){
+  const s = (text ?? '');
+  const len = s.length;          // περιλαμβάνει ΚΑΙ τα κενά
+  // Ρυθμίσεις ανάγνωσης (προσαρμόσιμες):
+  const BASE = 0.8;              // σταθερή “κεφαλή” σε s
+  const PER_CHAR = 0.055;        // s ανά χαρακτήρα (~18 cps)
+  const MIN = 2.2;               // ελάχιστη διάρκεια
+  const MAX = 10.0;              // μέγιστη διάρκεια
+  // Υπολογισμός “ωμής” διάρκειας:
+  let auto = BASE + PER_CHAR * len;
+  auto = Math.max(MIN, Math.min(MAX, auto));
+  // Σεβασμός στο slider “Διάρκεια σκέψης (s)” ως scale:
+  const DEFAULT_BUBBLE = 3.0;    // ό,τι έχεις σαν default στο UI
+  const scale = (typeof bubbleDurationSec === 'number' && bubbleDurationSec > 0)
+    ? (bubbleDurationSec / DEFAULT_BUBBLE)
+    : 1.0;
+  const finalSec = Math.max(MIN, Math.min(MAX, auto * scale));
+  return finalSec;
+}
+
+/* === Αντικατάσταση 1:1 της showThoughtForViewer με auto-duration === */
+function showThoughtForViewer(vIdx,text,durationSecs,customLift,xShift=0){
+  const viewerEl=document.querySelector(`.viewer[data-idx="${vIdx}"]`);
+  if(!viewerEl) return;
+  bubbleEl.querySelector('.text').textContent=text||'';
+
+  const W=stage.clientWidth;
+  const leftCurtainRight = W*0.18;
+  const rightCurtainLeft = W*0.82;
+  const pad=12;
+
+  const vRect=viewerEl.getBoundingClientRect(); const sRect=stage.getBoundingClientRect();
+  const viewerCenterX=(vRect.left+vRect.width/2 - sRect.left);
+  let desiredCenterX = viewerCenterX + (xShift||0);
+
+  bubbleEl.style.display='block'; bubbleEl.style.opacity='0'; bubbleEl.style.left='0px'; bubbleEl.style.top='0px';
+  const bw = bubbleEl.offsetWidth || 240;
+
+  const minLeft = leftCurtainRight + pad;
+  const maxLeft = rightCurtainLeft - pad - bw;
+
+  let leftPx = desiredCenterX - bw/2;
+  if(leftPx < minLeft) leftPx = minLeft;
+  if(leftPx > maxLeft) leftPx = maxLeft;
+
+  const baseLift=(typeof customLift==='number'?customLift:BASE_BUBBLE_LIFT);
+  const downShift = bubbleAltLower ? randInt(15,30) : 0;
+  bubbleAltLower = !bubbleAltLower;
+  let topPx=(vRect.top - sRect.top - baseLift + downShift);
+  topPx=Math.max(10,topPx);
+
+  bubbleEl.style.left=leftPx+'px';
+  bubbleEl.style.top =topPx +'px';
+  void bubbleEl.offsetWidth;
+  bubbleEl.classList.add('active'); bubbleEl.style.opacity='1';
+  isBubbleActive=true; setMode('slow');
+
+  // <<< ΜΟΝΑΔΙΚΗ ουσιαστική αλλαγή: auto-duration αν δεν δόθηκε ρητά >>>
+  const dur = (typeof durationSecs === 'number')
+    ? durationSecs
+    : computeThoughtDuration(text);
+
+  if(bubbleAutoTimer){ clearTimeout(bubbleAutoTimer); bubbleAutoTimer=null; }
+  bubbleAutoTimer=setTimeout(()=>{ resumeFromBubble('run'); }, Math.max(0.5,dur)*1000);
+}
+
+  
 /* Clamp για bubbles στα όρια σκηνής */
 function showThoughtForViewer(vIdx,text,durationSecs,customLift,xShift=0){
   const viewerEl=document.querySelector(`.viewer[data-idx="${vIdx}"]`);
