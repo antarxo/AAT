@@ -1,123 +1,105 @@
-/* act2.js — Πράξη 2: σταθερός χρονισμός χωρίς έξτρα αρχεία + σωστός ghost + σωστό κλείσιμο
-   Δεν πειράζει Πράξη 1. Φορτώνεται ΜΕΤΑ τα index scripts σου & ui_laws_layout_v4.js.
+/* act2.js — Act II χωρίς εξαρτήσεις από έξτρα αρχεία.
+   - Σταθερός, αναγνώσιμος χρονισμός σκέψεων (internal duration).
+   - Ghost μόνο σε 3 σκέψεις, στο ίδιο ύψος με τον κανονικό, Aghost=5 m, συγχρονισμένος.
+   - Νόμοι (5)…(7) ως μονές γραμμές στο αριστερό πλαίσιο.
+   - Κλείσιμο: κουρτίνα κλείνει, κίτρινο βέλος κρύβεται, gate για φουαγιέ κεντραρισμένο.
 */
-(function(){
+
+(function () {
   'use strict';
 
-  // ===== DOM refs =====
-  const $ = (sel, root=document) => root.querySelector(sel);
-  const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
-  const byId = (id) => document.getElementById(id);
+  // ===== DOM =====
+  const $  = (sel, root=document) => root.querySelector(sel);
+  const by = (id) => document.getElementById(id);
 
-  const stage   = byId('stage');
-  const spring  = byId('spring');           // κανονικό ελατήριο
-  const actorEl = byId('actor');            // κανονικός ηθοποιός (wrapper div με <img>)
-  const marker  = byId('marker');           // κίτρινο βέλος
+  const stage        = by('stage');
   const curtainUpper = $('.curtain-upper');
+  const spring       = by('spring');
+  const actorEl      = by('actor');
+  const marker       = by('marker');
+
   const signboard = $('.signboard');
   const sbH1  = signboard ? signboard.querySelector('h1') : null;
-  const sbA   = byId('sbLineA');
-  const sbB   = byId('sbLineB');
+  const sbA   = by('sbLineA');
+  const sbB   = by('sbLineB');
 
-  // ===== Φυσικά μεγέθη από την Πράξη 1 (global) =====
-  const pxPerMeter = (typeof window.pxPerMeter==='number') ? window.pxPerMeter : 50;
-  const A_m   = (typeof window.A_m==='number')   ? window.A_m   : 3.0;
-  const omega = (typeof window.omega==='number') ? window.omega : (2*Math.PI/6);
-  const T     = (typeof window.T==='number')     ? window.T     : 6.0;
+  // ===== Από Πράξη 1 (globals) με default αν λείπουν =====
+  const pxPerMeter = (typeof window.pxPerMeter === 'number') ? window.pxPerMeter : 50;
+  const A_m        = (typeof window.A_m        === 'number') ? window.A_m        : 3.0;
+  const omega      = (typeof window.omega      === 'number') ? window.omega      : (2*Math.PI/6);
+  const T          = (typeof window.T          === 'number') ? window.T          : 6.0;
 
-  // ===== Κατάσταση Πράξης 2 =====
+  // ===== Κατάσταση =====
   let running = false;
   let finished = false;
 
-  // ===== Timing προφίλ Πράξης 2 (χωρίς έξτρα αρχείο) =====
-  // Αυτόματη διάρκεια ανά σκέψη από μήκος κειμένου + “κράτημα”
+  // ===== Χρονισμός σκέψεων (εσωτερικός) =====
   const TIMING = {
-    CHARS_PER_SEC: 8.0,   // μικρότερο = πιο αργά
-    MIN: 4.2,             // απόλυτο ελάχιστο
-    MAX: 16.0,            // απόλυτο μέγιστο
-    EXTRA_HOLD: 0.7       // μικρό κράτημα μετά το γράψιμο
+    CHARS_PER_SEC: 7.0,   // μικρότερο => πιο αργά
+    MIN: 4.5,             // ελάχιστο display per bubble
+    MAX: 18.0,            // μέγιστο
+    EXTRA_GAP: 0.35       // κενό μετά το «κλείσιμο» για ανάσα
   };
+  const sleep = (ms) => new Promise(r => setTimeout(r, ms));
   function computeThoughtDuration(text) {
     const s = (text || '').toString();
-    let secs = (s.length / TIMING.CHARS_PER_SEC);
+    let secs = s.length / TIMING.CHARS_PER_SEC;
     secs = Math.max(TIMING.MIN, Math.min(TIMING.MAX, secs));
-    return secs + TIMING.EXTRA_HOLD;
+    return secs;
   }
 
-  // ===== Ασφαλές sleep =====
-  const sleep = (ms) => new Promise(r=>setTimeout(r, ms));
-
-  // ===== Βοηθήματα σκηνής =====
-  function centerX(){ return stage.clientWidth/2; }
-  function anchorX(){ 
-    // ίδια συνάρτηση με Πράξη 1, αν υπάρχει, αλλιώς 18% της σκηνής
-    return (typeof window.anchorX==='function') ? window.anchorX() : (stage.clientWidth*0.18);
+  // ===== Βοήθειες θέσης =====
+  function centerX(){ return stage.clientWidth / 2; }
+  function anchorX(){
+    // ίδια με Act I αν υπάρχει — αλλιώς 18% πλάτος
+    return (typeof window.anchorX === 'function') ? window.anchorX() : (stage.clientWidth * 0.18);
   }
 
-  // ===== Ελεγχόμενη εμφάνιση σκέψης (με “hold” εσωτερικά, χωρίς έξτρα αρχεία) =====
-  async function say(viewerIdx, text, y=130, x=0) {
+  // ===== Σκέψεις (χρησιμοποιούμε το showThoughtForViewer της Πράξης 1) =====
+  async function say(viewerIdx, text, customLift = 130, xShift = 0){
     const dur = computeThoughtDuration(text);
 
-    // Προσωρινό “κλείδωμα” του resume μέχρι να περάσει ο χρόνος
-    const origResume = window.resumeFromBubble;
-    let holdUntil = performance.now() + dur*1000 - 15;
-
-    // Τυλίγουμε προσωρινά το resumeFromBubble για να ΜΗΝ κλείσει νωρίτερα
-    if (typeof origResume === 'function') {
-      window.resumeFromBubble = function(nextMode){
-        const now = performance.now();
-        if (now < holdUntil) {
-          const wait = Math.max(0, holdUntil - now) + 20;
-          setTimeout(()=>window.resumeFromBubble(nextMode), wait);
-          return;
-        }
-        // αποκατάσταση & κανονικό resume
-        window.resumeFromBubble = origResume;
-        return origResume(nextMode);
-      };
-    }
-
+    // Αν υπάρχει η υλοποίηση της Πράξης 1, τη χρησιμοποιούμε.
     if (typeof window.showThoughtForViewer === 'function') {
-      window.showThoughtForViewer(viewerIdx, text, dur, y, x);
+      window.showThoughtForViewer(viewerIdx, text, dur, customLift, xShift);
+      await sleep((dur + TIMING.EXTRA_GAP) * 1000);
+      return;
     }
-    // Περιμένουμε λίγο παραπάνω για “κλείσιμο” animation
-    await sleep((dur + 0.25)*1000);
 
-    // Ασφάλεια: αν κάπως δεν επανήλθε το resume, επανέφερε τώρα
-    if (window.resumeFromBubble !== origResume && typeof origResume === 'function') {
-      window.resumeFromBubble = origResume;
-    }
+    // Fallback (σπάνια): αν λείπει, δεν μπλοκάρουμε τη ροή.
+    console.warn('showThoughtForViewer missing — fallback duration only');
+    await sleep((dur + TIMING.EXTRA_GAP) * 1000);
   }
 
-  // ===== Νόμοι (χρησιμοποιεί το addLaw της 1ης) =====
+  // ===== Νόμοι (μία γραμμή) =====
   function addLawOneLine(txt){
     if (typeof window.addLaw === 'function') window.addLaw(txt);
   }
 
-  // ===== Ghost (ίδιο ύψος/ελατήριο, Aghost=5m, μπροστά + συγχρονισμός) =====
-  let ghost = null;
-  let ghostSpring = null;
-  let ghostRAF = 0;
-  let ghostBaseW = 0;
-  const Aghost_m = 5; // ζητήθηκε A=5 (m)
+  // ===== Ghost (ίδιο ύψος/anchor, Aghost=5 m, συγχρονισμός με playbackTime) =====
+  let ghost = null, ghostSpring = null, ghostRAF = 0, ghostBaseW = 0;
+  const Aghost_m = 5;
 
   function ensureGhost(){
     if (!ghost) {
       ghost = document.createElement('div');
       ghost.id = 'actorGhost';
+      const actorCS = getComputedStyle(actorEl);
       Object.assign(ghost.style, {
         position:'absolute',
-        bottom: getComputedStyle(actorEl).bottom, // ίδιο ύψος με κανονικό
-        width: getComputedStyle(actorEl).width,
-        height: getComputedStyle(actorEl).height,
+        bottom: actorCS.bottom,            // ίδιο ύψος
+        width:  actorCS.width,
+        height: actorCS.height,
         transform: 'translate(-50%,0)',
-        zIndex: 121,  // μπροστά από κανονικό (actor έχει 110)
+        zIndex: 121,                       // μπροστά από κανονικό (110)
         pointerEvents:'none',
         opacity: 0.85,
         filter:'grayscale(1) brightness(1.2)',
+        display:'none'
       });
       const img = document.createElement('img');
-      img.src = $('img', actorEl).src;
+      const srcImg = $('img', actorEl);
+      img.src = srcImg ? srcImg.src : '';
       img.style.width = '100%';
       img.style.height= 'auto';
       img.style.opacity = '0.85';
@@ -127,22 +109,23 @@
     if (!ghostSpring) {
       ghostSpring = document.createElement('img');
       ghostSpring.id = 'springGhost';
-      ghostSpring.src = spring.src;
+      ghostSpring.src = spring ? spring.src : '';
+      const springCS = getComputedStyle(spring || document.body);
       Object.assign(ghostSpring.style, {
         position:'absolute',
-        bottom: getComputedStyle(spring).bottom, // ίδιο ύψος με κανονικό
+        bottom: springCS.bottom || 'calc(32vh + 82px)',
         left: anchorX()+'px',
-        height: getComputedStyle(spring).height,
+        height: springCS.height || '96px',
         width: 'auto',
         transformOrigin:'left center',
-        zIndex: 91, // λίγο πάνω από κανονικό spring (90)
+        zIndex: 91,
         pointerEvents:'none',
         opacity:0.9,
-        filter:'grayscale(1) brightness(1.15)'
+        filter:'grayscale(1) brightness(1.15)',
+        display:'none'
       });
       ghostSpring.addEventListener('load', ()=>{
         try {
-          // Βάση για scaleX
           ghostBaseW = ghostSpring.naturalWidth || ghostSpring.getBoundingClientRect().width || 160;
         } catch(e){}
       });
@@ -159,15 +142,15 @@
     const loop = ()=>{
       const cx = centerX();
       const ax = anchorX();
-      const t  = (typeof window.playbackTime==='number') ? window.playbackTime : 0;
+      const t  = (typeof window.playbackTime === 'number') ? window.playbackTime : 0;
 
-      const skaterHookX = cx + (pxPerMeter*Aghost_m)*Math.sin(omega*t);
+      const X = cx + (pxPerMeter * Aghost_m) * Math.sin(omega * t);
 
-      // ηθοποιός-ghost στο ίδιο ύψος με κανονικό, κεντραρισμένο
-      ghost.style.left = skaterHookX + 'px';
+      // Actor ghost στο ίδιο ύψος, κεντραρισμένος όπως ο κανονικός
+      ghost.style.left = X + 'px';
 
-      // ελατήριο-ghost: scaleX ανάλογα με απόσταση από άγκυρα
-      const dist = Math.max(1, skaterHookX - ax);
+      // Spring ghost: scaleX με την απόσταση από anchor
+      const dist = Math.max(1, X - ax);
       const base = ghostBaseW || 160;
       ghostSpring.style.left = ax + 'px';
       ghostSpring.style.transform = `scaleX(${dist/base})`;
@@ -180,8 +163,8 @@
   function stopGhost(){
     cancelAnimationFrame(ghostRAF);
     ghostRAF = 0;
-    if (ghost) ghost.style.display = 'none';
-    if (ghostSpring) ghostSpring.style.display = 'none';
+    if (ghost)      ghost.style.display = 'none';
+    if (ghostSpring)ghostSpring.style.display = 'none';
   }
 
   // ===== Τίτλος Πράξης 2 =====
@@ -194,9 +177,9 @@
     if (sbB) sbB.textContent = `Eμηχ = ${Em} J`;
   }
 
-  // ===== Φουαγιέ (πλαίσιο μετά το κλείσιμο) =====
+  // ===== Gate για Φουαγιέ =====
   function ensureFoyerGate(){
-    if (byId('foyerGate')) return;
+    if (by('foyerGate')) return;
     const gate = document.createElement('div');
     gate.id = 'foyerGate';
     Object.assign(gate.style, {
@@ -220,7 +203,7 @@
   }
   function showFoyerGate(){
     ensureFoyerGate();
-    const gate = byId('foyerGate'); if (!gate) return;
+    const gate = by('foyerGate'); if (!gate) return;
     const sRect = stage.getBoundingClientRect();
     const cuRect = curtainUpper.getBoundingClientRect();
     gate.style.left   = (sRect.left + stage.clientWidth*0.18) + 'px';
@@ -235,21 +218,21 @@
     if (running || finished) return;
     running = true;
 
-    // Άνοιγμα κουρτίνας, τίτλος, ελατήριο ορατό
+    // Άνοιγμα κουρτίνας + τίτλος + ελατήριο
     if (stage) stage.classList.add('open');
     if (spring) spring.style.display = 'block';
     setTitleAct2();
 
-    // Σετ σκέψεων — ΑΥΤΟΛΕΞΕΙ, όπως ζητήθηκαν (με δείκτες/μονάδες)
+    // Σειρά σκέψεων — αυτολεξεί, στις ίδιες περίπου θέσεις με Πράξη 1
     const seq = [
       {v:0, t:'ωπ! δεμένος σε ελατήριο είναι ο m₁D₁!', y:135, x:-20},
 
-      // Ghost window: από εδώ...
+      // ghost ON (3 σκέψεις)
       {v:1, t:'αυτόν ακριβώς τον m₁D₁ σίγουρα τον έχω ξαναδεί με το ίδιο μηχανισμό-ελατήριο σε άλλη παράσταση, αλλά με άλλον παραγωγό!', y:135, x:-10, gStart:true},
       {v:3, t:'…ναι και εκεί πάλι με την ίδια περίοδο όμως εμμονικά κινήθηκε, αλλά με μεγαλύτερο πλάτος A!', y:135, x:10},
-      {v:2, t:'(θυμήσου…) — ο m₁D₁ σε άλλη σκηνή με διαφορετικό πλάτος/ενέργεια (ίδιο μέγεθος εικόνας)', y:130, x:-10},
-      {v:4, t:'Χμμμ… Πρωταγωνιστής μάλλον είναι ο κινούμενος ηθοποιός και τα εργαλεία του μαζί!', y:130, x:20, gStop:true},
-      // ...μέχρι εδώ (3 σκέψεις με ghost ενεργό)
+      {v:2, t:'(θυμήσου…) — ο m₁D₁ σε άλλη σκηνή με διαφορετικό πλάτος/ενέργεια (ίδιο μέγεθος εικόνας)', y:130, x:-10, gStop:true},
+
+      {v:4, t:'Χμμμ… Πρωταγωνιστής μάλλον είναι ο κινούμενος ηθοποιός και τα εργαλεία του μαζί!', y:130, x:20},
 
       {v:0, t:'Τώρα καταλαβαίνω μάλλον γιατί δεν τον λένε m₁ αλλά m₁,D₁…', y:130, x:-20},
       {v:1, t:'… το m₁ είναι η μάζα του ηθοποιού αλλά ταλαντωτής προφανώς, νοείται η σύμπραξη του ηθοποιού (m₁) και του «ελαστικού» αιτίου-δύναμη, στο οποίο αναφέρεται το D₁!', y:130, x:-10},
@@ -264,16 +247,16 @@
     for (const it of seq) {
       if (it.gStart) startGhost();
       await say(it.v, it.t, it.y, it.x);
-      if (it.gStop) stopGhost();
+      if (it.gStop)  stopGhost();
     }
 
     // Νόμοι (5)…(7)
-    addLawOneLine('ΣF = −m·ω²·A·ημ(ωt+φ₀) (5)'); await sleep(300);
-    addLawOneLine('ΣF = −m·ω²·x (6)');           await sleep(300);
-    addLawOneLine('D = m·ω² (6′)');              await sleep(300);
-    addLawOneLine('ΣF = −D·x (7)');              await sleep(600);
+    addLawOneLine('ΣF = −m·ω²·A·ημ(ωt+φ₀) (5)'); await sleep(280);
+    addLawOneLine('ΣF = −m·ω²·x (6)');           await sleep(280);
+    addLawOneLine('D = m·ω² (6′)');              await sleep(280);
+    addLawOneLine('ΣF = −D·x (7)');              await sleep(420);
 
-    // Τέλος Πράξης 2 — κλείσιμο κουρτίνας, κρύψε δείκτη, δείξε Φουαγιέ
+    // Τέλος: stop ghost, κρύψε δείκτη, κλείσε κουρτίνα, δείξε Φουαγιέ
     stopGhost();
     if (marker) marker.style.opacity = '0';
 
@@ -289,13 +272,11 @@
 
     showFoyerGate();
     finished = true;
-    running = false;
+    running  = false;
   }
 
-  // Ετοιμασία
+  // ===== Mount =====
   ensureFoyerGate();
-
-  // Μόλις πατηθεί το κουμπί “Έναρξη Πράξης 2”
   document.addEventListener('act2-start', playAct2, { once:true });
 
 })();
