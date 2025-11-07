@@ -1,130 +1,125 @@
-/* ghost_sync_strict_v2.js */
+/* act2.js */
 (function(){
   'use strict';
-  const $ = (s,r=document)=>r.querySelector(s);
-  const byId = (id)=>document.getElementById(id);
+  const $id=(x)=>document.getElementById(x);
+  const stage=$id('stage');
+  const spring=$id('spring');
+  const marker=$id('marker');
+  const signboard=document.querySelector('.signboard');
+  const h1=signboard?signboard.querySelector('h1'):null;
+  const sbA=$id('sbLineA'), sbB=$id('sbLineB');
 
-  let stage, actor, springEl;
-  function ensureBase(){
-    stage    = stage    || byId('stage');
-    actor    = actor    || byId('actor');   // DIV του skater
-    springEl = springEl || byId('spring');  // IMG ελατηρίου (κανονικό)
-    return !!stage && !!actor && !!springEl;
+  let running=false, done=false;
+  const sleep=(ms)=>new Promise(r=>setTimeout(r,ms));
+
+  function setTitleAct2(){
+    if(h1) h1.textContent='Πράξη 2η: Η Δυναμική στα ... Αλγεβρικά!';
+    const m = (typeof window.m==='number') ? window.m.toFixed(1) : (window.m||'…');
+    const D = (typeof window.D==='number') ? window.D : '…';
+    const E = (typeof window.E_mech==='number') ? window.E_mech.toFixed(2) : (window.E_mech||'…');
+    if(sbA) sbA.textContent=`m₁ = ${m} kg , D₁ = ${D} N/m`;
+    if(sbB) sbB.textContent=`Eμηχ = ${E} J`;
   }
 
-  let ghostWrap=null, ghostImg=null, gSpring=null;
-  function ω(){ return (typeof window.omega==='number'?window.omega:(2*Math.PI/(window.T||6))); }
-  function px(){ return (typeof window.pxPerMeter==='number'?window.pxPerMeter:50); }
-  function tPlay(){ return (typeof window.playbackTime==='number'?window.playbackTime:performance.now()/1000); }
-  function anchorX(){ return (typeof window.anchorX==='function'?window.anchorX():stage.clientWidth*0.18); }
-
-  let Aghost_m = 5;
-  function setGhostAmplitude(m){ Aghost_m = Math.max(0,+m||0); }
-  let L0_px = null;
-
-  function makeGhost(){
-    if(!ensureBase()) return false;
-
-    const csActor  = getComputedStyle(actor);
-    const csSpring = getComputedStyle(springEl);
-    const aRect    = actor.getBoundingClientRect();
-
-    if(!ghostWrap){
-      ghostWrap = document.createElement('div');
-      ghostWrap.id = 'ghostActor';
-      Object.assign(ghostWrap.style,{
-        position:'absolute',
-        left:'50%',
-        bottom: csActor.bottom,
-        width: (aRect.width||144)+'px',
-        height:(aRect.height||96)+'px',
-        transform:'none',
-        zIndex:'120',
-        pointerEvents:'none',
-      });
-      stage.appendChild(ghostWrap);
+  function durationFor(text){
+    return (typeof window.computeThoughtDuration==='function')
+      ? window.computeThoughtDuration(text) : 3.0;
+  }
+  async function bubble(viewer,text,yOffset,xShift){
+    if(typeof window.showThoughtForViewer==='function'){
+      window.showThoughtForViewer(viewer,text,undefined,yOffset,xShift);
     }
-    if(!ghostImg){
-      const realImg = actor.querySelector('img');
-      ghostImg = document.createElement('img');
-      ghostImg.src = realImg ? realImg.src : 'skater.png';
-      Object.assign(ghostImg.style,{
-        width:'100%',height:'auto',display:'block',
-        opacity:'0.40',filter:'drop-shadow(0 4px 6px rgba(0,0,0,.6))'
-      });
-      ghostWrap.appendChild(ghostImg);
+    await sleep((durationFor(text)+0.35)*1000);
+  }
+  function addLaw(txt){ if(typeof window.addLaw==='function') window.addLaw(txt); }
+
+  function ensureFoyerGate(){
+    if(document.getElementById('foyerGate')) return;
+    const gate=document.createElement('div');
+    gate.id='foyerGate';
+    Object.assign(gate.style,{
+      position:'absolute',display:'none',alignItems:'center',justifyContent:'center',
+      textAlign:'center',zIndex:410,background:'rgba(0,0,0,.55)'
+    });
+    const box=document.createElement('div');
+    Object.assign(box.style,{
+      background:'rgba(0,0,0,.7)',border:'1px solid rgba(255,255,255,.25)',
+      borderRadius:'12px',padding:'16px 20px',maxWidth:'520px',color:'#fff'
+    });
+    const h=document.createElement('h3'); h.textContent='Διάλειμμα — Φουαγιέ';
+    const p=document.createElement('p');  p.textContent='Οι κουρτίνες παραμένουν κλειστές. Προχωράμε στις αποδείξεις;';
+    const btn=document.createElement('button'); btn.textContent='Μετάβαση στο Φουαγιέ';
+    Object.assign(btn.style,{background:'#700',color:'#fff',border:'none',borderRadius:'8px',
+                             padding:'10px 16px',fontSize:'16px',cursor:'pointer'});
+    btn.addEventListener('click',()=>{ gate.style.display='none'; document.dispatchEvent(new Event('act3-start')); });
+    box.appendChild(h); box.appendChild(p); box.appendChild(btn); gate.appendChild(box);
+    document.body.appendChild(gate);
+  }
+  function showFoyerGate(){
+    ensureFoyerGate();
+    const gate=$id('foyerGate'); if(!gate || !stage) return;
+    const sRect=stage.getBoundingClientRect();
+    const cu=document.querySelector('.curtain-upper'); const cuRect=cu.getBoundingClientRect();
+    gate.style.left=(sRect.left + stage.clientWidth*0.18)+'px';
+    gate.style.top = cuRect.top+'px';
+    gate.style.width=(stage.clientWidth*0.64)+'px';
+    gate.style.height=cuRect.height+'px';
+    gate.style.display='flex';
+  }
+
+  async function playAct2(){
+    if(running||done) return;
+    running=true;
+
+    // Άνοιγμα κουρτίνας + εμφάνιση ελατηρίου
+    if(stage) stage.classList.add('open');
+    if(spring) spring.style.display='block';
+    setTitleAct2();
+
+    // --- Σκέψεις & ghost window (#4 → #7) ---
+    const seq=[
+      {v:0,t:'ωπ! δεμένος σε ελατήριο είναι ο m₁D₁!',y:135,x:-20}, // 3
+      {v:1,t:'αυτόν ακριβώς τον m₁D₁ σίγουρα τον έχω ξαναδεί με το ίδιο μηχανισμό-ελατήριο σε άλλη παράσταση, αλλά με άλλον παραγωγό!',y:135,x:-10, gStart:true}, // 4
+      {v:3,t:'…ναι και εκεί πάλι με την ίδια περίοδο όμως εμμονικά κινήθηκε, αλλά με μεγαλύτερο πλάτος A!',y:135,x:10},
+      {v:2,t:'(θυμήσου…) — ο m₁D₁ σε άλλη σκηνή με διαφορετικό πλάτος/ενέργεια',y:130,x:-10},
+      {v:4,t:'Χμμμ… Πρωταγωνιστής μάλλον είναι ο κινούμενος ηθοποιός και τα εργαλεία του μαζί!',y:130,x:20, gStop:true}, // 7
+      {v:0,t:'Τώρα καταλαβαίνω μάλλον γιατί δεν τον λένε m₁ αλλά m₁,D₁…',y:130,x:-20},
+      {v:1,t:'… το m₁ είναι η μάζα του ηθοποιού αλλά ταλαντωτής προφανώς, νοείται η σύμπραξη του ηθοποιού (m₁) και του «ελαστικού» αιτίου-δύναμη, στο οποίο αναφέρεται το D₁!',y:130,x:-10},
+      {v:3,t:'…m₁ και D₁ δηλαδή πάνε παντού πακέτο! και τα δυο μαζί είναι ο ταλαντωτής — ο πρωταγωνιστής!',y:130,x:10},
+      {v:2,t:'… δηλαδή κάθε ταλαντωτής χαρακτηρίζεται 1) από τη μάζα του και 2) από το ελαστικό αίτιο-δύναμη που του ρυθμίζει χρονικά (T) την ταλάντωση!',y:130,x:0},
+      {v:4,t:'…αρχίζω να πείθομαι γιατί σαν χαρακτηριστικό όνομα έχει το mD! και όχι σκέτο m!...',y:130,x:20},
+      {v:0,t:'Επομένως η «εμμονή» του κάθε ταλαντωτή (η χαρακτηριστική T → f, ω) οφείλεται στο m και στο ελαστικό αίτιο (D)!',y:130,x:-20},
+      {v:1,t:'Πωωωω! ελάτε, αφήστε τα, πάμε παρακάτω…',y:125,x:-10},
+      {v:3,t:'Ας δούμε πώς γράφεται ο 2ος Νόμος του Νεύτωνα για την περίπτωση του ταλαντωτή!',y:130,x:10},
+    ];
+    for(const it of seq){
+      if(it.gStart && typeof window.setGhostAmplitude==='function' && typeof window.startGhostSync==='function'){
+        window.setGhostAmplitude(5); window.startGhostSync(12000);
+      }
+      await bubble(it.v,it.t,it.y,it.x);
+      if(it.gStop && typeof window.stopGhostSync==='function'){ window.stopGhostSync(); }
     }
-    if(!gSpring){
-      const sRect = springEl.getBoundingClientRect();
-      gSpring = document.createElement('img');
-      gSpring.id = 'ghostSpring';
-      gSpring.src = springEl.src;
-      Object.assign(gSpring.style,{
-        position:'absolute',
-        left:  anchorX()+'px',
-        bottom: csSpring.bottom,
-        height: (sRect.height||96)+'px',
-        width:  (sRect.width ||160)+'px',
-        transformOrigin:'left center',
-        transform:'scaleX(1)',
-        opacity:'0.40',
-        zIndex:'119',
-        pointerEvents:'none',
-        filter:'drop-shadow(0 4px 6px rgba(0,0,0,.55))',
-      });
-      stage.appendChild(gSpring);
+
+    // --- Νόμοι (5),(6),(6′),(7) ---
+    addLaw('ΣF = −m·ω²·A·ημ(ωt+φ₀) (5)'); await sleep(300);
+    addLaw('ΣF = −m·ω²·x (6)');           await sleep(300);
+    addLaw('D = m·ω² (6′)');              await sleep(300);
+    addLaw('ΣF = −D·x (7)');              await sleep(600);
+
+    // --- Κλείσιμο Πράξης 2 ---
+    if(typeof window.stopGhostSync==='function') window.stopGhostSync();
+    if(marker) marker.style.opacity='0';
+
+    const cu=document.querySelector('.curtain-upper');
+    if(cu && stage){
+      cu.classList.add('slow-close'); stage.classList.remove('open');
+      await sleep(1600); cu.classList.remove('slow-close');
+    }else{
+      if(stage) stage.classList.remove('open'); await sleep(600);
     }
-    if(!L0_px){
-      const realW = springEl.getBoundingClientRect().width;
-      L0_px = Math.max(1, realW);
-    }
-    return true;
+    showFoyerGate();
+    done=true; running=false;
   }
 
-  let rafId=0, stopTs=0;
-  function step(){
-    if(!ensureBase() || !ghostWrap || !gSpring){ rafId=0; return; }
-    const w = ω(), kpx=px(), Apx=Aghost_m*kpx, t=tPlay();
-    const centerX = stage.clientWidth/2;
-    const realRect = actor.getBoundingClientRect();
-    const hookOff  = (realRect.width||(ghostWrap.getBoundingClientRect().width)||144)/2;
-    const xHook = centerX + Apx*Math.sin(w*t);
-
-    ghostWrap.style.left = (xHook - hookOff)+'px';
-
-    const ax = anchorX();
-    const dist = xHook - ax;
-    const scale = (L0_px>0)?(dist/L0_px):1;
-    gSpring.style.left     = ax+'px';
-    gSpring.style.transform= `scaleX(${scale})`;
-
-    if(performance.now()<stopTs){ rafId=requestAnimationFrame(step); }
-    else { stopGhostSync(); }
-  }
-
-  function startGhostSync(ms=10000){
-    if(!makeGhost()) return;
-    syncBottoms();
-    stopTs = performance.now()+Math.max(0,ms|0);
-    if(!rafId) rafId=requestAnimationFrame(step);
-  }
-  function stopGhostSync(){
-    if(rafId){ cancelAnimationFrame(rafId); rafId=0; }
-    try{ if(ghostWrap) ghostWrap.remove(); }catch(_){}
-    try{ if(gSpring)   gSpring.remove(); }catch(_){}
-    ghostWrap=null; ghostImg=null; gSpring=null;
-  }
-  function syncBottoms(){
-    if(!ensureBase()) return;
-    const csActor  = getComputedStyle(actor);
-    const csSpring = getComputedStyle(springEl);
-    if(ghostWrap) ghostWrap.style.bottom = csActor.bottom;
-    if(gSpring)   gSpring.style.bottom   = csSpring.bottom;
-  }
-  window.addEventListener('resize', syncBottoms);
-
-  window.setGhostAmplitude = setGhostAmplitude;
-  window.startGhostSync    = startGhostSync;
-  window.stopGhostSync     = stopGhostSync;
-  window.GHOST = { start:startGhostSync, stop:stopGhostSync, setA:setGhostAmplitude };
+  document.addEventListener('act2-start', playAct2, {once:true});
 })();
