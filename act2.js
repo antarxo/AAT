@@ -1,10 +1,10 @@
-/* act2.js — ΠΡΑΞΗ 2 (fix hook κέντρου ghost)
+/* act2.js — ΠΡΑΞΗ 2 (σταθερό timing, σωστός GHOST, HTML σε bubbles)
    - Ghost: Aghost=5 m, ίδια φάση/περίοδος με τον κανονικό.
-   - Τοποθέτηση ghost με translate(-50%,0) => left = hookX_ghost (ΟΧΙ -gHalf).
-   - Το ghost-spring τεντώνει μέχρι ΚΕΝΤΡΟ ghost: scaleX = (hookX_ghost - anchorX) / L0_ghost.
-   - Σκέψεις: χωρίς typewriter (καθαρό κείμενο), αυτο-διάρκεια με βάση μήκος.
-   - Νόμοι: μονοσειρά, χωρίς «Νόμος …», χωρίς κενά ανάμεσα.
-   - Τέλος: κρύβει δείκτη, κλείνει κουρτίνα (μένει κλειστή), δείχνει πύλη Φουαγιέ.
+   - Το ghost κεντράρεται σωστά (left = hookX_ghost, υπάρχει translate(-50%,0)).
+   - Το ghost-spring τεντώνει μέχρι ΚΕΝΤΡΟ ghost.
+   - Bubbles: επιτρέπουμε ασφαλές HTML (b/strong, i/em, sub/sup, br) + auto-διάρκεια με βάση μήκος.
+   - Νόμοι: μονοσειρά, χωρίς κενά ανάμεσα.
+   - Τέλος: κρύβει δείκτη, κλείνει κουρτίνα (μένει κλειστή), εμφανίζει πύλη Φουαγιέ.
 */
 (function(){
   'use strict';
@@ -37,6 +37,23 @@
   const getBottom = el => parseFloat(getComputedStyle(el).bottom||'0')||0;
   const centerX   = () => stage.clientWidth/2;
   const anchorX   = () => (typeof window.anchorX==='function') ? window.anchorX() : stage.clientWidth*0.18;
+  function curtainsX(){ const W=stage.clientWidth; return [W*0.18, W*0.82]; }
+
+  // ===== Ασφαλής HTML μέσα στα bubbles
+  const __ALLOWED = new Set(['b','strong','i','em','sub','sup','br']);
+  function sanitizeThought(html) {
+    const wrap = document.createElement('div');
+    wrap.innerHTML = html || '';
+    wrap.querySelectorAll('*').forEach(el => {
+      const tag = el.tagName.toLowerCase();
+      if (!__ALLOWED.has(tag)) {
+        el.replaceWith(document.createTextNode(el.textContent));
+      } else {
+        [...el.attributes].forEach(a => el.removeAttribute(a.name));
+      }
+    });
+    return wrap.innerHTML;
+  }
 
   // ===== Σκέψεις (χωρίς typewriter, auto-duration)
   function baseDur(){ const s=by('slDur'); const v=s?parseFloat(s.value):NaN; return (isFinite(v)&&v>0)?v:3; }
@@ -76,7 +93,6 @@
     const r = v.getBoundingClientRect();
     return { left:r.left - sRect.left, top:r.top - sRect.top, w:r.width, h:r.height };
   }
-  function curtainsX(){ const W=stage.clientWidth; return [W*0.18, W*0.82]; }
   function durFor(text){
     const b = baseDur();
     const k = Math.max(0.6, 9.0/b);
@@ -90,7 +106,7 @@
     const [xL,xR] = curtainsX();
     const pad=12;
 
-    b.querySelector('.a2text').textContent = text||'';
+    b.querySelector('.a2text').innerHTML = sanitizeThought(text||'');
     b.style.display='block';
     b.style.opacity='0'; b.style.left='0px'; b.style.top='0px';
 
@@ -130,7 +146,7 @@
   // ===== GHOST (ίδιο hook με κανονικό)
   let ghost=null, ghostSpring=null, ghostRAF=0, L0_ghost=0;
   const Aghost_m = 5.0;
-  const HOOK_NUDGE_PX = 0; // αν θες 1–2px οπτική μικροδιόρθωση
+  const HOOK_NUDGE_PX = 0; // αν θέλεις 1–2px οπτική μικροδιόρθωση
 
   function ensureGhost(){
     if(!ghost){
@@ -167,7 +183,7 @@
     ghostSpring.style.bottom = getBottom(springReal)+'px';
     ghostSpring.style.height = sRect.height+'px';
     ghostSpring.style.left   = anchorX()+'px';
-    ghostSpring.style.transform = 'scaleX(1)'; // σημαντικό για σωστή μέτρηση L0_ghost
+    ghostSpring.style.transform = 'scaleX(1)'; // για σωστή μέτρηση L0_ghost
 
     const aRect = actorEl.getBoundingClientRect();
     ghost.style.bottom = getBottom(actorEl)+'px';
@@ -204,7 +220,7 @@
       let hookX_ghost = cx + A_ghost_px * sinθ + HOOK_NUDGE_PX;
 
       // Κέντρο ghost ακριβώς στο hookX_ghost
-      // Επειδή έχουμε translate(-50%), το left ΠΡΕΠΕΙ να είναι το ΚΕΝΤΡΟ
+      // (υπάρχει translate(-50%,0), άρα left = ΚΕΝΤΡΟ)
       ghost.style.left = hookX_ghost + 'px';
 
       // τέντωμα ghost-spring: από anchor έως ΚΕΝΤΡΟ ghost
@@ -312,7 +328,6 @@
         {law:'ΣF = −D·x (7)'}
       ];
 
-      // ghost on/οff στα 4–6
       for(const step of seq){
         if(step.law){ addLawOneLine(step.law); await sleep(300); continue; }
         if(step.gStart) startGhost();
@@ -341,30 +356,6 @@
   }
 
   // Mount
-  function ensureFoyerGate(){ /* no-op, ορίζεται κάτω */ }
-  (function ensureFoyerGateMount(){
-    if(!by('foyerGate')){
-      const gate = document.createElement('div');
-      gate.id='foyerGate';
-      Object.assign(gate.style,{
-        position:'absolute', display:'none',
-        alignItems:'center', justifyContent:'center', textAlign:'center',
-        zIndex:410, background:'rgba(0,0,0,.55)'
-      });
-      const box=document.createElement('div');
-      Object.assign(box.style,{
-        background:'rgba(0,0,0,.7)', border:'1px solid rgba(255,255,255,.25)',
-        borderRadius:'12px', padding:'16px 20px', maxWidth:'520px', color:'#fff'
-      });
-      const h=document.createElement('h3'); h.textContent='Διάλειμμα — Φουαγιέ';
-      const p=document.createElement('p');  p.textContent='Οι κουρτίνες παραμένουν κλειστές. Προχωράμε στις αποδείξεις;';
-      const btn=document.createElement('button'); btn.textContent='Μετάβαση στο Φουαγιέ';
-      Object.assign(btn.style,{background:'#700',color:'#fff',border:'none',borderRadius:'8px',padding:'10px 16px',fontSize:'16px',cursor:'pointer'});
-      btn.addEventListener('click',()=>{ gate.style.display='none'; document.dispatchEvent(new Event('act3-start')); });
-      box.append(h,p,btn); gate.appendChild(box); document.body.appendChild(gate);
-    }
-  })();
-
   document.addEventListener('act2-start', playAct2, { once:true });
   const btnAct2 = by('btnAct2');
   if(btnAct2 && !btnAct2.__a2){
