@@ -1,16 +1,16 @@
-/* act2.js — ΠΡΑΞΗ 2 (self-contained)
-   - Σκέψεις: αυτολεξεί, σωστός ρυθμός (διάρκεια από μήκος κειμένου + μικρό κενό).
-   - Ghost: ίδια φάση/περίοδος με τον actor, Aghost=5 m, σωστή σύνδεση άκρου ελατηρίου → κέντρο ghost.
-   - Νόμοι: μονογραμμές με (5)(6)(6′)(7), χωρίς τίτλους/κενά.
-   - Τέλος: κρύβει marker, κλείνει κουρτίνα, εμφανίζει «Φουαγιέ».
+/* act2.js — ΠΡΑΞΗ 2 (ενιαίο αρχείο)
+   - Σκέψεις: αυτολεξεί, με διάρκεια ανάλογα με μήκος κειμένου.
+   - Ghost: ίδια φάση/περίοδος, Aghost=5 m, σωστό τέντωμα ελατηρίου μέχρι ΚΕΝΤΡΟ ηθοποιού.
+   - Νόμοι: μονογραμμές (5)(6)(6′)(7), χωρίς «Νόμος…» και χωρίς κενές γραμμές.
+   - Τέλος: κρύβει κίτρινο δείκτη, κλείνει κουρτίνα (μένει κλειστή), εμφανίζει πύλη Φουαγιέ.
 */
 (function(){
   'use strict';
 
-  const $ = (s,r=document)=>r.querySelector(s);
+  const $  = (s,r=document)=>r.querySelector(s);
   const by = id=>document.getElementById(id);
 
-  // --- Σκηνή & βασικά στοιχεία
+  // ---- Σκηνή & βασικά στοιχεία
   const stage        = by('stage');
   const curtainUpper = $('.curtain-upper');
   const springReal   = by('spring');
@@ -22,17 +22,17 @@
   const sbA  = by('sbLineA');
   const sbB  = by('sbLineB');
 
-  // --- Φυσικά από Πράξη 1 (fallbacks)
+  // ---- Φυσικά από Πράξη 1 (fallbacks)
   const pxPerMeter = (typeof window.pxPerMeter==='number')?window.pxPerMeter:50;
   const A_m        = (typeof window.A_m==='number')?window.A_m:3.0;
   const omega      = (typeof window.omega==='number')?window.omega:(2*Math.PI/6);
   const T          = (typeof window.T==='number')?window.T:6.0;
 
-  // --- Κατάσταση
+  // ---- Κατάσταση
   let running=false, finished=false;
 
   // ========================
-  // ΡΥΘΜΙΣΗ ΔΙΑΡΚΕΙΑΣ ΣΚΕΨΗΣ
+  // BUBBLE & ΔΙΑΡΚΕΙΑ ΣΚΕΨΗΣ
   // ========================
   function getBaseDurSec(){
     const s = by('slDur');
@@ -44,7 +44,7 @@
 
   function computeThoughtDuration(text){
     const base = getBaseDurSec();
-    const k    = Math.max(0.6, 9.0/base);        // συγχρονισμός με slider
+    const k    = Math.max(0.6, 9.0/base);               // συγχρονισμός με slider
     const s    = String(text||'');
     let secs   = s.length / (TIMING.CHARS_PER_SEC_BASE * k);
     if(!isFinite(secs) || secs<=0) secs = TIMING.MIN;
@@ -52,9 +52,6 @@
     return secs;
   }
 
-  // ==========================
-  // BUBBLE ΠΡΑΞΗΣ 2 (αυτόνομο)
-  // ==========================
   let a2Bubble=null;
   function ensureA2Bubble(){
     if(a2Bubble) return a2Bubble;
@@ -145,15 +142,30 @@
     }
   }
 
-  // ====================
-  // GHOST (ίδιο hook με actor)
-  // ====================
-  let ghost=null, ghostSpring=null, ghostRAF=0, ghostHookOffset=0, springBaseW=160;
+  // ==========================
+  // GHOST + Ελατήριο (FIXed)
+  // ==========================
+  let ghost=null, ghostSpring=null, ghostRAF=0, ghostHookOffset=0;
+  let springBaseW=160;               // πλάτος ελατηρίου στο scaleX=1 (μετά το ύψος)
   const Aghost_m = 5.0;
 
   function getBottom(el){ return parseFloat(getComputedStyle(el).bottom||'0')||0; }
   function centerX(){ return stage.clientWidth/2; }
   function anchorX(){ return (typeof window.anchorX==='function') ? window.anchorX() : stage.clientWidth*0.18; }
+
+  // Υπολογισμός πραγματικού πλάτους ελατηρίου αφού του ορίσουμε ύψος
+  function calibrateSpringBaseWidth(){
+    if(!ghostSpring) return;
+    const prevDisp = ghostSpring.style.display;
+    const prevTr   = ghostSpring.style.transform;
+    ghostSpring.style.transform = 'scaleX(1)';
+    ghostSpring.style.display   = 'block';
+    void ghostSpring.offsetWidth; // force reflow
+    const w = ghostSpring.getBoundingClientRect().width;
+    springBaseW = Math.max(1, Math.round(w));
+    ghostSpring.style.display   = prevDisp || 'none';
+    ghostSpring.style.transform = prevTr   || 'scaleX(1)';
+  }
 
   function ensureGhost(){
     if(!ghost){
@@ -164,7 +176,7 @@
         zIndex:121, pointerEvents:'none', opacity:0.85,
         filter:'grayscale(1) brightness(1.2)', display:'none'
       });
-      const src = $('img', actorEl);
+      const src = actorEl.querySelector('img');
       const img = document.createElement('img');
       img.src = src ? src.src : '';
       img.style.width='100%'; img.style.height='auto'; img.style.opacity='0.9';
@@ -176,28 +188,29 @@
       ghostSpring.id='springGhost';
       ghostSpring.src = springReal ? springReal.src : '';
       Object.assign(ghostSpring.style,{
-        position:'absolute', left:anchorX()+'px',
+        position:'absolute',
         transformOrigin:'left center',
         zIndex:120, pointerEvents:'none', opacity:0.9,
         filter:'grayscale(1) brightness(1.15)', display:'none'
       });
-      ghostSpring.addEventListener('load', ()=>{
-        const r = ghostSpring.getBoundingClientRect();
-        springBaseW = Math.max(60, r.width || ghostSpring.naturalWidth || 160);
-      });
       stage.appendChild(ghostSpring);
     }
-    // στο ίδιο ύψος/μέγεθος με actor + spring
+
+    // ίδιο ύψος/θέση με το κανονικό ελατήριο
+    const sRect = springReal.getBoundingClientRect();
+    ghostSpring.style.bottom = getBottom(springReal)+'px';
+    ghostSpring.style.height = sRect.height+'px';
+    ghostSpring.style.left   = anchorX()+'px';
+
+    // ίδιο μέγεθος/ύψος με τον actor, για ίδιο hook-offset
     const aRect = actorEl.getBoundingClientRect();
     ghost.style.bottom = getBottom(actorEl)+'px';
     ghost.style.width  = aRect.width+'px';
     ghost.style.height = aRect.height+'px';
     ghostHookOffset    = aRect.width/2;
 
-    const sRect = springReal.getBoundingClientRect();
-    ghostSpring.style.bottom = getBottom(springReal)+'px';
-    ghostSpring.style.height = sRect.height+'px';
-    ghostSpring.style.left   = anchorX()+'px';
+    // βαθμονόμηση μετά την τελική γεωμετρία
+    calibrateSpringBaseWidth();
   }
 
   function startGhost(){
@@ -210,20 +223,27 @@
     const A_ghost_px = pxPerMeter * Aghost_m;
 
     const loop=()=>{
-      // ΠΡΟΣΟΧΗ: όλα σε συντεταγμένες stage (όχι viewport)
       const sRect = stage.getBoundingClientRect();
       const aRect = actorEl.getBoundingClientRect();
-      const hookX_real_stage = (aRect.left - sRect.left) + aRect.width/2; // κέντρο actor
-      const cx_stage = centerX();
+      const cx    = centerX();
+      const ax    = anchorX();
 
-      const sinθ = Math.max(-1, Math.min(1, (hookX_real_stage - cx_stage) / (A_real_px||1) ));
-      const hookX_ghost_stage = cx_stage + A_ghost_px * sinθ;
+      // πραγματικό hook (κέντρο actor) σε συντεταγμένες stage
+      const hookX_real = (aRect.left - sRect.left) + aRect.width/2;
+      const sinθ = Math.max(-1, Math.min(1, (hookX_real - cx) / Math.max(1, A_real_px)));
 
-      ghost.style.left = (hookX_ghost_stage - ghostHookOffset) + 'px';
+      // ghost hook (ίδια φάση, άλλο πλάτος)
+      const hookX_ghost = cx + A_ghost_px * sinθ;
 
-      const ax = anchorX();
-      const dist = Math.max(1, hookX_ghost_stage - ax);
-      ghostSpring.style.transform = `scaleX(${dist/(springBaseW||160)})`;
+      // τοποθέτηση ghost με βάση το κέντρο του
+      ghost.style.left = (hookX_ghost - ghostHookOffset) + 'px';
+
+      // τέντωμα ελατηρίου από anchor → ΚΕΝΤΡΟ ghost
+      ghostSpring.style.left = ax + 'px';
+      const dist  = Math.max(0, hookX_ghost - ax);
+      if(springBaseW<=1) calibrateSpringBaseWidth();
+      const scale = dist / springBaseW;
+      ghostSpring.style.transform = `scaleX(${scale}) translateZ(0)`;
 
       ghostRAF = requestAnimationFrame(loop);
     };
@@ -235,6 +255,8 @@
     if(ghost){ ghost.style.display='none'; ghost.style.left='-9999px'; }
     if(ghostSpring){ ghostSpring.style.display='none'; ghostSpring.style.transform='scaleX(1)'; }
   }
+
+  window.addEventListener('resize', calibrateSpringBaseWidth);
 
   // =================
   // ΤΙΤΛΟΣ ΠΡΑΞΗΣ 2
@@ -276,7 +298,7 @@
     ensureFoyerGate();
     const gate=by('foyerGate'); if(!gate) return;
     const sRect=stage.getBoundingClientRect();
-    const cuRect=curtainUpper.getBoundingClientRect();
+    const cuRect=curtainUpper?.getBoundingClientRect?.() || {top:0,height:stage.clientHeight*0.4};
     gate.style.left   = (sRect.left + stage.clientWidth*0.18)+'px';
     gate.style.top    = cuRect.top+'px';
     gate.style.width  = (stage.clientWidth*0.64)+'px';
@@ -348,17 +370,21 @@
 
       // ΤΕΛΟΣ ΠΡΑΞΗΣ 2
       if(marker) marker.style.opacity='0';      // 1) κρύψε δείκτη
-      curtainUpper.classList.add('slow-close'); // 2) κλείσε κουρτίνα (μένει κλειστή)
-      stage.classList.remove('open');
-      await sleep(1600);
-      curtainUpper.classList.remove('slow-close');
+      if(curtainUpper){                         // 2) κλείσε κουρτίνα (μένει κλειστή)
+        curtainUpper.classList.add('slow-close');
+        stage.classList.remove('open');
+        await sleep(1600);
+        curtainUpper.classList.remove('slow-close');
+      }else{
+        stage.classList.remove('open');
+      }
       showFoyerGate();                           // 3) πύλη Φουαγιέ
 
       finished=true;
     }catch(err){
       console.error('Act2 error:', err);
     }finally{
-      stopGhost(); // ασφάλεια: να μη μείνει ποτέ πάνω
+      stopGhost(); // ασφάλεια
       running=false;
     }
   }
@@ -371,6 +397,6 @@
     btnAct2.__act2Bound=true;
     btnAct2.addEventListener('click', playAct2);
   }
-  // helper για δοκιμή από console
+  // helper για δοκιμή
   window.__forceAct2Start = playAct2;
 })();
