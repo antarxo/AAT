@@ -670,48 +670,7 @@ function showThoughtForViewer(vIdx,text,durationSecs,customLift,xShift=0){
   bubbleAutoTimer=setTimeout(()=>{ resumeFromBubble('run'); }, Math.max(0.5,dur)*1000);
 }
 
-  
-/* Clamp για bubbles στα όρια σκηνής */
-function showThoughtForViewer(vIdx,text,durationSecs,customLift,xShift=0){
-  const viewerEl=document.querySelector(`.viewer[data-idx="${vIdx}"]`);
-  if(!viewerEl) return;
-  bubbleEl.querySelector('.text').textContent=text||'';
 
-  const W=stage.clientWidth;
-  const leftCurtainRight = W*0.18;
-  const rightCurtainLeft = W*0.82;
-  const pad=12;
-
-  const vRect=viewerEl.getBoundingClientRect(); const sRect=stage.getBoundingClientRect();
-  const viewerCenterX=(vRect.left+vRect.width/2 - sRect.left);
-  let desiredCenterX = viewerCenterX + (xShift||0);
-
-  bubbleEl.style.display='block'; bubbleEl.style.opacity='0'; bubbleEl.style.left='0px'; bubbleEl.style.top='0px';
-  const bw = bubbleEl.offsetWidth || 240;
-
-  const minLeft = leftCurtainRight + pad;
-  const maxLeft = rightCurtainLeft - pad - bw;
-
-  let leftPx = desiredCenterX - bw/2;
-  if(leftPx < minLeft) leftPx = minLeft;
-  if(leftPx > maxLeft) leftPx = maxLeft;
-
-  const baseLift=(typeof customLift==='number'?customLift:BASE_BUBBLE_LIFT);
-  const downShift = bubbleAltLower ? randInt(15,30) : 0;
-  bubbleAltLower = !bubbleAltLower;
-  let topPx=(vRect.top - sRect.top - baseLift + downShift);
-  topPx=Math.max(10,topPx);
-
-  bubbleEl.style.left=leftPx+'px';
-  bubbleEl.style.top =topPx +'px';
-  void bubbleEl.offsetWidth;
-  bubbleEl.classList.add('active'); bubbleEl.style.opacity='1';
-  isBubbleActive=true; setMode('slow');
-
-  const dur=(typeof durationSecs==='number'?durationSecs:bubbleDurationSec);
-  if(bubbleAutoTimer){ clearTimeout(bubbleAutoTimer); bubbleAutoTimer=null; }
-  bubbleAutoTimer=setTimeout(()=>{ resumeFromBubble('run'); }, Math.max(0.5,dur)*1000);
-}
 
 function resumeFromBubble(nextMode='run'){
   if(bubbleAutoTimer){ clearTimeout(bubbleAutoTimer); bubbleAutoTimer=null; }
