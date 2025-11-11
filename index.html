@@ -289,7 +289,7 @@
     </div>
 
     <!-- ====== ΦΟΥΑΓΙΕ ====== -->
-    <button class="btn-foyer" id="btnFoyer">Φουαγιέ</button>
+  <button class="btn-foyer" id="btnFoyer" onclick="foyerOpen()">Φουαγιέ</button>
     <div class="foyer" id="foyer">
       <div class="wrap">
         <div class="blackboard" id="foyerBoard" aria-label="μαυροπίνακας"></div>
@@ -1045,7 +1045,16 @@ function foyerStep(dir){
 }
 
 function foyerOpen(){
-  foyer.style.display='block';
+  // κάν’ το global για inline onclick + safety listeners
+window.foyerOpen = foyerOpen;
+window.foyerClose = foyerClose;
+
+// άκου και εναλλακτικά ονόματα event, σε περίπτωση mismatch
+['act2-ended','act2:ended','actII-ended'].forEach(evt =>
+  document.addEventListener(evt, () => foyerOpen())
+);
+
+	foyer.style.display='block';
   // reset state
   foyerIdx=0; foyerAuto=false; btnAuto.textContent='Auto ▷';
   if(foyerAutoTimer){ clearTimeout(foyerAutoTimer); foyerAutoTimer=null; }
