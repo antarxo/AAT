@@ -123,10 +123,10 @@
 
   .start-btn{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1000;background:#700;color:#fff;border:none;border-radius:8px;padding:12px 24px;font-size:18px;cursor:pointer;box-shadow:0 0 10px #300;pointer-events:auto}
 
-  /* Προαγγελία Πράξης 2 */
+  /* Προαγγελία Πράξης 2/3 */
   .actbreak{position:absolute;background:rgba(0,0,0,.55);color:#fff;z-index:410;display:none;align-items:center;justify-content:center;text-align:center}
 
-  /* ====== ΦΟΥΑΓΙΕ ====== */
+  /* ====== ΦΟΥΑΓΙΕ (ΠΡΑΞΗ 3) ====== */
   .foyer{position:absolute;left:18%;width:64%;top:12%;height:76%;z-index:500;display:none}
   .foyer .wrap{position:absolute;inset:0;display:grid;grid-template-columns:1fr 300px;gap:12px}
   .blackboard{
@@ -136,15 +136,17 @@
     color:#fff; padding:10px 12px; overflow:auto; scroll-behavior:smooth;
     font-size:16px; line-height:1.5;
   }
-  .board-line{
-    margin:6px 0; padding:8px 10px; border-left:6px solid transparent; border-radius:6px;
-    background:rgba(255,255,255,.05)
-  }
+  .board-line{margin:6px 0; padding:8px 10px; border-left:6px solid transparent; border-radius:6px; background:rgba(255,255,255,.05)}
   .board-line .speaker{font-weight:700; margin-right:6px}
-  .foyer-seats{
-    position:relative; background:rgba(0,0,0,.4); border:1px solid rgba(255,255,255,.2);
-    border-radius:12px; overflow:hidden
+  .board-actions{margin-top:6px; display:flex; flex-wrap:wrap; gap:6px}
+  .chip{
+    display:inline-flex; align-items:center; gap:6px;
+    padding:4px 8px; border-radius:999px; border:1px solid rgba(255,255,255,.35);
+    background:rgba(0,0,0,.35); color:#fff; font-size:12px; cursor:pointer; user-select:none;
   }
+  .chip b{font-weight:700}
+
+  .foyer-seats{position:relative; background:rgba(0,0,0,.4); border:1px solid rgba(255,255,255,.2); border-radius:12px; overflow:hidden}
   .foyer-audience{position:absolute;left:0;right:0;bottom:0;height:45%;object-fit:cover;opacity:.8;filter:grayscale(.2) contrast(1.1)}
   .foyer-front{position:absolute;left:0;right:0;bottom:0;display:flex;justify-content:space-around;align-items:flex-end;padding:12px}
   .foyer-viewer{width:68px;height:110px;background:url('https://upload.wikimedia.org/wikipedia/commons/f/f9/Silhouette_icon.svg') no-repeat center/contain;filter:brightness(.9);position:relative}
@@ -189,7 +191,7 @@
       <div class="sb-lineD" id="sbLineD">(*) ... εσείς</div>
     </div>
 
-    <!-- Παράμετροι A, ω, φ0 (εμφανίζονται όταν έρθει η ώρα) -->
+    <!-- Παράμετροι A, ω, φ0 -->
     <div class="params-box" id="paramsBox">
       <div class="param" id="paramA"></div>
       <div class="param" id="paramW"></div>
@@ -270,15 +272,6 @@
 
     <button class="start-btn" id="startBtn" data-i18n="startBtn">Έναρξη</button>
 
-    <!-- Countdown -->
-    <div class="countdown-overlay" id="countdownOverlay">
-      <div class="countdown-box">
-        <div class="countdown-main" id="cdMain">Η παράσταση αρχίζει...</div>
-        <div class="countdown-sub" id="cdSub">ώρα να χρησιμοποιήσετε χαρτί και μολύβι!</div>
-        <div class="countdown-timer" id="countdownTimer">5</div>
-      </div>
-    </div>
-
     <!-- Πύλη επιλογής μετά την 1η -->
     <div class="actbreak" id="actBreak">
       <div class="box" style="background:rgba(0,0,0,.7);border:1px solid rgba(255,255,255,.25);border-radius:12px;padding:16px 20px;max-width:520px">
@@ -286,12 +279,12 @@
         <p id="actBreakMsg">Διάλεξε συνέχεια:</p>
         <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
           <button id="btnAct2" style="background:#700;color:#fff;border:none;border-radius:8px;padding:10px 16px;font-size:16px;cursor:pointer">Έναρξη Πράξης 2</button>
-          <button id="btnAct3" style="background:#055;color:#fff;border:none;border-radius:8px;padding:10px 16px;font-size:16px;cursor:pointer">Μετάβαση στο Φουαγιέ</button>
+          <button id="btnAct3" style="background:#055;color:#fff;border:none;border-radius:8px;padding:10px 16px;font-size:16px;cursor:pointer">Πράξη 3 (Φουαγιέ)</button>
         </div>
       </div>
     </div>
 
-    <!-- ====== ΦΟΥΑΓΙΕ ====== -->
+    <!-- ====== ΦΟΥΑΓΙΕ = ΠΡΑΞΗ 3 ====== -->
     <button class="btn-foyer" id="btnFoyer" onclick="foyerOpen()">Φουαγιέ</button>
     <div class="foyer" id="foyer">
       <div class="wrap">
@@ -723,7 +716,7 @@ function initXTChart(){
   xtChart.style.display='block'; positionRightPanel();
   let w=Math.floor(xtChart.clientWidth)||260, h=Math.floor(xtChart.clientHeight)||140;
   const xData=buildSeriesData();
-  const opts={ /* ...όπως πριν... */ 
+  const opts={
     width:w, height:h,
     scales:{ x:{time:false, range:[0,T]}, y:{range:[-A_m*1.1, A_m*1.1]} },
     axes:[
@@ -732,8 +725,7 @@ function initXTChart(){
       { stroke:"#fff", grid:{show:true, stroke:"rgba(255,255,255,0.25)"},
         values:(u,vals)=>vals.map(v=>v.toFixed(1)+" m"), label:"x (m)", labelSize:18, labelGap:8 }
     ],
-    series:[{}, {label:"x(t)", stroke:"#ffd27a", width:2}],
-    hooks:{ draw:[(u)=>{ /* βοηθητικές γραμμές/labels */ }] }
+    series:[{}, {label:"x(t)", stroke:"#ffd27a", width:2}]
   };
   uXT=new uPlot(opts, xData, xtChart);
 }
@@ -741,13 +733,9 @@ function drawXTChart(){ if(uXT){ uXT.setData(buildSeriesData()); } }
 function ensureXTReady(){
   if(!graphEnabled) return;
   try{ if(window.uPlot){ initXTChart(); if(uXT){ drawXTChart(); } }
-       else{ if(graphEnabled){ pendingGraph=true; renderXTCanvasFallback(); } } }
-  catch(e){ console.error('ensureXTReady',e); if(graphEnabled){ pendingGraph=true; renderXTCanvasFallback(); } }
+       else{ if(graphEnabled){ pendingGraph=true; /* fallback noop */ } } }
+  catch(e){ console.error('ensureXTReady',e); if(graphEnabled){ pendingGraph=true; } }
 }
-
-/* Fallback canvas (συντομευμένο) */
-function renderXTCanvasFallback(){ /* ...όπως πριν... */ }
-function drawFallbackOnce(){ /* ...όπως πριν... */ }
 
 /* Γραφήματα νόμων (συντομευμένα) */
 let vCan=null,aCan=null,axCan=null;
@@ -759,9 +747,9 @@ function positionLawCharts(){
   lawCharts.style.left= '2%';
   lawCharts.style.width= '16%';
 }
-function ensureVelocityChart(){ if(!vCan){ vCan = document.createElement('canvas'); lawCharts.appendChild(vCan); } sizeLawCanvas(vCan); /* drawV */ }
-function ensureAccelerationChart(){ if(!aCan){ aCan = document.createElement('canvas'); lawCharts.appendChild(aCan); } sizeLawCanvas(aCan); /* drawA */ }
-function ensureAxChart(){ if(!axCan){ axCan = document.createElement('canvas'); lawCharts.appendChild(axCan); } sizeLawCanvas(axCan); /* drawAX */ }
+function ensureVelocityChart(){ if(!vCan){ vCan = document.createElement('canvas'); lawCharts.appendChild(vCan); } sizeLawCanvas(vCan); }
+function ensureAccelerationChart(){ if(!aCan){ aCan = document.createElement('canvas'); lawCharts.appendChild(aCan); } sizeLawCanvas(aCan); }
+function ensureAxChart(){ if(!axCan){ axCan = document.createElement('canvas'); lawCharts.appendChild(axCan); } sizeLawCanvas(axCan); }
 
 /* Κλείσιμο αυλαίας + actBreak */
 function closeCurtainsSequence(){
@@ -817,28 +805,19 @@ document.getElementById('btnPause').addEventListener('click',()=>{ setMode(mode=
 document.getElementById('btnSlow') .addEventListener('click', ()=>{ resumeFromBubble('slow'); });
 document.getElementById('btnPlay') .addEventListener('click', ()=>{ resumeFromBubble('run');  });
 
-/* Επιλογή 2ης από πύλη */
+/* Επιλογή 2ης από πύλη — κρατάμε όργανα ενεργά */
 document.getElementById('btnAct2').addEventListener('click', ()=>{
   actBreak.style.display='none';
-  // ΣΤΗ 2η κρατάμε ρολόι/μετρήσεις/δείκτη για συγκρίσεις
   springEl.style.display='block';
   document.dispatchEvent(new CustomEvent('act2-start'));
 });
 
-/* Επιλογή 3ης από πύλη */
+/* Επιλογή 3ης από πύλη — ΠΡΑΞΗ 3 = ΦΟΥΑΓΙΕ */
 const btnAct3=document.getElementById('btnAct3');
 if(btnAct3){
   btnAct3.addEventListener('click', ()=>{
     actBreak.style.display='none';
-    // ΣΤΗΝ 3η κρύβουμε τα όργανα (θεωρητικό περιβάλλον)
-    try{
-      document.getElementById('clock').style.display='none';
-      document.getElementById('measureBox').style.display='none';
-      document.getElementById('paramsBox').style.display='none';
-      document.getElementById('xtChart').style.display='none';
-      document.getElementById('marker').style.opacity='0';
-    }catch(_){}
-    try{ document.dispatchEvent(new CustomEvent('act3-start')); }catch(_){}
+    foyerOpen();                 // ενιαία είσοδος
   });
 }
 
@@ -903,7 +882,7 @@ startBtn.addEventListener('click', startShowCountdown);
 
 /* Παρατηρητής μεγέθους */
 const ro=new ResizeObserver(()=>{ positionRightPanel();
-  if(uXT){ drawXTChart(); } else if(document.getElementById('xtFallback')){ drawFallbackOnce(); }
+  if(uXT){ drawXTChart(); }
   positionLawCharts(); positionParamsBox();
 });
 ro.observe(stage);
@@ -914,7 +893,7 @@ ro.observe(stage);
   const miss=Object.entries(must).filter(([k,v])=>!v).map(([k])=>k);
   if(miss.length) console.error('Λείπουν στοιχεία:', miss.join(', ')); else console.log('Self-check OK');
 })();
-setTimeout(()=>{ if(!window.uPlot && graphEnabled){ renderXTCanvasFallback(); } }, 2500);
+setTimeout(()=>{ if(!window.uPlot && graphEnabled){ /* noop fallback */ } }, 2500);
 
 /* Αρχικοποίηση */
 setLang('gr');
@@ -958,7 +937,7 @@ resetShow();
 </script>
 <!-- === End A1 JSON Adapter === -->
 
-<!-- ====== ΦΟΥΑΓΙΕ ΛΟΓΙΚΗ (inline) ====== -->
+<!-- ====== ΦΟΥΑΓΙΕ = ΠΡΑΞΗ 3 (ΕΝΟΠΟΙΗΜΕΝΟ) ====== -->
 <script>
 /* Χρώματα/ονόματα θεατών */
 const FOYER_VIEWERS = [
@@ -969,13 +948,17 @@ const FOYER_VIEWERS = [
   { id:5, name:'ΘΕΑΤΗΣ 5', color:'#c77dff' },
 ];
 
-/* ΚΕΙΜΕΝΑ PDF (ασφαλής μορφή με \n) */
+/* ΚΕΙΜΕΝΑ PDF 1:1 + προαιρετικό acts:[2|3] για chips στο board */
 const FOYER_SCRIPT = [
-  { viewer:1, text:"Θεατής 1: Οι (1), (2), (3) και (5) μας βοηθούν να «προφητεύουμε» τη θέση, την ταχύτητα, την επιτάχυνση και την συνολική δύναμη που δέχεται κάθε στιγμή ο (m1 ,D1) χωρίς να χρειαστεί να ξαναμπούμε για τη συνέχεια της παράστασης!" },
-  { viewer:3, text:"Θεατής 2: Η (3)’ και η (6)  όμως μας βοηθούν να … «προφητεύουμε» την επιτάχυνση και την συνολική δύναμη που δέχεται αρκεί να ξέρουμε σε ποιο σημείο της σκηνής βρίσκεται ο (m1 ,D1)  χωρίς φυσικά και αναγκαστικά να συνεχίσουμε να είμαστε θεατές!" },
-  { viewer:4, text:"Θεατής 3: Λοιπόν!\n1.\tΔιαπιστώνουμε αγαπητοί μου ότι δεν μπορούμε προς το παρόν να «προφητέψουμε» κάτι ανάλογο με αυτό που συμπεραίνει εδώ ο θεατής 2 για την ταχύτητα και τη σχέση της με τη θέση του (m1 ,D1).\n2.\tΣκέφτομαι ότι αυτά που είδαμε γενικεύονται για κάθε  πρωταγωνιστή (m,D) σε ανάλογη Παράσταση ΑΑΤ.\n3.\tΩς γνώστες όμως της …Αλγεβρικής και με λίγη “αλγεβρική περιέργεια” να τι μπορούμε να κάνουμε (και γενικεύοντας, αναφερόμενοι πλέον στον τυχαίο (m,D)) για να καλύψουμε και το κενό 1.:\n✔ Λύνουμε την (1) ως προς ημ(ωt+φ0) και υψώνουμε στο τετράγωνο. Το ίδιο με την (2) ως προς συν(ωt+φ0) και υψώνουμε στο τετράγωνο. Κατόπιν προσθέτουμε κατά μέλη." },
-  { viewer:2, text:"Θεατής 4: Θα ήταν καλύτερα αν την (8) την φέρναμε στη μορφή υ= κ.λ.π. Δείτε:" },
-  { viewer:5, text:"Θεατής 1: Το σημείο στο οποίο διέκοψα είχε γραφτεί ω^2 Α^2=ω^2 x^2+υ^2. Σκέφτομαι λοιπόν τα εξής:\nΑν πολλαπλασιάσουμε και τα δύο μέλη με ½m, δείτε! η σχέση γράφεται □(1/2) mω^2 Α^2= □(1/2) mω^2 x^2+ □(1/2) mυ^2 (12) Μα:\n\t• Ο παράγοντας □(1/2) mυ^2 είναι η κινητική ενέργεια K του … πρωταγωνιστή (m,D)\n\t• Ο παράγοντας αυτός προστίθεται στον □(1/2) mω^2 x^2 ο οποίος δεν μπορεί παρά να είναι και αυτός ενέργεια! (πρόσθεση κάνουμε ανάμεσα σε ομοειδή). Εξαρτάται από τη θέση άρα παριστάνει τη Δυναμική Ενέργεια U του (m,D)!\n\t• Έτσι ο □(1/2) mω^2 Α^2 του πρώτου μέλους:\n\t  1) είναι η Μηχανική Ενέργεια ΕΜ του (m,D)\n\t  2) ταυτόχρονα, ως μορφή με Α, παριστάνει Umax του (m,D)\n\t  3) σταθερή ποσότητα ⇒ οδηγεί σε «Α.Δ.Μ.Ε.Τ.» για τον ταλαντωτή (m,D)." }
+  { viewer:1, text:"Θεατής 1: Οι (1), (2), (3) και (5) μας βοηθούν να «προφητεύουμε» τη θέση, την ταχύτητα, την επιτάχυνση και την συνολική δύναμη που δέχεται κάθε στιγμή ο (m1 ,D1) χωρίς να χρειαστεί να ξαναμπούμε για τη συνέχεια της παράστασης!", acts:[2] },
+
+  { viewer:3, text:"Θεατής 2: Η (3)’ και η (6)  όμως μας βοηθούν να … «προφητεύουμε» την επιτάχυνση και την συνολική δύναμη που δέχεται αρκεί να ξέρουμε σε ποιο σημείο της σκηνής βρίσκεται ο (m1 ,D1)  χωρίς φυσικά και αναγκαστικά να συνεχίσουμε να είμαστε θεατές!", acts:[3] },
+
+  { viewer:4, text:"Θεατής 3: Λοιπόν!\n1.\tΔιαπιστώνουμε αγαπητοί μου ότι δεν μπορούμε προς το παρόν να «προφητέψουμε» κάτι ανάλογο με αυτό που συμπεραίνει εδώ ο θεατής 2 για την ταχύτητα και τη σχέση της με τη θέση του (m1 ,D1)  .\n2.\tΣκέφτομαι ότι αυτά που είδαμε γενικεύονται για κάθε  πρωταγωνιστή (m,D) σε ανάλογη Παράσταση ΑΑΤ.\n3.\tΩς γνώστες όμως της …Αλγεβρικής και με λίγη “αλγεβρική περιέργεια” να τι μπορούμε να κάνουμε (και γενικεύοντας, αναφερόμενοι πλέον στον τυχαίο (m,D)) για να καλύψουμε και το κενό 1.:\n✔\tΛύνουμε την (1) ως προς το ημ(ωt+φ0) και υψώνουμε τη σχέση στο τετράγωνο. Κάνουμε το ίδιο με την (2) λύνοντας ως προς συν(ωt+φ0) και υψώνουμε τη νέα σχέση στο τετράγωνο. Στη συνέχεια προσθέτουμε κατά μέλη τις σχέσεις που προκύπτουν.", acts:[3] },
+
+  { viewer:2, text:"Θεατής 4: Θα ήταν καλύτερα αν την (8) την φέρναμε στη μορφή υ= κ.λ.π. Δείτε:", acts:[3] },
+
+  { viewer:5, text:"Θεατής 1: Το σημείο στο οποίο διέκοψα είχε γραφτεί ω^2 Α^2=ω^2 x^2+υ^2. Σκέφτομαι λοιπόν τα εξής: \nΑν πολλαπλασιάσουμε και τα δύο μέλη με ½m, δείτε! η σχέση γράφεται □(1/2) mω^2 Α^2= □(1/2) mω^2 x^2+ □(1/2) mυ^2 (12) Μα: \n\tΟ παράγοντας □(1/2) mυ^2 είναι η κινητική ενέργεια K του … πρωταγωνιστή (m,D)\n\tΟ παράγοντας αυτός προστίθεται στον □(1/2) mω^2 x^2 ο οποίος δεν μπορεί παρά να είναι και αυτός ενέργεια! (πρόσθεση κάνουμε έλεγε η δασκάλα μου ανάμεσα σε ομοειδή: πορτοκάλια με πορτοκάλια και λεμόνια με λεμόνια, όχι πορτοκάλια με λεμόνια!). Όμως ο παράγοντας αυτός εξαρτάται από τη θέση του πρωταγωνιστή άρα δεν μπορεί παρά να παριστάνει τη Δυναμική του Ενέργεια U (λόγω θέσης που λέμε!) του πρωταγωνιστή (m,D)! \n\tΈτσι ο παράγοντας □(1/2) mω^2 Α^2 του πρώτου μέλους\n\tΠρώτον δεν μπορεί παρά ως άθροισμα Κινητικής και Δυναμικής ενέργειας να «παριστάνει» τη μηχανική ενέργεια ΕΜ του πρωταγωνιστή  (m,D) που δεν μπορεί παρά αυτή να του παραχώρησε ο σκηνοθέτης ΕΜ. Ενεργειούλης για απόψε και\n\tΔεύτερον συγκρίνοντας τη μορφή του με τη μορφή της δυναμικής ενέργειας (□(1/2) mω^2 x^2) (παρατηρούμε σ αυτόν τη μέγιστη τιμή της απομάκρυνσης του πρωταγωνιστή από το κέντρο της σκηνής). Άρα ο παράγοντας □(1/2) mω^2 Α^2 παριστάνει και την μέγιστη Δυναμική Ενέργεια Umax του πρωταγωνιστή (m,D) (με ότι αυτό μπορεί να σημαίνει(;))!\n\tΤρίτον ως σταθερή ποσότητα Μηχανικής Ενέργειας, στην παραπάνω σχέση (12) μας οδηγεί στο συμπέρασμα, ότι ισχύει για τον (m,D) «κάτι σαν» Αρχή Διατήρησης της Μηχανικής Ενέργειας του …πρωταγωνιστή Ταλαντωτή(m,D)! (Α.Δ.Μ.Ε.Τ.)", acts:[3] }
 ];
 
 const foyer=document.getElementById('foyer');
@@ -1021,7 +1004,7 @@ function foyerShowBubble(vId, text){
   if(!slot) return;
   const vInfo = FOYER_VIEWERS.find(v=>v.id===vId);
   const bubble = slot.querySelector('.foyer-bubble');
-  bubble.querySelector('.text').innerText = text; // plain text για αποφυγή HTML
+  bubble.querySelector('.text').innerText = text; // ασφαλές
   bubble.style.backgroundColor = tint(vInfo.color,0.92);
   bubble.style.display='block';
   const len = text.length;
@@ -1029,16 +1012,43 @@ function foyerShowBubble(vId, text){
   setTimeout(()=>{ bubble.style.display='none'; }, dur*1000);
 }
 
-function boardAppend(vId, text){
+/* Γράψε γραμμή στον πίνακα, με συνοδευτικές ΠΡΑΞΕΙΣ ως chips */
+function boardAppend(vId, text, actsArr){
   const v = FOYER_VIEWERS.find(x=>x.id===vId);
   const line=document.createElement('div');
   line.className='board-line';
   line.style.borderLeftColor = v.color;
   line.style.background = `linear-gradient(90deg, ${tint(v.color,0.18)} 0%, transparent 70%)`;
+
   const sp=document.createElement('span');
   sp.className='speaker'; sp.textContent=v.name+':';
   line.appendChild(sp);
   line.appendChild(document.createTextNode(' '+text));
+
+  if(Array.isArray(actsArr) && actsArr.length){
+    const actsBox=document.createElement('div');
+    actsBox.className='board-actions';
+    actsArr.forEach(a=>{
+      const chip=document.createElement('div');
+      chip.className='chip';
+      if(a===2){ chip.innerHTML='🎭 <b>Πράξη 2</b>'; chip.dataset.act='2'; }
+      else if(a===3){ chip.innerHTML='🧠 <b>Πράξη 3</b>'; chip.dataset.act='3'; }
+      else { chip.textContent = a+''; }
+      chip.addEventListener('click', ()=>{
+        if(chip.dataset.act==='2'){
+          foyerClose();
+          springEl.style.display='block';     // όργανα ενεργά στη 2η
+          document.dispatchEvent(new CustomEvent('act2-start',{detail:{from:'foyer'}}));
+        }else if(chip.dataset.act==='3'){
+          // ήδη σε Πράξη 3, απλώς ενημέρωσε τον act3.js ότι υπάρχει νέα «ενότητα»
+          try{ document.dispatchEvent(new CustomEvent('act3-action',{detail:{from:'chip'}})); }catch(_){}
+        }
+      });
+      actsBox.appendChild(chip);
+    });
+    line.appendChild(actsBox);
+  }
+
   board.appendChild(line);
   board.scrollTop = board.scrollHeight;
 }
@@ -1048,7 +1058,7 @@ function foyerStep(dir){
   if(dir<0 && foyerIdx<=0){ foyerIdx=0; return; }
   const item = (dir>0) ? FOYER_SCRIPT[foyerIdx++] : FOYER_SCRIPT[--foyerIdx];
   foyerShowBubble(item.viewer, item.text);
-  boardAppend(item.viewer, item.text);
+  boardAppend(item.viewer, item.text, item.acts);
   if(foyerAuto && foyerIdx<FOYER_SCRIPT.length){
     const delay = Math.max(2.2, Math.min(10, 0.8 + 0.055*item.text.length)) + 0.6;
     foyerAutoTimer = setTimeout(()=>foyerStep(+1), delay*1000);
@@ -1057,11 +1067,13 @@ function foyerStep(dir){
   }
 }
 
+/* === ΕΝΟΠΟΙΗΜΕΝΗ ΠΡΑΞΗ 3 === */
 function foyerOpen(){
   foyer.style.display='block';
   foyerIdx=0; foyerAuto=false; btnAuto.textContent='Auto ▷';
   if(foyerAutoTimer){ clearTimeout(foyerAutoTimer); foyerAutoTimer=null; }
   board.innerHTML='';
+  try{ document.dispatchEvent(new CustomEvent('act3-start',{detail:{source:'foyerOpen'}})); }catch(_){}
 }
 function foyerClose(){
   foyer.style.display='none';
@@ -1073,8 +1085,9 @@ function foyerClose(){
 window.foyerOpen = foyerOpen;
 window.foyerClose = foyerClose;
 
-/* Auto άνοιγμα στο τέλος Πράξης 2, αν σταλεί event */
-document.addEventListener('act2-ended', ()=>{ foyerOpen(); });
+/* Triggers προς/από άλλες πράξεις */
+document.addEventListener('act2-ended', ()=>{ foyerOpen(); });   // τέλους 2ης ⇒ άνοιγμα Φουαγιέ (Πρ.3)
+document.addEventListener('act3-start', ()=>{ /* act3.js μπορεί να σετάρει δικά του */ });
 
 btnFoyer.addEventListener('click', foyerOpen);
 btnClose.addEventListener('click', foyerClose);
@@ -1102,34 +1115,20 @@ document.addEventListener('keydown', (e)=>{
 <script src="act2.js"></script>
 <script src="act3.js"></script>
 
-<!-- Foyer glue (fallback + listeners) -->
+<!-- Ελαφρύ glue συμβατότητας: ΟΤΙΔΗΠΟΤΕ ζητήσει act3 ⇒ άνοιγμα Φουαγιέ -->
 <script>
 (function () {
   'use strict';
   if (typeof window.foyerOpen !== 'function') {
-    const pickOverlay = () =>
-      document.getElementById('foyerOverlay') ||
-      document.getElementById('act3-root');
     window.foyerOpen = function () {
-      const ov = pickOverlay();
-      if (ov) { ov.hidden = false; ov.style.display = 'block'; }
+      const el = document.getElementById('foyer');
+      if (el) { el.style.display = 'block'; }
       try { document.dispatchEvent(new Event('act3-start')); } catch(_) {}
     };
   }
-  if (typeof window.foyerClose !== 'function') {
-    const pickOverlay = () =>
-      document.getElementById('foyerOverlay') ||
-      document.getElementById('act3-root');
-    window.foyerClose = function () {
-      const ov = pickOverlay();
-      if (ov) { ov.hidden = true; ov.style.display = 'none'; }
-    };
-  }
-  ['act2-ended','act2:ended','actII-ended'].forEach(evt => {
-    document.addEventListener(evt, () => window.foyerOpen());
-  });
-  window.foyerOpen  = window.foyerOpen;
-  window.foyerClose = window.foyerClose;
+  ['act3','act3-start','act3:open','open-foyer'].forEach(evt =>
+    document.addEventListener(evt, () => window.foyerOpen())
+  );
 })();
 </script>
 
