@@ -371,22 +371,4 @@
   }
   window.__forceAct2Start = playAct2; // debug
 })();
-document.dispatchEvent(new Event('act2-ended'));
-// 2η πράξη: καθάρισμα πριν έξοδο
-// Σβήσιμο δείκτη θέσης στο κλείσιμο Πράξης 2 (όπως ζήτησες)
-try {
-  const marker = document.getElementById('marker');
-  if (marker) marker.style.opacity = '0';
-} catch(_) {}
-
-// Dispatch μετά από μικρό delay (να τελειώσουν τα animations)
-setTimeout(() => {
-  try {
-    document.dispatchEvent(new Event('act2-ended'));
-    console.log('[Act2] dispatched act2-ended');
-  } catch (e) {
-    console.error('act2-ended dispatch failed', e);
-  }
-}, 600);
-
 
