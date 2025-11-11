@@ -32,6 +32,7 @@
 
   /* Spring / Skater / Πάτωμα */
   .spring{position:absolute;bottom:calc(32vh + 82px);left:10%;height:96px;width:auto;z-index:90;pointer-events:none;filter:drop-shadow(0 4px 6px rgba(0,0,0,.55));transform-origin:left center;opacity:1;display:none}
+  .spring.ghost{opacity:.55;filter:drop-shadow(0 4px 6px rgba(0,0,0,.45)) saturate(.8)}
   .actor{position:absolute;bottom:calc(32vh + 133px);left:50%;width:144px;height:96px;transform:translate(-50%,0);z-index:110;pointer-events:none;opacity:1}
   .actor img{width:100%;height:auto;display:block;filter:drop-shadow(0 4px 6px rgba(0,0,0,.6))}
   .floor{position:absolute;left:0;bottom:calc(32vh - 8px);width:100%;height:2px;background:#888;z-index:155;pointer-events:none}
@@ -128,23 +129,23 @@
   .actbreak{position:absolute;background:rgba(0,0,0,.55);color:#fff;z-index:410;display:none;align-items:center;justify-content:center;text-align:center}
 
   /* ====== ΦΟΥΑΓΙΕ (Act 3) ====== */
-  .foyer{position:absolute;left:18%; /* θα υπολογιστεί και με JS */ width:82%; /* μέχρι δεξί άκρο */ top:0; height:0; z-index:500; display:none}
+  .foyer{position:absolute;left:18%;width:82%;top:0;height:0;z-index:500;display:none}
   .foyer .wrap{position:absolute;inset:0;display:grid;grid-template-columns:1fr}
   .blackboard{
     background:#0d2a1e url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%228%22 height=%228%22><circle cx=%224%22 cy=%224%22 r=%221%22 fill=%22rgba(255,255,255,0.03)%22/></svg>') repeat;
     border:2px solid rgba(255,255,255,.15);
     border-radius:12px; box-shadow:inset 0 0 30px rgba(0,0,0,.6);
     color:#fff; padding:8px 10px; overflow:auto; scroll-behavior:smooth;
-    font-size:13px; line-height:1.35; /* λίγο μικρότερα */
+    font-size:13px; line-height:1.35;
   }
   .board-grid{display:grid;grid-template-columns:minmax(220px,1fr) minmax(160px,.75fr); gap:6px}
-  .board-row{display:contents}
+  .board-row{display:none} /* semantic spacer */
   .board-thought, .board-math{
     margin:0; padding:6px 8px; border-left:6px solid transparent; border-radius:6px;
     background:rgba(255,255,255,.05)
   }
-  .board-thought{font-size:12px; line-height:1.35}   /* αριστερή στήλη λίγο μικρότερη */
-  .board-math{font-family:"Courier New",monospace; font-size:13px}
+  .board-thought{font-size:12px; line-height:1.35}
+  .board-math{font-family:"Courier New",monospace; font-size:13px; line-height:1.35}
   .foyer-ctrls{display:flex;gap:8px;position:absolute;right:8px;top:8px;z-index:1}
   .foyer-ctrls button{background:#700;color:#fff;border:none;border-radius:8px;padding:8px 10px;font-size:14px;cursor:pointer}
 
@@ -176,7 +177,7 @@
       <div class="sb-lineD" id="sbLineD">(*) ... εσείς</div>
     </div>
 
-    <!-- Παράμετροι -->
+    <!-- Παράμετροι A, ω, φ0 -->
     <div class="params-box" id="paramsBox">
       <div class="param" id="paramA"></div>
       <div class="param" id="paramW"></div>
@@ -194,7 +195,7 @@
     </div>
     <div id="xtChart"></div>
 
-    <!-- Νόμοι (μένουν ορατοί) -->
+    <!-- Νόμοι -->
     <div class="laws" id="laws">
       <h4 id="lawsTitle">—</h4>
       <ol id="lawsList"></ol>
@@ -205,7 +206,7 @@
     <div class="ruler" id="ruler"></div>
     <div class="marker" id="marker"><div class="marker-line"></div><div class="marker-tip"></div></div>
 
-    <!-- Bubble -->
+    <!-- Bubbles -->
     <div class="thought-bubble" id="bubble0"><div class="text"></div><div class="checkmark">✓</div><div class="tail"></div></div>
 
     <!-- Κοντρόλς -->
@@ -242,6 +243,8 @@
 
     <!-- Εικόνες & Πάτωμα & Κοινό -->
     <img id="spring" class="spring" src="spring.png" alt="ελατήριο">
+    <!-- ΕΛΑΤΗΡΙΟ GHOST (ακολουθεί το ghost αν υπάρχει) -->
+    <img id="springGhost" class="spring ghost" src="spring.png" alt="ελατήριο (ghost)" style="display:none">
     <div class="actor" id="actor"><img src="skater.png" alt="Skater"></div>
     <div class="floor"></div>
     <img class="audience" src="koino.png" alt="κοινό">
@@ -377,6 +380,7 @@ function localizeTrig(txt){
 const stage=document.getElementById('stage');
 const actor=document.getElementById('actor');
 const springEl=document.getElementById('spring');
+const springGhost=document.getElementById('springGhost');
 const spotlight=document.getElementById('spotlight');
 const startBtn=document.getElementById('startBtn');
 const clockEl=document.getElementById('clock');
@@ -415,10 +419,7 @@ const btnNext=document.getElementById('foyerNext');
 const btnAuto=document.getElementById('foyerAuto');
 const btnClose=document.getElementById('foyerClose');
 
-/* ====== ΔΙΑΣΤΑΣΙΟΛΟΓΗΣΗ ΦΟΥΑΓΙΕ/ΠΙΝΑΚΑ ======
-   Πλάτος: από το 18% (μετά τους νόμους) έως το δεξί άκρο => 82% του stage
-   Ύψος: από την κορυφή της οθόνης έως το κάτω όριο της κινητής κουρτίνας
-*/
+/* ====== ΔΙΑΣΤΑΣΙΟΛΟΓΗΣΗ ΦΟΥΑΓΙΕ/ΠΙΝΑΚΑ ====== */
 function sizeFoyerToCurtain(){
   if(!foyer || !curtainUpper || !stage) return;
   const sRect = stage.getBoundingClientRect();
@@ -596,7 +597,7 @@ function animate(now){
   const springRect=springEl.getBoundingClientRect();
   const skRect=actor.getBoundingClientRect();
   if(!L0_px && springRect.width>0){ L0_px=springRect.width; }
-  if(skRect.width>0){ skaterWidthPx=skRect.width; hookOffsetPx=skaterWidthPx/2; }
+  if(skRect.width>0){ skaterWidthPx=skRect.width; hookOffsetPx=skRect.width/2; }
 
   { // δέσιμο + spotlight + δείκτης
     const ax=anchorX();
@@ -615,9 +616,28 @@ function animate(now){
     logMeasurement(tObs,xMeters);
   }
 
+  updateGhostSpring(); /* === ghost spring follow === */
+
   requestAnimationFrame(animate);
 }
 requestAnimationFrame(animate);
+
+/* GHOST SPRING FOLLOWER (αν υπάρχει element #ghost στη σκηνή από act2.js) */
+function updateGhostSpring(){
+  if(!springGhost) return;
+  const ghost = document.getElementById('ghost') || document.querySelector('.actor.ghost');
+  if(!ghost){ springGhost.style.display='none'; return; }
+  const sRect=stage.getBoundingClientRect();
+  const gRect=ghost.getBoundingClientRect();
+  if(gRect.width<=0 || gRect.height<=0){ springGhost.style.display='none'; return; }
+  const ax = anchorX();
+  const ghostHookX = (gRect.left + gRect.width/2) - sRect.left;
+  const baseW = L0_px || springEl.getBoundingClientRect().width || 100;
+  const scale = baseW ? ((ghostHookX - ax)/baseW) : 1;
+  springGhost.style.left = ax+'px';
+  springGhost.style.transform = `scaleX(${scale})`;
+  springGhost.style.display='block';
+}
 
 /* Bubbles */
 const BASE_BUBBLE_LIFT=96;
@@ -847,6 +867,7 @@ function resetShow(){
   const fb=document.getElementById('xtFallback'); if(fb) fb.remove();
   xtChart.style.display='none';
   springEl.style.display='none';
+  if(springGhost) springGhost.style.display='none';
   t0=performance.now(); lastFrame=t0; playbackTime=0;
 }
 document.getElementById('btnReset').addEventListener('click', resetShow);
@@ -890,7 +911,7 @@ new MutationObserver(()=>sizeFoyerToCurtain()).observe(stage,{attributes:true,at
 
 /* Self-check */
 (function(){
-  const must={stage,actor,springEl,startBtn,clockEl,rulerEl,markerEl,bubbleEl,btnPause,btnSlow,btnPlay,btnSettings,btnReset,settingsPanel,xtChart,paramsBoxEl,lawsPane,lawCharts,measureBox,actBreak,spotlight,curtainUpper,foyer,board,boardGrid};
+  const must={stage,actor,springEl,startBtn,clockEl,rulerEl,markerEl,bubbleEl,btnPause,btnSlow,btnPlay,btnSettings,btnReset,settingsPanel,xtChart,paramsBoxEl,lawsPane,lawCharts,measureBox,actBreak,spotlight,curtainUpper,foyer,board,boardGrid,springGhost};
   const miss=Object.entries(must).filter(([k,v])=>!v).map(([k])=>k);
   if(miss.length) console.error('Λείπουν στοιχεία:', miss.join(', ')); else console.log('Self-check OK');
 })();
@@ -940,7 +961,7 @@ sizeFoyerToCurtain();
 
 <!-- ====== ΦΟΥΑΓΙΕ ΛΟΓΙΚΗ (Act 3 = Foyer) ====== -->
 <script>
-/* Θεατές για χρωματισμό γραμμών */
+/* Χαρτογράφηση θεατών (για χρώμα + pulse στη σκηνή) */
 const FOYER_VIEWERS = [
   { id:1, name:'ΘΕΑΤΗΣ 1', color:'#ff6b6b', stageIdx:0 },
   { id:2, name:'ΘΕΑΤΗΣ 2', color:'#ffd166', stageIdx:1 },
@@ -949,34 +970,32 @@ const FOYER_VIEWERS = [
   { id:5, name:'ΘΕΑΤΗΣ 5', color:'#c77dff', stageIdx:4 },
 ];
 
-/* Σενάριο: δύο στήλες (left: σκέψη, right: συμβολική μορφή) */
+/* ====== SCRIPT: Αριστερά (σκέψη) + Δεξιά (αλγεβρική μορφή από PDF) ====== */
 const FOYER_SCRIPT = [
   { viewer:1,
-    left:`Θεατής 1: Οι (1), (2), (3) και (5) μας βοηθούν να «προφητεύουμε» τη θέση, την ταχύτητα, την επιτάχυνση και την συνολική δύναμη που δέχεται κάθε στιγμή ο (m1 ,D1) χωρίς να χρειαστεί να ξαναμπούμε για τη συνέχεια της παράστασης!`,
-    right:`` },
+    left:`Θεατής 1: Οι (1), (2), (3) και (5) μας βοηθούν να «προφητεύουμε» τη θέση, την ταχύτητα, την επιτάχυνση και τη συνολική δύναμη που δέχεται κάθε στιγμή ο (m₁ ,D₁)…`,
+    right:`(1) x(t)=A·ημ(ωt+φ₀)<br>
+           (2) v(t)=ωA·συν(ωt+φ₀)<br>
+           (3) a(t)=−ω²A·ημ(ωt+φ₀)=−ω²x(t)<br>
+           (5) ΣF=ma=−mω²x=−Dx, με D=mω².` },
   { viewer:3,
-    left:`Θεατής 2: Η (3)’ και η (6)  όμως μας βοηθούν να … «προφητεύουμε» την επιτάχυνση και την συνολική δύναμη που δέχεται αρκεί να ξέρουμε σε ποιο σημείο της σκηνής βρίσκεται ο (m1 ,D1)  χωρίς φυσικά και αναγκαστικά να συνεχίσουμε να είμαστε θεατές!`,
-    right:`` },
+    left:`Θεατής 2: Η (3)’ και η (6) μας δίνουν άμεσα επιτάχυνση και συνολική δύναμη αν ξέρουμε τη θέση του (m₁ ,D₁)…`,
+    right:`(3)’ a(x)=−ω²x<br>
+           (6)  ΣF(x)=−Dx,  D=mω².` },
   { viewer:4,
-    left:`Θεατής 3: Λοιπόν! 
-1. Διαπιστώνουμε αγαπητοί μου ότι δεν μπορούμε προς το παρόν να «προφητέψουμε» κάτι ανάλογο με αυτό που συμπεραίνει εδώ ο θεατής 2 για την ταχύτητα και τη σχέση της με τη θέση του (m1 ,D1).
-2. Σκέφτομαι ότι αυτά που είδαμε γενικεύονται για κάθε πρωταγωνιστή (m,D) σε ανάλογη Παράσταση ΑΑΤ. 
-3. Ως γνώστες όμως της …Αλγεβρικής και με λίγη “αλγεβρική περιέργεια” να τι μπορούμε να κάνουμε (και γενικεύοντας, αναφερόμενοι πλέον στον τυχαίο (m,D)) για να καλύψουμε και το κενό 1.:
-✓ Λύνουμε την (1) ως προς το ημ(ωt+φ0) και υψώνουμε τη σχέση στο τετράγωνο. Κάνουμε το ίδιο με την (2) λύνοντας ως προς συν(ωt+φ0) και υψώνουμε τη νέα σχέση στο τετράγωνο. Στη συνέχεια προσθέτουμε κατά μέλη τις σχέσεις που προκύπτουν.`,
-    right:`` },
+    left:`Θεατής 3: Για να καλύψουμε το κενό για την ταχύτητα σε συνάρτηση με τη θέση, κάνουμε την αλγεβρική επεξεργασία: λύνουμε (1) και (2), υψώνουμε στο τετράγωνο και αθροίζουμε κατά μέλη…`,
+    right:`Από (1): &nbsp; (x/A)=ημ(ωt+φ₀) ⇒ (x/A)²=ημ²(ωt+φ₀)<br>
+           Από (2): &nbsp; v/(ωA)=συν(ωt+φ₀) ⇒ (v/ωA)²=συν²(ωt+φ₀)<br>
+           Άθρ.: &nbsp;&nbsp;&nbsp; 1=ημ²+συν²=(x/A)²+(v/ωA)²<br>
+           ⇒ ω²A²=ω²x²+v²` },
   { viewer:2,
-    left:`Θεατής 4: Θα ήταν καλύτερα αν την (8) την φέρναμε στη μορφή υ= κ.λ.π. Δείτε:`,
-    right:`` },
+    left:`Θεατής 4: Ας φέρουμε τη (8) στη μορφή υ=f(x).`,
+    right:`(8) &nbsp; v=±ω·√(A²−x²)` },
   { viewer:5,
-    left:`Θεατής 1: Το σημείο στο οποίο διέκοψα είχε γραφτεί ω^2 Α^2=ω^2 x^2+υ^2. Σκέφτομαι λοιπόν τα εξής: 
-Αν πολλαπλασιάσουμε και τα δύο μέλη με ½m, δείτε! η σχέση γράφεται □(1/2) mω^2 Α^2= □(1/2) mω^2 x^2+ □(1/2) mυ^2 (12) Μα: 
-  Ο παράγοντας □(1/2) mυ^2 είναι η κινητική ενέργεια K του … πρωταγωνιστή (m,D)
-  Ο παράγοντας αυτός προστίθεται στον □(1/2) mω^2 x^2 ο οποίος δεν μπορεί παρά να είναι και αυτός ενέργεια! (πρόσθεση κάνουμε έλεγε η δασκάλα μου ανάμεσα σε ομοειδή: πορτοκάλια με πορτοκάλια και λεμόνια με λεμόνια, όχι πορτοκάλια με λεμόνια!). Όμως ο παράγοντας αυτός εξαρτάται από τη θέση του πρωταγωνιστή άρα δεν μπορεί παρά να παριστάνει τη Δυναμική του Ενέργεια U (λόγω θέσης που λέμε!) του πρωταγωνιστή (m,D)! 
-  Έτσι ο παράγοντας □(1/2) mω^2 Α^2 του πρώτου μέλους
-  Πρώτον δεν μπορεί παρά ως άθροισμα Κινητικής και Δυναμικής ενέργειας να «παριστάνει» τη μηχανική ενέργεια ΕΜ του πρωταγωνιστή  (m,D) που δεν μπορεί παρά αυτή να του παραχώρησε ο σκηνοθέτης ΕΜ. Ενεργειούλης για απόψε και
-  Δεύτερον συγκρίνοντας τη μορφή του με τη μορφή της δυναμικής ενέργειας (□(1/2) mω^2 x^2) (παρατηρούμε σ αυτόν τη μέγιστη τιμή της απομάκρυνσης του πρωταγωνιστή από το κέντρο της σκηνής). Άρα ο παράγοντας □(1/2) mω^2 Α^2 παριστάνει και την μέγιστη Δυναμική Ενέργεια Umax του πρωταγωνιστή (m,D) (με ότι αυτό μπορεί να σημαίνει(;))!
-  Τρίτον ως σταθερή ποσότητα Μηχανικής Ενέργειας, στην παραπάνω σχέση (12) μας οδηγεί στο συμπέρασμα, ότι ισχύει για τον (m,D) «κάτι σαν» Αρχή Διατήρησης της Μηχανικής Ενέργειας του …πρωταγωνιστή Ταλαντωτή(m,D)! (Α.Δ.Μ.Ε.Τ.)`,
-    right:`` }
+    left:`Θεατής 1: Πολλαπλασιάζοντας με ½m: ω²A²=ω²x²+v² ⇒ ½mω²A²=½mω²x²+½m v². Αναγνωρίζουμε ενέργειες και προκύπτει Α.Δ.Μ.Ε.Τ.`,
+    right:`K=½m v², &nbsp; U(x)=½mω²x²=½Dx²<br>
+           E=K+U=½mω²A²=σταθ.<br>
+           U<sub>max</sub>=½mω²A², &nbsp; D=mω².` }
 ];
 
 /* Χρώματα */
@@ -989,8 +1008,6 @@ function tint(hex, alpha){
 /* Πίνακας δύο στηλών */
 function boardAppend(vId, leftText, rightText){
   const v = FOYER_VIEWERS.find(x=>x.id===vId) || FOYER_VIEWERS[0];
-  const row = document.createElement('div'); row.className='board-row';
-
   const left = document.createElement('div');
   left.className='board-thought';
   left.style.borderLeftColor = v.color;
@@ -1003,14 +1020,13 @@ function boardAppend(vId, leftText, rightText){
   right.style.background = `linear-gradient(90deg, ${tint(v.color,0.10)} 0%, transparent 70%)`;
   right.innerHTML = rightText || '';
 
-  boardGrid.appendChild(row);
+  /* grid: προσθέτουμε σε σειρά (δύο κελιά ανά "γραμμή") */
   boardGrid.appendChild(left);
   boardGrid.appendChild(right);
-
   board.scrollTop = board.scrollHeight;
 }
 
-/* Highlight θεατή στη σκηνή (όχι overlay avatars) */
+/* Highlight θεατή στη σκηνή */
 function pulseStageViewer(vId, ms=1600){
   const v = FOYER_VIEWERS.find(x=>x.id===vId); if(!v) return;
   const el = document.querySelector(`.viewers .viewer[data-idx="${v.stageIdx}"]`);
@@ -1041,11 +1057,10 @@ function foyerOpen(){
   foyer.style.display='block';
   foyer.hidden=false;
 
-  // Σβήνουμε ΜΟΝΟ δεξιά (μετρήσεις/διάγραμμα). Οι νόμοι μένουν.
+  /* Σβήνουμε ΜΟΝΟ δεξιά (μετρήσεις/διάγραμμα). Οι νόμοι μένουν. */
   if(measureBox) measureBox.style.display='none';
   if(xtChart)    xtChart.style.display='none';
 
-  // reset state
   foyerIdx=0; foyerAuto=false; btnAuto.textContent='Auto ▷';
   if(foyerAutoTimer){ clearTimeout(foyerAutoTimer); foyerAutoTimer=null; }
   boardGrid.innerHTML='';
@@ -1072,12 +1087,11 @@ btnAuto.addEventListener('click', ()=>{
 /* Άνοιγμα φουαγιέ αυτόματα στο τέλος Πράξης 2 */
 document.addEventListener('act2-ended', ()=>{ foyerOpen(); });
 
-/* Συντόμευση πληκτρολογίου: F = Φουαγιέ */
+/* Συντόμευση: F */
 document.addEventListener('keydown', (e)=>{
   if(e.key.toLowerCase()==='f'){ foyer.style.display==='block' ? foyerClose() : foyerOpen(); }
 });
 </script>
-<!-- ====== ΤΕΛΟΣ ΦΟΥΑΓΙΕ ====== -->
 
 <!-- Main boot & adapters -->
 <script src="intro_boot.js"></script>
@@ -1097,13 +1111,14 @@ document.addEventListener('keydown', (e)=>{
   window.foyerOpen = window.foyerOpen || openF;
   window.foyerClose = window.foyerClose || closeF;
 
+  /* Όσα events υπήρχαν για Act3, ανοίγουν πλέον το Φουαγιέ */
   ['act3-open','act3:open','act3-start','act3:start','act3-show',
    'act2-ended','act2:ended','actII-ended'].forEach(evt=>{
     document.addEventListener(evt, ()=>window.foyerOpen());
   });
 
-  const ghost = document.getElementById('act3-root');
-  if (ghost) ghost.remove();
+  const ghostOverlay = document.getElementById('act3-root');
+  if (ghostOverlay) ghostOverlay.remove();
 })();
 </script>
 
