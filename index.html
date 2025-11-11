@@ -85,11 +85,11 @@
   .marker-line{position:absolute;left:50%;bottom:8px;width:2px;height:70px;background:#ffd27a;box-shadow:0 0 4px rgba(255,210,122,.8);transform:translateX(-50%)}
   .marker-tip{position:absolute;left:50%;bottom:0;width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:8px solid #ffd27a;filter:drop-shadow(0 2px 2px rgba(255,210,122,.8));transform:translateX(-50%)}
 
-  /* Bubble */
+  /* Bubble (ΜΕΙΩΜΕΝΟ ΜΕΓΕΘΟΣ) */
   @keyframes popIn{0%{transform:scale(.9);opacity:0}60%{transform:scale(1.04);opacity:1}100%{transform:scale(1)}}
   .thought-bubble{
     position:absolute;max-width:420px;background:rgba(255,255,255,.82);color:#000;
-    font-size:16px;line-height:1.5;padding:10px 12px 12px;
+    font-size:14px;line-height:1.4;padding:8px 10px 10px;
     border:2px solid transparent;border-radius:10px;
     border-image:repeating-linear-gradient(90deg, rgba(0,0,0,.6) 0 6px, transparent 6px 10px, rgba(0,0,0,.6) 10px 12px, transparent 12px 16px) 1;
     box-shadow:0 6px 12px rgba(0,0,0,.4);z-index:340;pointer-events:none;opacity:0;display:none;transition:opacity .25s ease, transform .25s ease
@@ -97,7 +97,7 @@
   .thought-bubble.active{opacity:1;transform:translateY(-2px);animation:popIn .25s ease}
   .thought-bubble.closing{opacity:0}
   .thought-bubble .tail{position:absolute;left:50%;bottom:-10px;transform:translateX(-50%);width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-top:10px solid rgba(255,255,255,.82);filter:drop-shadow(0 2px 2px rgba(0,0,0,.4))}
-  .thought-bubble .checkmark{position:absolute;top:-8px;right:-8px;background:#2ecc71;color:#fff;font-size:11px;line-height:1;border-radius:50%;border:1px solid rgba(0,0,0,.4);width:18px;height:18px;display:none;align-items:center;justify-content:center;font-family:system-ui,sans-serif;font-weight:600}
+  .thought-bubble .checkmark{position:absolute;top:-8px;right:-8px;background:#2ecc71;color:#fff;font-size:10px;line-height:1;border-radius:50%;border:1px solid rgba(0,0,0,.4);width:16px;height:16px;display:none;align-items:center;justify-content:center;font-family:system-ui,sans-serif;font-weight:600}
   .thought-bubble.checked .checkmark{display:flex}
 
   /* Controls & settings */
@@ -128,16 +128,16 @@
 
   /* ====== ΦΟΥΑΓΙΕ ====== */
   .foyer{position:absolute;left:18%;width:64%;top:12%;height:76%;z-index:500;display:none}
-  .foyer .wrap{position:absolute;inset:0;display:grid;grid-template-columns:1fr 300px;gap:12px}
+  .foyer .wrap{position:absolute;inset:0;display:grid;grid-template-columns:1fr;gap:12px} /* 1 στήλη = full-width board */
   .blackboard{
     background:#0d2a1e url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%228%22 height=%228%22><circle cx=%224%22 cy=%224%22 r=%221%22 fill=%22rgba(255,255,255,0.03)%22/></svg>') repeat;
     border:2px solid rgba(255,255,255,.15);
     border-radius:12px; box-shadow:inset 0 0 30px rgba(0,0,0,.6);
-    color:#fff; padding:10px 12px; overflow:auto; scroll-behavior:smooth;
-    font-size:16px; line-height:1.5;
+    color:#fff; padding:8px 10px; overflow:auto; scroll-behavior:smooth;
+    font-size:14px; line-height:1.4; /* ΜΕΙΩΜΕΝΟ ΜΕΓΕΘΟΣ */
   }
   .board-line{
-    margin:6px 0; padding:8px 10px; border-left:6px solid transparent; border-radius:6px;
+    margin:6px 0; padding:6px 8px; border-left:6px solid transparent; border-radius:6px;
     background:rgba(255,255,255,.05)
   }
   .board-line .speaker{font-weight:700; margin-right:6px}
@@ -146,15 +146,15 @@
     border-radius:12px; overflow:hidden
   }
   .foyer-audience{position:absolute;left:0;right:0;bottom:0;height:45%;object-fit:cover;opacity:.8;filter:grayscale(.2) contrast(1.1)}
-  .foyer-front{position:absolute;left:0;right:0;bottom:0;display:flex;justify-content:space-around;align-items:flex-end;padding:12px}
-  .foyer-viewer{width:68px;height:110px;background:url('https://upload.wikimedia.org/wikipedia/commons/f/f9/Silhouette_icon.svg') no-repeat center/contain;filter:brightness(.9);position:relative}
+  .foyer-front{position:absolute;left:0;right:0;bottom:0;display:flex;justify-content:space-around;align-items:flex-end;padding:10px}
+  .foyer-viewer{width:64px;height:104px;background:url('https://upload.wikimedia.org/wikipedia/commons/f/f9/Silhouette_icon.svg') no-repeat center/contain;filter:brightness(.9);position:relative}
   .foyer-tag{
-    position:absolute;left:50%;top:-18px;transform:translateX(-50%);
-    font-size:12px;font-weight:700;color:#fff;padding:2px 6px;border-radius:999px;border:1px solid rgba(255,255,255,.35);background:rgba(0,0,0,.5)
+    position:absolute;left:50%;top:-16px;transform:translateX(-50%);
+    font-size:11px;font-weight:700;color:#fff;padding:2px 6px;border-radius:999px;border:1px solid rgba(255,255,255,.35);background:rgba(0,0,0,.5)
   }
   .foyer-bubble{
     position:absolute;bottom:110px;left:50%;transform:translateX(-50%);
-    max-width:240px;background:rgba(255,255,255,.88);color:#000;border-radius:10px;padding:8px 10px;font-size:14px;line-height:1.45;box-shadow:0 6px 12px rgba(0,0,0,.35);display:none
+    max-width:240px;background:rgba(255,255,255,.88);color:#000;border-radius:10px;padding:6px 8px;font-size:12px;line-height:1.35;box-shadow:0 6px 12px rgba(0,0,0,.35);display:none
   }
   .foyer-bubble .tail{
     position:absolute;left:50%;bottom:-8px;transform:translateX(-50%);
@@ -189,7 +189,7 @@
       <div class="sb-lineD" id="sbLineD">(*) ... εσείς</div>
     </div>
 
-    <!-- Παράμετροι A, ω, φ0 (εμφανίζονται όταν έρθει η ώρα) -->
+    <!-- Παράμετροι A, ω, φ0 -->
     <div class="params-box" id="paramsBox">
       <div class="param" id="paramA"></div>
       <div class="param" id="paramW"></div>
@@ -301,9 +301,7 @@
             <button id="foyerAuto">Auto ▷</button>
             <button id="foyerClose">✕</button>
           </div>
-          <div class="foyer-front" id="foyerFront">
-            <!-- Γεμίζει από JS με 5 θεατές -->
-          </div>
+          <div class="foyer-front" id="foyerFront"></div>
         </div>
       </div>
     </div>
@@ -426,6 +424,26 @@ const measureBox=document.getElementById('measureBox');
 const measureTBody=document.getElementById('measureTBody');
 const actBreak=document.getElementById('actBreak');
 const curtainUpper=document.querySelector('.curtain-upper');
+const foyer=document.getElementById('foyer');
+
+/* ====== ΔΙΑΣΤΑΣΙΟΛΟΓΗΣΗ ΦΟΥΑΓΙΕ/ΠΙΝΑΚΑ ======
+   Πλάτος: όσο η "σκήνη" (κεντρική περιοχή) = 64% του stage
+   Ύψος: από το κάτω όριο της κινητής κουρτίνας έως το πάνω όριο της οθόνης
+   (δηλ. height = bottom(curtain-upper) - top(stage)=bottom(curtain-upper) σε px)
+*/
+function sizeFoyerToCurtain(){
+  if(!foyer || !curtainUpper || !stage) return;
+  const sRect = stage.getBoundingClientRect();
+  const cuRect = curtainUpper.getBoundingClientRect();
+  const centralLeft = stage.clientWidth*0.18;
+  const centralWidth = stage.clientWidth*0.64;
+  const curtainBottom = Math.max(0, Math.round(cuRect.bottom - sRect.top));
+
+  foyer.style.left = centralLeft + 'px';
+  foyer.style.width = centralWidth + 'px';
+  foyer.style.top = '0px';
+  foyer.style.height = curtainBottom + 'px';
+}
 
 /* Position helpers */
 function positionParamsBox(){
@@ -535,6 +553,7 @@ function positionRightPanel(){
   }
   positionLawCharts();
   positionParamsBox();
+  sizeFoyerToCurtain(); /* κρίσιμο: τηρούμε διαστάσεις φουαγιέ/πίνακα */
 }
 window.addEventListener('resize', positionRightPanel);
 
@@ -880,24 +899,26 @@ function startShowCountdown(){
 }
 startBtn.addEventListener('click', startShowCountdown);
 
-/* Παρατηρητής μεγέθους */
+/* Παρατηρητής μεγέθους + κουρτίνας (για το φουαγιέ) */
 const ro=new ResizeObserver(()=>{ positionRightPanel();
   if(uXT){ drawXTChart(); } else if(document.getElementById('xtFallback')){ drawFallbackOnce(); }
-  positionLawCharts(); positionParamsBox();
+  positionLawCharts(); positionParamsBox(); sizeFoyerToCurtain();
 });
 ro.observe(stage);
+/* Παρακολούθηση αλλαγών κλάσης stage (open/close) για σωστό ύψος φουαγιέ */
+new MutationObserver(()=>sizeFoyerToCurtain()).observe(stage,{attributes:true,attributeFilter:['class']});
 
 /* Self-check */
 (function(){
-  const must={stage,actor,springEl,startBtn,clockEl,rulerEl,markerEl,bubbleEl,btnPause,btnSlow,btnPlay,btnSettings,btnReset,settingsPanel,xtChart,paramsBoxEl,lawsPane,lawCharts,measureBox,actBreak,spotlight,curtainUpper};
+  const must={stage,actor,springEl,startBtn,clockEl,rulerEl,markerEl,bubbleEl,btnPause,btnSlow,btnPlay,btnSettings,btnReset,settingsPanel,xtChart,paramsBoxEl,lawsPane,lawCharts,measureBox,actBreak,spotlight,curtainUpper,foyer};
   const miss=Object.entries(must).filter(([k,v])=>!v).map(([k])=>k);
   if(miss.length) console.error('Λείπουν στοιχεία:', miss.join(', ')); else console.log('Self-check OK');
 })();
-setTimeout(()=>{ if(!window.uPlot && graphEnabled){ renderXTCanvasFallback(); } }, 2500);
 
 /* Αρχικοποίηση */
 setLang('gr');
 resetShow();
+sizeFoyerToCurtain();
 </script>
 
 <!-- === A1 JSON Adapter & Act II Bridge === -->
@@ -937,7 +958,7 @@ resetShow();
 </script>
 <!-- === End A1 JSON Adapter === -->
 
-<!-- ====== ΦΟΥΑΓΙΕ ΛΟΓΙΚΗ (όλο inline, Act 3 = Foyer) ====== -->
+<!-- ====== ΦΟΥΑΓΙΕ ΛΟΓΙΚΗ (Act 3 = Foyer) ====== -->
 <script>
 /* Χρώματα/ονόματα θεατών */
 const FOYER_VIEWERS = [
@@ -948,7 +969,7 @@ const FOYER_VIEWERS = [
   { id:5, name:'ΘΕΑΤΗΣ 5', color:'#c77dff' },
 ];
 
-/* ΑΚΡΙΒΩΣ τα κείμενα PDF (Πράξη 3 = Φουαγιέ) */
+/* Κείμενα PDF (Πράξη 3 = Φουαγιέ) */
 const FOYER_SCRIPT = [
   { viewer: 1, text: `Θεατής 1: Οι (1), (2), (3) και (5) μας βοηθούν να «προφητεύουμε» τη θέση, την ταχύτητα, την επιτάχυνση και την συνολική δύναμη που δέχεται κάθε στιγμή ο (m1 ,D1) χωρίς να χρειαστεί να ξαναμπούμε για τη συνέχεια της παράστασης!` },
   { viewer: 3, text: `Θεατής 2: Η (3)’ και η (6)  όμως μας βοηθούν να … «προφητεύουμε» την επιτάχυνση και την συνολική δύναμη που δέχεται αρκεί να ξέρουμε σε ποιο σημείο της σκηνής βρίσκεται ο (m1 ,D1)  χωρίς φυσικά και αναγκαστικά να συνεχίσουμε να είμαστε θεατές!` },
@@ -968,7 +989,6 @@ const FOYER_SCRIPT = [
 	Τρίτον ως σταθερή ποσότητα Μηχανικής Ενέργειας, στην παραπάνω σχέση (12) μας οδηγεί στο συμπέρασμα, ότι ισχύει για τον (m,D) «κάτι σαν» Αρχή Διατήρησης της Μηχανικής Ενέργειας του …πρωταγωνιστή Ταλαντωτή(m,D)! (Α.Δ.Μ.Ε.Τ.)` }
 ];
 
-const foyer=document.getElementById('foyer');
 const board=document.getElementById('foyerBoard');
 const front=document.getElementById('foyerFront');
 const btnFoyer=document.getElementById('btnFoyer');
@@ -1045,6 +1065,7 @@ function foyerStep(dir){
 
 /* Παγκόσμιες — Act 3 = Foyer */
 function foyerOpen(){
+  sizeFoyerToCurtain();
   foyer.style.display='block';
   foyer.hidden=false;
   foyerIdx=0; foyerAuto=false; btnAuto.textContent='Auto ▷';
@@ -1093,18 +1114,16 @@ document.addEventListener('keydown', (e)=>{
 (function () {
   'use strict';
   const foyerEl=document.getElementById('foyer');
-  function openF(){ if(foyerEl){ foyerEl.hidden=false; foyerEl.style.display='block'; } }
+  function openF(){ if(foyerEl){ sizeFoyerToCurtain(); foyerEl.hidden=false; foyerEl.style.display='block'; } }
   function closeF(){ if(foyerEl){ foyerEl.hidden=true; foyerEl.style.display='none'; } }
   window.foyerOpen = window.foyerOpen || openF;
   window.foyerClose = window.foyerClose || closeF;
 
-  // Ο,τιδήποτε Act3-like => άνοιγμα Φουαγιέ
   ['act3-open','act3:open','act3-start','act3:start','act3-show',
    'act2-ended','act2:ended','actII-ended'].forEach(evt=>{
     document.addEventListener(evt, ()=>window.foyerOpen());
   });
 
-  // Αν υπάρχει παλιό DOM act3, αφαίρεσέ το
   const ghost = document.getElementById('act3-root');
   if (ghost) ghost.remove();
 })();
