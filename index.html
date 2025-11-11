@@ -352,38 +352,36 @@ const i18n = {
       t18:"Τέλεια! όλο το σετ νόμων της Α.Α.Τ!"
     }
   },
-  en: { /* optional */ }
+  en: { }
 };
 let LANG='gr', firstLawShown=false;
 const langSwitch = document.getElementById('langSwitch');
-
-/* === helpers for setLang (SAFE) === */
-function $q(sel){ return document.querySelector(sel); }
-function t(el, val, isHTML=false){ if(!el) return; isHTML ? (el.innerHTML = val) : (el.textContent = val); }
-
-/* === SAFE setLang (replaces older version) === */
 function setLang(lang){
-  LANG = i18n[lang] ? lang : 'gr';
-  const M = i18n[LANG];
-  document.documentElement.lang = (LANG==='en' ? 'en' : 'el');
-
-  t($q('[data-i18n="actTitle"]'), M.actTitle);
-  t($q('#sbLineA'), M.sbA);
-  t($q('#sbLineB'), M.sbB, true);
-  t($q('#sbLineC'), M.sbC);
-  t($q('#sbLineD'), M.sbD);
-
-  t($q('#startBtn'), M.startBtn);
-  t($q('#cdMain'), M.cdMain);
-  t($q('#cdSub'), M.cdSub);
-  t($q('#mbTitle'), M.measurementsTitle);
-
-  t($q('#actBreakTitle'), M.actBreakTitle);
-  t($q('#actBreakMsg'),  M.actBreakMsg);
-  t($q('#btnAct2'),      M.act2Btn);
-
-  if(firstLawShown) t($q('#lawsTitle'), M.lawsTitle);
+  LANG=lang;
+  document.documentElement.lang=(lang==='en'?'en':'el');
+  const elActTitle=document.querySelector('[data-i18n="actTitle"]');
+  if(elActTitle) elActTitle.textContent=(i18n[lang]?.actTitle||'');
+  const elA=document.getElementById('sbLineA'); if(elA) elA.textContent=(i18n[lang]?.sbA||'');
+  const elB=document.getElementById('sbLineB'); if(elB) elB.innerHTML =(i18n[lang]?.sbB||'');
+  const elC=document.getElementById('sbLineC'); if(elC) elC.textContent=(i18n[lang]?.sbC||'');
+  const elD=document.getElementById('sbLineD'); if(elD) elD.textContent=(i18n[lang]?.sbD||'');
+  const elStart=document.getElementById('startBtn'); if(elStart) elStart.textContent=(i18n[lang]?.startBtn||'');
+  const elCdM=document.getElementById('cdMain'); if(elCdM) elCdM.textContent=(i18n[lang]?.cdMain||'');
+  const elCdS=document.getElementById('cdSub'); if(elCdS) elCdS.textContent=(i18n[lang]?.cdSub||'');
+  const elMbT=document.getElementById('mbTitle'); if(elMbT) elMbT.textContent=(i18n[lang]?.measurementsTitle||'');
+  const elABT=document.getElementById('actBreakTitle'); if(elABT) elABT.textContent=(i18n[lang]?.actBreakTitle||'');
+  const elABM=document.getElementById('actBreakMsg'); if(elABM) elABM.textContent=(i18n[lang]?.actBreakMsg||'');
+  const elAct2=document.getElementById('btnAct2'); if(elAct2) elAct2.textContent=(i18n[lang]?.act2Btn||'');
+  if(firstLawShown){
+    const elLaws=document.getElementById('lawsTitle');
+    if(elLaws) elLaws.textContent=(i18n[lang]?.lawsTitle||'');
+  }
 }
+langSwitch.addEventListener('click',(e)=>{
+  const btn=e.target.closest('button[data-lang]'); if(!btn) return;
+  [...langSwitch.querySelectorAll('button')].forEach(b=>b.classList.toggle('on', b===btn));
+  setLang(btn.dataset.lang);
+});
 
 /* === Localize trig in law strings === */
 function localizeTrig(txt){
@@ -443,13 +441,6 @@ let firstThoughtMul=parseFloat(slFirst.value);
 let timelineScale=parseFloat(slScale.value);
 let bubbleDurationSec=parseFloat(slDur.value);
 let slowFactor=parseFloat(slSlow.value);
-if (langSwitch) {
-  langSwitch.addEventListener('click',(e)=>{
-    const btn=e.target.closest('button[data-lang]'); if(!btn) return;
-    [...langSwitch.querySelectorAll('button')].forEach(b=>b.classList.toggle('on', b===btn));
-    setLang(btn.dataset.lang);
-  });
-}
 slFirst.addEventListener('input',()=>{ firstThoughtMul=parseFloat(slFirst.value); valFirst.textContent=`${firstThoughtMul.toFixed(1)}·T`; });
 slScale.addEventListener('input',()=>{ timelineScale=parseFloat(slScale.value); valScale.textContent=`${timelineScale.toFixed(1)}×`; });
 slDur.addEventListener('input',()=>{ bubbleDurationSec=parseFloat(slDur.value); valDur.textContent=`${bubbleDurationSec.toFixed(1)}s`; });
@@ -699,8 +690,8 @@ let lawCount=0;
 function addLaw(txt){
   if(!firstLawShown){
     firstLawShown=true;
-    lawsTitle.textContent=i18n[LANG].lawsTitle;
-    lawsPane.style.display='block';
+    if(lawsTitle) lawsTitle.textContent=(i18n[LANG]?.lawsTitle||'');
+    if(lawsPane) lawsPane.style.display='block';
   }
   const li=document.createElement('li'); li.textContent=txt; lawsList.appendChild(li);
   lawCount++; positionLawCharts();
@@ -709,11 +700,10 @@ function addLaw(txt){
 /* Παράμετροι A, ω, φ0 */
 function showCurtainParams(){
   const phi0deg=((omega*obsStartPlaybackOffset)*180/Math.PI + 360)%360;
-  document.getElementById('paramA').textContent  =`A = ${A_m.toFixed(2)} m`;
-  document.getElementById('paramW').textContent  =`ω = ${omega.toFixed(3)} rad/s`;
-  document.getElementById('paramPhi').textContent=`φ₀ = ${phi0deg.toFixed(1)}°`;
-  paramsBoxEl.style.display='block';
-  positionParamsBox();
+  const aEl=document.getElementById('paramA');   if(aEl)  aEl.textContent  =`A = ${A_m.toFixed(2)} m`;
+  const wEl=document.getElementById('paramW');   if(wEl)  wEl.textContent  =`ω = ${omega.toFixed(3)} rad/s`;
+  const phEl=document.getElementById('paramPhi');if(phEl) phEl.textContent =`φ₀ = ${phi0deg.toFixed(1)}°`;
+  if(paramsBoxEl){ paramsBoxEl.style.display='block'; positionParamsBox(); }
 }
 
 /* uPlot – x(t) */
@@ -743,7 +733,7 @@ function initXTChart(){
         values:(u,vals)=>vals.map(v=>v.toFixed(1)+" m"), label:"x (m)", labelSize:18, labelGap:8 }
     ],
     series:[{}, {label:"x(t)", stroke:"#ffd27a", width:2}],
-    hooks:{ draw:[(u)=>{ /* helper gridlines if needed */ }] }
+    hooks:{ draw:[(u)=>{ }] }
   };
   uXT=new uPlot(opts, xData, xtChart);
 }
@@ -755,11 +745,11 @@ function ensureXTReady(){
   catch(e){ console.error('ensureXTReady',e); if(graphEnabled){ pendingGraph=true; renderXTCanvasFallback(); } }
 }
 
-/* Fallback canvas (συντομευμένο) */
-function renderXTCanvasFallback(){ /* optional */ }
-function drawFallbackOnce(){ /* optional */ }
+/* Fallback canvas (placeholder) */
+function renderXTCanvasFallback(){ }
+function drawFallbackOnce(){ }
 
-/* Γραφήματα νόμων (συντομευμένα) */
+/* Γραφήματα νόμων (placeholder) */
 let vCan=null,aCan=null,axCan=null;
 function sizeLawCanvas(c){ const w=Math.floor(stage.clientWidth*0.16); const h=140; c.width=w; c.height=h; c.style.width=w+'px'; c.style.height=h+'px'; }
 function positionLawCharts(){
@@ -859,6 +849,7 @@ function resetShow(){
   springEl.style.display='none';            // Πράξη 1: κρυφό ελατήριο
   t0=performance.now(); lastFrame=t0; playbackTime=0;
 }
+document.getElementById('btnReset').addEventListener('click', resetShow);
 
 /* Έναρξη (countdown) */
 function beginObservationAfterCountdown(){
@@ -904,11 +895,9 @@ ro.observe(stage);
 })();
 setTimeout(()=>{ if(!window.uPlot && graphEnabled){ renderXTCanvasFallback(); } }, 2500);
 
-/* Αρχικοποίηση — ασφαλής */
-document.addEventListener('DOMContentLoaded', ()=>{
-  setLang('gr');
-  resetShow();
-});
+/* Αρχικοποίηση */
+setLang('gr');
+resetShow();
 </script>
 
 <!-- === A1 JSON Adapter & Act II Bridge === -->
@@ -921,7 +910,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
       return await r.json();
     }catch(e){ return null; }
   }
-  function applyConfig(cfg){ /* optional */ }
+  function applyConfig(cfg){ }
   function mountAct2Bridge(){
     const stage = document.getElementById('stage');
     if(!stage) return;
@@ -948,7 +937,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
 </script>
 <!-- === End A1 JSON Adapter === -->
 
-<!-- ====== ΦΟΥΑΓΙΕ ΛΟΓΙΚΗ (inline) ====== -->
+<!-- ====== ΦΟΥΑΓΙΕ ΛΟΓΙΚΗ (όλο inline, Act 3 = Foyer) ====== -->
 <script>
 /* Χρώματα/ονόματα θεατών */
 const FOYER_VIEWERS = [
@@ -959,13 +948,13 @@ const FOYER_VIEWERS = [
   { id:5, name:'ΘΕΑΤΗΣ 5', color:'#c77dff' },
 ];
 
-/* ΚΕΙΜΕΝΑ PDF */
+/* ΑΚΡΙΒΩΣ τα κείμενα PDF (Πράξη 3 = Φουαγιέ) */
 const FOYER_SCRIPT = [
   { viewer: 1, text: `Θεατής 1: Οι (1), (2), (3) και (5) μας βοηθούν να «προφητεύουμε» τη θέση, την ταχύτητα, την επιτάχυνση και την συνολική δύναμη που δέχεται κάθε στιγμή ο (m1 ,D1) χωρίς να χρειαστεί να ξαναμπούμε για τη συνέχεια της παράστασης!` },
   { viewer: 3, text: `Θεατής 2: Η (3)’ και η (6)  όμως μας βοηθούν να … «προφητεύουμε» την επιτάχυνση και την συνολική δύναμη που δέχεται αρκεί να ξέρουμε σε ποιο σημείο της σκηνής βρίσκεται ο (m1 ,D1)  χωρίς φυσικά και αναγκαστικά να συνεχίσουμε να είμαστε θεατές!` },
   { viewer: 4, text: `Θεατής 3: Λοιπόν! 
-1.	Διαπιστώνουμε αγαπητοί μου ότι δεν μπορούμε προς το παρόν να «προφητέψουμε» κάτι ανάλογο με αυτό που συμπεραίνει εδώ ο θεατής 2 για την ταχύτητα και τη σχέση της με τη θέση του (m1 ,D1)  .
-2.	Σκέφτομαι ότι αυτά που είδαμε γενικεύονται για κάθε  πρωταγωνιστή (m,D) σε ανάλογη Παράσταση ΑΑΤ. 
+1.	Διαπιστώνουμε αγαπητοί μου ότι δεν μπορούμε προς το παρόν να «προφητέψουμε» κάτι ανάλογο με αυτό που συμπεραίνει εδώ ο θεατής 2 για την ταχύτητα και τη σχέση της με τη θέση του (m1 ,D1).
+2.	Σκέφτομαι ότι αυτά που είδαμε γενικεύονται για κάθε πρωταγωνιστή (m,D) σε ανάλογη Παράσταση ΑΑΤ. 
 3.	Ως γνώστες όμως της …Αλγεβρικής και με λίγη “αλγεβρική περιέργεια” να τι μπορούμε να κάνουμε (και γενικεύοντας, αναφερόμενοι πλέον στον τυχαίο (m,D)) για να καλύψουμε και το κενό 1.:
 	Λύνουμε την (1) ως προς το ημ(ωt+φ0) και υψώνουμε τη σχέση στο τετράγωνο. Κάνουμε το ίδιο με την (2) λύνοντας ως προς συν(ωt+φ0) και υψώνουμε τη νέα σχέση στο τετράγωνο. Στη συνέχεια προσθέτουμε κατά μέλη τις σχέσεις που προκύπτουν.` },
   { viewer: 2, text: `Θεατής 4: Θα ήταν καλύτερα αν την (8) την φέρναμε στη μορφή υ= κ.λ.π. Δείτε:` },
@@ -1054,17 +1043,22 @@ function foyerStep(dir){
   }
 }
 
+/* Παγκόσμιες — Act 3 = Foyer */
 function foyerOpen(){
   foyer.style.display='block';
+  foyer.hidden=false;
   foyerIdx=0; foyerAuto=false; btnAuto.textContent='Auto ▷';
   if(foyerAutoTimer){ clearTimeout(foyerAutoTimer); foyerAutoTimer=null; }
   board.innerHTML='';
 }
 function foyerClose(){
   foyer.style.display='none';
+  foyer.hidden=true;
   foyerAuto=false; btnAuto.textContent='Auto ▷';
   if(foyerAutoTimer){ clearTimeout(foyerAutoTimer); foyerAutoTimer=null; }
 }
+window.foyerOpen = foyerOpen;
+window.foyerClose = foyerClose;
 
 btnFoyer.addEventListener('click', foyerOpen);
 btnClose.addEventListener('click', foyerClose);
@@ -1076,10 +1070,10 @@ btnAuto.addEventListener('click', ()=>{
   if(foyerAuto && foyerIdx<FOYER_SCRIPT.length) foyerStep(+1);
 });
 
-/* Άνοιγμα φουαγιέ στο τέλος Πράξης 2 */
+/* Άνοιγμα φουαγιέ αυτόματα στο τέλος Πράξης 2 */
 document.addEventListener('act2-ended', ()=>{ foyerOpen(); });
 
-/* Συντόμευση: F */
+/* Συντόμευση πληκτρολογίου: F = Φουαγιέ */
 document.addEventListener('keydown', (e)=>{
   if(e.key.toLowerCase()==='f'){ foyer.style.display==='block' ? foyerClose() : foyerOpen(); }
 });
@@ -1090,42 +1084,29 @@ document.addEventListener('keydown', (e)=>{
 <script src="intro_boot.js"></script>
 <script src="adapter.js"></script>
 
-<!-- UI/Nόμοι + Acts -->
+<!-- UI/Νόμοι + Act II -->
 <script src="ui_laws_layout_v4.js"></script>
 <script src="act2.js"></script>
-<script src="act3.js"></script>
 
-<!-- Foyer glue (fallback + listeners) -->
+<!-- ΕΝΟΠΟΙΗΣΗ: 3η πράξη = Φουαγιέ (χωρίς act3.js) -->
 <script>
 (function () {
   'use strict';
+  const foyerEl=document.getElementById('foyer');
+  function openF(){ if(foyerEl){ foyerEl.hidden=false; foyerEl.style.display='block'; } }
+  function closeF(){ if(foyerEl){ foyerEl.hidden=true; foyerEl.style.display='none'; } }
+  window.foyerOpen = window.foyerOpen || openF;
+  window.foyerClose = window.foyerClose || closeF;
 
-  if (typeof window.foyerOpen !== 'function') {
-    const pickOverlay = () =>
-      document.getElementById('foyer') ||
-      document.getElementById('act3-root');
-    window.foyerOpen = function () {
-      const ov = pickOverlay();
-      if (ov) { ov.hidden = false; ov.style.display = 'block'; }
-      try { document.dispatchEvent(new Event('act3-start')); } catch(_) {}
-    };
-  }
-  if (typeof window.foyerClose !== 'function') {
-    const pickOverlay = () =>
-      document.getElementById('foyer') ||
-      document.getElementById('act3-root');
-    window.foyerClose = function () {
-      const ov = pickOverlay();
-      if (ov) { ov.hidden = true; ov.style.display = 'none'; }
-    };
-  }
-
-  ['act2-ended','act2:ended','actII-ended'].forEach(evt => {
-    document.addEventListener(evt, () => window.foyerOpen());
+  // Ο,τιδήποτε Act3-like => άνοιγμα Φουαγιέ
+  ['act3-open','act3:open','act3-start','act3:start','act3-show',
+   'act2-ended','act2:ended','actII-ended'].forEach(evt=>{
+    document.addEventListener(evt, ()=>window.foyerOpen());
   });
 
-  window.foyerOpen  = window.foyerOpen;
-  window.foyerClose = window.foyerClose;
+  // Αν υπάρχει παλιό DOM act3, αφαίρεσέ το
+  const ghost = document.getElementById('act3-root');
+  if (ghost) ghost.remove();
 })();
 </script>
 
