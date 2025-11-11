@@ -1087,9 +1087,51 @@ document.addEventListener('keydown', (e)=>{
 <!-- ====== ΤΕΛΟΣ ΦΟΥΑΓΙΕ ====== -->
 
 <!-- (ήδη υπάρχοντα σου) -->
+<!-- Main boot & adapters -->
 <script src="intro_boot.js"></script>
 <script src="adapter.js"></script>
+
+<!-- UI/Nόμοι + Acts -->
 <script src="ui_laws_layout_v4.js"></script>
 <script src="act2.js"></script>
+<script src="act3.js"></script>
+
+<!-- Foyer glue (fallback + listeners) -->
+<script>
+(function () {
+  'use strict';
+
+  // Fallback ορισμοί αν δεν τους έκανε global το act3.js
+  if (typeof window.foyerOpen !== 'function') {
+    const pickOverlay = () =>
+      document.getElementById('foyerOverlay') ||
+      document.getElementById('act3-root');
+    window.foyerOpen = function () {
+      const ov = pickOverlay();
+      if (ov) { ov.hidden = false; ov.style.display = 'block'; }
+      try { document.dispatchEvent(new Event('act3-start')); } catch(_) {}
+    };
+  }
+  if (typeof window.foyerClose !== 'function') {
+    const pickOverlay = () =>
+      document.getElementById('foyerOverlay') ||
+      document.getElementById('act3-root');
+    window.foyerClose = function () {
+      const ov = pickOverlay();
+      if (ov) { ov.hidden = true; ov.style.display = 'none'; }
+    };
+  }
+
+  // Πιάσε ΟΛΕΣ τις πιθανές ονομασίες λήξης Act II
+  ['act2-ended','act2:ended','actII-ended'].forEach(evt => {
+    document.addEventListener(evt, () => window.foyerOpen());
+  });
+
+  // Κάν’ τα ρητά global για inline onclick
+  window.foyerOpen  = window.foyerOpen;
+  window.foyerClose = window.foyerClose;
+})();
+</script>
+
 </body>
 </html>
