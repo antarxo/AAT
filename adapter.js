@@ -28,7 +28,7 @@
 
     applyConfig(await loadJSON());
     ensureModule('act2.js');
-    ensureModule('act3.js');
+    //ensureModule('act3.js');
 
     // Wire act2 start if button exists
     const b2 = document.getElementById('btnAct2');
