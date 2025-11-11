@@ -373,12 +373,13 @@
 })();
 document.dispatchEvent(new Event('act2-ended'));
 // 2η πράξη: καθάρισμα πριν έξοδο
+// Σβήσιμο δείκτη θέσης στο κλείσιμο Πράξης 2 (όπως ζήτησες)
 try {
   const marker = document.getElementById('marker');
-  if (marker) marker.style.opacity = '0';   // ζητήθηκε να σβήνει στο τέλος
-} catch (_) {}
+  if (marker) marker.style.opacity = '0';
+} catch(_) {}
 
-// δώσε μισό δευτερόλεπτο να τελειώσουν τα animations και εκπέμπεις
+// Dispatch μετά από μικρό delay (να τελειώσουν τα animations)
 setTimeout(() => {
   try {
     document.dispatchEvent(new Event('act2-ended'));
@@ -387,4 +388,5 @@ setTimeout(() => {
     console.error('act2-ended dispatch failed', e);
   }
 }, 600);
+
 
