@@ -348,7 +348,7 @@ const i18n = {
       t18:"Τέλεια! όλο το σετ νόμων της Α.Α.Τ!"
     }
   },
-  en: { actTitle:"Act I: Kinematics (Algebraic)", /* minimal EN */ }
+  en: { actTitle:"Act I: Kinematics (Algebraic)" }
 };
 let LANG='gr', firstLawShown=false;
 const langSwitch = document.getElementById('langSwitch');
@@ -530,7 +530,6 @@ function positionRightPanel(){
   positionLawCharts();
   positionParamsBox();
 }
-window.addEventListener('resize', positionRightPanel);
 
 /* Αγκύρωση ελατηρίου */
 function anchorX(){ return stage.clientWidth*0.18; }
@@ -560,6 +559,7 @@ function setMode(newMode){
 let L0_px; let skaterWidthPx; let hookOffsetPx;
 function animate(now){
   const realDt=(now-lastFrame)/1000; lastFrame=now;
+
   positionRightPanel(); updateRuler();
 
   const tPhys=(now-t0)/1000;
@@ -879,9 +879,11 @@ function startShowCountdown(){
 startBtn.addEventListener('click', startShowCountdown);
 
 /* Παρατηρητής μεγέθους */
-const ro=new ResizeObserver(()=>{ positionRightPanel();
+const ro=new ResizeObserver(()=>{ 
+  positionRightPanel();
   if(uXT){ drawXTChart(); } else if(document.getElementById('xtFallback')){ drawFallbackOnce(); }
-  positionLawCharts(); positionParamsBox(); repositionFoyer();
+  positionLawCharts(); positionParamsBox();
+  if (typeof window.repositionFoyer==='function') window.repositionFoyer();
 });
 ro.observe(stage);
 
@@ -962,7 +964,7 @@ resetShow();
   const anchorX   = () => stage.clientWidth*0.18;
   function curtainsX(){ const W=stage.clientWidth; return [W*0.18, W*0.82]; }
 
-  /* ===== Bubble τοπικό για Πράξη 2 (ίδια μορφή με act1) ===== */
+  /* ===== Bubble τοπικό για Πράξη 2 ===== */
   const __ALLOWED = new Set(['b','strong','i','em','sub','sup','br']);
   function sanitizeThought(html) {
     const wrap = document.createElement('div');
@@ -1144,7 +1146,7 @@ resetShow();
     if (sbH1) sbH1.textContent = 'Πράξη 2η: Η Δυναμική στα ... Αλγεβρικά!';
     const m  = (typeof window.m==='number') ? window.m.toFixed(1) : (window.m || '…');
     const D  = (typeof window.D==='number') ? window.D : '…';
-    const Em = (typeof window.E_mech==='number') ? window.E_mech.toFixed(2) : (window.E_mech || '…');
+    const Em = (typeof window.E_mech==='number') ? window.E_meχ.toFixed(2) : (window.E_mech || '…');
     if (sbA) sbA.textContent = `m₁ = ${m} kg , D₁ = ${D} N/m`;
     if (sbB) sbB.textContent = `Eμηχ = ${Em} J`;
   }
@@ -1235,8 +1237,7 @@ const FOYER_VIEWERS = [
   { id:5, name:'ΘΕΑΤΗΣ 5', color:'#c77dff' },
 ];
 
-/* ΣΕΝΑΡΙΟ ΦΟΥΑΓΙΕ — περιλαμβάνει τις πλήρεις φράσεις που είχες δώσει ρητά.
-   Μπορείς να προσθέσεις επιπλέον αντικείμενα (viewer,text,math) χωρίς να αλλάξεις κώδικα. */
+/* ΣΕΝΑΡΙΟ ΦΟΥΑΓΙΕ (πλήρες κομμάτι) */
 const FOYER_SCRIPT = [
   {
     viewer:1,
@@ -1275,8 +1276,6 @@ const FOYER_SCRIPT = [
 — Τρίτον, ως σταθερή ποσότητα Ε<sub>Μ</sub>, οδηγεί στην (κάτι σαν) Αρχή Διατήρησης της Μηχανικής Ενέργειας του ταλαντωτή (Α.Δ.Μ.Ε.Τ.).`,
     math:`E_M = ½ m v² + ½ m ω² x² = ½ m ω² A² = σταθερά`
   }
-
-  /* —— ΕΔΩ μπορείς να προσθέσεις επιπλέον γραμμές από το .pdf/.docx αυτούσιες —— */
 ];
 
 /* DOM refs Φουαγιέ */
@@ -1324,7 +1323,7 @@ function foyerShowBubble(viewerId, text){
   if(slot){
     const cx = slot.left + slot.w/2;
     vb.style.left = (sRect.left + cx) + 'px';
-    vb.style.bottom = (sRect.bottom - (slot.top - 10)) + 'px'; // πάνω από κεφάλια
+    vb.style.bottom = (sRect.bottom - (slot.top - 10)) + 'px';
   }else{
     vb.style.left = (sRect.left + stage.clientWidth*0.5) + 'px';
     vb.style.bottom = (sRect.bottom - stage.clientHeight*0.65) + 'px';
@@ -1350,21 +1349,20 @@ function boardAppend(item){
   R.innerHTML = (item.math||'');
   foyerRight.appendChild(R);
 
-  // κύλιση
   const bb = document.querySelector('.blackboard');
   bb.scrollTop = bb.scrollHeight;
 }
 
-/* Τοποθέτηση Φουαγιέ: από δεξί άκρο νόμων μέχρι άκρο οθόνης και ύψος όσο η ζώνη κουρτίνας */
+/* Τοποθέτηση Φουαγιέ */
 function repositionFoyer(){
   const gate = foyer; if(!gate) return;
   const sRect=stage.getBoundingClientRect();
   const cuRect=curtainUpper?.getBoundingClientRect?.() || {top:sRect.height*0.28, height:sRect.height*0.40};
-  const leftPx = sRect.left + stage.clientWidth*0.18; // δεξιά από νόμους
+  const leftPx = sRect.left + stage.clientWidth*0.18;
   gate.style.left   = leftPx + 'px';
   gate.style.top    = 0 + 'px';
-  gate.style.width  = (stage.clientWidth*0.82) + 'px'; // μέχρι δεξί άκρο
-  gate.style.height = (cuRect.top) + 'px'; // από πάνω οθόνης έως κάτω περίγραμμα κινητής κουρτίνας
+  gate.style.width  = (stage.clientWidth*0.82) + 'px';
+  gate.style.height = (cuRect.top) + 'px';
 }
 
 /* Ροή Φουαγιέ */
@@ -1386,10 +1384,8 @@ function foyerStep(dir){
 function foyerOpen(autoStart=false){
   repositionFoyer();
   foyer.style.display='block';
-  // καθάρισμα δεξιάς στήλης παράστασης (κρατάμε νόμους)
   document.getElementById('measureBox').style.display='none';
   document.getElementById('xtChart').style.display='none';
-  // reset
   foyerLeft.innerHTML=''; foyerRight.innerHTML='';
   foyerIdx=0;
   foyerAuto = !!autoStart;
@@ -1427,7 +1423,7 @@ repositionFoyer();
 window.addEventListener('resize', repositionFoyer);
 </script>
 
-<!-- === UI νόμων (κρατάμε όπως έχεις, αν το αρχείο υπάρχει) === -->
+<!-- === UI νόμων (αν υπάρχει) === -->
 <script src="ui_laws_layout_v4.js"></script>
 
 </body>
