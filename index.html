@@ -85,8 +85,9 @@
   .marker-line{position:absolute;left:50%;bottom:8px;width:2px;height:70px;background:#ffd27a;box-shadow:0 0 4px rgba(255,210,122,.8);transform:translateX(-50%)}
   .marker-tip{position:absolute;left:50%;bottom:0;width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:8px solid #ffd27a;filter:drop-shadow(0 2px 2px rgba(255,210,122,.8));transform:translateX(-50%)}
 
-  /* Bubble (μικρότερη γραμματοσειρά) */
-  @keyframes popIn{0%{transform:scale(.9);opacity:0}60%{transform:scale(1.04);opacity:1}100%{transform:scale(1)}}
+  /* Bubble */
+  @keyframes popIn{0%{transform:scale(.9);opacity:0}60%{transform:scale(1.04);opacity:1}100%{transform:scale(1)}
+  }
   .thought-bubble{
     position:absolute;max-width:420px;background:rgba(255,255,255,.82);color:#000;
     font-size:14px;line-height:1.4;padding:8px 10px 10px;
@@ -126,7 +127,7 @@
   /* Προαγγελία Πράξης 2 */
   .actbreak{position:absolute;background:rgba(0,0,0,.55);color:#fff;z-index:410;display:none;align-items:center;justify-content:center;text-align:center}
 
-  /* ====== ΦΟΥΑΓΙΕ PANEL (δεξιά) ====== */
+  /* ====== ΦΟΥΑΓΙΕ (Overlay κέντρο+δεξιά) ====== */
   .foyer-panel{
     position:absolute; z-index:500; display:none;
     background:rgba(0,0,0,.55); backdrop-filter: blur(2px);
@@ -142,11 +143,13 @@
     color:#fff; padding:8px; overflow:auto; height:calc(100% - 36px);
     font-size:13px; line-height:1.25;
   }
-  .row2{display:grid;grid-template-columns:1fr 1fr;gap:6px;align-items:start}
+  .row2{display:grid;grid-template-columns:1.25fr 1fr;gap:6px;align-items:start}
   .cellL{padding:6px 8px;border-left:6px solid transparent;border-radius:6px;background:rgba(255,255,255,.04)}
-  .cellR{padding:6px 8px;border:1px dashed rgba(255,255,255,.25);border-radius:6px;background:rgba(255,255,255,.02);text-align:left}
+  .cellR{padding:6px 8px;border:1px dashed rgba(255,255,255,.25);border-radius:6px;background:rgba(255,255,255,.02);text-align:left;line-height:1.2}
   .cellR .eq{display:block;margin:2px 0}
   .tint{background:linear-gradient(90deg, rgba(255,255,255,.08) 0%, transparent 70%)}
+
+  .btn-foyer{position:absolute;top:8px;right:8px;z-index:501;background:#004b6b;color:#fff;border:none;border-radius:8px;padding:8px 12px;font-size:14px;cursor:pointer}
 </style>
 </head>
 <body>
@@ -191,7 +194,7 @@
     </div>
     <div id="xtChart"></div>
 
-    <!-- Νόμοι & μίνι γραφήματα -->
+    <!-- Νόμοι & μίνι γραφήματα (μένουν ορατά στο 0–18%) -->
     <div class="laws" id="laws">
       <h4 id="lawsTitle">—</h4>
       <ol id="lawsList"></ol>
@@ -213,7 +216,9 @@
       <button id="btnSettings" title="ρυθμίσεις">⚙️</button>
       <button id="btnReset" title="reset">↺</button>
       <button id="btnEnd" title="Τέλος παράστασης">⏹</button>
+      <button class="btn-foyer" id="btnFoyer">Φουαγιέ</button>
     </div>
+
     <div class="settings" id="settingsPanel">
       <h5 data-i18n="settingsTitle">Ρυθμίσεις ροής</h5>
       <div class="row">
@@ -273,8 +278,7 @@
       </div>
     </div>
 
-    <!-- Κουμπί/Panel Φουαγιέ -->
-    <button class="btn-foyer" id="btnFoyer" style="position:absolute;top:8px;right:calc(18% + 8px);z-index:501;background:#004b6b;color:#fff;border:none;border-radius:8px;padding:8px 12px;font-size:14px;cursor:pointer">Φουαγιέ</button>
+    <!-- ====== ΦΟΥΑΓΙΕ Overlay (0.18W ➜ δεξί άκρο) ====== -->
     <div class="foyer-panel" id="foyerPanel" aria-label="μαυροπίνακας">
       <div class="foyer-head">
         <h3>Φουαγιέ — Συλλογή σκέψεων & συμβολισμών</h3>
@@ -458,7 +462,7 @@ function setMode(newMode){
   slowHint.textContent = (mode==='slow' && slowFactor<1) ? `SLOW-MO ×${slowFactor.toFixed(2)}` : '';
 }
 
-/* Δεξί panel & params */
+/* Δεξί panel & params & Φουαγιέ overlay */
 function positionParamsBox(){
   const rightEdge = stage.clientWidth*0.82;
   const w = paramsBoxEl.offsetWidth || 180;
@@ -469,6 +473,7 @@ let graphEnabled=false, uXT=null, pendingGraph=false;
 function positionRightPanel(){
   const W=stage.clientWidth, H=stage.clientHeight;
   const curtainLeft=W*0.82, curtainW=W*0.18, centerX=curtainLeft+curtainW/2;
+
   if(clockEl){ clockEl.style.left=centerX+'px'; }
   if(measureBox){
     measureBox.style.left=centerX+'px';
@@ -493,14 +498,15 @@ function positionRightPanel(){
   positionLawCharts();
   positionParamsBox();
 
-  /* Φουαγιέ panel αγγίζει δεξί όριο */
+  /* === Φουαγιέ: απλώνεται από 18% μέχρι δεξί άκρο === */
   if(foyerPanel){
-    const mTop=54;
-    foyerPanel.style.left=(centerX)+'px';
-    foyerPanel.style.top =mTop+'px';
-    foyerPanel.style.transform='translateX(-50%)';
-    foyerPanel.style.width=(measureBox.offsetWidth||Math.max(160, W*0.18-16))+'px';
-    foyerPanel.style.height=(H - mTop - 8)+'px';
+    const left = Math.floor(W*0.18);
+    const top  = 8;
+    foyerPanel.style.left = left+'px';
+    foyerPanel.style.top  = top+'px';
+    foyerPanel.style.transform = 'none';
+    foyerPanel.style.width = (W - left - 8) + 'px';
+    foyerPanel.style.height= (H - top - 8) + 'px';
   }
 }
 window.addEventListener('resize', positionRightPanel);
@@ -815,8 +821,10 @@ function foyerStep(dir){
 function foyerOpen(){
   positionRightPanel();
   foyerPanel.style.display='block';
-  measureBox.style.display='none';
-  xtChart.style.display='none';
+  // Κρύψε μόνο δεξιά column (μετρήσεις/γράφημα)
+  if(measureBox) measureBox.style.display='none';
+  if(xtChart) xtChart.style.display='none';
+  // auto-run
   if(foyerAutoTimer){ clearTimeout(foyerAutoTimer); foyerAutoTimer=null; }
   foyerBoard.innerHTML=''; foyerIdx=0;
   foyerAuto=true; btnAuto.textContent='Auto ❚❚';
@@ -824,7 +832,6 @@ function foyerOpen(){
 }
 function foyerClose(force=false){
   foyerPanel.style.display='none';
-  // ασφαλές κλείσιμο ακόμη κι αν δεν έχουν αρχικοποιηθεί μεταβλητές
   try{
     foyerAuto=false; btnAuto.textContent='Auto ▷';
     if(foyerAutoTimer){ clearTimeout(foyerAutoTimer); foyerAutoTimer=null; }
@@ -834,18 +841,18 @@ function foyerClose(force=false){
     if(graphEnabled && xtChart) xtChart.style.display='block';
   }
 }
-btnFoyer.addEventListener('click', foyerOpen);
-btnClose.addEventListener('click', ()=>foyerClose(false));
-btnPrev.addEventListener('click', ()=>foyerStep(-1));
-btnNext.addEventListener('click', ()=>foyerStep(+1));
-btnAuto.addEventListener('click', ()=>{
-  foyerAuto=!foyerAuto; btnAuto.textContent = foyerAuto ? 'Auto ❚❚' : 'Auto ▷';
+document.getElementById('btnFoyer').addEventListener('click', foyerOpen);
+document.getElementById('foyerClose').addEventListener('click', ()=>foyerClose(false));
+document.getElementById('foyerPrev').addEventListener('click', ()=>foyerStep(-1));
+document.getElementById('foyerNext').addEventListener('click', ()=>foyerStep(+1));
+document.getElementById('foyerAuto').addEventListener('click', ()=>{
+  foyerAuto=!foyerAuto; document.getElementById('foyerAuto').textContent = foyerAuto ? 'Auto ❚❚' : 'Auto ▷';
   if(foyerAuto && foyerIdx<FOYER_SCRIPT.length) foyerStep(+1);
 });
 document.addEventListener('act2-ended', ()=>{ foyerOpen(); });
 document.addEventListener('keydown', (e)=>{ if(e.key.toLowerCase()==='f'){ foyerPanel.style.display==='block'?foyerClose(false):foyerOpen(); }});
 
-/* === Πράξη 1 κουμπιά === */
+/* Κουμπιά Πράξης 1 & Act2 */
 document.getElementById('btnPause').addEventListener('click',()=>{ setMode(mode==='pause'?'run':'pause'); });
 document.getElementById('btnSlow') .addEventListener('click', ()=>{ resumeFromBubble('slow'); });
 document.getElementById('btnPlay') .addEventListener('click', ()=>{ resumeFromBubble('run');  });
@@ -890,7 +897,7 @@ function resetShow(){
   const fb=document.getElementById('xtFallback'); if(fb) fb.remove();
   xtChart.style.display='none';
   springEl.style.display='none';
-  // κλείσε φουαγιέ χωρίς εξάρτηση από μεταβλητές
+  // κλείσε Φουαγιέ
   if(foyerPanel) foyerPanel.style.display='none';
   t0=performance.now(); lastFrame=t0; playbackTime=0;
 }
@@ -970,7 +977,7 @@ ro.observe(stage);
   if(miss.length) console.error('Λείπουν στοιχεία:', miss.join(', ')); else console.log('Self-check OK');
 })();
 
-/* Αρχικοποίηση (τελευταίο) */
+/* Αρχικοποίηση */
 setLang('gr');
 resetShow();
 </script>
