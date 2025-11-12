@@ -960,12 +960,7 @@ sizeFoyerToCurtain();
 </script>
 <!-- === End A1 JSON Adapter === -->
 
-<!-- ====== ΦΟΥΑΓΙΕ ΔΕΔΟΜΕΝΑ (επικόλλησε ΑΚΡΙΒΩΣ από το PDF) ======
-Μορφή: πίνακας αντικειμένων [{viewer,left,right}, ...]
-- viewer: 1..5 (αντιστοιχεί σε ΘΕΑΤΗΣ 1..5 / θέσεις σκηνής)
-- left: πλήρες κείμενο διαλόγου (χωρίς περικοπές)
-- right: αυτούσια αλγεβρική επεξεργασία/νόμοι/συμπεράσματα (χωρίς περικοπές)
-==================================================================== -->
+<!-- ====== ΦΟΥΑΓΙΕ ΔΕΔΟΜΕΝΑ (ΚΑΘΑΡΟ JSON, ΧΩΡΙΣ ΣΧΟΛΙΑ) ====== -->
 <script id="foyerData" type="application/json">
 [
   {
@@ -993,8 +988,6 @@ sizeFoyerToCurtain();
     "left": "Θεατής 1: Το σημείο στο οποίο διέκοψα είχε γραφτεί ω²A²=ω²x²+v². Αν πολλαπλασιάσουμε με ½m… αναγνωρίζουμε K, U, E και Α.Δ.Μ.Ε.Τ.",
     "right": "½mω²A²=½mω²x²+½m v²\nK=½m v²,  U(x)=½mω²x²=½Dx²\nE=K+U=½mω²A² (σταθ.)\nU_max=½mω²A²,  D=mω²"
   }
-
-  /* 👉 ΕΔΩ ΕΠΙΚΟΛΛΑΣ ΑΚΟΜΑ ΠΕΡΙΣΣΟΤΕΡΕΣ ΚΑΤΑΧΩΡΗΣΕΙΣ ΑΥΤΟΥΣΙΕΣ ΑΠΟ ΤΟ PDF, ΧΩΡΙΣ ΚΑΜΙΑ ΠΕΡΙΚΟΠΗ. */
 ]
 </script>
 
@@ -1015,7 +1008,7 @@ function tint(hex, alpha){
   return `rgba(${r},${g},${b},${alpha})`;
 }
 
-/* Loader: 1) από <script id="foyerData"> JSON, 2) αλλιώς από fallback */
+/* Loader: από <script id="foyerData"> JSON */
 function loadFoyerScript(){
   try{
     const el = document.getElementById('foyerData');
@@ -1031,7 +1024,6 @@ function loadFoyerScript(){
       }
     }
   }catch(e){ console.warn('foyerData parse error', e); }
-  // Fallback (δεν θα χρησιμοποιηθεί αν υπάρχει JSON)
   return [];
 }
 const FOYER_SCRIPT = loadFoyerScript();
@@ -1043,7 +1035,7 @@ function boardAppend(vId, leftText, rightText){
   left.className='board-thought';
   left.style.borderLeftColor = v.color;
   left.style.background = `linear-gradient(90deg, ${tint(v.color,0.16)} 0%, transparent 70%)`;
-  left.textContent = leftText; // αυτούσιο κείμενο
+  left.textContent = leftText;
 
   const right = document.createElement('div');
   right.className='board-math';
@@ -1094,9 +1086,6 @@ function foyerOpen(){
   foyerIdx=0; foyerAuto=false; btnAuto.textContent='Auto ▷';
   if(foyerAutoTimer){ clearTimeout(foyerAutoTimer); foyerAutoTimer=null; }
   boardGrid.innerHTML='';
-
-  // Αυστηρή 1:1 εμφάνιση όλων των εγγραφών χωρίς περικοπές
-  // (Χειροκίνητα με κουμπιά ή αυτόματα από Auto)
 }
 function foyerClose(){
   foyer.style.display='none';
@@ -1144,13 +1133,11 @@ document.addEventListener('keydown', (e)=>{
   window.foyerOpen = window.foyerOpen || openF;
   window.foyerClose = window.foyerClose || closeF;
 
-  // Όσα events υπήρχαν για Act3, ανοίγουν πλέον το Φουαγιέ
   ['act3-open','act3:open','act3-start','act3:start','act3-show',
    'act2-ended','act2:ended','actII-ended'].forEach(evt=>{
     document.addEventListener(evt, ()=>window.foyerOpen());
   });
 
-  // Καθάρισε πιθανό παλιό overlay act3
   const ghostOverlay = document.getElementById('act3-root');
   if (ghostOverlay) ghostOverlay.remove();
 })();
