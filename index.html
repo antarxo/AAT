@@ -402,24 +402,46 @@ const measureTBody=document.getElementById('measureTBody');
 const actBreak=document.getElementById('actBreak');
 const curtainUpper=document.querySelector('.curtain-upper');
 
-/* ΦΟΥΑΓΙΕ refs */
-const foyerPanel=document.getElementById('foyerPanel');
-const foyerBoard=document.getElementById('foyerBoard');
-const btnFoyer=document.getElementById('btnFoyer');
-const btnPrev=document.getElementById('foyerPrev');
-const btnNext=document.getElementById('foyerNext');
-const btnAuto=document.getElementById('foyerAuto');
-const btnClose=document.getElementById('foyerClose');
-
-/* Position helpers */
-function positionParamsBox(){
-  const rightEdge = stage.clientWidth*0.82;
-  const w = paramsBoxEl.offsetWidth || 180;
-  paramsBoxEl.style.left = (rightEdge - w - 6) + 'px';
-  paramsBoxEl.style.top  = '33px';
+/* ====== RULER ====== */
+let lastRulerW=0;
+function updateRuler(){
+  const baseLeft=stage.clientWidth*0.18;
+  const usableW =stage.clientWidth*0.64;
+  if(Math.abs(usableW-lastRulerW)<1) return;
+  lastRulerW=usableW;
+  rulerEl.style.left=baseLeft+'px';
+  rulerEl.style.width=usableW+'px';
+  rulerEl.innerHTML='';
+  const centerX=stage.clientWidth/2;
+  for(let mTick=-7;mTick<=7;mTick++){
+    const xPx=centerX+mTick*pxPerMeter;
+    const rel=xPx-baseLeft;
+    const tDiv=document.createElement('div'); tDiv.className='tick'; tDiv.style.left=rel+'px'; rulerEl.appendChild(tDiv);
+    const lbl=document.createElement('div'); lbl.className='tick-label';
+    lbl.textContent=(mTick===0?'0':(mTick>0? '+'+mTick:''+mTick))+' m';
+    lbl.style.left=rel+'px'; rulerEl.appendChild(lbl);
+  }
 }
 
-/* Ρυθμίσεις ροής */
+/* Αγκύρωση ελατηρίου */
+function anchorX(){ return stage.clientWidth*0.18; }
+
+/* Καταγραφή μέτρησης */
+let lastSampleObsTime=-Infinity; const sampleInterval=0.25;
+let measureRowIdx=0;
+function logMeasurement(tObs,xMeters){
+  if(!obsStarted || mode==='pause') return;
+  if(tObs-lastSampleObsTime<sampleInterval) return; lastSampleObsTime=tObs;
+  const tr=document.createElement('tr');
+  tr.className='new';
+  tr.innerHTML=`<td>${(++measureRowIdx)}</td><td>${tObs.toFixed(2)}</td><td>${xMeters.toFixed(2)}</td>`;
+  measureTBody.appendChild(tr);
+  setTimeout(()=>{ tr.classList.remove('new'); }, 650);
+  try{ tr.scrollIntoView({block:'end'}); }catch(e){}
+  try{ measureBox.scrollTop=measureBox.scrollHeight; }catch(e){}
+}
+
+/* Mode & ροή */
 const DEFAULT_FIRST_MUL=1.1;
 let firstThoughtMul=parseFloat(slFirst.value);
 let timelineScale=parseFloat(slScale.value);
@@ -429,7 +451,111 @@ slFirst.addEventListener('input',()=>{ firstThoughtMul=parseFloat(slFirst.value)
 slScale.addEventListener('input',()=>{ timelineScale=parseFloat(slScale.value); valScale.textContent=`${timelineScale.toFixed(1)}×`; });
 slDur.addEventListener('input',()=>{ bubbleDurationSec=parseFloat(slDur.value); valDur.textContent=`${bubbleDurationSec.toFixed(1)}s`; });
 slSlow.addEventListener('input',()=>{ slowFactor=parseFloat(slSlow.value); valSlow.textContent=`${slowFactor.toFixed(2)}×`; });
-btnSettings.addEventListener('click',()=>{ settingsPanel.style.display=(settingsPanel.style.display==='block'?'none':'block'); });
+function setMode(newMode){
+  mode=newMode;
+  btnSlow.classList.toggle('active', mode==='slow');
+  btnPlay.classList.toggle('active', mode==='run');
+  slowHint.textContent = (mode==='slow' && slowFactor<1) ? `SLOW-MO ×${slowFactor.toFixed(2)}` : '';
+}
+
+/* Δεξί panel & params */
+function positionParamsBox(){
+  const rightEdge = stage.clientWidth*0.82;
+  const w = paramsBoxEl.offsetWidth || 180;
+  paramsBoxEl.style.left = (rightEdge - w - 6) + 'px';
+  paramsBoxEl.style.top  = '33px';
+}
+let graphEnabled=false, uXT=null, pendingGraph=false;
+function positionRightPanel(){
+  const W=stage.clientWidth, H=stage.clientHeight;
+  const curtainLeft=W*0.82, curtainW=W*0.18, centerX=curtainLeft+curtainW/2;
+  if(clockEl){ clockEl.style.left=centerX+'px'; }
+  if(measureBox){
+    measureBox.style.left=centerX+'px';
+    const mTop=54; measureBox.style.top=mTop+'px';
+    const halfH=Math.floor(H*0.5); measureBox.style.height=halfH+'px';
+    measureBox.style.overflowY='auto';
+    measureBox.style.width=Math.max(160,curtainW-16)+'px';
+  }
+  if(xtChart){
+    const mTop=measureBox.offsetTop||54;
+    const mHeight=measureBox.offsetHeight||Math.floor(H*0.5);
+    const xTop=mTop+mHeight+8;
+    const availH=Math.max(120,H-xTop-8);
+    xtChart.style.left=centerX+'px'; xtChart.style.top=xTop+'px';
+    const w=Math.max(160,(measureBox?measureBox.offsetWidth:(curtainW-16)));
+    xtChart.style.width=w+'px'; xtChart.style.height=availH+'px';
+    xtChart.style.transform='translateX(-50%)';
+    if(uXT){ uXT.setSize({width:Math.floor(w), height:Math.floor(availH)}); drawXTChart(); }
+    const c=document.getElementById('xtFallback');
+    if(c){ c.width=Math.max(200,xtChart.clientWidth|0); c.height=Math.max(120,xtChart.clientHeight|0); drawFallbackOnce(); }
+  }
+  positionLawCharts();
+  positionParamsBox();
+
+  /* Φουαγιέ panel αγγίζει δεξί όριο */
+  if(foyerPanel){
+    const mTop=54;
+    foyerPanel.style.left=(centerX)+'px';
+    foyerPanel.style.top =mTop+'px';
+    foyerPanel.style.transform='translateX(-50%)';
+    foyerPanel.style.width=(measureBox.offsetWidth||Math.max(160, W*0.18-16))+'px';
+    foyerPanel.style.height=(H - mTop - 8)+'px';
+  }
+}
+window.addEventListener('resize', positionRightPanel);
+
+/* uPlot – x(t) */
+function buildSeriesData(){
+  const N=240, tArr=new Array(N+1), xArr=new Array(N+1);
+  for(let i=0;i<=N;i++){
+    const tloc=(i/N)*T;
+    tArr[i]=tloc; xArr[i]=A_m*Math.sin(omega*(tloc+obsStartPlaybackOffset));
+  }
+  return [tArr,xArr];
+}
+function x0Val(){ return A_m*Math.sin(omega*(0+obsStartPlaybackOffset)); }
+function initXTChart(){
+  if(uXT) return; if(!window.uPlot){ if(graphEnabled){ pendingGraph=true; } return; }
+  xtChart.style.display='block'; positionRightPanel();
+  let w=Math.floor(xtChart.clientWidth)||260, h=Math.floor(xtChart.clientHeight)||140;
+  const xData=buildSeriesData();
+  const opts={
+    width:w, height:h,
+    scales:{ x:{time:false, range:[0,T]}, y:{range:[-A_m*1.1, A_m*1.1]} },
+    axes:[
+      { stroke:"#fff", grid:{show:true, stroke:"rgba(255,255,255,0.25)"},
+        values:(u,vals)=>vals.map(v=>v.toFixed(1)+" s"), label:"t (s)", labelSize:18, labelGap:6 },
+      { stroke:"#fff", grid:{show:true, stroke:"rgba(255,255,255,0.25)"},
+        values:(u,vals)=>vals.map(v=>v.toFixed(1)+" m"), label:"x (m)", labelSize:18, labelGap:8 }
+    ],
+    series:[{}, {label:"x(t)", stroke:"#ffd27a", width:2}],
+    hooks:{ draw:[(u)=>{ }] }
+  };
+  uXT=new uPlot(opts, xData, xtChart);
+}
+function drawXTChart(){ if(uXT){ uXT.setData(buildSeriesData()); } }
+function ensureXTReady(){
+  if(!graphEnabled) return;
+  try{ if(window.uPlot){ initXTChart(); if(uXT){ drawXTChart(); } }
+       else{ if(graphEnabled){ pendingGraph=true; renderXTCanvasFallback(); } } }
+  catch(e){ console.error('ensureXTReady',e); if(graphEnabled){ pendingGraph=true; renderXTCanvasFallback(); } }
+}
+function renderXTCanvasFallback(){} function drawFallbackOnce(){}
+
+/* Γραφήματα νόμων */
+let vCan=null,aCan=null,axCan=null;
+function sizeLawCanvas(c){ const w=Math.floor(stage.clientWidth*0.16); const h=140; c.width=w; c.height=h; c.style.width=w+'px'; c.style.height=h+'px'; }
+function positionLawCharts(){
+  const r = lawsPane.getBoundingClientRect();
+  const s = stage.getBoundingClientRect();
+  lawCharts.style.top = (r.bottom - s.top + 8) + 'px';
+  lawCharts.style.left= '2%';
+  lawCharts.style.width= '16%';
+}
+function ensureVelocityChart(){ if(!vCan){ vCan = document.createElement('canvas'); lawCharts.appendChild(vCan); } sizeLawCanvas(vCan); }
+function ensureAccelerationChart(){ if(!aCan){ aCan = document.createElement('canvas'); lawCharts.appendChild(aCan); } sizeLawCanvas(aCan); }
+function ensureAxChart(){ if(!axCan){ axCan = document.createElement('canvas'); lawCharts.appendChild(axCan); } sizeLawCanvas(axCan); }
 
 /* Timeline Πράξης 1 */
 const thoughtScriptBase=[
@@ -461,161 +587,15 @@ let thoughtScript=[...thoughtScriptBase];
 let nextThoughtIdx=0;
 let isBubbleActive=false;
 let bubbleAutoTimer=null;
-let measureRowIdx=0;
 
 /* Ρολόι & play state */
 let t0=performance.now(), lastFrame=performance.now();
 let playbackTime=0, mode='run', obsStarted=false, obsStartPlaybackOffset=0;
 
-/* Μετρήσεις */
-let lastSampleObsTime=-Infinity; const sampleInterval=0.25;
-
-/* Δεξιά panel geometry */
-let graphEnabled=false, uXT=null, pendingGraph=false;
-function positionRightPanel(){
-  const W=stage.clientWidth, H=stage.clientHeight;
-  const curtainLeft=W*0.82, curtainW=W*0.18, centerX=curtainLeft+curtainW/2;
-  if(clockEl){ clockEl.style.left=centerX+'px'; }
-  if(measureBox){
-    measureBox.style.left=centerX+'px';
-    const mTop=54; measureBox.style.top=mTop+'px';
-    const halfH=Math.floor(H*0.5); measureBox.style.height=halfH+'px';
-    measureBox.style.overflowY='auto';
-    measureBox.style.width=Math.max(160,curtainW-16)+'px';
-  }
-  if(xtChart){
-    const mTop=measureBox.offsetTop||54;
-    const mHeight=measureBox.offsetHeight||Math.floor(H*0.5);
-    const xTop=mTop+mHeight+8;
-    const availH=Math.max(120,H-xTop-8);
-    xtChart.style.left=centerX+'px'; xtChart.style.top=xTop+'px';
-    const w=Math.max(160,(measureBox?measureBox.offsetWidth:(curtainW-16)));
-    xtChart.style.width=w+'px'; xtChart.style.height=availH+'px';
-    xtChart.style.transform='translateX(-50%)';
-    if(uXT){ uXT.setSize({width:Math.floor(w), height:Math.floor(availH)}); drawXTChart(); }
-    const c=document.getElementById('xtFallback');
-    if(c){ c.width=Math.max(200,xtChart.clientWidth|0); c.height=Math.max(120,xtChart.clientHeight|0); drawFallbackOnce(); }
-  }
-  positionLawCharts();
-  positionParamsBox();
-
-  /* Φουαγιέ panel: ίδιο πλάτος με δεξιό παράθυρο, αγγίζει δεξί όριο οθόνης */
-  if(foyerPanel){
-    const mTop=54;
-    foyerPanel.style.left=(centerX)+'px';
-    foyerPanel.style.top =mTop+'px';
-    foyerPanel.style.transform='translateX(-50%)';
-    foyerPanel.style.width=(measureBox.offsetWidth||Math.max(160, W*0.18-16))+'px';
-    foyerPanel.style.height=(H - mTop - 8)+'px';
-  }
-}
-window.addEventListener('resize', positionRightPanel);
-
-/* ====== RULER ====== */
-let lastRulerW=0;
-function updateRuler(){
-  const baseLeft=stage.clientWidth*0.18;
-  const usableW =stage.clientWidth*0.64;
-  if(Math.abs(usableW-lastRulerW)<1) return;
-  lastRulerW=usableW;
-  rulerEl.style.left=baseLeft+'px';
-  rulerEl.style.width=usableW+'px';
-  rulerEl.innerHTML='';
-  const centerX=stage.clientWidth/2;
-  for(let mTick=-7;mTick<=7;mTick++){
-    const xPx=centerX+mTick*pxPerMeter;
-    const rel=xPx-baseLeft;
-    const tDiv=document.createElement('div'); tDiv.className='tick'; tDiv.style.left=rel+'px'; rulerEl.appendChild(tDiv);
-    const lbl=document.createElement('div'); lbl.className='tick-label';
-    lbl.textContent=(mTick===0?'0':(mTick>0? '+'+mTick:''+mTick))+' m';
-    lbl.style.left=rel+'px'; rulerEl.appendChild(lbl);
-  }
-}
-
-/* Αγκύρωση ελατηρίου */
-function anchorX(){ return stage.clientWidth*0.18; }
-
-/* Καταγραφή μέτρησης */
-function logMeasurement(tObs,xMeters){
-  if(!obsStarted || mode==='pause') return;
-  if(tObs-lastSampleObsTime<sampleInterval) return; lastSampleObsTime=tObs;
-  const tr=document.createElement('tr');
-  tr.className='new';
-  tr.innerHTML=`<td>${(++measureRowIdx)}</td><td>${tObs.toFixed(2)}</td><td>${xMeters.toFixed(2)}</td>`;
-  measureTBody.appendChild(tr);
-  setTimeout(()=>{ tr.classList.remove('new'); }, 650);
-  try{ tr.scrollIntoView({block:'end'}); }catch(e){}
-  try{ measureBox.scrollTop=measureBox.scrollHeight; }catch(e){}
-}
-
-/* Mode */
-function setMode(newMode){
-  mode=newMode;
-  btnSlow.classList.toggle('active', mode==='slow');
-  btnPlay.classList.toggle('active', mode==='run');
-  slowHint.textContent = (mode==='slow' && slowFactor<1) ? `SLOW-MO ×${slowFactor.toFixed(2)}` : '';
-}
-
-/* Κύριο animation */
-let L0_px; let skaterWidthPx; let hookOffsetPx;
-function animate(now){
-  const realDt=(now-lastFrame)/1000; lastFrame=now;
-  positionRightPanel(); updateRuler();
-
-  const tPhys=(now-t0)/1000;
-  if(!obsStarted){ playbackTime=tPhys; }
-  else{ playbackTime += (mode==='run'? realDt : (mode==='slow'? realDt*slowFactor : 0)); }
-
-  const tObs= obsStarted ? (playbackTime-obsStartPlaybackOffset) : 0;
-  clockEl.textContent='t = '+tObs.toFixed(2)+' s';
-
-  if(pendingGraph && graphEnabled){
-    if(window.uPlot){ try{ ensureXTReady(); pendingGraph=false; }catch(e){ console.error('deferred graph init',e); } }
-    else{ renderXTCanvasFallback(); }
-  }
-
-  if(obsStarted && !isBubbleActive && nextThoughtIdx<thoughtScript.length){
-    const th=thoughtScript[nextThoughtIdx];
-    const shiftMul=(firstThoughtMul-DEFAULT_FIRST_MUL);
-    const baseMul=(th.atT??0);
-    const eventAtSec=(baseMul+shiftMul)*T*timelineScale;
-    if(tObs>=eventAtSec){
-      try{ handleTimelineEvent(th); nextThoughtIdx+=1; }catch(e){ console.error('timeline event error:',e); nextThoughtIdx+=1; }
-    }
-  }
-
-  const springRect=springEl.getBoundingClientRect();
-  const skRect=actor.getBoundingClientRect();
-  if(!L0_px && springRect.width>0){ L0_px=springRect.width; }
-  if(skRect.width>0){ skaterWidthPx=skRect.width; hookOffsetPx=skaterWidthPx/2; }
-
-  { // δέσιμο + spotlight + δείκτης
-    const ax=anchorX();
-    const centerX=stage.clientWidth/2;
-    const skaterHookX=centerX + A_px*Math.sin(omega*playbackTime);
-    const distance=skaterHookX-ax;
-    const scale=(L0_px && L0_px>0) ? (distance/L0_px) : 1;
-    springEl.style.left=ax+'px';
-    springEl.style.transform=`scaleX(${scale})`;
-    actor.style.transform='none';
-    actor.style.left=(skaterHookX-hookOffsetPx)+'px';
-    markerEl.style.left=skaterHookX+'px';
-    spotlight.style.background=`radial-gradient(220px 140px at ${skaterHookX}px ${stage.clientHeight*0.62}px, rgba(255,255,220,.65), rgba(255,255,220,0) 70%)`;
-
-    const xMeters=(skaterHookX-centerX)/pxPerMeter;
-    logMeasurement(tObs,xMeters);
-  }
-
-  requestAnimationFrame(animate);
-}
-requestAnimationFrame(animate);
-
 /* Bubbles */
 const BASE_BUBBLE_LIFT=96;
 let bubbleAltLower=false;
 function randInt(a,b){ return Math.floor(a + Math.random()*(b-a+1)); }
-
-/* Auto-διάρκεια σκέψης */
 function computeThoughtDuration(text){
   const s = (text ?? '');
   const len = s.length;
@@ -626,7 +606,6 @@ function computeThoughtDuration(text){
   const scale = (typeof bubbleDurationSec === 'number' && bubbleDurationSec > 0) ? (bubbleDurationSec / DEFAULT_BUBBLE) : 1.0;
   return Math.max(MIN, Math.min(MAX, auto * scale));
 }
-
 function showThoughtForViewer(vIdx,text,durationSecs,customLift,xShift=0){
   const viewerEl=document.querySelector(`.viewer[data-idx="${vIdx}"]`);
   if(!viewerEl) return;
@@ -679,85 +658,6 @@ function resumeFromBubble(nextMode='run'){
   setMode(nextMode==='slow'?'slow':'run');
 }
 
-/* Νόμοι + μικρο-γραφικά */
-let lawCount=0;
-function addLaw(txt){
-  if(!firstLawShown){
-    firstLawShown=true;
-    lawsTitle.textContent=i18n[LANG].lawsTitle;
-    lawsPane.style.display='block';
-  }
-  const li=document.createElement('li'); li.textContent=txt; lawsList.appendChild(li);
-  lawCount++; positionLawCharts();
-}
-
-/* Παράμετροι A, ω, φ0 */
-function showCurtainParams(){
-  const phi0deg=((omega*obsStartPlaybackOffset)*180/Math.PI + 360)%360;
-  document.getElementById('paramA').textContent  =`A = ${A_m.toFixed(2)} m`;
-  document.getElementById('paramW').textContent  =`ω = ${omega.toFixed(3)} rad/s`;
-  document.getElementById('paramPhi').textContent=`φ₀ = ${phi0deg.toFixed(1)}°`;
-  paramsBoxEl.style.display='block';
-  positionParamsBox();
-}
-
-/* uPlot – x(t) */
-function buildSeriesData(){
-  const N=240, tArr=new Array(N+1), xArr=new Array(N+1);
-  for(let i=0;i<=N;i++){
-    const tloc=(i/N)*T;
-    tArr[i]=tloc; xArr[i]=A_m*Math.sin(omega*(tloc+obsStartPlaybackOffset));
-  }
-  return [tArr,xArr];
-}
-function x0Val(){ return A_m*Math.sin(omega*(0+obsStartPlaybackOffset)); }
-
-/* init/resize x–t */
-function initXTChart(){
-  if(uXT) return; if(!window.uPlot){ if(graphEnabled){ pendingGraph=true; } return; }
-  xtChart.style.display='block'; positionRightPanel();
-  let w=Math.floor(xtChart.clientWidth)||260, h=Math.floor(xtChart.clientHeight)||140;
-  const xData=buildSeriesData();
-  const opts={
-    width:w, height:h,
-    scales:{ x:{time:false, range:[0,T]}, y:{range:[-A_m*1.1, A_m*1.1]} },
-    axes:[
-      { stroke:"#fff", grid:{show:true, stroke:"rgba(255,255,255,0.25)"},
-        values:(u,vals)=>vals.map(v=>v.toFixed(1)+" s"), label:"t (s)", labelSize:18, labelGap:6 },
-      { stroke:"#fff", grid:{show:true, stroke:"rgba(255,255,255,0.25)"},
-        values:(u,vals)=>vals.map(v=>v.toFixed(1)+" m"), label:"x (m)", labelSize:18, labelGap:8 }
-    ],
-    series:[{}, {label:"x(t)", stroke:"#ffd27a", width:2}],
-    hooks:{ draw:[(u)=>{ }] }
-  };
-  uXT=new uPlot(opts, xData, xtChart);
-}
-function drawXTChart(){ if(uXT){ uXT.setData(buildSeriesData()); } }
-function ensureXTReady(){
-  if(!graphEnabled) return;
-  try{ if(window.uPlot){ initXTChart(); if(uXT){ drawXTChart(); } }
-       else{ if(graphEnabled){ pendingGraph=true; renderXTCanvasFallback(); } } }
-  catch(e){ console.error('ensureXTReady',e); if(graphEnabled){ pendingGraph=true; renderXTCanvasFallback(); } }
-}
-
-/* Fallback canvas (συντομευμένο) */
-function renderXTCanvasFallback(){ /* noop */ }
-function drawFallbackOnce(){ /* noop */ }
-
-/* Γραφήματα νόμων (συντομευμένα) */
-let vCan=null,aCan=null,axCan=null;
-function sizeLawCanvas(c){ const w=Math.floor(stage.clientWidth*0.16); const h=140; c.width=w; c.height=h; c.style.width=w+'px'; c.style.height=h+'px'; }
-function positionLawCharts(){
-  const r = lawsPane.getBoundingClientRect();
-  const s = stage.getBoundingClientRect();
-  lawCharts.style.top = (r.bottom - s.top + 8) + 'px';
-  lawCharts.style.left= '2%';
-  lawCharts.style.width= '16%';
-}
-function ensureVelocityChart(){ if(!vCan){ vCan = document.createElement('canvas'); lawCharts.appendChild(vCan); } sizeLawCanvas(vCan); }
-function ensureAccelerationChart(){ if(!aCan){ aCan = document.createElement('canvas'); lawCharts.appendChild(aCan); } sizeLawCanvas(aCan); }
-function ensureAxChart(){ if(!axCan){ axCan = document.createElement('canvas'); lawCharts.appendChild(axCan); } sizeLawCanvas(axCan); }
-
 /* Κλείσιμο αυλαίας + actBreak */
 function closeCurtainsSequence(){
   curtainUpper.classList.add('slow-close');
@@ -807,103 +707,15 @@ function handleTimelineEvent(th){
   }
 }
 
-/* Κουμπιά Π1 */
-document.getElementById('btnPause').addEventListener('click',()=>{ setMode(mode==='pause'?'run':'pause'); });
-document.getElementById('btnSlow') .addEventListener('click', ()=>{ resumeFromBubble('slow'); });
-document.getElementById('btnPlay') .addEventListener('click', ()=>{ resumeFromBubble('run');  });
-document.getElementById('btnAct2').addEventListener('click', ()=>{
-  actBreak.style.display='none';
-  springEl.style.display='block';
-  document.dispatchEvent(new CustomEvent('act2-start'));
-});
-function resetShow(){
-  if(bubbleAutoTimer){ clearTimeout(bubbleAutoTimer); bubbleAutoTimer=null; }
-  thoughtScript=[...thoughtScriptBase];
-  nextThoughtIdx=0; isBubbleActive=false;
-  measureRowIdx=0; lastSampleObsTime=-Infinity;
-  graphEnabled=false; pendingGraph=false; firstLawShown=false; lawCount=0;
-  obsStarted=false; obsStartPlaybackOffset=0;
-  mode='run'; setMode('run');
-  stage.classList.remove('open');
-  countdownOverlay.style.display='none';
-  startBtn.style.display='block';
-  clockEl.style.display='none';
-  measureBox.style.display='none';
-  paramsBoxEl.style.display='none';
-  markerEl.style.opacity='0';
-  bubbleEl.classList.remove('active','checked','closing'); bubbleEl.style.display='none'; bubbleEl.style.opacity='0';
-  actBreak.style.display='none';
-  settingsPanel.style.display='none';
-  measureTBody.innerHTML='';
-  lawsList.innerHTML=''; lawsPane.style.display='none';
-  lawCharts.innerHTML='';
-  vCan=null; aCan=null; axCan=null;
-  if(uXT){ try{ uXT.destroy(); }catch(e){}; uXT=null; }
-  const fb=document.getElementById('xtFallback'); if(fb) fb.remove();
-  xtChart.style.display='none';
-  springEl.style.display='none';
-  foyerClose(true); // force close if open
-  t0=performance.now(); lastFrame=t0; playbackTime=0;
-}
-document.getElementById('btnReset').addEventListener('click', resetShow);
+/* ====== ΦΟΥΑΓΙΕ (Πράξη 3) ====== */
+const foyerPanel=document.getElementById('foyerPanel');
+const foyerBoard=document.getElementById('foyerBoard');
+const btnFoyer=document.getElementById('btnFoyer');
+const btnPrev=document.getElementById('foyerPrev');
+const btnNext=document.getElementById('foyerNext');
+const btnAuto=document.getElementById('foyerAuto');
+const btnClose=document.getElementById('foyerClose');
 
-/* Τερματισμός Παράστασης (πλήρης επαναφορά) */
-function endShow(){
-  foyerClose(true);
-  resetShow();
-  window.scrollTo(0,0);
-}
-btnEnd.addEventListener('click', endShow);
-
-/* Έναρξη (countdown) */
-function beginObservationAfterCountdown(){
-  stage.classList.add('open');
-  if(!obsStarted){ obsStarted=true; obsStartPlaybackOffset=playbackTime; }
-  clockEl.style.display='block';
-  measureBox.style.display='block';
-  markerEl.style.opacity='1';
-  positionRightPanel();
-}
-function startShowCountdown(){
-  startBtn.style.display='none';
-  countdownOverlay.style.display='flex';
-  const seconds=5;
-  let end=performance.now()+seconds*1000;
-  function tick(){
-    const now=performance.now();
-    const remain=Math.max(0, Math.ceil((end-now)/1000));
-    countdownTimerEl.textContent=remain;
-    if(now>=end){
-      countdownOverlay.style.display='none';
-      beginObservationAfterCountdown();
-    }else{
-      requestAnimationFrame(tick);
-    }
-  }
-  requestAnimationFrame(tick);
-}
-startBtn.addEventListener('click', startShowCountdown);
-
-/* Παρατηρητής μεγέθους */
-const ro=new ResizeObserver(()=>{ positionRightPanel();
-  if(uXT){ drawXTChart(); } else if(document.getElementById('xtFallback')){ drawFallbackOnce(); }
-  positionLawCharts(); positionParamsBox();
-});
-ro.observe(stage);
-
-/* Self-check */
-(function(){
-  const must={stage,actor,springEl,startBtn,clockEl,rulerEl,markerEl,bubbleEl,btnPause,btnSlow,btnPlay,btnSettings,btnReset,btnEnd,settingsPanel,xtChart,paramsBoxEl,lawsPane,lawCharts,measureBox,actBreak,spotlight,curtainUpper,foyerPanel,foyerBoard};
-  const miss=Object.entries(must).filter(([k,v])=>!v).map(([k])=>k);
-  if(miss.length) console.error('Λείπουν στοιχεία:', miss.join(', ')); else console.log('Self-check OK');
-})();
-setTimeout(()=>{ if(!window.uPlot && graphEnabled){ renderXTCanvasFallback(); } }, 2500);
-
-/* Αρχικοποίηση */
-setLang('gr');
-resetShow();
-
-/* ====== ΦΟΥΑΓΙΕ: viewers, χρώματα, script ====== */
 const FOYER_VIEWERS = [
   { idx:0, name:'ΘΕΑΤΗΣ 1', color:'#ff6b6b' },
   { idx:1, name:'ΘΕΑΤΗΣ 2', color:'#ffd166' },
@@ -912,7 +724,6 @@ const FOYER_VIEWERS = [
   { idx:4, name:'ΘΕΑΤΗΣ 5', color:'#c77dff' },
 ];
 
-/* Σενάριο Φουαγιέ (αυτολεξεί + σύμβολα) */
 const FOYER_SCRIPT = [
   {
     viewer:0,
@@ -927,57 +738,42 @@ const FOYER_SCRIPT = [
     left:`Θεατής 3: Λοιπόν!<br>
 1) Προς το παρόν δεν «προφητεύουμε» κάτι για την ταχύτητα σε συνάρτηση με τη θέση, όπως έκανε ο Θεατής 2 για την επιτάχυνση.<br>
 2) Ό,τι είδαμε, γενικεύεται για κάθε (m,D).<br>
-3) Με λίγη αλγεβρική περιέργεια για τον τυχαίο (m,D): Λύνουμε την (1) ως προς ημ(ωt+φ₀) και υψώνουμε στο τετράγωνο. Το ίδιο και την (2) ως προς συν(ωt+φ₀). Προσθέτουμε κατά μέλη. Ιδού η σχέση που έλειπε — τώρα «προφητεύουμε» και την ταχύτητα από τη θέση!`,
+3) Με λίγη αλγεβρική περιέργεια για τον τυχαίο (m,D): Λύνουμε την (1) ως προς ημ(ωt+φ₀) και υψώνουμε στο τετράγωνο. Το ίδιο και την (2) ως προς συν(ωt+φ₀). Προσθέτουμε κατά μέλη.`,
     right:[
       `ω<sup>2</sup>A<sup>2</sup> = ω<sup>2</sup>x<sup>2</sup> + υ<sup>2</sup>  <span class="eq">(8)</span>`
     ]
   },
   {
     viewer:3,
-    left:`Θεατής 4: Ας τη φέρουμε στη μορφή υ = …<br>—την (8) τη λύνουμε ως προς υ, και ανάλογα, από (2),(3) προκύπτει και σχέση ανάμεσα σε a και υ. Τέλος από εμένα· ο λόγος στον Θεατή 1!`,
+    left:`Θεατής 4: Ας τη φέρουμε στη μορφή υ = … και αντίστοιχα από (2),(3) βγαίνει σχέση ανάμεσα σε a και υ.`,
     right:[
       `υ = ± ω √(A<sup>2</sup> − x<sup>2</sup>)  <span class="eq">(10)</span>`,
-      `a = ± ω √(ω<sup>2</sup>A<sup>2</sup> − υ<sup>2</sup>) = ± ω √(υ<sub>max</sub><sup>2</sup> − υ<sup>2</sup>)  <span class="eq">(11),(12)</span>`
+      `a = ± ω √(ω<sup>2</sup>A<sup>2</sup> − υ<sup>2</sup>)  <span class="eq">(11)</span>`
     ]
   },
   {
     viewer:0,
-    left:`Θεατής 1: Στο σημείο που διέκοψα είχαμε ω<sup>2</sup>A<sup>2</sup> = ω<sup>2</sup>x<sup>2</sup> + υ<sup>2</sup>.<br>
-Αν πολλαπλασιάσουμε επί ½m: προκύπτει (12). Μα:<br>
-• ½mυ<sup>2</sup> είναι η κινητική ενέργεια Κ του (m,D).<br>
-• ½mω<sup>2</sup>x<sup>2</sup> είναι δυναμική ενέργεια U(x). Άρα ½mω<sup>2</sup>A<sup>2</sup> = U<sub>max</sub>.<br>
-• Ως σταθερό άθροισμα Κ+U, εκφράζει τη μηχανική ενέργεια E<sub>M</sub> — Α.Δ.Μ.Ε.Τ.`,
+    left:`Θεατής 1: Πολλαπλασιάζοντας (8) με ½m παίρνουμε την ενεργειακή μορφή και την Α.Δ.Μ.Ε.Τ.`,
     right:[
       `½ m ω<sup>2</sup> A<sup>2</sup> = ½ m ω<sup>2</sup> x<sup>2</sup> + ½ m υ<sup>2</sup>  <span class="eq">(12)</span>`,
-      `K = ½ m υ<sup>2</sup>, &nbsp; U(x)=½ m ω<sup>2</sup> x<sup>2</sup>, &nbsp; U<sub>max</sub>=½ m ω<sup>2</sup> A<sup>2</sup>`
+      `K = ½ m υ<sup>2</sup>, &nbsp; U=½ m ω<sup>2</sup> x<sup>2</sup>, &nbsp; U<sub>max</sub>=½ m ω<sup>2</sup> A<sup>2</sup>`
     ]
   },
   {
-    viewer:4,
-    left:`Θεατής 5: Δηλαδή ξέρουμε και το… budget της παράστασης! Θέλουμε όντως 3η πράξη; 😅`
-  },
-  {
     viewer:3,
-    left:`Θεατής 4: Πιο «συμμαζεμένα», αν θέσουμε D=mω<sup>2</sup> όπως και στην (7), η (12) γράφεται ως Α.Δ.Μ.Ε.Τ. του (m,D).`,
+    left:`Θεατής 4: Θέτοντας D=mω<sup>2</sup> όπως (7), η (12) γράφεται «ελαστικά».`,
     right:[
       `½ D A<sup>2</sup> = ½ D x<sup>2</sup> + ½ m υ<sup>2</sup>  <span class="eq">(13)</span>`,
       `ΣF = −D x  <span class="eq">(7)</span>`
     ]
-  },
-  {
-    viewer:1,
-    left:`Θεατής 2: Τελική σύνοψη: κάθε ταλαντωτής (m,D) χαρακτηρίζεται από m και ω — ή ισοδύναμα από m και D. Τα όρια της παράστασης τα καθορίζει ο Ενεργειούλης· την έναρξη εμείς!`
   }
 ];
 
-/* Χρωματισμός (αριστερή στήλη) */
 function tint(hex, a){
   const c = hex.replace('#','');
   const r=parseInt(c.slice(0,2),16), g=parseInt(c.slice(2,4),16), b=parseInt(c.slice(4,6),16);
   return `rgba(${r},${g},${b},${a})`;
 }
-
-/* Board row append (2 στήλες) */
 function boardAppend(item){
   const v = FOYER_VIEWERS[item.viewer] || FOYER_VIEWERS[0];
   const row=document.createElement('div'); row.className='row2';
@@ -998,8 +794,6 @@ function boardAppend(item){
   foyerBoard.appendChild(row);
   foyerBoard.scrollTop=foyerBoard.scrollHeight;
 }
-
-/* Φουαγιέ ροή */
 let foyerIdx=0, foyerAuto=false, foyerAutoTimer=null;
 function foyerShowBubble(item){
   const text = item.left?.replace(/^Θεατής\s*\d+:\s*/i,'') || '';
@@ -1018,8 +812,6 @@ function foyerStep(dir){
     foyerAuto=false; btnAuto.textContent='Auto ▷';
   }
 }
-
-/* Open/Close — ανοίγει ΠΑΝΤΑ σε auto */
 function foyerOpen(){
   positionRightPanel();
   foyerPanel.style.display='block';
@@ -1032,12 +824,16 @@ function foyerOpen(){
 }
 function foyerClose(force=false){
   foyerPanel.style.display='none';
-  if(!force){ measureBox.style.display='block'; if(graphEnabled) xtChart.style.display='block'; }
-  foyerAuto=false; btnAuto.textContent='Auto ▷';
-  if(foyerAutoTimer){ clearTimeout(foyerAutoTimer); foyerAutoTimer=null; }
+  // ασφαλές κλείσιμο ακόμη κι αν δεν έχουν αρχικοποιηθεί μεταβλητές
+  try{
+    foyerAuto=false; btnAuto.textContent='Auto ▷';
+    if(foyerAutoTimer){ clearTimeout(foyerAutoTimer); foyerAutoTimer=null; }
+  }catch(_){}
+  if(!force){
+    if(measureBox) measureBox.style.display='block';
+    if(graphEnabled && xtChart) xtChart.style.display='block';
+  }
 }
-
-/* Hooks */
 btnFoyer.addEventListener('click', foyerOpen);
 btnClose.addEventListener('click', ()=>foyerClose(false));
 btnPrev.addEventListener('click', ()=>foyerStep(-1));
@@ -1046,12 +842,137 @@ btnAuto.addEventListener('click', ()=>{
   foyerAuto=!foyerAuto; btnAuto.textContent = foyerAuto ? 'Auto ❚❚' : 'Auto ▷';
   if(foyerAuto && foyerIdx<FOYER_SCRIPT.length) foyerStep(+1);
 });
-
-/* Άνοιγμα Φουαγιέ αυτόματα με το τέλος της Πράξης 2 — σε auto */
 document.addEventListener('act2-ended', ()=>{ foyerOpen(); });
-
-/* Συντόμευση: F */
 document.addEventListener('keydown', (e)=>{ if(e.key.toLowerCase()==='f'){ foyerPanel.style.display==='block'?foyerClose(false):foyerOpen(); }});
+
+/* === Πράξη 1 κουμπιά === */
+document.getElementById('btnPause').addEventListener('click',()=>{ setMode(mode==='pause'?'run':'pause'); });
+document.getElementById('btnSlow') .addEventListener('click', ()=>{ resumeFromBubble('slow'); });
+document.getElementById('btnPlay') .addEventListener('click', ()=>{ resumeFromBubble('run');  });
+document.getElementById('btnAct2').addEventListener('click', ()=>{
+  actBreak.style.display='none';
+  springEl.style.display='block';
+  document.dispatchEvent(new CustomEvent('act2-start'));
+});
+function showCurtainParams(){
+  const phi0deg=((omega*obsStartPlaybackOffset)*180/Math.PI + 360)%360;
+  document.getElementById('paramA').textContent  =`A = ${A_m.toFixed(2)} m`;
+  document.getElementById('paramW').textContent  =`ω = ${omega.toFixed(3)} rad/s`;
+  document.getElementById('paramPhi').textContent=`φ₀ = ${phi0deg.toFixed(1)}°`;
+  paramsBoxEl.style.display='block';
+  positionParamsBox();
+}
+
+/* Reset / End */
+function resetShow(){
+  if(bubbleAutoTimer){ clearTimeout(bubbleAutoTimer); bubbleAutoTimer=null; }
+  thoughtScript=[...thoughtScriptBase];
+  nextThoughtIdx=0; isBubbleActive=false;
+  measureRowIdx=0; lastSampleObsTime=-Infinity;
+  graphEnabled=false; pendingGraph=false; firstLawShown=false;
+  obsStarted=false; obsStartPlaybackOffset=0;
+  mode='run'; setMode('run');
+  stage.classList.remove('open');
+  countdownOverlay.style.display='none';
+  startBtn.style.display='block';
+  clockEl.style.display='none';
+  measureBox.style.display='none';
+  paramsBoxEl.style.display='none';
+  markerEl.style.opacity='0';
+  bubbleEl.classList.remove('active','checked','closing'); bubbleEl.style.display='none'; bubbleEl.style.opacity='0';
+  actBreak.style.display='none';
+  settingsPanel.style.display='none';
+  measureTBody.innerHTML='';
+  lawsList.innerHTML=''; lawsPane.style.display='none';
+  lawCharts.innerHTML='';
+  vCan=null; aCan=null; axCan=null;
+  if(uXT){ try{ uXT.destroy(); }catch(e){}; uXT=null; }
+  const fb=document.getElementById('xtFallback'); if(fb) fb.remove();
+  xtChart.style.display='none';
+  springEl.style.display='none';
+  // κλείσε φουαγιέ χωρίς εξάρτηση από μεταβλητές
+  if(foyerPanel) foyerPanel.style.display='none';
+  t0=performance.now(); lastFrame=t0; playbackTime=0;
+}
+function endShow(){
+  if(foyerPanel) foyerPanel.style.display='none';
+  resetShow();
+  window.scrollTo(0,0);
+}
+btnReset.addEventListener('click', resetShow);
+btnEnd.addEventListener('click', endShow);
+
+/* Animation loop */
+let L0_px; let skaterWidthPx; let hookOffsetPx;
+function animate(now){
+  const realDt=(now-lastFrame)/1000; lastFrame=now;
+  positionRightPanel(); updateRuler();
+
+  const tPhys=(now-t0)/1000;
+  if(!obsStarted){ playbackTime=tPhys; }
+  else{ playbackTime += (mode==='run'? realDt : (mode==='slow'? realDt*slowFactor : 0)); }
+
+  const tObs= obsStarted ? (playbackTime-obsStartPlaybackOffset) : 0;
+  clockEl.textContent='t = '+tObs.toFixed(2)+' s';
+
+  if(pendingGraph && graphEnabled){
+    if(window.uPlot){ try{ ensureXTReady(); pendingGraph=false; }catch(e){ console.error('deferred graph init',e); } }
+    else{ renderXTCanvasFallback(); }
+  }
+
+  if(obsStarted && !isBubbleActive && nextThoughtIdx<thoughtScript.length){
+    const th=thoughtScript[nextThoughtIdx];
+    const shiftMul=(firstThoughtMul-DEFAULT_FIRST_MUL);
+    const baseMul=(th.atT??0);
+    const eventAtSec=(baseMul+shiftMul)*T*timelineScale;
+    if(tObs>=eventAtSec){
+      try{ handleTimelineEvent(th); nextThoughtIdx+=1; }catch(e){ console.error('timeline event error:',e); nextThoughtIdx+=1; }
+    }
+  }
+
+  const springRect=springEl.getBoundingClientRect();
+  const skRect=actor.getBoundingClientRect();
+  if(!L0_px && springRect.width>0){ L0_px=springRect.width; }
+  if(skRect.width>0){ skaterWidthPx=skRect.width; hookOffsetPx=skaterWidthPx/2; }
+
+  { // κίνηση + spotlight + δείκτης
+    const ax=anchorX();
+    const centerX=stage.clientWidth/2;
+    const skaterHookX=centerX + A_px*Math.sin(omega*playbackTime);
+    const distance=skaterHookX-ax;
+    const scale=(L0_px && L0_px>0) ? (distance/L0_px) : 1;
+    springEl.style.left=ax+'px';
+    springEl.style.transform=`scaleX(${scale})`;
+    actor.style.transform='none';
+    actor.style.left=(skaterHookX-hookOffsetPx)+'px';
+    markerEl.style.left=skaterHookX+'px';
+    spotlight.style.background=`radial-gradient(220px 140px at ${skaterHookX}px ${stage.clientHeight*0.62}px, rgba(255,255,220,.65), rgba(255,255,220,0) 70%)`;
+
+    const xMeters=(skaterHookX-centerX)/pxPerMeter;
+    logMeasurement(tObs,xMeters);
+  }
+
+  requestAnimationFrame(animate);
+}
+requestAnimationFrame(animate);
+
+/* Παρατηρητής μεγέθους */
+const ro=new ResizeObserver(()=>{ positionRightPanel();
+  if(uXT){ drawXTChart(); } else if(document.getElementById('xtFallback')){ drawFallbackOnce(); }
+  positionLawCharts(); positionParamsBox();
+});
+ro.observe(stage);
+
+/* Self-check */
+(function(){
+  const must={stage,actor,springEl,startBtn,clockEl,rulerEl,markerEl,bubbleEl,btnPause,btnSlow,btnPlay,btnSettings,btnReset,btnEnd,settingsPanel,xtChart,paramsBoxEl,lawsPane,lawCharts,measureBox,actBreak,spotlight,curtainUpper,foyerPanel,foyerBoard};
+  const miss=Object.entries(must).filter(([k,v])=>!v).map(([k])=>k);
+  if(miss.length) console.error('Λείπουν στοιχεία:', miss.join(', ')); else console.log('Self-check OK');
+})();
+
+/* Αρχικοποίηση (τελευταίο) */
+setLang('gr');
+resetShow();
 </script>
 
 <!-- Main boot & adapters -->
@@ -1061,7 +982,7 @@ document.addEventListener('keydown', (e)=>{ if(e.key.toLowerCase()==='f'){ foyer
 <!-- UI/Nόμοι + Acts -->
 <script src="ui_laws_layout_v4.js"></script>
 <script src="act2.js"></script>
-<!-- act3.js δεν χρησιμοποιείται: η Πράξη 3 είναι το Φουαγιέ εδώ. -->
+<!-- act3.js παραλείπεται: η Πράξη 3 είναι το Φουαγιέ. -->
 
 </body>
 </html>
