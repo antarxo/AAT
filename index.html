@@ -49,11 +49,11 @@
   /* Τίτλοι */
   .signboard{position:absolute;top:-6px;left:50%;transform:translateX(-50%);background:transparent;border:none;border-radius:10px;padding:12px 18px;color:#ddd;font-family:'Georgia',serif;text-align:center;z-index:165;line-height:1.25}
   .signboard h1{font-size:32px;margin:0;color:#fff}
-  .signboard .sb-lineA{font-size:18px;font-style:italic;margin-top:2px;color:#ddd}
-  .signboard .sb-lineB{font-size:18px;margin-top:2px}
-  .signboard .sb-lineB .hl{color:#ffd27a;font-weight:600}
-  .signboard .sb-lineC{font-size:16px;margin-top:2px;font-weight:700;color:#fff}
-  .signboard .sb-lineD{font-size:13px;margin-top:2px;font-style:italic;opacity:.9}
+  .sb-lineA{font-size:18px;font-style:italic;margin-top:2px;color:#ddd}
+  .sb-lineB{font-size:18px;margin-top:2px}
+  .sb-lineB .hl{color:#ffd27a;font-weight:600}
+  .sb-lineC{font-size:16px;margin-top:2px;font-weight:700;color:#fff}
+  .sb-lineD{font-size:13px;margin-top:2px;font-style:italic;opacity:.9}
 
   /* Δεξιά (ρολόι/μετρήσεις/γράφημα) */
   .clock{position:absolute;top:10px;left:calc(82vw + 9vw);transform:translateX(-50%);background:rgba(0,0,0,.5);color:#fff;padding:6px 10px;font-size:14px;font-family:"Courier New",monospace;border-radius:6px;border:1px solid rgba(255,255,255,.3);z-index:265;pointer-events:none;display:none}
@@ -140,7 +140,7 @@
     background:#0d2a1e; border:2px solid rgba(255,255,255,.15);
     border-radius:10px; box-shadow:inset 0 0 30px rgba(0,0,0,.6);
     color:#fff; padding:8px; overflow:auto; height:calc(100% - 36px);
-    font-size:13px; line-height:1.35;
+    font-size:13px; line-height:1.25;
   }
   .row2{display:grid;grid-template-columns:1fr 1fr;gap:6px;align-items:start}
   .cellL{padding:6px 8px;border-left:6px solid transparent;border-radius:6px;background:rgba(255,255,255,.04)}
@@ -212,6 +212,7 @@
       <button id="btnPlay"  title="κανονικά">▶</button>
       <button id="btnSettings" title="ρυθμίσεις">⚙️</button>
       <button id="btnReset" title="reset">↺</button>
+      <button id="btnEnd" title="Τέλος παράστασης">⏹</button>
     </div>
     <div class="settings" id="settingsPanel">
       <h5 data-i18n="settingsTitle">Ρυθμίσεις ροής</h5>
@@ -329,7 +330,7 @@ const i18n = {
       t18:"Τέλεια! όλο το σετ νόμων της Α.Α.Τ!"
     }
   },
-  en: { /* εσκεμμένα κενό για τώρα */ }
+  en: { }
 };
 let LANG='gr', firstLawShown=false;
 const langSwitch = document.getElementById('langSwitch');
@@ -379,6 +380,7 @@ const btnSlow=document.getElementById('btnSlow');
 const btnPlay=document.getElementById('btnPlay');
 const btnSettings=document.getElementById('btnSettings');
 const btnReset=document.getElementById('btnReset');
+const btnEnd=document.getElementById('btnEnd');
 const settingsPanel=document.getElementById('settingsPanel');
 const slFirst=document.getElementById('slFirst'), valFirst=document.getElementById('valFirst');
 const slScale=document.getElementById('slScale'), valScale=document.getElementById('valScale');
@@ -508,6 +510,27 @@ function positionRightPanel(){
   }
 }
 window.addEventListener('resize', positionRightPanel);
+
+/* ====== RULER ====== */
+let lastRulerW=0;
+function updateRuler(){
+  const baseLeft=stage.clientWidth*0.18;
+  const usableW =stage.clientWidth*0.64;
+  if(Math.abs(usableW-lastRulerW)<1) return;
+  lastRulerW=usableW;
+  rulerEl.style.left=baseLeft+'px';
+  rulerEl.style.width=usableW+'px';
+  rulerEl.innerHTML='';
+  const centerX=stage.clientWidth/2;
+  for(let mTick=-7;mTick<=7;mTick++){
+    const xPx=centerX+mTick*pxPerMeter;
+    const rel=xPx-baseLeft;
+    const tDiv=document.createElement('div'); tDiv.className='tick'; tDiv.style.left=rel+'px'; rulerEl.appendChild(tDiv);
+    const lbl=document.createElement('div'); lbl.className='tick-label';
+    lbl.textContent=(mTick===0?'0':(mTick>0? '+'+mTick:''+mTick))+' m';
+    lbl.style.left=rel+'px'; rulerEl.appendChild(lbl);
+  }
+}
 
 /* Αγκύρωση ελατηρίου */
 function anchorX(){ return stage.clientWidth*0.18; }
@@ -705,7 +728,7 @@ function initXTChart(){
         values:(u,vals)=>vals.map(v=>v.toFixed(1)+" m"), label:"x (m)", labelSize:18, labelGap:8 }
     ],
     series:[{}, {label:"x(t)", stroke:"#ffd27a", width:2}],
-    hooks:{ draw:[(u)=>{ /* βοηθητικές γραμμές */ }] }
+    hooks:{ draw:[(u)=>{ }] }
   };
   uXT=new uPlot(opts, xData, xtChart);
 }
@@ -819,9 +842,18 @@ function resetShow(){
   const fb=document.getElementById('xtFallback'); if(fb) fb.remove();
   xtChart.style.display='none';
   springEl.style.display='none';
+  foyerClose(true); // force close if open
   t0=performance.now(); lastFrame=t0; playbackTime=0;
 }
 document.getElementById('btnReset').addEventListener('click', resetShow);
+
+/* Τερματισμός Παράστασης (πλήρης επαναφορά) */
+function endShow(){
+  foyerClose(true);
+  resetShow();
+  window.scrollTo(0,0);
+}
+btnEnd.addEventListener('click', endShow);
 
 /* Έναρξη (countdown) */
 function beginObservationAfterCountdown(){
@@ -861,7 +893,7 @@ ro.observe(stage);
 
 /* Self-check */
 (function(){
-  const must={stage,actor,springEl,startBtn,clockEl,rulerEl,markerEl,bubbleEl,btnPause,btnSlow,btnPlay,btnSettings,btnReset,settingsPanel,xtChart,paramsBoxEl,lawsPane,lawCharts,measureBox,actBreak,spotlight,curtainUpper,foyerPanel,foyerBoard};
+  const must={stage,actor,springEl,startBtn,clockEl,rulerEl,markerEl,bubbleEl,btnPause,btnSlow,btnPlay,btnSettings,btnReset,btnEnd,settingsPanel,xtChart,paramsBoxEl,lawsPane,lawCharts,measureBox,actBreak,spotlight,curtainUpper,foyerPanel,foyerBoard};
   const miss=Object.entries(must).filter(([k,v])=>!v).map(([k])=>k);
   if(miss.length) console.error('Λείπουν στοιχεία:', miss.join(', ')); else console.log('Self-check OK');
 })();
@@ -987,26 +1019,27 @@ function foyerStep(dir){
   }
 }
 
-/* Open/Close */
+/* Open/Close — ανοίγει ΠΑΝΤΑ σε auto */
 function foyerOpen(){
   positionRightPanel();
   foyerPanel.style.display='block';
   measureBox.style.display='none';
   xtChart.style.display='none';
   if(foyerAutoTimer){ clearTimeout(foyerAutoTimer); foyerAutoTimer=null; }
-  foyerBoard.innerHTML=''; foyerIdx=0; foyerAuto=false; btnAuto.textContent='Auto ▷';
+  foyerBoard.innerHTML=''; foyerIdx=0;
+  foyerAuto=true; btnAuto.textContent='Auto ❚❚';
+  foyerStep(+1);
 }
-function foyerClose(){
+function foyerClose(force=false){
   foyerPanel.style.display='none';
-  measureBox.style.display='block'; // επαναφορά μόνο αν ήμασταν ήδη σε παρατήρηση
-  if(graphEnabled) xtChart.style.display='block';
+  if(!force){ measureBox.style.display='block'; if(graphEnabled) xtChart.style.display='block'; }
   foyerAuto=false; btnAuto.textContent='Auto ▷';
   if(foyerAutoTimer){ clearTimeout(foyerAutoTimer); foyerAutoTimer=null; }
 }
 
 /* Hooks */
 btnFoyer.addEventListener('click', foyerOpen);
-btnClose.addEventListener('click', foyerClose);
+btnClose.addEventListener('click', ()=>foyerClose(false));
 btnPrev.addEventListener('click', ()=>foyerStep(-1));
 btnNext.addEventListener('click', ()=>foyerStep(+1));
 btnAuto.addEventListener('click', ()=>{
@@ -1014,21 +1047,21 @@ btnAuto.addEventListener('click', ()=>{
   if(foyerAuto && foyerIdx<FOYER_SCRIPT.length) foyerStep(+1);
 });
 
-/* Άνοιγμα Φουαγιέ αυτόματα με το τέλος της Πράξης 2 */
+/* Άνοιγμα Φουαγιέ αυτόματα με το τέλος της Πράξης 2 — σε auto */
 document.addEventListener('act2-ended', ()=>{ foyerOpen(); });
 
 /* Συντόμευση: F */
-document.addEventListener('keydown', (e)=>{ if(e.key.toLowerCase()==='f'){ foyerPanel.style.display==='block'?foyerClose():foyerOpen(); }});
+document.addEventListener('keydown', (e)=>{ if(e.key.toLowerCase()==='f'){ foyerPanel.style.display==='block'?foyerClose(false):foyerOpen(); }});
 </script>
 
 <!-- Main boot & adapters -->
 <script src="intro_boot.js"></script>
 <script src="adapter.js"></script>
 
-<!-- UI/Nόμοι + Acts (κρατάμε όπως έχεις) -->
+<!-- UI/Nόμοι + Acts -->
 <script src="ui_laws_layout_v4.js"></script>
 <script src="act2.js"></script>
-<!-- act3.js δεν καλείται ως ξεχωριστή πράξη πλέον. Το φουαγιέ είναι εδώ. -->
+<!-- act3.js δεν χρησιμοποιείται: η Πράξη 3 είναι το Φουαγιέ εδώ. -->
 
 </body>
 </html>
