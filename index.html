@@ -137,21 +137,33 @@
     background:#0d2a1e url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%228%22 height=%228%22><circle cx=%224%22 cy=%224%22 r=%221%22 fill=%22rgba(255,255,255,0.03)%22/></svg>') repeat;
     border:2px solid rgba(255,255,255,.15);
     border-radius:12px; box-shadow:inset 0 0 30px rgba(0,0,0,.6);
-    color:#fff; padding:8px 10px; overflow:auto; scroll-behavior:smooth;
-    font-size:13px; line-height:1.35;
+    color:#fff; padding:8px 10px;
+    overflow:auto; /* scroll πάντα ορατό όπου χρειάζεται */
+    scrollbar-gutter:stable both-edges;
+    overscroll-behavior:contain;
+    font-size:12.5px; line-height:1.28;
   }
-  .board-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:start}
+  /* Custom scrollbars (προαιρετικό, webkit) */
+  .blackboard::-webkit-scrollbar{width:10px}
+  .blackboard::-webkit-scrollbar-track{background:rgba(255,255,255,.06);border-radius:10px}
+  .blackboard::-webkit-scrollbar-thumb{background:rgba(255,255,255,.25);border-radius:10px}
+  .blackboard::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.35)}
+
+  .board-grid{display:grid;grid-template-columns:1.1fr 0.9fr;gap:8px;align-items:start}
   .board-left .line{margin:6px 0;padding:6px 8px;border-left:6px solid transparent;border-radius:6px;background:rgba(255,255,255,.05)}
   .board-left .speaker{font-weight:700;margin-right:6px}
-  .board-right{font-family:"Georgia",serif;font-size:13px;line-height:1.35;text-align:left}
+  .board-right{font-family:"Georgia",serif;font-size:12.5px;line-height:1.28;text-align:left}
   .board-right .math{margin:6px 0;padding:6px 8px;background:rgba(255,255,255,.06);border-radius:6px;border-left:4px solid rgba(255,255,255,.2)}
+  .board-right .math .eq{display:flex;gap:8px;justify-content:space-between;align-items:flex-start}
+  .board-right .math .eq .expr{white-space:normal}
+  .board-right .math .eq .no{font-family:"Courier New",monospace;opacity:.85}
 
   .foyer-ctrls{position:absolute;right:8px;top:8px;display:flex;gap:6px}
   .foyer-ctrls button{background:#700;color:#fff;border:none;border-radius:8px;padding:6px 10px;font-size:13px;cursor:pointer}
 
   .foyer-bubble{
     position:absolute;bottom:110px;left:50%;transform:translateX(-50%);
-    max-width:260px;background:rgba(255,255,255,.9);color:#000;border-radius:10px;padding:8px 10px;font-size:13px;line-height:1.4;box-shadow:0 6px 12px rgba(0,0,0,.35);display:none
+    max-width:260px;background:rgba(255,255,255,.9);color:#000;border-radius:10px;padding:8px 10px;font-size:13px;line-height:1.35;box-shadow:0 6px 12px rgba(0,0,0,.35);display:none
   }
   .foyer-bubble .tail{
     position:absolute;left:50%;bottom:-8px;transform:translateX(-50%);
@@ -306,7 +318,7 @@
 
   </div>
 
-<!-- === Κύριο JS (Act I, Act II inline, Foyer ενσωματωμένο) === -->
+<!-- === Κύριο JS === -->
 <script>
 /* ====== ΦΥΣΙΚΑ ====== */
 const m=70, T=6.0, A_m=3.0;
@@ -739,7 +751,7 @@ function ensureXTReady(){
   catch(e){ console.error('ensureXTReady',e); if(graphEnabled){ pendingGraph=true; renderXTCanvasFallback(); } }
 }
 
-/* Fallback canvas (σύντομο) */
+/* Fallback canvas */
 function renderXTCanvasFallback(){}
 
 /* Γραφήματα νόμων (placeholders) */
@@ -817,7 +829,6 @@ document.getElementById('btnAct2').addEventListener('click', ()=>{
   document.dispatchEvent(new CustomEvent('act2-start'));
 });
 function resetShow(){
-  // Foyer κλείσιμο πριν reset
   try{ foyerClose(); }catch(_){}
   if(bubbleAutoTimer){ clearTimeout(bubbleAutoTimer); bubbleAutoTimer=null; }
   thoughtScript=[...thoughtScriptBase];
@@ -843,7 +854,7 @@ function resetShow(){
   if(uXT){ try{ uXT.destroy(); }catch(e){}; uXT=null; }
   const fb=document.getElementById('xtFallback'); if(fb) fb.remove();
   xtChart.style.display='none';
-  springEl.style.display='none';            // Πράξη 1: κρυφό ελατήριο
+  springEl.style.display='none';
   t0=performance.now(); lastFrame=t0; playbackTime=0;
 }
 document.getElementById('btnReset').addEventListener('click', resetShow);
@@ -1050,7 +1061,6 @@ resetShow();
     await sleep(AUTO.gap*1000);
   }
 
-  /* ===== Νόμοι μιας γραμμής ===== */
   function addLawOneLine(txt){
     const pane = by('laws'), list = by('lawsList');
     if(!pane || !list) return;
@@ -1146,7 +1156,7 @@ resetShow();
     if (sbH1) sbH1.textContent = 'Πράξη 2η: Η Δυναμική στα ... Αλγεβρικά!';
     const m  = (typeof window.m==='number') ? window.m.toFixed(1) : (window.m || '…');
     const D  = (typeof window.D==='number') ? window.D : '…';
-    const Em = (typeof window.E_mech==='number') ? window.E_meχ.toFixed(2) : (window.E_mech || '…');
+    const Em = (typeof window.E_mech==='number') ? window.E_meχ?.toFixed?.(2) : (window.E_mech || '…');
     if (sbA) sbA.textContent = `m₁ = ${m} kg , D₁ = ${D} N/m`;
     if (sbB) sbB.textContent = `Eμηχ = ${Em} J`;
   }
@@ -1168,7 +1178,7 @@ resetShow();
         {v:0, t:'Τώρα καταλαβαίνω μάλλον γιατί δεν τον λένε m1 αλλά m1,D1…', y:130, x:-20},
         {v:1, t:'… το m1 είναι η μάζα του ηθοποιού αλλά ταλαντωτής προφανώς, νοείται η σύμπραξη του ηθοποιού(m1) και του «ελαστικού» αιτίου-δύναμη, στο οποίο αναφέρεται ως φαίνεται το D1!', y:130, x:-10},
         {v:3, t:'…m1 και D1 δηλαδή πάνε παντού ..πακέτο! και τα δυο μαζί είναι  ο ταλαντωτής- ο πρωταγωνιστής!', y:130, x:10},
-        {v:2, t:'… δηλαδή κάθε ταλαντωτής χαρακτηρίζεται 1. από τη μάζα του και 2. από το ελαστικό αίτιο-δύναμη που του ρυθμίζει χρονικά (Τ) την ταλάντωση!', y:130, x:0},
+        {v:2, t:'… δηλαδή κάθε ταλαντωτής χαρακτηρίζεται 1. από τη μάζα του και 2. από το ελαστικό αίτιο (που πιθανά να εμπεριέχεται σ αυτό, το D του ονόματός του)!', y:130, x:0},
         {v:4, t:'…αρχίζω να πείθομαι γιατί σαν χαρακτηριστικό όνομα έχει το mD! και όχι σκέτο m!...', y:130, x:20},
         {v:0, t:'Επομένως η ιδιαιτερότητα του κάθε ταλαντωτή δηλαδή η «εμμονή» του να έχει χαρακτηριστική Περίοδο Τ (χαρακτηριστική επομένως f και ω) οφείλεται 1. στον «σωματότυπό του» m και 2. στο ελαστικό αίτιο (που πιθανά να εμπεριέχεται σ αυτό, το D του ονόματός του)!', y:130, x:-20},
         {v:1, t:'Πωωωω! ελάτε, αφήστε τα, πάμε παρακάτω….', y:125, x:-10},
@@ -1193,7 +1203,6 @@ resetShow();
         if(step.gStop)  stopGhost();
       }
 
-      // Κλείσιμο πράξης
       if(marker) marker.style.opacity='0';
       if(curtainUpper){
         curtainUpper.classList.add('slow-close');
@@ -1205,7 +1214,6 @@ resetShow();
       }
       finished=true;
 
-      // Άνοιγμα Φουαγιέ AUTO στο τέλος
       try{ document.dispatchEvent(new Event('act2-ended')); }catch(_){}
       try{ foyerOpen(true); }catch(_){}
     }catch(e){
@@ -1216,7 +1224,6 @@ resetShow();
     }
   }
 
-  // Mount
   document.addEventListener('act2-start', playAct2, { once:true });
   const btnAct2 = by('btnAct2');
   if(btnAct2 && !btnAct2.__a2){
@@ -1226,7 +1233,7 @@ resetShow();
 })();
 </script>
 
-<!-- ====== ΦΟΥΑΓΙΕ (ενσωματωμένο, δύο στήλες) ====== -->
+<!-- ====== ΦΟΥΑΓΙΕ (δύο στήλες, διαστάσεις + scroll) ====== -->
 <script>
 /* Χρώματα/ονόματα θεατών */
 const FOYER_VIEWERS = [
@@ -1237,44 +1244,40 @@ const FOYER_VIEWERS = [
   { id:5, name:'ΘΕΑΤΗΣ 5', color:'#c77dff' },
 ];
 
-/* ΣΕΝΑΡΙΟ ΦΟΥΑΓΙΕ (πλήρες κομμάτι) */
+/* ΣΕΝΑΡΙΟ ΦΟΥΑΓΙΕ (κρατάμε την υπάρχουσα αριστερή ροή) */
 const FOYER_SCRIPT = [
   {
     viewer:1,
     text:`Θεατής 1: Οι (1), (2), (3) και (5) μας βοηθούν να «προφητεύουμε» τη θέση, την ταχύτητα, την επιτάχυνση και την συνολική δύναμη που δέχεται κάθε στιγμή ο (m₁ ,D₁) χωρίς να χρειαστεί να ξαναμπούμε για τη συνέχεια της παράστασης!`,
-    math:`[1] x(t)=A·ημ(ωt+φ₀), [2] v(t)=ωA·συν(ωt+φ₀), [3] a(t)=−ω²A·ημ(ωt+φ₀), [5] ΣF=−mω²A·ημ(ωt+φ₀)`
+    math:`<div class="eq"><div class="expr">[1] x(t)=A·ημ(ωt+φ₀)</div><div class="no"></div></div>
+          <div class="eq"><div class="expr">[2] v(t)=ωA·συν(ωt+φ₀)</div><div class="no"></div></div>
+          <div class="eq"><div class="expr">[3] a(t)=−ω²A·ημ(ωt+φ₀)</div><div class="no"></div></div>
+          <div class="eq"><div class="expr">[5] ΣF=−mω²A·ημ(ωt+φ₀)</div><div class="no"></div></div>`
   },
   {
     viewer:2,
-    text:`Θεατής 2: Η (3)’ και η (6) όμως μας βοηθούν να … «προφητεύουμε» την επιτάχυνση και την συνολική δύναμη που δέχεται αρκεί να ξέρουμε σε ποιο σημείο της σκηνής βρίσκεται ο (m₁ ,D₁) — χωρίς φυσικά να συνεχίσουμε να είμαστε θεατές!`,
-    math:`(3′) a(x)=−ω²x, (6) ΣF=−mω²x`
+    text:`Θεατής 2: Η (3)’ και η (6) όμως μας βοηθούν να … «προφητεύουμε» την επιτάχυνση και τη συνολική δύναμη αρκεί να ξέρουμε πού βρίσκεται ο (m₁ ,D₁) στη σκηνή.`,
+    math:`<div class="eq"><div class="expr">(3′) a(x)=−ω²x</div><div class="no"></div></div>
+          <div class="eq"><div class="expr">(6) ΣF=−mω²x</div><div class="no"></div></div>`
   },
   {
     viewer:3,
-    text:`Θεατής 3: Λοιπόν!<br>
-1) Διαπιστώνουμε αγαπητοί μου ότι δεν μπορούμε προς το παρόν να «προφητέψουμε» κάτι ανάλογο με αυτό που συμπεραίνει εδώ ο θεατής 2 για την ταχύτητα και τη σχέση της με τη θέση του (m₁ ,D₁).<br>
-2) Σκέφτομαι ότι αυτά που είδαμε γενικεύονται για κάθε πρωταγωνιστή (m,D) σε ανάλογη Παράσταση ΑΑΤ.<br>
-3) Ως γνώστες όμως της …Αλγεβρικής και με λίγη «αλγεβρική περιέργεια» να τι μπορούμε να κάνουμε (και γενικεύοντας, αναφερόμενοι πλέον στον τυχαίο (m,D)) για να καλύψουμε και το κενό 1.:<br>
-— Λύνουμε την (1) ως προς ημ(ωt+φ₀) και υψώνουμε στο τετράγωνο. Κάνουμε το ίδιο με την (2) ως προς συν(ωt+φ₀) και υψώνουμε στο τετράγωνο. Έπειτα προσθέτουμε κατά μέλη.`,
-    math:`(ημ)^2+(συν)^2=1 ⇒ (x/A)² + (v/(ωA))² = 1 ⟹ v² = ω²(A² − x²)  (8)`
+    text:`Θεατής 3: Γενίκευση και «αλγεβρική περιέργεια»:<br>
+— Από (1) και (2): λύνουμε ως προς ημ/συν, υψώνουμε στο τετράγωνο και προσθέτουμε κατά μέλη.`,
+    math:`<div class="eq"><div class="expr">(x/A)² + (v/(ωA))² = 1</div><div class="no"></div></div>
+          <div class="eq"><div class="expr">⟹ v² = ω²(A² − x²)</div><div class="no">(8)</div></div>`
   },
   {
     viewer:4,
-    text:`Θεατής 4: Θα ήταν καλύτερα αν την (8) τη φέρναμε στη μορφή v = … Δείτε:`,
-    math:`v = ±ω√(A² − x²)  (9)`
+    text:`Θεατής 4: Καλύτερη μορφή για χρήση:`,
+    math:`<div class="eq"><div class="expr">v = ±ω√(A² − x²)</div><div class="no">(9)</div></div>`
   },
   {
     viewer:1,
-    text:`Θεατής 1: Το σημείο στο οποίο διέκοψα είχε γραφτεί ω²A² = ω²x² + v². Σκέφτομαι λοιπόν τα εξής:<br>
-Αν πολλαπλασιάσουμε και τα δύο μέλη με ½m, δείτε! η σχέση γράφεται:<br>
-½ m ω² A² = ½ m ω² x² + ½ m v²  (12)<br>
-Μα: ο παράγοντας ½ m v² είναι η κινητική ενέργεια K του πρωταγωνιστή (m,D).<br>
-Ο παράγοντας αυτός προστίθεται στον ½ m ω² x² ο οποίος, ως συναρτήσει της θέσης, παριστά τη Δυναμική Ενέργεια U του (m,D).<br>
-Έτσι ο παράγοντας ½ m ω² A² του πρώτου μέλους:<br>
-— Πρώτον, δεν μπορεί παρά ως άθροισμα K+U να «παριστάνει» τη μηχανική ενέργεια Ε<sub>Μ</sub> του (m,D).<br>
-— Δεύτερον, συγκρίνοντάς τον με τη μορφή της U(x)=½ m ω² x², στη μέγιστη απομάκρυνση x=A παίρνει U<sub>max</sub>=½ m ω² A².<br>
-— Τρίτον, ως σταθερή ποσότητα Ε<sub>Μ</sub>, οδηγεί στην (κάτι σαν) Αρχή Διατήρησης της Μηχανικής Ενέργειας του ταλαντωτή (Α.Δ.Μ.Ε.Τ.).`,
-    math:`E_M = ½ m v² + ½ m ω² x² = ½ m ω² A² = σταθερά`
+    text:`Θεατής 1: Ενέργειες και Α.Δ.Μ.Ε.Τ.`,
+    math:`<div class="eq"><div class="expr">ω²A² = ω²x² + v²</div><div class="no"></div></div>
+          <div class="eq"><div class="expr">½mω²A² = ½mω²x² + ½mv²</div><div class="no">(12)</div></div>
+          <div class="eq"><div class="expr">E<sub>M</sub> = ½ m v² + ½ m ω² x² = ½ m ω² A²</div><div class="no">σταθερά</div></div>`
   }
 ];
 
@@ -1353,16 +1356,19 @@ function boardAppend(item){
   bb.scrollTop = bb.scrollHeight;
 }
 
-/* Τοποθέτηση Φουαγιέ */
+/* Τοποθέτηση Φουαγιέ με διαστάσεις κουρτίνας (πλάτος) & μέχρι το κάτω περίγραμμα της κουρτίνας (ύψος) */
 function repositionFoyer(){
   const gate = foyer; if(!gate) return;
   const sRect=stage.getBoundingClientRect();
-  const cuRect=curtainUpper?.getBoundingClientRect?.() || {top:sRect.height*0.28, height:sRect.height*0.40};
+  const cuRect=curtainUpper?.getBoundingClientRect?.() || {top:sRect.height*0.28, height:sRect.height*0.40, bottom:sRect.height*0.68};
   const leftPx = sRect.left + stage.clientWidth*0.18;
+  const widthPx = stage.clientWidth*0.82;               // ίδιο πλάτος με την «κινητή κουρτίνα»
+  const heightPx = (cuRect.bottom - sRect.top);         // από κάτω περίγραμμα κουρτίνας ως την κορυφή οθόνης
+
   gate.style.left   = leftPx + 'px';
-  gate.style.top    = 0 + 'px';
-  gate.style.width  = (stage.clientWidth*0.82) + 'px';
-  gate.style.height = (cuRect.top) + 'px';
+  gate.style.top    = '0px';
+  gate.style.width  = widthPx + 'px';
+  gate.style.height = heightPx + 'px';
 }
 
 /* Ροή Φουαγιέ */
@@ -1401,6 +1407,7 @@ function foyerClose(){
 /* Global */
 window.foyerOpen  = foyerOpen;
 window.foyerClose = foyerClose;
+window.repositionFoyer = repositionFoyer;
 
 /* Συνακροάσεις */
 document.getElementById('btnFoyer').addEventListener('click', ()=>foyerOpen(true));
