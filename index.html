@@ -101,8 +101,7 @@ window.MathJax = {
   .marker-tip{position:absolute;left:50%;bottom:0;width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:8px solid #ffd27a;filter:drop-shadow(0 2px 2px rgba(255,210,122,.8));transform:translateX(-50%)}
 
   /* Bubbles — μικρότερα fonts */
-  @keyframes popIn{0%{transform:scale(.9);opacity:0}60%{transform:scale(1.04);opacity:1}100%{transform:scale(1)}
-  }
+  @keyframes popIn{0%{transform:scale(.9);opacity:0}60%{transform:scale(1.04);opacity:1}100%{transform:scale(1)}}
   .thought-bubble{
     position:absolute;max-width:420px;background:rgba(255,255,255,.82);color:#000;
     font-size:13px;line-height:1.35;padding:8px 10px 10px;
@@ -548,8 +547,6 @@ function positionRightPanel(){
     xtChart.style.width=w+'px'; xtChart.style.height=availH+'px';
     xtChart.style.transform='translateX(-50%)';
     if(uXT){ uXT.setSize({width:Math.floor(w), height:Math.floor(availH)}); drawXTChart(); }
-    const c=document.getElementById('xtFallback');
-    if(c){ c.width=Math.max(200,xtChart.clientWidth|0); c.height=Math.max(120,xtChart.clientHeight|0); drawFallbackOnce(); }
   }
   positionLawCharts();
   positionParamsBox();
@@ -596,7 +593,7 @@ function animate(now){
 
   if(pendingGraph && graphEnabled){
     if(window.uPlot){ try{ ensureXTReady(); pendingGraph=false; }catch(e){ console.error('deferred graph init',e); } }
-    else{ renderXTCanvasFallback(); }
+    else{ /* fallback off */ }
   }
 
   if(obsStarted && !isBubbleActive && nextThoughtIdx<thoughtScript.length){
@@ -729,7 +726,7 @@ function addLaw(txt){
   if(!firstLawShown){
     firstLawShown=true;
     if(lawsTitle) lawsTitle.textContent=(i18n[LANG]?.lawsTitle||'');
-    if(lawsPane) lawsPane.style.display='block';
+    if(lawsPane)  lawsPane.style.display='block';
   }
   const li=document.createElement('li'); li.textContent=txt; lawsList.appendChild(li);
   lawCount++; positionLawCharts();
@@ -779,14 +776,9 @@ function drawXTChart(){ if(uXT){ uXT.setData(buildSeriesData()); } }
 function ensureXTReady(){
   if(!graphEnabled) return;
   try{ if(window.uPlot){ initXTChart(); if(uXT){ drawXTChart(); } }
-       else{ if(graphEnabled){ pendingGraph=true; renderXTCanvasFallback(); } } }
-  catch(e){ console.error('ensureXTReady',e); if(graphEnabled){ pendingGraph=true; renderXTCanvasFallback(); } }
+       else{ /* fallback off */ } }
+  catch(e){ console.error('ensureXTReady',e); }
 }
-function renderXTCanvasFallback(){} function drawFallbackOnce(){}
-
-/* Γραφήματα νόμων (placeholder) */
-let vCan=null,aCan=null,axCan=null;
-function sizeLawCanvas(c){ const w=Math.floor(stage.clientWidth*0.16); const h=140; c.width=w; c.height=h; c.style.width=w+'px'; c.style.height=h+'px'; }
 function positionLawCharts(){
   const r = lawsPane.getBoundingClientRect();
   const s = stage.getBoundingClientRect();
@@ -794,9 +786,7 @@ function positionLawCharts(){
   lawCharts.style.left= '2%';
   lawCharts.style.width= '16%';
 }
-function ensureVelocityChart(){ if(!vCan){ vCan = document.createElement('canvas'); lawCharts.appendChild(vCan); } sizeLawCanvas(vCan); }
-function ensureAccelerationChart(){ if(!aCan){ aCan = document.createElement('canvas'); lawCharts.appendChild(aCan); } sizeLawCanvas(aCan); }
-function ensureAxChart(){ if(!axCan){ axCan = document.createElement('canvas'); lawCharts.appendChild(axCan); } sizeLawCanvas(axCan); }
+function ensureVelocityChart(){} function ensureAccelerationChart(){} function ensureAxChart(){}
 
 /* Κλείσιμο αυλαίας + actBreak */
 function closeCurtainsSequence(){
@@ -877,9 +867,7 @@ function resetShow(){
   measureTBody.innerHTML='';
   lawsList.innerHTML=''; lawsPane.style.display='none';
   lawCharts.innerHTML='';
-  vCan=null; aCan=null; axCan=null;
   if(uXT){ try{ uXT.destroy(); }catch(e){}; uXT=null; }
-  const fb=document.getElementById('xtFallback'); if(fb) fb.remove();
   xtChart.style.display='none';
   springEl.style.display='none';
   if(springGhost) springGhost.style.display='none';
@@ -918,7 +906,7 @@ startBtn.addEventListener('click', startShowCountdown);
 
 /* Παρατηρητής μεγέθους + κουρτίνας */
 const ro=new ResizeObserver(()=>{ positionRightPanel();
-  if(uXT){ drawXTChart(); } else if(document.getElementById('xtFallback')){ drawFallbackOnce(); }
+  if(uXT){ drawXTChart(); }
   positionLawCharts(); positionParamsBox(); sizeFoyerToCurtain();
 });
 ro.observe(stage);
@@ -974,7 +962,7 @@ sizeFoyerToCurtain();
 </script>
 <!-- === End A1 JSON Adapter === -->
 
-<!-- ====== ΦΟΥΑΓΙΕ ΔΕΔΟΜΕΝΑ (ΜΕ ΕΚΘΕΤΕΣ/ΔΕΙΚΤΕΣ & ΑΡΙΘΜΗΣΗ) ====== -->
+<!-- ====== ΦΟΥΑΓΙΕ ΔΕΔΟΜΕΝΑ (ΥΠΑΡΧΟΥΣΕΣ ΤΟΠΟΘΕΤΗΣΕΙΣ) ====== -->
 <script id="foyerData" type="application/json">
 [
   {
@@ -1005,9 +993,21 @@ sizeFoyerToCurtain();
 ]
 </script>
 
-<!-- ====== ΦΟΥΑΓΙΕ ΛΟΓΙΚΗ (Act 3 = Foyer) ====== -->
+<!-- ====== ΦΟΥΑΓΙΕ ΔΕΔΟΜΕΝΑ (ΝΕΕΣ/ΕΠΟΜΕΝΕΣ ΤΟΠΟΘΕΤΗΣΕΙΣ — ΒΑΛΕ ΤΙΣ ΠΛΗΡΕΙΣ ΓΡΑΜΜΕΣ) ====== -->
+<script id="foyerDataExtra" type="application/json">
+[
+  /* Παράδειγμα μορφοποίησης για ΕΠΟΜΕΝΕΣ εγγραφές (σβήστο και βάλε τις δικές σου, 1:1 από PDF):
+  {
+    "viewer": 2,
+    "left": "Θεατής 4: …η επόμενη σκέψη/τοποθέτηση κειμένου με\\nνέες παρατηρήσεις, ακριβώς όπως στο PDF.",
+    "right": "\\[ \\text{Οι αντίστοιχες αλγεβρικές παραστάσεις με } \\; \\tag{αρίθμηση} \\]"
+  }
+  */
+]
+</script>
+
+<!-- ====== ΦΟΥΑΓΙΕ ΛΟΓΙΚΗ (merge δύο πηγές) ====== -->
 <script>
-/* Χαρτογράφηση θεατών (για χρώμα + pulse στη σκηνή) */
 const FOYER_VIEWERS = [
   { id:1, name:'ΘΕΑΤΗΣ 1', color:'#ff6b6b', stageIdx:0 },
   { id:2, name:'ΘΕΑΤΗΣ 2', color:'#ffd166', stageIdx:1 },
@@ -1022,27 +1022,31 @@ function tint(hex, alpha){
   return `rgba(${r},${g},${b},${alpha})`;
 }
 
-/* Loader: από <script id="foyerData"> JSON */
-function loadFoyerScript(){
+function parseBlock(id){
   try{
-    const el = document.getElementById('foyerData');
-    if(el){
-      const raw = el.textContent.trim();
-      if(raw){
-        const arr = JSON.parse(raw);
-        if(Array.isArray(arr) && arr.length){ return arr.map(x=>({
-          viewer: Number(x.viewer)||1,
-          left: String(x.left||''),
-          right: String(x.right||'')
-        })); }
-      }
-    }
-  }catch(e){ console.warn('foyerData parse error', e); }
-  return [];
+    const el = document.getElementById(id);
+    if(!el) return [];
+    const raw = el.textContent.trim();
+    if(!raw) return [];
+    // Αν υπάρχουν σχόλια τύπου /* ... */, πέτα τα για ασφαλές JSON
+    const noComments = raw.replace(/\/\*[\s\S]*?\*\//g,'').trim();
+    const arr = JSON.parse(noComments);
+    return Array.isArray(arr) ? arr.map(x=>({
+      viewer: Number(x.viewer)||1,
+      left: String(x.left||''),
+      right: String(x.right||'')
+    })) : [];
+  }catch(e){
+    console.warn(id+' parse error', e);
+    return [];
+  }
 }
-const FOYER_SCRIPT = loadFoyerScript();
+
+const FOYER_SCRIPT = [...parseBlock('foyerData'), ...parseBlock('foyerDataExtra')];
 
 /* Πίνακας δύο στηλών + MathJax typeset */
+const board = document.getElementById('foyerBoard');
+const boardGrid = document.getElementById('boardGrid');
 function boardAppend(vId, leftText, rightText){
   const v = FOYER_VIEWERS.find(x=>x.id===vId) || FOYER_VIEWERS[0];
 
@@ -1078,6 +1082,27 @@ function pulseStageViewer(vId, ms=1600){
 
 /* Βήματα φουαγιέ */
 let foyerIdx=0, foyerAutoTimer=null, foyerAuto=false;
+const btnFoyer=document.getElementById('btnFoyer');
+const btnPrev=document.getElementById('foyerPrev');
+const btnNext=document.getElementById('foyerNext');
+const btnAuto=document.getElementById('foyerAuto');
+const btnClose=document.getElementById('foyerClose');
+const foyer=document.getElementById('foyer');
+const lawsPane=document.getElementById('laws');
+const measureBox=document.getElementById('measureBox');
+const xtChart=document.getElementById('xtChart');
+
+function computeThoughtDuration(text){
+  const s = (text ?? '');
+  const len = s.length;
+  const BASE = 0.8, PER_CHAR = 0.055, MIN = 2.2, MAX = 10.0;
+  let auto = BASE + PER_CHAR * len;
+  auto = Math.max(MIN, Math.min(MAX, auto));
+  const DEFAULT_BUBBLE = 3.0;
+  const scale = 1.0;
+  return Math.max(MIN, Math.min(MAX, auto * scale));
+}
+
 function foyerStep(dir){
   if(dir>0 && foyerIdx>=FOYER_SCRIPT.length) return;
   if(dir<0 && foyerIdx<=0){ foyerIdx=0; return; }
@@ -1094,30 +1119,39 @@ function foyerStep(dir){
 }
 
 /* Άνοιγμα/Κλείσιμο Φουαγιέ */
-function foyerOpen(){
+function sizeFoyerToCurtain(){
+  const stage=document.getElementById('stage');
+  const curtainUpper=document.querySelector('.curtain-upper');
+  const foyer=document.getElementById('foyer');
+  if(!foyer || !curtainUpper || !stage) return;
+  const sRect = stage.getBoundingClientRect();
+  const cuRect = curtainUpper.getBoundingClientRect();
+  foyer.style.left = (stage.clientWidth*0.18) + 'px';
+  foyer.style.width = (stage.clientWidth*0.82) + 'px';
+  foyer.style.top = '0px';
+  foyer.style.height = Math.max(0, Math.round(cuRect.bottom - sRect.top)) + 'px';
+}
+window.foyerOpen = function(){
   sizeFoyerToCurtain();
   foyer.style.display='block';
   foyer.hidden=false;
-
-  /* Σβήνουμε ΜΟΝΟ δεξιά (μετρήσεις/διάγραμμα). Οι νόμοι μένουν. */
+  /* Σβήνουμε ΜΟΝΟ δεξιά: */
   if(measureBox) measureBox.style.display='none';
   if(xtChart)    xtChart.style.display='none';
 
   foyerIdx=0; foyerAuto=false; btnAuto.textContent='Auto ▷';
   if(foyerAutoTimer){ clearTimeout(foyerAutoTimer); foyerAutoTimer=null; }
-  boardGrid.innerHTML='';
-}
-function foyerClose(){
+  document.getElementById('boardGrid').innerHTML='';
+};
+window.foyerClose = function(){
   foyer.style.display='none';
   foyer.hidden=true;
   foyerAuto=false; btnAuto.textContent='Auto ▷';
   if(foyerAutoTimer){ clearTimeout(foyerAutoTimer); foyerAutoTimer=null; }
-}
-window.foyerOpen = foyerOpen;
-window.foyerClose = foyerClose;
+};
 
-btnFoyer.addEventListener('click', foyerOpen);
-btnClose.addEventListener('click', foyerClose);
+btnFoyer.addEventListener('click', window.foyerOpen);
+btnClose.addEventListener('click', window.foyerClose);
 btnPrev.addEventListener('click', ()=>foyerStep(-1));
 btnNext.addEventListener('click', ()=>foyerStep(+1));
 btnAuto.addEventListener('click', ()=>{
@@ -1126,12 +1160,12 @@ btnAuto.addEventListener('click', ()=>{
   if(foyerAuto && foyerIdx<FOYER_SCRIPT.length) foyerStep(+1);
 });
 
-/* Άνοιγμα φουαγιέ αυτόματα στο τέλος Πράξης 2 */
-document.addEventListener('act2-ended', ()=>{ foyerOpen(); });
+/* Αυτόματο άνοιγμα στο τέλος Πράξης 2 */
+document.addEventListener('act2-ended', ()=>{ window.foyerOpen(); });
 
 /* Συντόμευση: F */
 document.addEventListener('keydown', (e)=>{
-  if(e.key.toLowerCase()==='f'){ foyer.style.display==='block' ? foyerClose() : foyerOpen(); }
+  if(e.key.toLowerCase()==='f'){ foyer.style.display==='block' ? window.foyerClose() : window.foyerOpen(); }
 });
 </script>
 
