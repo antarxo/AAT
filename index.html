@@ -8,6 +8,19 @@
 <link rel="stylesheet" href="https://unpkg.com/uplot@1.6.30/dist/uPlot.min.css">
 <script src="https://unpkg.com/uplot@1.6.30/dist/uPlot.iife.min.js"></script>
 
+<!-- MathJax για εκθέτες/δείκτες + αρίθμηση -->
+<script>
+window.MathJax = {
+  tex: {
+    inlineMath: [['\\(','\\)'],['$','$']],
+    displayMath: [['\\[','\\]']],
+    tags: 'none'
+  },
+  svg: { fontCache: 'global' }
+};
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js" async></script>
+
 <style>
   body{margin:0;background:radial-gradient(circle at center,#222 0%,#000 100%);overflow:hidden;font-family:Inter,system-ui,sans-serif}
   .stage{position:relative;width:100vw;height:100vh;overflow:hidden}
@@ -88,7 +101,8 @@
   .marker-tip{position:absolute;left:50%;bottom:0;width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:8px solid #ffd27a;filter:drop-shadow(0 2px 2px rgba(255,210,122,.8));transform:translateX(-50%)}
 
   /* Bubbles — μικρότερα fonts */
-  @keyframes popIn{0%{transform:scale(.9);opacity:0}60%{transform:scale(1.04);opacity:1}100%{transform:scale(1)}}
+  @keyframes popIn{0%{transform:scale(.9);opacity:0}60%{transform:scale(1.04);opacity:1}100%{transform:scale(1)}
+  }
   .thought-bubble{
     position:absolute;max-width:420px;background:rgba(255,255,255,.82);color:#000;
     font-size:13px;line-height:1.35;padding:8px 10px 10px;
@@ -425,10 +439,10 @@ function sizeFoyerToCurtain(){
   if(!foyer || !curtainUpper || !stage) return;
   const sRect = stage.getBoundingClientRect();
   const cuRect = curtainUpper.getBoundingClientRect();
-  foyer.style.left = (stage.clientWidth*0.18) + 'px';   /* από το αριστερό όριο της εσωτερικής κουρτίνας */
-  foyer.style.width = (stage.clientWidth*0.82) + 'px';  /* μέχρι το δεξί άκρο οθόνης */
-  foyer.style.top = '0px';                              /* από πάνω περίγραμμα οθόνης */
-  foyer.style.height = Math.max(0, Math.round(cuRect.bottom - sRect.top)) + 'px'; /* έως κάτω περίγραμμα κινητής κουρτίνας */
+  foyer.style.left = (stage.clientWidth*0.18) + 'px';
+  foyer.style.width = (stage.clientWidth*0.82) + 'px';
+  foyer.style.top = '0px';
+  foyer.style.height = Math.max(0, Math.round(cuRect.bottom - sRect.top)) + 'px';
 }
 
 /* Position helpers */
@@ -960,33 +974,33 @@ sizeFoyerToCurtain();
 </script>
 <!-- === End A1 JSON Adapter === -->
 
-<!-- ====== ΦΟΥΑΓΙΕ ΔΕΔΟΜΕΝΑ (ΚΑΘΑΡΟ JSON, ΑΥΤΟΥΣΙΑ ΤΑ ΚΕΙΜΕΝΑ) ====== -->
+<!-- ====== ΦΟΥΑΓΙΕ ΔΕΔΟΜΕΝΑ (ΜΕ ΕΚΘΕΤΕΣ/ΔΕΙΚΤΕΣ & ΑΡΙΘΜΗΣΗ) ====== -->
 <script id="foyerData" type="application/json">
 [
   {
     "viewer": 1,
-    "left": "Θεατής 1: Οι (1), (2), (3) και (5) μας βοηθούν να «προφητεύουμε» τη θέση, την ταχύτητα, την επιτάχυνση και την συνολική δύναμη που δέχεται κάθε στιγμή ο (m1 ,D1) χωρίς να χρειαστεί να ξαναμπούμε για τη συνέχεια της παράστασης!",
-    "right": "(1) x(t)=A·ημ(ωt+φ0)\\n(2) v(t)=ωA·συν(ωt+φ0)\\n(3) a(t)=−ω²A·ημ(ωt+φ0)=−ω²x(t)\\n(5) ΣF=ma=−mω²x=−Dx, D=mω²"
+    "left": "Θεατής 1: Οι (1), (2), (3) και (5) μας βοηθούν να «προφητεύουμε» τη θέση, την ταχύτητα, την επιτάχυνση και την συνολική δύναμη που δέχεται κάθε στιγμή ο \\( (m_1, D_1) \\) χωρίς να χρειαστεί να ξαναμπούμε για τη συνέχεια της παράστασης!",
+    "right": "\\[ x(t)=A\\,\\sin(\\omega t+\\phi_0) \\tag{1} \\] \\[ v(t)=\\omega A\\,\\cos(\\omega t+\\phi_0) \\tag{2} \\] \\[ a(t)=-\\omega^{2}A\\,\\sin(\\omega t+\\phi_0)=-\\omega^{2}x(t) \\tag{3} \\] \\[ \\sum F=ma=-m\\omega^{2}x=-Dx,\\quad D=m\\omega^{2} \\tag{5} \\]"
   },
   {
     "viewer": 3,
-    "left": "Θεατής 2: Η (3)’ και η (6)  όμως μας βοηθούν να … «προφητεύουμε» την επιτάχυνση και την συνολική δύναμη που δέχεται αρκεί να ξέρουμε σε ποιο σημείο της σκηνής βρίσκεται ο (m1 ,D1)  χωρίς φυσικά και αναγκαστικά να συνεχίσουμε να είμαστε θεατές!",
-    "right": "(3)’ a(x)=−ω²x\\n(6) ΣF(x)=−Dx, με D=mω²"
+    "left": "Θεατής 2: Η (3)’ και η (6) όμως μας βοηθούν να … «προφητεύουμε» την επιτάχυνση και τη συνολική δύναμη που δέχεται αρκεί να ξέρουμε σε ποιο σημείο της σκηνής βρίσκεται ο \\( (m_1, D_1) \\), χωρίς φυσικά και αναγκαστικά να συνεχίσουμε να είμαστε θεατές!",
+    "right": "\\[ a(x)=-\\omega^{2}x \\tag{3\\prime} \\] \\[ \\sum F(x)=-Dx,\\quad D=m\\omega^{2} \\tag{6} \\]"
   },
   {
     "viewer": 4,
-    "left": "Θεατής 3: Λοιπόν!\\n1.\\tΔιαπιστώνουμε αγαπητοί μου ότι δεν μπορούμε προς το παρόν να «προφητέψουμε» κάτι ανάλογο με αυτό που συμπεραίνει εδώ ο θεατής 2 για την ταχύτητα και τη σχέση της με τη θέση του (m1 ,D1).\\n2.\\tΣκέφτομαι ότι αυτά που είδαμε γενικεύονται για κάθε  πρωταγωνιστή (m,D) σε ανάλογη Παράσταση ΑΑΤ.\\n3.\\tΩς γνώστες όμως της …Αλγεβρικής και με λίγη “αλγεβρική περιέργεια” να τι μπορούμε να κάνουμε (και γενικεύοντας, αναφερόμενοι πλέον στον τυχαίο (m,D)) για να καλύψουμε και το κενό 1.:\\n\\tΛύνουμε την (1) ως προς το ημ(ωt+φ0) και υψώνουμε τη σχέση στο τετράγωνο. Κάνουμε το ίδιο με την (2) λύνοντας ως προς συν(ωt+φ0) και υψώνουμε τη νέα σχέση στο τετράγωνο. Στη συνέχεια προσθέτουμε κατά μέλη τις σχέσεις που προκύπτουν.",
-    "right": "Από (1): (x/A)=ημ(ωt+φ0) ⇒ (x/A)²=ημ²(ωt+φ0)\\nΑπό (2): v/(ωA)=συν(ωt+φ0) ⇒ (v/ωA)²=συν²(ωt+φ0)\\nΆθροισμα: (x/A)²+(v/ωA)²=ημ²+συν²=1\\n⇒ ω²A²=ω²x²+v²"
+    "left": "Θεατής 3: Λοιπόν!\\n1. Διαπιστώνουμε αγαπητοί μου ότι δεν μπορούμε προς το παρόν να «προφητέψουμε» κάτι ανάλογο με αυτό που συμπεραίνει εδώ ο θεατής 2 για την ταχύτητα και τη σχέση της με τη θέση του \\( (m_1, D_1) \\).\\n2. Σκέφτομαι ότι αυτά που είδαμε γενικεύονται για κάθε πρωταγωνιστή \\( (m,D) \\) σε ανάλογη Παράσταση ΑΑΤ.\\n3. Ως γνώστες όμως της …Αλγεβρικής και με λίγη “αλγεβρική περιέργεια” να τι μπορούμε να κάνουμε (και γενικεύοντας, αναφερόμενοι πλέον στον τυχαίο \\( (m,D) \\)) για να καλύψουμε και το κενό 1.:\\n\\u2714 Λύνουμε την (1) ως προς το \\( \\sin(\\omega t+\\phi_0) \\) και υψώνουμε τη σχέση στο τετράγωνο. Κάνουμε το ίδιο με την (2) λύνοντας ως προς \\( \\cos(\\omega t+\\phi_0) \\) και υψώνουμε τη νέα σχέση στο τετράγωνο. Στη συνέχεια προσθέτουμε κατά μέλη τις σχέσεις που προκύπτουν.",
+    "right": "\\[ \\frac{x}{A}=\\sin(\\omega t+\\phi_0) \\;\\Rightarrow\\; \\left(\\frac{x}{A}\\right)^{2}=\\sin^{2}(\\omega t+\\phi_0) \\] \\[ \\frac{v}{\\omega A}=\\cos(\\omega t+\\phi_0) \\;\\Rightarrow\\; \\left(\\frac{v}{\\omega A}\\right)^{2}=\\cos^{2}(\\omega t+\\phi_0) \\] \\[ \\left(\\frac{x}{A}\\right)^{2}+\\left(\\frac{v}{\\omega A}\\right)^{2}=\\sin^{2}+\\cos^{2}=1 \\] \\[ \\omega^{2}A^{2}=\\omega^{2}x^{2}+v^{2} \\tag{8} \\]"
   },
   {
     "viewer": 2,
-    "left": "Θεατής 4: Θα ήταν καλύτερα αν την (8) την φέρναμε στη μορφή υ= κ.λ.π. Δείτε:",
-    "right": "v=±ω·√(A²−x²)"
+    "left": "Θεατής 4: Θα ήταν καλύτερα αν την (8) την φέρναμε στη μορφή \\( υ= \\ldots \\). Δείτε:",
+    "right": "\\[ v=\\pm\\,\\omega\\,\\sqrt{A^{2}-x^{2}} \\]"
   },
   {
     "viewer": 5,
-    "left": "Θεατής 1: Το σημείο στο οποίο διέκοψα είχε γραφτεί ω^2 Α^2=ω^2 x^2+υ^2. Σκέφτομαι λοιπόν τα εξής:\\nΑν πολλαπλασιάσουμε και τα δύο μέλη με ½m, δείτε! η σχέση γράφεται □(1/2) mω^2 Α^2= □(1/2) mω^2 x^2+ □(1/2) mυ^2 (12) Μα:\\n\\tΟ παράγοντας □(1/2) mυ^2 είναι η κινητική ενέργεια K του … πρωταγωνιστή (m,D)\\n\\tΟ παράγοντας αυτός προστίθεται στον □(1/2) mω^2 x^2 ο οποίος δεν μπορεί παρά να είναι και αυτός ενέργεια! (πρόσθεση κάνουμε έλεγε η δασκάλα μου ανάμεσα σε ομοειδή: πορτοκάλια με πορτοκάλια και λεμόνια με λεμόνια, όχι πορτοκάλια με λεμόνια!). Όμως ο παράγοντας αυτός εξαρτάται από τη θέση του πρωταγωνιστή άρα δεν μπορεί παρά να παριστάνει τη Δυναμική του Ενέργεια U (λόγω θέσης που λέμε!) του πρωταγωνιστή (m,D)!\\n\\tΈτσι ο παράγοντας □(1/2) mω^2 Α^2 του πρώτου μέλους\\n\\tΠρώτον δεν μπορεί παρά ως άθροισμα Κινητικής και Δυναμικής ενέργειας να «παριστάνει» τη μηχανική ενέργεια ΕΜ του πρωταγωνιστή  (m,D) που δεν μπορεί παρά αυτή να του παραχώρησε ο σκηνοθέτης ΕΜ. Ενεργειούλης για απόψε και\\n\\tΔεύτερον συγκρίνοντας τη μορφή του με τη μορφή της δυναμικής ενέργειας (□(1/2) mω^2 x^2) (παρατηρούμε σ αυτόν τη μέγιστη τιμή της απομάκρυνσης του πρωταγωνιστή από το κέντρο της σκηνής). Άρα ο παράγοντας □(1/2) mω^2 Α^2 παριστάνει και την μέγιστη Δυναμική Ενέργεια Umax του πρωταγωνιστή (m,D) (με ότι αυτό μπορεί να σημαίνει(;))!\\n\\tΤρίτον ως σταθερή ποσότητα Μηχανικής Ενέργειας, στην παραπάνω σχέση (12) μας οδηγεί στο συμπέρασμα, ότι ισχύει για τον (m,D) «κάτι σαν» Αρχή Διατήρησης της Μηχανικής Ενέργειας του …πρωταγωνιστή Ταλαντωτή(m,D)! (Α.Δ.Μ.Ε.Τ.)",
-    "right": "ω²A²=ω²x²+v²\\n⋅(½m) ⇒ ½mω²A²=½mω²x²+½m v²\\nΟρισμοί: K=½m v², U(x)=½mω²x²=½Dx², D=mω²\\nΕ=K+U=½mω²A² (σταθερή)\\nU_max=½mω²A²"
+    "left": "Θεατής 1: Το σημείο στο οποίο διέκοψα είχε γραφτεί \\( \\omega^{2}A^{2}=\\omega^{2}x^{2}+v^{2} \\). Σκέφτομαι λοιπόν τα εξής:\\nΑν πολλαπλασιάσουμε και τα δύο μέλη με \\( \\tfrac{1}{2}m \\), δείτε! η σχέση γράφεται \\( \\tfrac{1}{2} m\\omega^{2} A^{2}= \\tfrac{1}{2} m\\omega^{2} x^{2}+ \\tfrac{1}{2} m v^{2} \\) (12). Μα:\\n\\tΟ παράγοντας \\( \\tfrac{1}{2} m v^{2} \\) είναι η κινητική ενέργεια \\( K \\) του … πρωταγωνιστή \\( (m,D) \\).\\n\\tΟ παράγοντας αυτός προστίθεται στον \\( \\tfrac{1}{2} m\\omega^{2} x^{2} \\) ο οποίος δεν μπορεί παρά να είναι και αυτός ενέργεια! Όμως ο παράγοντας αυτός εξαρτάται από τη θέση του πρωταγωνιστή άρα δεν μπορεί παρά να παριστάνει τη Δυναμική του Ενέργεια \\( U(x) \\) του πρωταγωνιστή \\( (m,D) \\)!\\n\\tΈτσι ο παράγοντας \\( \\tfrac{1}{2} m\\omega^{2} A^{2} \\) του πρώτου μέλους…\\n\\tΠρώτον, ως άθροισμα Κινητικής και Δυναμικής ενέργειας «παριστάνει» τη Μηχανική Ενέργεια \\( E \\) του πρωταγωνιστή.\\n\\tΔεύτερον, συγκρίνοντας τη μορφή του με τη μορφή της δυναμικής ενέργειας \\( U(x)=\\tfrac{1}{2} m\\omega^{2} x^{2} \\), παρατηρούμε στο \\( A \\) τη μέγιστη απομάκρυνση. Άρα \\( \\tfrac{1}{2} m\\omega^{2} A^{2}=U_{\\max} \\).\\n\\tΤρίτον, ως σταθερή ποσότητα Μηχανικής Ενέργειας, οδηγεί σε Α.Δ.Μ.Ε.Τ.",
+    "right": "\\[ \\omega^{2}A^{2}=\\omega^{2}x^{2}+v^{2} \\] \\[ \\tfrac{1}{2}m\\,\\omega^{2}A^{2}=\\tfrac{1}{2}m\\,\\omega^{2}x^{2}+\\tfrac{1}{2}m\\,v^{2} \\tag{12} \\] \\[ K=\\tfrac{1}{2}m\\,v^{2},\\quad U(x)=\\tfrac{1}{2}m\\,\\omega^{2}x^{2}=\\tfrac{1}{2}D x^{2},\\; D=m\\omega^{2} \\] \\[ E=K+U=\\tfrac{1}{2}m\\,\\omega^{2}A^{2}=\\text{σταθερή},\\quad U_{\\max}=\\tfrac{1}{2}m\\,\\omega^{2}A^{2} \\]"
   }
 ]
 </script>
@@ -1028,24 +1042,29 @@ function loadFoyerScript(){
 }
 const FOYER_SCRIPT = loadFoyerScript();
 
-/* Πίνακας δύο στηλών */
+/* Πίνακας δύο στηλών + MathJax typeset */
 function boardAppend(vId, leftText, rightText){
   const v = FOYER_VIEWERS.find(x=>x.id===vId) || FOYER_VIEWERS[0];
+
   const left = document.createElement('div');
   left.className='board-thought';
   left.style.borderLeftColor = v.color;
   left.style.background = `linear-gradient(90deg, ${tint(v.color,0.16)} 0%, transparent 70%)`;
-  left.textContent = leftText;
+  left.innerHTML = (leftText||'').replace(/\n/g,'<br>');
 
   const right = document.createElement('div');
   right.className='board-math';
   right.style.borderLeftColor = v.color;
   right.style.background = `linear-gradient(90deg, ${tint(v.color,0.10)} 0%, transparent 70%)`;
-  right.textContent = rightText || '';
+  right.innerHTML = (rightText||'').replace(/\n/g,'<br>');
 
   boardGrid.appendChild(left);
   boardGrid.appendChild(right);
   board.scrollTop = board.scrollHeight;
+
+  if (window.MathJax && window.MathJax.typesetPromise) {
+    MathJax.typesetPromise([left, right]).catch(()=>{});
+  }
 }
 
 /* Highlight θεατή στη σκηνή */
@@ -1064,9 +1083,10 @@ function foyerStep(dir){
   if(dir<0 && foyerIdx<=0){ foyerIdx=0; return; }
   const item = (dir>0) ? FOYER_SCRIPT[foyerIdx++] : FOYER_SCRIPT[--foyerIdx];
   boardAppend(item.viewer, item.left, item.right);
-  pulseStageViewer(item.viewer, Math.round(1000*computeThoughtDuration(item.left)));
+  const dur = Math.round(1000*computeThoughtDuration(item.left||''));
+  pulseStageViewer(item.viewer, dur);
   if(foyerAuto && foyerIdx<FOYER_SCRIPT.length){
-    const delay = computeThoughtDuration(item.left) + 0.6;
+    const delay = computeThoughtDuration(item.left||'') + 0.6;
     foyerAutoTimer = setTimeout(()=>foyerStep(+1), delay*1000);
   }else if(foyerAuto && foyerIdx>=FOYER_SCRIPT.length){
     foyerAuto=false; btnAuto.textContent='Auto ▷';
@@ -1120,6 +1140,6 @@ document.addEventListener('keydown', (e)=>{
 <script src="adapter.js"></script>
 <script src="ui_laws_layout_v4.js"></script>
 <script src="act2.js"></script>
-<!-- act3.js ΔΕΝ φορτώνεται: η Πράξη 3 είναι το Φουαγιέ -->
+<!-- act3.js δεν φορτώνεται: η Πράξη 3 είναι το Φουαγιέ -->
 </body>
 </html>
