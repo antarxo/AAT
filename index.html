@@ -395,54 +395,12 @@ const measureTBody=document.getElementById('measureTBody');
 const actBreak=document.getElementById('actBreak');
 const curtainUpper=document.querySelector('.curtain-upper');
 
-/* Helpers */
+/* Position helpers */
 function positionParamsBox(){
   const rightEdge = stage.clientWidth*0.82;
   const w = paramsBoxEl.offsetWidth || 180;
   paramsBoxEl.style.left = (rightEdge - w - 6) + 'px';
   paramsBoxEl.style.top  = '33px';
-}
-function anchorX(){ return stage.clientWidth*0.18; }
-function updateRuler(){
-  const baseLeft=stage.clientWidth*0.18;
-  const usableW =stage.clientWidth*0.64;
-  rulerEl.style.left=baseLeft+'px';
-  rulerEl.style.width=usableW+'px';
-  rulerEl.innerHTML='';
-  const centerX=stage.clientWidth/2;
-  for(let mTick=-7;mTick<=7;mTick++){
-    const xPx=centerX+mTick*pxPerMeter;
-    const rel=xPx-baseLeft;
-    const tDiv=document.createElement('div'); tDiv.className='tick'; tDiv.style.left=rel+'px'; rulerEl.appendChild(tDiv);
-    const lbl=document.createElement('div'); lbl.className='tick-label';
-    lbl.textContent=(mTick===0?'0':(mTick>0? '+'+mTick:''+mTick))+' m';
-    lbl.style.left=rel+'px'; rulerEl.appendChild(lbl);
-  }
-}
-function positionRightPanel(){
-  const W=stage.clientWidth, H=stage.clientHeight;
-  const curtainLeft=W*0.82, curtainW=W*0.18, centerX=curtainLeft+curtainW/2;
-  if(clockEl){ clockEl.style.left=centerX+'px'; }
-  if(measureBox){
-    measureBox.style.left=centerX+'px';
-    const mTop=54; measureBox.style.top=mTop+'px';
-    const halfH=Math.floor(H*0.5); measureBox.style.height=halfH+'px';
-    measureBox.style.overflowY='auto';
-    measureBox.style.width=Math.max(160,curtainW-16)+'px';
-  }
-  if(xtChart){
-    const mTop=measureBox.offsetTop||54;
-    const mHeight=measureBox.offsetHeight||Math.floor(H*0.5);
-    const xTop=mTop+mHeight+8;
-    const availH=Math.max(120,H-xTop-8);
-    xtChart.style.left=centerX+'px'; xtChart.style.top=xTop+'px';
-    const w=Math.max(160,(measureBox?measureBox.offsetWidth:(curtainW-16)));
-    xtChart.style.width=w+'px'; xtChart.style.height=availH+'px';
-    xtChart.style.transform='translateX(-50%)';
-    if(uXT){ uXT.setSize({width:Math.floor(w), height:Math.floor(availH)}); drawXTChart(); }
-  }
-  positionLawCharts();
-  positionParamsBox();
 }
 
 /* Ρυθμίσεις ροής */
@@ -496,8 +454,51 @@ let playbackTime=0, mode='run', obsStarted=false, obsStartPlaybackOffset=0;
 /* Μετρήσεις */
 let lastSampleObsTime=-Infinity; const sampleInterval=0.25;
 
+/* Χάρακας */
+function updateRuler(){
+  const baseLeft=stage.clientWidth*0.18;
+  const usableW =stage.clientWidth*0.64;
+  rulerEl.style.left=baseLeft+'px';
+  rulerEl.style.width=usableW+'px';
+  rulerEl.innerHTML='';
+  const centerX=stage.clientWidth/2;
+  for(let mTick=-7;mTick<=7;mTick++){
+    const xPx=centerX+mTick*pxPerMeter;
+    const rel=xPx-baseLeft;
+    const tDiv=document.createElement('div'); tDiv.className='tick'; tDiv.style.left=rel+'px'; rulerEl.appendChild(tDiv);
+    const lbl=document.createElement('div'); lbl.className='tick-label';
+    lbl.textContent=(mTick===0?'0':(mTick>0? '+'+mTick:''+mTick))+' m';
+    lbl.style.left=rel+'px'; rulerEl.appendChild(lbl);
+  }
+}
+
 /* Δεξιά πάνελ+γράφημα */
 let graphEnabled=false, uXT=null, pendingGraph=false;
+function positionRightPanel(){
+  const W=stage.clientWidth, H=stage.clientHeight;
+  const curtainLeft=W*0.82, curtainW=W*0.18, centerX=curtainLeft+curtainW/2;
+  if(clockEl){ clockEl.style.left=centerX+'px'; }
+  if(measureBox){
+    measureBox.style.left=centerX+'px';
+    const mTop=54; measureBox.style.top=mTop+'px';
+    const halfH=Math.floor(H*0.5); measureBox.style.height=halfH+'px';
+    measureBox.style.overflowY='auto';
+    measureBox.style.width=Math.max(160,curtainW-16)+'px';
+  }
+  if(xtChart){
+    const mTop=measureBox.offsetTop||54;
+    const mHeight=measureBox.offsetHeight||Math.floor(H*0.5);
+    const xTop=mTop+mHeight+8;
+    const availH=Math.max(120,H-xTop-8);
+    xtChart.style.left=centerX+'px'; xtChart.style.top=xTop+'px';
+    const w=Math.max(160,(measureBox?measureBox.offsetWidth:(curtainW-16)));
+    xtChart.style.width=w+'px'; xtChart.style.height=availH+'px';
+    xtChart.style.transform='translateX(-50%)';
+    if(uXT){ uXT.setSize({width:Math.floor(w), height:Math.floor(availH)}); drawXTChart(); }
+  }
+  positionLawCharts();
+  positionParamsBox();
+}
 function positionLawCharts(){
   const r = lawsPane.getBoundingClientRect();
   const s = stage.getBoundingClientRect();
@@ -511,6 +512,25 @@ function ensureVelocityChart(){ if(!vCan){ vCan = document.createElement('canvas
 function ensureAccelerationChart(){ if(!aCan){ aCan = document.createElement('canvas'); lawCharts.appendChild(aCan); } sizeLawCanvas(aCan); }
 function ensureAxChart(){ if(!axCan){ axCan = document.createElement('canvas'); lawCharts.appendChild(axCan); } sizeLawCanvas(axCan); }
 
+/* Παράμετροι A, ω, φ0 */
+function showCurtainParams(){
+  const phi0deg=((omega*obsStartPlaybackOffset)*180/Math.PI + 360)%360;
+  paramAEl.textContent  =`A = ${A_m.toFixed(2)} m`;
+  paramWEl.textContent  =`ω = ${omega.toFixed(3)} rad/s`;
+  paramPhiEl.textContent=`φ₀ = ${phi0deg.toFixed(1)}°`;
+  paramsBoxEl.style.display='block';
+  positionParamsBox();
+}
+
+/* uPlot – x(t) */
+function buildSeriesData(){
+  const N=240, tArr=new Array(N+1), xArr=new Array(N+1);
+  for(let i=0;i<=N;i++){
+    const tloc=(i/N)*T;
+    tArr[i]=tloc; xArr[i]=A_m*Math.sin(omega*(tloc+obsStartPlaybackOffset));
+  }
+  return [tArr,xArr];
+}
 function initXTChart(){
   if(uXT) return; if(!window.uPlot){ if(graphEnabled){ pendingGraph=true; } return; }
   xtChart.style.display='block';
@@ -529,15 +549,28 @@ function initXTChart(){
   };
   uXT=new uPlot(opts, xData, xtChart);
 }
-function buildSeriesData(){
-  const N=240, tArr=new Array(N+1), xArr=new Array(N+1);
-  for(let i=0;i<=N;i++){
-    const tloc=(i/N)*T;
-    tArr[i]=tloc; xArr[i]=A_m*Math.sin(omega*(tloc+obsStartPlaybackOffset));
-  }
-  return [tArr,xArr];
-}
 function drawXTChart(){ if(uXT){ uXT.setData(buildSeriesData()); } }
+function ensureXTReady(){ if(!graphEnabled) return; if(window.uPlot){ initXTChart(); if(uXT) drawXTChart(); } }
+
+/* Κλείσιμο αυλαίας + actBreak */
+function closeCurtainsSequence(){
+  curtainUpper.classList.add('slow-close');
+  stage.classList.remove('open');
+  markerEl.style.opacity='0';
+  setMode('run');
+  setTimeout(()=>{
+    const cuRect = curtainUpper.getBoundingClientRect();
+    const sRect = stage.getBoundingClientRect();
+    const centralLeftPx = sRect.left + stage.clientWidth*0.18;
+    const centralWidthPx= stage.clientWidth*0.64;
+    actBreak.style.left   = (centralLeftPx - sRect.left) + 'px';
+    actBreak.style.top    = (cuRect.top  - sRect.top ) + 'px';
+    actBreak.style.width  = centralWidthPx + 'px';
+    actBreak.style.height = cuRect.height + 'px';
+    actBreak.style.display='flex';
+    curtainUpper.classList.remove('slow-close');
+  }, 1500);
+}
 
 /* Bubbles */
 const BASE_BUBBLE_LIFT=96;
@@ -604,7 +637,7 @@ function resumeFromBubble(nextMode='run'){
   setMode(nextMode==='slow'?'slow':'run');
 }
 
-/* Νόμοι + μικρο-γραφικά */
+/* Νόμοι */
 let lawCount=0;
 function addLaw(txt){
   if(!firstLawShown){
@@ -615,38 +648,6 @@ function addLaw(txt){
   const li=document.createElement('li'); li.textContent=txt; li.style.marginBottom='0'; lawsList.appendChild(li);
   lawCount++; positionLawCharts();
 }
-function showCurtainParams(){
-  const phi0deg=((omega*obsStartPlaybackOffset)*180/Math.PI + 360)%360;
-  paramAEl.textContent  =`A = ${A_m.toFixed(2)} m`;
-  paramWEl.textContent  =`ω = ${omega.toFixed(3)} rad/s`;
-  paramPhiEl.textContent=`φ₀ = ${phi0deg.toFixed(1)}°`;
-  paramsBoxEl.style.display='block';
-  positionParamsBox();
-}
-
-/* Κλείσιμο αυλαίας + actBreak */
-function closeCurtainsSequence(){
-  curtainUpper.classList.add('slow-close');
-  stage.classList.remove('open');
-  markerEl.style.opacity='0';
-  setMode('run');
-  setTimeout(()=>{
-    const cuRect = curtainUpper.getBoundingClientRect();
-    const sRect = stage.getBoundingClientRect();
-    const centralLeftPx = sRect.left + stage.clientWidth*0.18;
-    const centralWidthPx= stage.clientWidth*0.64;
-    actBreak.style.left   = (centralLeftPx - sRect.left) + 'px';
-    actBreak.style.top    = (cuRect.top  - sRect.top ) + 'px';
-    actBreak.style.width  = centralWidthPx + 'px';
-    actBreak.style.height = cuRect.height + 'px';
-    actBreak.style.display='flex';
-    curtainUpper.classList.remove('slow-close');
-  }, 1500);
-}
-
-/* Διάγραμμα x–t */
-let graphEnabled=false, uXT=null, pendingGraph=false;
-function ensureXTReady(){ if(!graphEnabled) return; if(window.uPlot){ initXTChart(); if(uXT) drawXTChart(); } }
 
 /* Κουμπιά */
 function setMode(newMode){
@@ -704,6 +705,7 @@ function logMeasurement(tObs,xMeters){
   try{ tr.scrollIntoView({block:'end'}); }catch(e){}
   try{ measureBox.scrollTop=measureBox.scrollHeight; }catch(e){}
 }
+function anchorX(){ return stage.clientWidth*0.18; }
 function animate(now){
   const realDt=(now-lastFrame)/1000; lastFrame=now;
   positionRightPanel(); updateRuler();
@@ -1089,7 +1091,6 @@ function tint(hex, alpha){
   return `rgba(${r},${g},${b},${alpha})`;
 }
 
-/* ➤ FIX: ΜΟΝΟ η στήλη που αντιστοιχεί σε κάθε panel */
 function boardAppend(item){
   const v = FOYER_VIEWERS.find(x=>x.id===item.viewer) || {color:'#999', name:`ΘΕΑΤΗΣ ${item.viewer}`};
 
@@ -1115,12 +1116,12 @@ function boardAppend(item){
   boardRight.scrollTop = boardRight.scrollHeight;
 }
 
-/* ➤ FIX: Διαστάσεις Φουαγιέ ακριβώς όπως ζητήθηκαν */
+/* Διαστάσεις Φουαγιέ */
 function repositionFoyer(){
   const cuRect = curtainUpper.getBoundingClientRect();
   const sRect  = stage.getBoundingClientRect();
 
-  const leftPx = Math.round(stage.clientWidth * 0.18);            // από δεξιά άκρη αριστερής πλαϊνής κουρτίνας
+  const leftPx = Math.round(stage.clientWidth * 0.18);            // δεξιά άκρη αριστερής πλαϊνής
   const topPx  = 0;                                               // πάνω περίγραμμα οθόνης
   const width  = Math.round(stage.clientWidth - leftPx);          // μέχρι δεξί άκρο οθόνης
   const height = Math.max(80, Math.round(cuRect.bottom - sRect.top)); // έως ΚΑΤΩ περίγραμμα κινητής κουρτίνας
