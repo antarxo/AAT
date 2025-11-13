@@ -138,13 +138,11 @@
     font-size:14px; line-height:1.32;
   }
 
-  .board-col{display:flex;flex-direction:column;gap:6px}
   .row-pair{display:grid;grid-template-columns:1fr 1fr;gap:12px}
   .row-left, .row-right{
     background:rgba(255,255,255,.05); border-left:6px solid transparent; border-radius:6px; padding:6px 8px;
   }
   .row-right{ text-align:left; white-space:pre-wrap }
-  .speaker{font-weight:700;margin-right:6px}
 
   .btn-foyer{position:absolute;top:8px;right:calc(18% + 8px);z-index:501;background:#004b6b;color:#fff;border:none;border-radius:8px;padding:8px 12px;font-size:14px;cursor:pointer}
   .foyer-ctrls{display:flex;gap:8px;position:absolute;right:8px;top:8px;z-index:502}
@@ -449,7 +447,7 @@ function positionRightPanel(){
     const w=Math.max(160,(measureBox?measureBox.offsetWidth:(curtainW-16)));
     xtChart.style.width=w+'px'; xtChart.style.height=availH+'px';
     xtChart.style.transform='translateX(-50%)';
-    if(uPlot){ if(!uXT && graphEnabled){ initXTChart(); } if(uXT){ drawXTChart(); } }
+    if(window.uPlot){ if(!uXT && graphEnabled){ initXTChart(); } if(uXT){ drawXTChart(); } }
   }
   positionLawCharts();
   positionParamsBox();
@@ -473,27 +471,24 @@ function logMeasurement(tObs,xMeters){
 }
 
 /* Mode */
-let mode='run'; let slowFactor=1.00;
+let mode='run';
+
+/* Ρυθμίσεις ροής */
+const DEFAULT_FIRST_MUL=1.1;
+let firstThoughtMul=parseFloat(slFirst.value);
+let timelineScale=parseFloat(slScale.value);
+let bubbleDurationSec=parseFloat(slDur.value);
+let slowFactor=parseFloat(slSlow.value);
+slFirst.addEventListener('input',()=>{ firstThoughtMul=parseFloat(slFirst.value); valFirst.textContent=`${firstThoughtMul.toFixed(1)}·T`; });
+slScale.addEventListener('input',()=>{ timelineScale=parseFloat(slScale.value); valScale.textContent=`${timelineScale.toFixed(1)}×`; });
+slDur.addEventListener('input',()=>{ bubbleDurationSec=parseFloat(slDur.value); valDur.textContent=`${bubbleDurationSec.toFixed(1)}s`; });
+slSlow.addEventListener('input',()=>{ slowFactor=parseFloat(slSlow.value); valSlow.textContent=`${slowFactor.toFixed(2)}×`; });
 function setMode(newMode){
   mode=newMode;
   btnSlow.classList.toggle('active', mode==='slow');
   btnPlay.classList.toggle('active', mode==='run');
   slowHint.textContent = (mode==='slow' && slowFactor<1) ? `SLOW-MO ×${slowFactor.toFixed(2)}` : '';
 }
-
-/* Ρυθμίσεις ροής */
-const DEFAULT_FIRST_MUL=1.1;
-const slFirst=document.getElementById('slFirst'), valFirst=document.getElementById('valFirst');
-const slScale=document.getElementById('slScale'), valScale=document.getElementById('valScale');
-const slDur=document.getElementById('slDur'),   valDur=document.getElementById('valDur');
-const slSlow=document.getElementById('slSlow'), valSlow=document.getElementById('valSlow');
-let firstThoughtMul=parseFloat(slFirst.value);
-let timelineScale=parseFloat(slScale.value);
-let bubbleDurationSec=parseFloat(slDur.value);
-slFirst.addEventListener('input',()=>{ firstThoughtMul=parseFloat(slFirst.value); valFirst.textContent=`${firstThoughtMul.toFixed(1)}·T`; });
-slScale.addEventListener('input',()=>{ timelineScale=parseFloat(slScale.value); valScale.textContent=`${timelineScale.toFixed(1)}×`; });
-slDur.addEventListener('input',()=>{ bubbleDurationSec=parseFloat(slDur.value); valDur.textContent=`${bubbleDurationSec.toFixed(1)}s`; });
-slSlow.addEventListener('input',()=>{ slowFactor=parseFloat(slSlow.value); valSlow.textContent=`${slowFactor.toFixed(2)}×`; });
 
 /* Timeline Πράξης 1 (συνοπτικά) */
 const thoughtScriptBase=[
@@ -511,13 +506,10 @@ const thoughtScriptBase=[
   {kind:'law',       atT:6.10, lawText:'x(t) = A·sin(ωt + φ₀)', alsoParams:true},
   {kind:'bubble',    atT:6.60, viewer:1, key:'t11', yOffset:130, xShift:-20},
   {kind:'law',       atT:6.90, lawText:'v(t) = ωA·cos(ωt + φ₀)'},
-  {kind:'lawPlot',   atT:7.00, plot:'v'},
   {kind:'bubble',    atT:7.60, viewer:3, key:'t13', yOffset:140, xShift: 10},
   {kind:'law',       atT:7.85, lawText:'a(t) = −ω²A·sin(ωt + φ₀)'},
-  {kind:'lawPlot',   atT:7.95, plot:'a'},
   {kind:'bubble',    atT:8.50, viewer:0, key:'t15', yOffset:125, xShift:-30},
   {kind:'law',       atT:8.80, lawText:'a(x) = −ω²·x'},
-  {kind:'lawPlot',   atT:9.10, plot:'ax'},
   {kind:'bubble',    atT:9.60, viewer:2, key:'t18', yOffset:130, xShift:  0},
   {kind:'close',     atT:10.20}
 ];
@@ -529,7 +521,7 @@ let obsStarted=false, obsStartPlaybackOffset=0;
 
 /* Ρολόι & animation */
 let t0=performance.now(), lastFrame=performance.now(); let playbackTime=0;
-function ensureXTReady(){ if(!graphEnabled) return; if(uPlot && !uXT){ initXTChart(); } if(uXT){ drawXTChart(); } }
+function ensureXTReady(){ if(!graphEnabled) return; if(window.uPlot && !uXT){ initXTChart(); } if(uXT){ drawXTChart(); } }
 function initXTChart(){
   if(uXT) return; if(!window.uPlot) return;
   xtChart.style.display='block'; positionRightPanel();
@@ -604,13 +596,13 @@ function resumeFromBubble(nextMode='run'){
   setMode(nextMode==='slow'?'slow':'run');
 }
 
-/* Νόμοι + μικρο-γραφικά (placeholders για σχέδια) */
+/* Νόμοι + μικρο-γραφικά (placeholder) */
 function positionLawCharts(){
   const r=lawsPane.getBoundingClientRect(), s=stage.getBoundingClientRect();
-  const lawCharts=document.getElementById('lawCharts');
-  lawCharts.style.top=(r.bottom - s.top + 8)+'px';
-  lawCharts.style.left='2%';
-  lawCharts.style.width='16%';
+  const lc=document.getElementById('lawCharts');
+  lc.style.top=(r.bottom - s.top + 8)+'px';
+  lc.style.left='2%';
+  lc.style.width='16%';
 }
 function addLaw(txt){
   if(!firstLawShown){
@@ -779,7 +771,7 @@ function startShowCountdown(){
 startBtn.addEventListener('click', startShowCountdown);
 
 /* Παρατηρητής μεγέθους */
-const ro=new ResizeObserver(()=>{ positionRightPanel(); if(uXT){ drawXTChart(); } positionLawCharts(); repositionFoyer(); });
+const ro=new ResizeObserver(()=>{ positionRightPanel(); if(uXT){ drawXTChart(); } positionLawCharts(); if(typeof repositionFoyer==='function'){ repositionFoyer(); } });
 ro.observe(stage);
 
 /* Αρχικοποίηση */
@@ -801,16 +793,14 @@ const btnAuto   = document.getElementById('foyerAuto');
 const btnClose  = document.getElementById('foyerClose');
 const btnEnd    = document.getElementById('btnEnd');
 
-/* Θέσεις/διαστάσεις Φουαγιέ:
-   Πλάτος = από δεξί άκρο αριστερής κουρτίνας (18%) μέχρι δεξί όριο οθόνης (100%).
-   Ύψος = από top(0) έως κάτω όριο κινητής κουρτίνας. */
+/* Θέσεις/διαστάσεις Φουαγιέ (πλάτος: από 18% έως 100%, ύψος: μέχρι πάνω περίγραμμα κινητής κουρτίνας) */
 function foyerRect(){
   const sRect=stage.getBoundingClientRect();
   const cu= document.querySelector('.curtain-upper').getBoundingClientRect();
   const left = stage.clientWidth*0.18;
   const top  = 0;
   const width= stage.clientWidth - left;
-  const height= cu.top - sRect.top; // μέχρι το πάνω περίγραμμα της κουρτίνας
+  const height= cu.top - sRect.top;
   return {left, top, width, height};
 }
 function repositionFoyer(){
@@ -821,7 +811,7 @@ function repositionFoyer(){
   foyer.style.height = r.height+'px';
 }
 
-/* Απόχρωση ανά θεατή (ίδιο με viewers 0..4) */
+/* Χρώματα θεατών (αντιστοίχιση viewers 1..5) */
 function tint(hex, alpha){
   const c = hex.replace('#','');
   const r=parseInt(c.slice(0,2),16), g=parseInt(c.slice(2,4),16), b=parseInt(c.slice(4,6),16);
@@ -829,65 +819,62 @@ function tint(hex, alpha){
 }
 const VIEWERS_COLORS = ['#ff6b6b','#ffd166','#06d6a0','#118ab2','#c77dff'];
 
-/* Δεδομένα Φουαγιέ — ΠΛΗΡΗΣ ΣΕΙΡΑ.
-   Συμπλήρωσε εδώ ΟΛΑ τα κομμάτια από το .docx/.pdf που λείπουν,
-   με ακριβές κείμενο και αρίθμηση, χωρίς περικοπές. */
+/* Δεδομένα Φουαγιέ — συμπλήρωσε ΟΛΑ από docx/pdf (1:1) */
 const FOYER_DATA = [
-  /* ήδη δοσμένα από εσένα (1:1) */
-  { v:1, left:"Θεατής 1: Οι (1), (2), (3) και (5) μας βοηθούν να «προφητεύουμε» τη θέση, την ταχύτητα, την επιτάχυνση και την συνολική δύναμη που δέχεται κάθε στιγμή ο (m₁ ,D₁) χωρίς να χρειαστεί να ξαναμπούμε για τη συνέχεια της παράστασης!", right:"[1] x(t)=A·ημ(ωt+φ₀)\n[2] v(t)=ωA·συν(ωt+φ₀)\n[3] a(t)=−ω²A·ημ(ωt+φ₀)\n[5] ΣF=−mω²A·ημ(ωt+φ₀)"},
-  { v:2, left:"Θεατής 2: Η (3)’ και η (6)  όμως μας βοηθούν να … «προφητεύουμε» την επιτάχυνση και την συνολική δύναμη που δέχεται αρκεί να ξέρουμε σε ποιο σημείο της σκηνής βρίσκεται ο (m₁ ,D₁) χωρίς φυσικά και αναγκαστικά να συνεχίσουμε να είμαστε θεατές!", right:"(3)’ a(x)=−ω²·x\n(6)  ΣF=−mω²·x" },
+  { v:1, left:"Θεατής 1: Οι (1), (2), (3) και (5) μας βοηθούν να «προφητεύουμε» τη θέση, την ταχύτητα, την επιτάχυνση και την συνολική δύναμη που δέχεται κάθε στιγμή ο (m₁ ,D₁) χωρίς να χρειαστεί να ξαναμπούμε για τη συνέχεια της παράστασης!", right:"(1) x(t)=A·ημ(ωt+φ₀)\n(2) v(t)=ωA·συν(ωt+φ₀)\n(3) a(t)=−ω²A·ημ(ωt+φ₀)\n(5) ΣF=−m·ω²A·ημ(ωt+φ₀)"},
+  { v:2, left:"Θεατής 2: Η (3)’ και η (6) όμως μας βοηθούν να … «προφητεύουμε» την επιτάχυνση και τη συνολική δύναμη που δέχεται αρκεί να ξέρουμε σε ποιο σημείο της σκηνής βρίσκεται ο (m₁ ,D₁) χωρίς φυσικά και αναγκαστικά να συνεχίσουμε να είμαστε θεατές!", right:"(3)’ a(x)=−ω²·x\n(6)  ΣF=−m·ω²·x" },
   { v:3, left:`Θεατής 3: Λοιπόν!
 1. Διαπιστώνουμε αγαπητοί μου ότι δεν μπορούμε προς το παρόν να «προφητέψουμε» κάτι ανάλογο με αυτό που συμπεραίνει εδώ ο θεατής 2 για την ταχύτητα και τη σχέση της με τη θέση του (m₁ ,D₁).
 2. Σκέφτομαι ότι αυτά που είδαμε γενικεύονται για κάθε πρωταγωνιστή (m,D) σε ανάλογη Παράσταση ΑΑΤ.
 3. Ως γνώστες όμως της …Αλγεβρικής και με λίγη “αλγεβρική περιέργεια” να τι μπορούμε να κάνουμε (και γενικεύοντας, αναφερόμενοι πλέον στον τυχαίο (m,D)) για να καλύψουμε και το κενό 1.:\n✓ Λύνουμε την (1) ως προς ημ(ωt+φ₀) και υψώνουμε στο τετράγωνο. Το ίδιο για την (2) ως προς συν(ωt+φ₀) και υψώνουμε. Μετά προσθέτουμε κατά μέλη.`, 
-    right:"(1) ⇒ (x/A)=ημ(ωt+φ₀) ⇒ (x/A)²=ημ²(ωt+φ₀)\n(2) ⇒ (v/ωA)=συν(ωt+φ₀) ⇒ (v/ωA)²=συν²(ωt+φ₀)\n⟹ (x/A)² + (v/ωA)² = ημ²+συν² = 1\n⟹ ω²A² = ω²x² + v²   …(8)"},
+    right:"(1) ⇒ (x/A)=ημ(ωt+φ₀) ⇒ (x/A)²=ημ²(ωt+φ₀)\n(2) ⇒ (v/ωA)=συν(ωt+φ₀) ⇒ (v/ωA)²=συν²(ωt+φ₀)\n⟹ (x/A)² + (v/ωA)² = 1\n⟹ ω²A² = ω²x² + v²   …(8)"},
   { v:4, left:"Θεατής 4: Θα ήταν καλύτερα αν την (8) την φέρναμε στη μορφή υ= … Δείτε:", right:"(8) ⇒ v² = ω²(A²−x²) ⇒ |v| = ω·√(A²−x²) …(9)" },
-  { v:1, left:`Θεατής 1: Το σημείο στο οποίο διέκοψα είχε γραφτεί ω²A² = ω²x² + v². Σκέφτομαι λοιπόν τα εξής:
-Αν πολλαπλασιάσουμε και τα δύο μέλη με ½m, δείτε!`, 
+  { v:1, left:`Θεατής 1: Το σημείο στο οποίο διέκοψα είχε γραφτεί ω²A² = ω²x² + v². Σκέφτομαι λοιπόν τα εξής:\nΑν πολλαπλασιάσουμε και τα δύο μέλη με ½m, δείτε!`, 
     right:`(1/2)mω²A² = (1/2)mω²x² + (1/2)mv²  …(12)
 K = (1/2)mv²  (κινητική)
 U = (1/2)mω²x² (δυναμική)
 E_M = K+U = (1/2)mω²A² = U_max  (Α.Δ.Μ.Ε.Τ.)`},
 
-  /* <<< ΣΥΜΠΛΗΡΩΣΕ εδώ ΟΛΟΥΣ τους υπόλοιπους θεατές/σκέψεις/αλγεβρικά 1:1 από το .docx/.pdf >>> */
+  /* >>> Πρόσθεσε εδώ όλα τα υπόλοιπα αποσπάσματα 1:1 από τα αρχεία σου <<< */
 
-  /* Τελικό συμπέρασμα (κατά λέξη όπως μου έδωσες) */
-  { v:2, left:"Θεατής 2: Να φύγουμε λέω και εγώ, αλλά με μια επίγευση από την αποψινή παράσταση του (m₁,D₁) συνοψίζοντας: Ο κάθε πρωταγωνιστής ταλαντωτής (m,D) χαρακτηρίζεται απολύτως από τον «σωματότυπό του» (m) και την «χρονική» εμμονή του (ω) ή ισοδύναμα και ας το κρατήσουμε αυτό, από τα δικά του (m,D). Θα είναι λοιπόν για μας στο εξής ο ταλαντωτής (m,D), τα όρια στην παράστασή του (το μήκος σκηνής) τα καθορίζει πάντα ο κάθε κύριος … Ενεργειούλης και την έναρξή της εμείς οι θεατές!", right:"D = m·ω²,  ΣF = −D·x,  E_M = σταθερή" }
+  { v:2, left:"Θεατής 2: Να φύγουμε λέω και εγώ, αλλά με μια επίγευση από την αποψινή παράσταση του (m₁,D₁) συνοψίζοντας: Ο κάθε πρωταγωνιστής ταλαντωτής (m,D) χαρακτηρίζεται απολύτως από τον «σωματότυπό του» (m) και την «χρονική» εμμονή του (ω) ή ισοδύναμα και ας το κρατήσουμε αυτό, από τα δικά του (m,D). Θα είναι λοιπόν για μας στο εξής ο ταλαντωτής (m,D), τα όρια στην παράστασή του (το μήκος σκηνής) τα καθορίζει πάντα ο κάθε κύριος … Ενεργειούλης και την έναρξή της εμείς οι θεατές!", right:"D = m·ω²\nΣF = −D·x\nE_M = σταθερή"}
 ];
 
 let fIdx=0, foyerAuto=false, foyerAutoTimer=null;
 
-/* Γέμισμα μιας «σειράς» (αριστερά λόγια, δεξιά τύποι) και συγχρονισμός ύψους */
+/* Γέμισμα σειράς (αριστερά λόγια, δεξιά τύποι) + συγχρονισμός ύψους */
 function appendRow(item){
   const color = VIEWERS_COLORS[(item.v-1)%VIEWERS_COLORS.length];
 
-  const L = document.createElement('div'); L.className='row-left';  L.style.borderLeftColor=color;
-  const R = document.createElement('div'); R.className='row-right'; R.style.borderLeftColor=color;
+  const Lwrap = document.createElement('div'); Lwrap.className='row-left';  Lwrap.style.borderLeftColor=color;
+  const Rwrap = document.createElement('div'); Rwrap.className='row-right'; Rwrap.style.borderLeftColor=color;
 
-  L.innerHTML = `<span class="speaker" style="color:${color}">ΘΕΑΤΗΣ ${item.v}:</span> ${item.left}`;
-  R.textContent = item.right || '';
+  Lwrap.innerHTML = `<span style="font-weight:700;color:${color}">ΘΕΑΤΗΣ ${item.v}:</span> ${item.left.replace(/^Θεατής\s+\d+:\s*/i,'')}`;
+  Rwrap.textContent = item.right || '';
 
-  const pair = document.createElement('div'); pair.className='row-pair';
-  pair.appendChild(L); pair.appendChild(R);
+  const pairL = document.createElement('div'); pairL.className='row-pair';
+  const pairR = document.createElement('div'); pairR.className='row-pair';
+  pairL.appendChild(Lwrap.cloneNode(true)); pairL.appendChild(document.createElement('div'));
+  pairR.appendChild(document.createElement('div')); pairR.appendChild(Rwrap);
 
-  boardL.appendChild(pair.cloneNode(true)); // αποδίδουμε ίδιες δομές
-  boardR.appendChild(pair);
+  boardL.appendChild(pairL);
+  boardR.appendChild(pairR);
 
-  // equal heights ανά ζεύγος
-  const lastL = boardL.lastElementChild;
-  const lastR = boardR.lastElementChild;
+  // ίσο ύψος ανά ζεύγος
+  const lastL = boardL.lastElementChild.children[0];
+  const lastR = boardR.lastElementChild.children[1];
   const h = Math.max(lastL.clientHeight, lastR.clientHeight);
   lastL.style.minHeight = h+'px';
   lastR.style.minHeight = h+'px';
 
-  // scroll sync (πάμε πάντα στο τέλος)
+  // scroll sync
   boardL.scrollTop = boardL.scrollHeight;
   boardR.scrollTop = boardR.scrollHeight;
 
-  // bubble πάνω από τον σωστό θεατή (ίδιο ύψος με Πράξη 2)
+  // bubble στον σωστό θεατή
   try{
     const viewerIdx = (item.v-1)%5;
-    showThoughtForViewer(viewerIdx, item.left.replace(/^Θεατής \d+:\s*/i,''), undefined, 135, 0);
+    showThoughtForViewer(viewerIdx, item.left.replace(/^Θεατής\s+\d+:\s*/i,''), undefined, 135, 0);
   }catch(_){}
 }
 function foyerStep(dir){
@@ -902,12 +889,11 @@ function foyerStep(dir){
       foyerAuto=false; btnAuto.textContent='Auto ▷';
     }
   }else{
-    // απλή «πίσω» κίνηση: καθαρισμός και ξαναπέρασμα έως fIdx-1
     const target=Math.max(0, fIdx-1);
     boardL.innerHTML=''; boardR.innerHTML='';
-    const oldAuto=foyerAuto; foyerAuto=false;
+    const wasAuto=foyerAuto; foyerAuto=false;
     for(let i=0;i<target;i++) appendRow(FOYER_DATA[i]);
-    fIdx=target; foyerAuto=oldAuto;
+    fIdx=target; foyerAuto=wasAuto;
   }
 }
 
@@ -915,7 +901,6 @@ function foyerStep(dir){
 function foyerOpen(autoStart=false){
   repositionFoyer();
   foyer.style.display='block';
-  // reset
   fIdx=0; if(foyerAutoTimer){ clearTimeout(foyerAutoTimer); foyerAutoTimer=null; }
   boardL.innerHTML=''; boardR.innerHTML='';
   if(autoStart){ foyerAuto=true; btnAuto.textContent='Auto ❚❚'; foyerStep(+1); }
@@ -941,7 +926,8 @@ btnEnd.addEventListener('click', resetShow);
 
 /* Auto-foyer στο τέλος Πράξης 2 */
 document.addEventListener('act2-ended', ()=>foyerOpen(true));
-/* F shortcut */
+
+/* Συντόμευση F */
 document.addEventListener('keydown', (e)=>{ if(e.key.toLowerCase()==='f'){ (foyer.style.display==='block')?foyerClose():foyerOpen(true); }});
 </script>
 
@@ -952,7 +938,7 @@ document.addEventListener('keydown', (e)=>{ if(e.key.toLowerCase()==='f'){ (foye
 <!-- Νόμοι (one-line) -->
 <script src="ui_laws_layout_v4.js"></script>
 
-<!-- Πράξη 2 (κρατάμε το δικό σου act2.js που ήδη συγχρονίζει τον GHOST με ελατήριο) -->
+<!-- Πράξη 2 -->
 <script src="act2.js"></script>
 
 <script>
