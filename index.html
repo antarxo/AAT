@@ -9,6 +9,13 @@
 <script src="https://unpkg.com/uplot@1.6.30/dist/uPlot.iife.min.js"></script>
 
 <style>
+  :root{
+    --baseline:18px;              /* baseline grid */
+    --foyer-gap:0px;              /* κενό μεταξύ πινάκων (0 = εφαπτόμενοι) */
+    --board-font:14px;            /* μέγεθος κειμένου πινάκων */
+    --bubble-font:15px;           /* μέγεθος κειμένου bubbles */
+  }
+
   body{margin:0;background:radial-gradient(circle at center,#222 0%,#000 100%);overflow:hidden;font-family:Inter,system-ui,sans-serif}
   .stage{position:relative;width:100vw;height:100vh;overflow:hidden}
 
@@ -89,7 +96,7 @@
   @keyframes popIn{0%{transform:scale(.9);opacity:0}60%{transform:scale(1.04);opacity:1}100%{transform:scale(1)}}
   .thought-bubble{
     position:absolute;max-width:420px;background:rgba(255,255,255,.82);color:#000;
-    font-size:15px;line-height:1.45;padding:10px 12px 12px;
+    font-size:var(--bubble-font);line-height:1.45;padding:10px 12px 12px;
     border:2px solid transparent;border-radius:10px;
     border-image:repeating-linear-gradient(90deg, rgba(0,0,0,.6) 0 6px, transparent 6px 10px, rgba(0,0,0,.6) 10px 12px, transparent 12px 16px) 1;
     box-shadow:0 6px 12px rgba(0,0,0,.4);z-index:340;pointer-events:none;opacity:0;display:none;transition:opacity .25s ease, transform .25s ease
@@ -128,25 +135,34 @@
 
   /* ====== ΦΟΥΑΓΙΕ (Πράξη 3) ====== */
   .foyer{position:absolute;display:none;z-index:500}
-  .foyer .wrap{position:absolute;inset:0;display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .foyer .wrap{
+    position:absolute;inset:0;
+    display:grid;grid-template-columns:1fr 1fr;gap:var(--foyer-gap);
+  }
 
   .blackboard{
     background:#0d2a1e url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%228%22 height=%228%22><circle cx=%224%22 cy=%224%22 r=%221%22 fill=%22rgba(255,255,255,0.03)%22/></svg>') repeat;
     border:2px solid rgba(255,255,255,.15);
-    border-radius:12px; box-shadow:inset 0 0 30px rgba(0,0,0,.6);
     color:#fff; padding:8px 10px; overflow:auto; scroll-behavior:smooth;
-    font-size:14px; line-height:1.32;
+    font-size:var(--board-font); line-height:1.333;  /* ≈ 24px αν baseline=18 */
+    box-shadow:inset 0 0 30px rgba(0,0,0,.6);
   }
+  /* Εφαπτόμενοι: χωρίς στρογγυλέματα/σύνορα στο «μέσον» */
+  #boardLeft{  border-top-right-radius:0;border-bottom-right-radius:0;border-right:none;  border-top-left-radius:12px;border-bottom-left-radius:12px;}
+  #boardRight{ border-top-left-radius:0;border-bottom-left-radius:0;border-left:none;     border-top-right-radius:12px;border-bottom-right-radius:12px;}
 
-  .row-left, .row-right{
-    background:rgba(255,255,255,.05); border-left:6px solid transparent; border-radius:6px; padding:6px 8px; margin:6px 0;
+  .row-left,.row-right{
+    background:rgba(255,255,255,.05);
+    border-left:6px solid transparent;
+    border-radius:6px;
+    padding:6px 8px;
+    margin:6px 0;
   }
   .row-right{ text-align:left; white-space:pre-wrap }
 
   .btn-foyer{position:absolute;top:8px;right:calc(18% + 8px);z-index:501;background:#004b6b;color:#fff;border:none;border-radius:8px;padding:8px 12px;font-size:14px;cursor:pointer}
   .foyer-ctrls{display:flex;gap:8px;position:absolute;right:8px;top:8px;z-index:502}
   .foyer-ctrls button{background:#700;color:#fff;border:none;border-radius:8px;padding:8px 10px;font-size:14px;cursor:pointer}
-
   .end-btn{position:absolute;bottom:10px;right:10px;z-index:502;background:#333;color:#fff;border:1px solid rgba(255,255,255,.25);border-radius:8px;padding:8px 12px;font-size:14px;cursor:pointer}
 </style>
 </head>
@@ -174,7 +190,7 @@
       <div class="sb-lineD" id="sbLineD">(*) ... εσείς</div>
     </div>
 
-    <!-- Παράμετροι A, ω, φ0 -->
+    <!-- Παράμετροι -->
     <div class="params-box" id="paramsBox">
       <div class="param" id="paramA"></div>
       <div class="param" id="paramW"></div>
@@ -192,7 +208,7 @@
     </div>
     <div id="xtChart"></div>
 
-    <!-- Νόμοι & μίνι γραφήματα -->
+    <!-- Νόμοι -->
     <div class="laws" id="laws">
       <h4 id="lawsTitle">—</h4>
       <ol id="lawsList"></ol>
@@ -360,7 +376,7 @@ langSwitch.addEventListener('click',(e)=>{
   setLang(btn.dataset.lang);
 });
 
-/* === util === */
+/* === helpers === */
 function localizeTrig(txt){ if(!txt) return txt; return (LANG==='gr') ? txt.replaceAll('sin','ημ').replaceAll('cos','συν') : txt.replaceAll('ημ','sin').replaceAll('συν','cos'); }
 
 /* ====== DOM ====== */
@@ -560,9 +576,16 @@ function computeThoughtDuration(text){
   return Math.max(MIN, Math.min(MAX, auto*scale));
 }
 
-/* bubble */
+/* bubbles – με force-close ώστε να μη «χάνονται» */
 const BASE_BUBBLE_LIFT=96; let bubbleAltLower=false;
-function showThoughtForViewer(vIdx,text,durationSecs,customLift,xShift=0){
+function forceCloseBubbleNow(){
+  if(bubbleAutoTimer){ clearTimeout(bubbleAutoTimer); bubbleAutoTimer=null; }
+  bubbleEl.classList.remove('active','checked','closing');
+  bubbleEl.style.display='none'; bubbleEl.style.opacity='0';
+  isBubbleActive=false;
+}
+function showThoughtForViewer(vIdx,text,durationSecs,customLift,xShift=0, force=false){
+  if(force && isBubbleActive){ forceCloseBubbleNow(); }
   const viewerEl=document.querySelector(`.viewer[data-idx="${vIdx}"]`); if(!viewerEl) return;
   bubbleEl.querySelector('.text').innerHTML=text||'';
   const W=stage.clientWidth; const leftCurtainRight=W*0.18; const rightCurtainLeft=W*0.82; const pad=12;
@@ -625,16 +648,16 @@ function showCurtainParams(){
 function handleTimelineEvent(th){
   if(th.kind==='bubble'){
     const txt = (i18n[LANG].thoughts[th.key]||'');
-    showThoughtForViewer(th.viewer,txt,bubbleDurationSec,th.yOffset,th.xShift||0);
+    showThoughtForViewer(th.viewer,txt,bubbleDurationSec,th.yOffset,th.xShift||0,true);
   }else if(th.kind==='bubbleDyn'){
     if(th.what==='A'){
-      showThoughtForViewer(th.viewer, i18n[LANG].thoughts.t7A(A_m.toFixed(2)), bubbleDurationSec, th.yOffset, th.xShift||0);
+      showThoughtForViewer(th.viewer, i18n[LANG].thoughts.t7A(A_m.toFixed(2)), bubbleDurationSec, th.yOffset, th.xShift||0,true);
     }else if(th.what==='Tw'){
-      showThoughtForViewer(th.viewer, i18n[LANG].thoughts.t8Tw(T.toFixed(2), omega.toFixed(3)), bubbleDurationSec, th.yOffset, th.xShift||0);
+      showThoughtForViewer(th.viewer, i18n[LANG].thoughts.t8Tw(T.toFixed(2), omega.toFixed(3)), bubbleDurationSec, th.yOffset, th.xShift||0,true);
     }else if(th.what==='phi'){
       const x0 = (A_m*Math.sin(omega*(0+obsStartPlaybackOffset))).toFixed(2);
       const phi0deg=((omega*obsStartPlaybackOffset)*180/Math.PI + 360)%360;
-      showThoughtForViewer(th.viewer, i18n[LANG].thoughts.t9phi(x0, phi0deg.toFixed(1)), bubbleDurationSec, th.yOffset, th.xShift||0);
+      showThoughtForViewer(th.viewer, i18n[LANG].thoughts.t9phi(x0, phi0deg.toFixed(1)), bubbleDurationSec, th.yOffset, th.xShift||0,true);
     }
   }else if(th.kind==='graph'){
     graphEnabled=true; ensureXTReady();
@@ -778,8 +801,11 @@ setLang('gr');
 resetShow();
 </script>
 
-<!-- ====== ΦΟΥΑΓΙΕ ΛΟΓΙΚΗ (ενοποιημένο, χωρίς διπλές στήλες/παράθυρα) ====== -->
+<!-- ====== ΦΟΥΑΓΙΕ ΛΟΓΙΚΗ (baseline, σταθερό ύψος, εφαπτόμενες στήλες, force-bubbles) ====== -->
 <script>
+/* CONFIG: σταθερό ύψος πίνακα σε pixels (0 = αυτόματο από κουρτίνα) */
+const FOYER_FIXED_HEIGHT_PX = 0;   // π.χ. 560
+
 /* Στοιχεία */
 const foyer     = document.getElementById('foyer');
 const wrap      = document.getElementById('foyerWrap');
@@ -792,14 +818,17 @@ const btnAuto   = document.getElementById('foyerAuto');
 const btnClose  = document.getElementById('foyerClose');
 const btnEnd    = document.getElementById('btnEnd');
 
+const BASELINE = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--baseline'))||18;
+
 /* Θέσεις/διαστάσεις Φουαγιέ */
 function foyerRect(){
   const sRect=stage.getBoundingClientRect();
-  const cu= document.querySelector('.curtain-upper').getBoundingClientRect();
-  const left = stage.clientWidth*0.18;
-  const top  = 0;
-  const width= stage.clientWidth - left;
-  const height= cu.top - sRect.top;
+  const cu = document.querySelector('.curtain-upper').getBoundingClientRect();
+  const left = stage.clientWidth*0.18;          // από αριστερή σταθερή κουρτίνα
+  const top  = 0;                               // από πάνω άκρη οθόνης
+  const width= stage.clientWidth - left;        // μέχρι δεξί άκρο οθόνης
+  const autoH= (cu.top - sRect.top);            // όπως πριν (TOP → TOP κουρτίνας)
+  const height = (FOYER_FIXED_HEIGHT_PX>0) ? FOYER_FIXED_HEIGHT_PX : autoH;
   return {left, top, width, height};
 }
 function repositionFoyer(){
@@ -836,15 +865,17 @@ E_M = K+U = (1/2)mω²A² = U_max  (Α.Δ.Μ.Ε.Τ.)`},
   { v:2, left:"Θεατής 2: Να φύγουμε λέω και εγώ, αλλά με μια επίγευση από την αποψινή παράσταση του (m₁,D₁) συνοψίζοντας: Ο κάθε πρωταγωνιστής ταλαντωτής (m,D) χαρακτηρίζεται απολύτως από τον «σωματότυπό του» (m) και την «χρονική» εμμονή του (ω) ή ισοδύναμα και ας το κρατήσουμε αυτό, από τα δικά του (m,D). Θα είναι λοιπόν για μας στο εξής ο ταλαντωτής (m,D), τα όρια στην παράστασή του (το μήκος σκηνής) τα καθορίζει πάντα ο κάθε κύριος … Ενεργειούλης και την έναρξή της εμείς οι θεατές!", right:"D = m·ω²\nΣF = −D·x\nE_M = σταθερή"}
 ];
 
-let fIdx=0, foyerAuto=false, foyerAutoTimer=null;
-
-/* Scroll sync (δίδρομος, χωρίς θόρυβο) */
+/* Scroll sync */
 let _syncLock=false;
 function syncScroll(from, to){ if(_syncLock) return; _syncLock=true; to.scrollTop=from.scrollTop; _syncLock=false; }
 boardL.addEventListener('scroll', ()=>syncScroll(boardL, boardR));
 boardR.addEventListener('scroll', ()=>syncScroll(boardR, boardL));
 
-/* Γέμισμα σειράς: ΜΟΝΟ αριστερά στο boardL και ΜΟΝΟ δεξιά στο boardR */
+/* Baseline snap */
+function snapToBaseline(px){ return Math.ceil(px/BASELINE)*BASELINE; }
+
+/* Γέμισμα σειράς */
+let fIdx=0, foyerAuto=false, foyerAutoTimer=null;
 function appendRow(item){
   const color = VIEWERS_COLORS[(item.v-1)%VIEWERS_COLORS.length];
 
@@ -857,20 +888,19 @@ function appendRow(item){
   boardL.appendChild(Lwrap);
   boardR.appendChild(Rwrap);
 
-  // ίσο ύψος για το ζεύγος
-  const lastL = Lwrap;
-  const lastR = Rwrap;
-  const h = Math.max(lastL.clientHeight, lastR.clientHeight);
-  lastL.style.minHeight = h+'px';
-  lastR.style.minHeight = h+'px';
+  // ίσο ύψος + κλείδωμα σε baseline
+  const h = Math.max(Lwrap.clientHeight, Rwrap.clientHeight);
+  const hs = snapToBaseline(h);
+  Lwrap.style.minHeight = hs+'px';
+  Rwrap.style.minHeight = hs+'px';
 
-  // scroll στο τέλος (και σύγκλιση μέσω sync)
+  // scroll στο τέλος (και σύγκλιση)
   boardL.scrollTop = boardL.scrollHeight;
 
-  // bubble στον σωστό θεατή
+  // bubble στον σωστό θεατή (force)
   try{
     const viewerIdx = (item.v-1)%5;
-    showThoughtForViewer(viewerIdx, item.left.replace(/^Θεατής\s+\d+:\s*/i,''), undefined, 135, 0);
+    showThoughtForViewer(viewerIdx, item.left.replace(/^Θεατής\s+\d+:\s*/i,''), undefined, 135, 0, true);
   }catch(_){}
 }
 
@@ -931,11 +961,7 @@ document.addEventListener('keydown', (e)=>{ if(e.key.toLowerCase()==='f'){ (foye
 <!-- === Boot/Adapter === -->
 <script src="intro_boot.js"></script>
 <script src="adapter.js"></script>
-
-<!-- Νόμοι (one-line) -->
 <script src="ui_laws_layout_v4.js"></script>
-
-<!-- Πράξη 2 -->
 <script src="act2.js"></script>
 
 <script>
