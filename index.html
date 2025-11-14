@@ -494,7 +494,7 @@ function anchorX(){ return stage.clientWidth*0.18; }
 let lastSampleObsTime=-Infinity; const sampleInterval=0.25;
 function logMeasurement(tObs,xMeters){
   if(!obsStarted || mode==='pause') return;
-  if(tObs-lastSampleObsTime<sampleInterval) return; lastSampleObsTime=tObs;
+  if(tObs-lastSampleObsTime<sampleInterval) return; lastSampleObsTime=-Infinity+sampleInterval, lastSampleObsTime=tObs;
   const tr=document.createElement('tr');
   tr.className='new';
   tr.innerHTML=`<td>${(measureTBody.children.length+1)}</td><td>${tObs.toFixed(2)}</td><td>${xMeters.toFixed(2)}</td>`;
@@ -735,6 +735,7 @@ requestAnimationFrame(animate);
 
 /* Κλείσιμο αυλαίας + actBreak */
 function closeCurtainsSequence(){
+  const curtainUpper=document.querySelector('.curtain-upper');
   curtainUpper.classList.add('slow-close');
   stage.classList.remove('open');
   markerEl.style.opacity='0';
@@ -865,9 +866,6 @@ function tint(hex, alpha){
 }
 const VIEWERS_COLORS = ['#ff6b6b','#ffd166','#06d6a0','#118ab2','#c77dff'];
 
-/* Δεδομένα Φουαγιέ — (ΑΠΑΡΑΛΛΑΚΤΑ) */
-/* Δεδομένα Φουαγιέ — (ΑΠΑΡΑΛΛΑΚΤΑ)
-   Πλήρης μεταφορά 1:1 από τα αρχεία σκεψεις φουαγιε.pdf & docx.   */
 /* Δεδομένα Φουαγιέ — ΠΛΗΡΗΣ ΜΕΤΑΦΟΡΑ ΑΠΟ ΤΟ PDF */
 const FOYER_DATA = [
   {
@@ -881,15 +879,9 @@ const FOYER_DATA = [
 
   {
     v: 2,
-    left: "Θεατής 2: Η (3)’ και η (6)",
+    left: "Θεατής 2: Η (3)’ και η (6) όμως μας βοηθούν να … «προφητεύουμε» την επιτάχυνση και τη συνολική δύναμη που δέχεται αρκεί να ξέρουμε σε ποιο σημείο της σκηνής βρίσκεται ο (m₁ ,D₁) χωρίς φυσικά και αναγκαστικά να συνεχίσουμε να είμαστε θεατές!",
     right: `(3)’ α(x)=−ω²·x
 (6)  ΣF=−m·ω²·x`
-  },
-
-  {
-    v: 2,
-    left: "Θεατής 2: όμως μας βοηθούν να … «προφητεύουμε» την επιτάχυνση και την συνολική δύναμη που δέχεται αρκεί να ξέρουμε σε ποιο σημείο της σκηνής βρίσκεται ο (m₁ ,D₁) χωρίς φυσικά και αναγκαστικά να συνεχίσουμε να είμαστε θεατές!",
-    right: ``
   },
 
   {
@@ -999,7 +991,6 @@ const FOYER_DATA = [
   }
 ];
 
-
 /* Scroll sync */
 let _syncLock=false;
 function syncScroll(from, to){ if(_syncLock) return; _syncLock=true; to.scrollTop=from.scrollTop; _syncLock=false; }
@@ -1015,7 +1006,7 @@ function appendRow(item){
   const color = VIEWERS_COLORS[(item.v-1)%VIEWERS_COLORS.length];
 
   const Lwrap = document.createElement('div'); Lwrap.className='row-left';  Lwrap.style.borderLeftColor=color;
-  Lwrap.innerHTML = `<span style="font-weight:700;color:${color}">ΘΕΑΤΗΣ ${item.v}:</span> ${item.left.replace(/^Θεατής\s+\d+:\s*/i,'')}`;
+  Lwrap.innerHTML = `<span style="font-weight:700;color:${color}">ΘΕΑΤΗΣ ${item.v}:</span> ${item.left.replace(/^Θεατής\\s+\\d+:\\s*/i,'')}`;
 
   const Rwrap = document.createElement('div'); Rwrap.className='row-right'; Rwrap.style.borderLeftColor=color;
   Rwrap.textContent = item.right || '';
@@ -1035,7 +1026,7 @@ function appendRow(item){
   // bubble στον σωστό θεατή (force)
   try{
     const viewerIdx = (item.v-1)%5;
-    showThoughtForViewer(viewerIdx, item.left.replace(/^Θεατής\s+\d+:\s*/i,''), undefined, 135, 0, true);
+    showThoughtForViewer(viewerIdx, item.left.replace(/^Θεατής\\s+\\d+:\\s*/i,''), undefined, 135, 0, true);
   }catch(_){}
 }
 
@@ -1073,6 +1064,9 @@ function foyerClose(silent){
   if(foyerAutoTimer){ clearTimeout(foyerAutoTimer); foyerAutoTimer=null; }
   foyerAuto=false; if(!silent){ btnAuto.textContent='Auto ▷'; }
 }
+</script>
+
+<!-- helpers για typewriter/δεξιά στήλη (ξεχωριστό script) -->
 <script>
 // Επιλογή δεξιάς στήλης με ασφάλεια (ό,τι id έχεις τώρα)
 function pickRightPanel(){
@@ -1129,7 +1123,6 @@ async function addRightLineTypewriter(html, {cps=28} = {}){
 
   const line = document.createElement('div');
   line.className = 'right-line';
-  // μονόχωρο font βοηθά να «διαβάζεται» σταδιακά
   line.style.fontFamily = 'ui-monospace, SFMono-Regular, Menlo, Consolas, "Courier New", monospace';
   panel.appendChild(line);
 
@@ -1144,7 +1137,6 @@ async function addRightLineTypewriter(html, {cps=28} = {}){
     let i = 0;
     const tick = () => {
       if(i < chars.length){
-        // αποκαλύπτουμε «μπουκέτα» για ομαλότητα
         for(let k=0; k<3 && i<chars.length; k++, i++){
           chars[i].classList.add('on');
         }
@@ -1157,23 +1149,16 @@ async function addRightLineTypewriter(html, {cps=28} = {}){
   });
 }
 </script>
+
+<!-- (προαιρετική) helper για bubbles με μόνο όνομα/χρώμα -->
 <script>
 function foyerShowBubble(vId /*, textIgnored */){
-  const slot = front.querySelector(`.foyer-viewer[data-vid="${vId}"]`);
-  if(!slot) return;
-  const vInfo = FOYER_VIEWERS.find(v=>v.id===vId);
-  const bubble = slot.querySelector('.foyer-bubble');
-  const t = bubble.querySelector('.text');
-  // Μόνο όνομα θεατή, χωρίς περιεχόμενο διαλόγου
-  t.textContent = vInfo ? vInfo.name : `ΘΕΑΤΗΣ ${vId}`;
-  bubble.style.backgroundColor = tint(vInfo?.color || '#888', 0.92);
-  bubble.style.display='block';
-  const dur = 2.2; // σύντομο flash για αναγνώριση «ποιος μιλάει»
-  setTimeout(()=>{ bubble.style.display='none'; }, dur*1000);
+  // placeholder: δεν καλείται στην παρούσα ροή
 }
 </script>
 
-/* Χειριστές */
+<!-- Χειριστές Foyer -->
+<script>
 btnFoyer.addEventListener('click', ()=>foyerOpen(true));
 btnClose.addEventListener('click', ()=>foyerClose());
 btnPrev.addEventListener('click', ()=>foyerStep(-1));
@@ -1217,12 +1202,11 @@ document.addEventListener('keydown', (e)=>{ if(e.key.toLowerCase()==='f'){ (foye
   obs.observe(stage, {attributes:true});
 })();
 </script>
+
+<!-- === Typewriter shim (δεξί πάνελ) === -->
 <script>
-/* === Typewriter για τη ΔΕΞΙΑ στήλη του φουαγιέ — drop-in shim === */
 (function(){
   'use strict';
-
-  // 1) Εντοπισμός δεξιού πάνελ (δοκιμάζει αρκετά ids/classes)
   function pickRightPanel(){
     const sels = [
       '#foyerRight', '#boardRight', '#foyerBoardRight', '#blackboardRight',
@@ -1234,8 +1218,6 @@ document.addEventListener('keydown', (e)=>{ if(e.key.toLowerCase()==='f'){ (foye
     }
     return null;
   }
-
-  // 2) Βοηθητικό: τυλίγει ΚΑΘΕ χαρακτήρα κειμένου σε <span.twc> για progressive reveal
   function wrapChars(root){
     const spans = [];
     const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
@@ -1243,13 +1225,11 @@ document.addEventListener('keydown', (e)=>{ if(e.key.toLowerCase()==='f'){ (foye
     });
     const toWrap = [];
     while (walker.nextNode()) toWrap.push(walker.currentNode);
-
     toWrap.forEach(textNode=>{
       const frag = document.createDocumentFragment();
       const str = textNode.nodeValue;
       for (let i=0;i<str.length;i++){
         const ch = str[i];
-        // Κρατάμε ακριβώς τα κενά/line breaks
         const span = document.createElement('span');
         span.className = 'twc';
         span.style.opacity = '0';
@@ -1261,31 +1241,22 @@ document.addEventListener('keydown', (e)=>{ if(e.key.toLowerCase()==='f'){ (foye
     });
     return spans;
   }
-
-  // 3) Γράψιμο γραμμής με γραφομηχανή (δέχεται HTML)
   function addRightLineTypewriter(html, opts){
     const el = pickRightPanel();
     if (!el) { console.warn('[typewriter] right panel not found'); return; }
-
-    const cps   = (opts && +opts.cps>0) ? +opts.cps : 26; // chars per second
+    const cps   = (opts && +opts.cps>0) ? +opts.cps : 26;
     const pause = (opts && +opts.pause>=0) ? +opts.pause : 250;
-
     const line  = document.createElement('div');
     line.className = 'right-line';
     line.style.margin = '0 0 6px 0';
     line.style.whiteSpace = 'pre-wrap';
     line.innerHTML = html;
-
-    // Τυλίγουμε χαρακτήρες
     const spans = wrapChars(line);
     el.appendChild(line);
-
-    // Progressive reveal
-    if (!spans.length) return; // καθαρό HTML χωρίς text
+    if (!spans.length) return;
     const dt = Math.max(8, Math.floor(1000 / cps));
     let i = 0;
     function tick(){
-      // Αποκαλύπτουμε «πακέτα» για πιο ομαλή κίνηση σε υψηλά cps
       const batch = Math.max(1, Math.floor(cps/6));
       for (let k=0;k<batch && i<spans.length;k++, i++){
         spans[i].style.opacity = '1';
@@ -1295,22 +1266,15 @@ document.addEventListener('keydown', (e)=>{ if(e.key.toLowerCase()==='f'){ (foye
       } else {
         setTimeout(()=>{}, pause);
       }
-      // auto-scroll στο κάτω μέρος κάθε βήμα
       try { el.scrollTop = el.scrollHeight; } catch(_){}
     }
     tick();
   }
-
-  // 4) Shim: μετατρέπει append/insert σε typewriter ΜΟΝΟ για το δεξί πάνελ
   function enableRightPanelTypewriterShim(){
     const el = pickRightPanel();
     if (!el) return;
-
-    // προστασία: μην το ξανα-πατσάρουμε
     if (el.__twShim) return;
     el.__twShim = true;
-
-    // patch insertAdjacentHTML (μόνο στο 'beforeend')
     const origInsert = el.insertAdjacentHTML.bind(el);
     el.insertAdjacentHTML = function(where, html){
       if (String(where).toLowerCase() === 'beforeend') {
@@ -1319,36 +1283,23 @@ document.addEventListener('keydown', (e)=>{ if(e.key.toLowerCase()==='f'){ (foye
         origInsert(where, html);
       }
     };
-
-    // patch appendChild
     const origAppend = el.appendChild.bind(el);
     el.appendChild = function(node){
-      // Αν μας δώσουν έτοιμο element, το μετατρέπουμε σε HTML για typewriter.
-      // Ειδική περίπτωση: όταν καλούμε ΕΜΕΙΣ el.appendChild(line) μέσα στο addRightLineTypewriter,
-      // δεν θέλουμε να γίνει recursion:
       if (node && node.classList && node.classList.contains('right-line')) {
         return origAppend(node);
       }
       const html = node && (node.outerHTML || node.textContent || '');
       if (html && html.trim()) {
         addRightLineTypewriter(html);
-        return node; // «πλασματική» επιτυχία για συμβατότητα
+        return node;
       }
       return origAppend(node);
     };
-
-    // (Προαιρετικά) helper global για άμεση χρήση όπου χρειαστεί
     window.addRightLineTypewriter = addRightLineTypewriter;
-
-    // CSS για πιο ομαλή εμφάνιση
     const css = document.createElement('style');
-    css.textContent = `
-      .right-line .twc { transition: opacity .03s linear; }
-    `;
+    css.textContent = `.right-line .twc { transition: opacity .03s linear; }`;
     document.head.appendChild(css);
   }
-
-  // 5) Εκκίνηση αφού φορτωθεί το DOM (και υπάρχουν τα στοιχεία φουαγιέ)
   function boot(){
     try { enableRightPanelTypewriterShim(); }
     catch (e){ console.error('[typewriter] shim failed', e); }
