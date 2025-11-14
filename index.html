@@ -10,16 +10,15 @@
 
 <style>
   :root{
-    --baseline:18px;              /* baseline grid */
-    --foyer-gap:0px;              /* κενό μεταξύ πινάκων (0 = εφαπτόμενοι) */
-    --board-font:14px;            /* μέγεθος κειμένου πινάκων */
-    --bubble-font:15px;           /* μέγεθος κειμένου bubbles */
+    --baseline:18px;
+    --foyer-gap:0px;            /* πίνακες εφαπτόμενοι στο μέσον */
+    --board-font:14px;          /* μέγεθος κειμένου πινάκων */
+    --bubble-font:15px;         /* μέγεθος κειμένου bubbles (μόνο όνομα) */
   }
 
   body{margin:0;background:radial-gradient(circle at center,#222 0%,#000 100%);overflow:hidden;font-family:Inter,system-ui,sans-serif}
   .stage{position:relative;width:100vw;height:100vh;overflow:hidden}
 
-  /* Κουρτίνες */
   .curtain-top,.curtain-upper,.curtain-side{position:absolute;transition:transform 1.2s cubic-bezier(.2,.9,.2,1),opacity 1s}
   .curtain-top{top:0;left:0;width:100%;height:calc(28% - 30px);background:linear-gradient(to bottom,#230000,#180000);box-shadow:0 5px 18px rgba(0,0,0,.8);z-index:160}
   .curtain-upper{
@@ -37,23 +36,15 @@
 
   .spotlight{position:absolute;inset:0;pointer-events:none;z-index:150;opacity:.25;background:radial-gradient(200px 120px at 50% 50%, rgba(255,255,220,.65), rgba(255,255,220,0) 70%)}
 
-  /* Spring / Skater / Πάτωμα */
   .spring{position:absolute;bottom:calc(32vh + 82px);left:10%;height:96px;width:auto;z-index:90;pointer-events:none;filter:drop-shadow(0 4px 6px rgba(0,0,0,.55));transform-origin:left center;opacity:1;display:none}
   .actor{position:absolute;bottom:calc(32vh + 133px);left:50%;width:144px;height:96px;transform:translate(-50%,0);z-index:110;pointer-events:none;opacity:1}
   .actor img{width:100%;height:auto;display:block;filter:drop-shadow(0 4px 6px rgba(0,0,0,.6))}
   .floor{position:absolute;left:0;bottom:calc(32vh - 8px);width:100%;height:2px;background:#888;z-index:155;pointer-events:none}
 
-  /* Κοινό */
-  .audience{
-    position:absolute; left:18%; bottom:0;
-    width:64%; height:auto; max-height:none;
-    object-position:bottom center; z-index:158; pointer-events:none;
-    filter:contrast(1.05) brightness(.95); display:block;
-  }
+  .audience{position:absolute; left:18%; bottom:0; width:64%; height:auto; z-index:158; pointer-events:none; filter:contrast(1.05) brightness(.95); display:block}
   .viewers{position:absolute;left:18%;width:64%;bottom:0;display:flex;justify-content:space-between;z-index:159;padding:0 4vw 12px}
   .viewer{width:60px;height:100px;background:url('https://upload.wikimedia.org/wikipedia/commons/f/f9/Silhouette_icon.svg') no-repeat center/contain;filter:grayscale(1) brightness(.6);opacity:.75}
 
-  /* Τίτλοι */
   .signboard{position:absolute;top:-6px;left:50%;transform:translateX(-50%);background:transparent;border:none;border-radius:10px;padding:12px 18px;color:#ddd;font-family:'Georgia',serif;text-align:center;z-index:165;line-height:1.25}
   .signboard h1{font-size:32px;margin:0;color:#fff}
   .signboard .sb-lineA{font-size:18px;font-style:italic;margin-top:2px;color:#ddd}
@@ -62,7 +53,6 @@
   .signboard .sb-lineC{font-size:16px;margin-top:2px;font-weight:700;color:#fff}
   .signboard .sb-lineD{font-size:14px;margin-top:2px;font-style:italic;opacity:.9}
 
-  /* Δεξιά (ρολόι/μετρήσεις/γράφημα) */
   .clock{position:absolute;top:10px;left:calc(82vw + 9vw);transform:translateX(-50%);background:rgba(0,0,0,.5);color:#fff;padding:6px 10px;font-size:16px;font-family:"Courier New",monospace;border-radius:6px;border:1px solid rgba(255,255,255,.3);z-index:265;pointer-events:none;display:none}
   .clock .hint{font-size:10px;color:#ffd27a;opacity:.9;margin-left:6px}
   .measure-box{position:absolute;left:calc(82vw + 9vw);transform:translateX(-50%);top:54px;width:calc(18vw - 16px);z-index:262;background:rgba(0,0,0,.45);color:#fff;border:1px solid rgba(255,255,255,.25);border-radius:8px;padding:6px 8px;display:none;height:50vh;overflow-y:auto}
@@ -83,7 +73,6 @@
   .measure-box th:first-child,.measure-box td:first-child{text-align:center}
   .measure-box tr.new td{background:rgba(255,210,122,.15);transition:background .6s ease}
 
-  /* Χάρακας & δείκτης */
   .ruler{position:absolute;bottom:calc(32vh - 8px + 1px);height:24px;font-size:10px;font-family:"Courier New",monospace;color:#aaa;pointer-events:none;z-index:270}
   .ruler::before{content:'';position:absolute;left:0;right:0;bottom:0;height:1px;background:#aaa}
   .tick{position:absolute;bottom:0;width:1px;height:10px;background:#aaa}
@@ -92,22 +81,18 @@
   .marker-line{position:absolute;left:50%;bottom:8px;width:2px;height:70px;background:#ffd27a;box-shadow:0 0 4px rgba(255,210,122,.8);transform:translateX(-50%)}
   .marker-tip{position:absolute;left:50%;bottom:0;width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:8px solid #ffd27a;filter:drop-shadow(0 2px 2px rgba(255,210,122,.8));transform:translateX(-50%)}
 
-  /* Bubbles */
   @keyframes popIn{0%{transform:scale(.9);opacity:0}60%{transform:scale(1.04);opacity:1}100%{transform:scale(1)}}
   .thought-bubble{
-    position:absolute;max-width:420px;background:rgba(255,255,255,.82);color:#000;
-    font-size:var(--bubble-font);line-height:1.45;padding:10px 12px 12px;
+    position:absolute;max-width:220px;background:rgba(255,255,255,.82);color:#000;
+    font-size:var(--bubble-font);line-height:1.2;padding:8px 10px 10px;
     border:2px solid transparent;border-radius:10px;
-    border-image:repeating-linear-gradient(90deg, rgba(0,0,0,.6) 0 6px, transparent 6px 10px, rgba(0,0,0,.6) 10px 12px, transparent 12px 16px) 1;
     box-shadow:0 6px 12px rgba(0,0,0,.4);z-index:340;pointer-events:none;opacity:0;display:none;transition:opacity .25s ease, transform .25s ease
   }
   .thought-bubble.active{opacity:1;transform:translateY(-2px);animation:popIn .25s ease}
   .thought-bubble.closing{opacity:0}
   .thought-bubble .tail{position:absolute;left:50%;bottom:-10px;transform:translateX(-50%);width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-top:10px solid rgba(255,255,255,.82);filter:drop-shadow(0 2px 2px rgba(0,0,0,.4))}
-  .thought-bubble .checkmark{position:absolute;top:-8px;right:-8px;background:#2ecc71;color:#fff;font-size:11px;line-height:1;border-radius:50%;border:1px solid rgba(0,0,0,.4);width:18px;height:18px;display:none;align-items:center;justify-content:center;font-family:system-ui,sans-serif;font-weight:600}
-  .thought-bubble.checked .checkmark{display:flex}
+  .thought-bubble .checkmark{display:none}
 
-  /* Controls & settings */
   .controls{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.2);border-radius:8px;padding:6px 8px;display:flex;gap:8px;z-index:300}
   .controls button{background:none;border:0;color:#fff;font-size:16px;line-height:1;cursor:pointer;min-width:32px;min-height:32px;border-radius:4px;padding:4px 6px;transition:transform .08s ease}
   .controls button:active{transform:translateY(1px)}
@@ -121,7 +106,6 @@
   .settings input[type=range]{flex:1}
   .settings .val{width:60px;text-align:right;font-family:"Courier New",monospace}
 
-  /* Countdown */
   .countdown-overlay{position:absolute;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,.6);color:#fff;display:none;align-items:center;justify-content:center;text-align:center;z-index:400;pointer-events:none;font-family:Inter,system-ui,sans-serif}
   .countdown-box{max-width:80%}
   .countdown-main{font-size:24px;font-weight:600;margin-bottom:8px;color:#fff}
@@ -130,24 +114,16 @@
 
   .start-btn{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1000;background:#700;color:#fff;border:none;border-radius:8px;padding:12px 24px;font-size:18px;cursor:pointer;box-shadow:0 0 10px #300;pointer-events:auto}
 
-  /* Προαγγελία Πράξης 2 */
   .actbreak{position:absolute;background:rgba(0,0,0,.55);color:#fff;z-index:410;display:none;align-items:center;justify-content:center;text-align:center}
 
-  /* ====== ΦΟΥΑΓΙΕ (Πράξη 3) ====== */
+  /* ΦΟΥΑΓΙΕ */
   .foyer{position:absolute;display:none;z-index:500}
-  .foyer .wrap{
-    position:absolute;inset:0;
-    display:grid;grid-template-columns:1fr 1fr;gap:var(--foyer-gap);
-  }
-
+  .foyer .wrap{position:absolute;inset:0;display:grid;grid-template-columns:1fr 1fr;gap:var(--foyer-gap)}
   .blackboard{
     background:#0d2a1e url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%228%22 height=%228%22><circle cx=%224%22 cy=%224%22 r=%221%22 fill=%22rgba(255,255,255,0.03)%22/></svg>') repeat;
-    border:2px solid rgba(255,255,255,.15);
-    color:#fff; padding:8px 10px; overflow:auto; scroll-behavior:smooth;
-    font-size:var(--board-font); line-height:1.333;  /* ≈ 24px αν baseline=18 */
-    box-shadow:inset 0 0 30px rgba(0,0,0,.6);
+    border:2px solid rgba(255,255,255,.15); color:#fff; padding:8px 10px; overflow:auto; scroll-behavior:smooth;
+    font-size:var(--board-font); line-height:1.333; box-shadow:inset 0 0 30px rgba(0,0,0,.6);
   }
-  /* Εφαπτόμενοι: χωρίς στρογγυλέματα/σύνορα στο «μέσον» */
   #boardLeft{  border-top-right-radius:0;border-bottom-right-radius:0;border-right:none;  border-top-left-radius:12px;border-bottom-left-radius:12px;}
   #boardRight{ border-top-left-radius:0;border-bottom-left-radius:0;border-left:none;     border-top-right-radius:12px;border-bottom-right-radius:12px;}
 
@@ -158,30 +134,21 @@
     padding:6px 8px;
     margin:6px 0;
   }
-  .row-right{ text-align:left; white-space:pre-wrap }
+  .row-right{ text-align:left; white-space:pre-wrap; font-size:13px; line-height:1.3 }
 
   .btn-foyer{position:absolute;top:8px;right:calc(18% + 8px);z-index:501;background:#004b6b;color:#fff;border:none;border-radius:8px;padding:8px 12px;font-size:14px;cursor:pointer}
   .foyer-ctrls{display:flex;gap:8px;position:absolute;right:8px;top:8px;z-index:502}
   .foyer-ctrls button{background:#700;color:#fff;border:none;border-radius:8px;padding:8px 10px;font-size:14px;cursor:pointer}
   .end-btn{position:absolute;bottom:10px;right:10px;z-index:502;background:#333;color:#fff;border:1px solid rgba(255,255,255,.25);border-radius:8px;padding:8px 12px;font-size:14px;cursor:pointer}
-/* ── Math sqrt markup (καλύτερο οπτικά) ─────────────────────────────── */
-.sqrt {
-  display:inline-flex; align-items:flex-start; white-space:nowrap;
-}
-.sqrt .radic { font-size:1.15em; line-height:1; padding-right:2px; }
-.sqrt .bar {
-  border-top:1px solid currentColor; padding:0 .20em .05em .25em;
-  line-height:1; display:inline-block;
-}
 
-/* ── Typewriter για «Δεξιά» στήλη μόνο ─────────────────────────────── */
-.tw-ch { opacity:0; }
-.tw-ch.on { opacity:1; transition:opacity .02s linear; }
+  /* Καλύτερη ρίζα */
+  .sqrt { display:inline-flex; align-items:flex-start; white-space:nowrap; }
+  .sqrt .radic { font-size:1.15em; line-height:1; padding-right:2px; }
+  .sqrt .bar { border-top:1px solid currentColor; padding:0 .20em .05em .25em; line-height:1; display:inline-block; }
 
-/* Μικρότερα γράμματα στο φουαγιέ, όπως ζήτησες */
-#foyer, #foyer .blackboard { font-size:14px; }
-#boardRight, #foyerBoardRight, .board-right { font-size:13px; line-height:1.3; }
-
+  /* Typewriter */
+  .tw-ch { opacity:0; }
+  .tw-ch.on { opacity:1; transition:opacity .02s linear; }
 </style>
 </head>
 <body>
@@ -237,8 +204,8 @@
     <div class="ruler" id="ruler"></div>
     <div class="marker" id="marker"><div class="marker-line"></div><div class="marker-tip"></div></div>
 
-    <!-- Bubble -->
-    <div class="thought-bubble" id="bubble0"><div class="text"></div><div class="checkmark">✓</div><div class="tail"></div></div>
+    <!-- Bubble (μόνο όνομα & χρώμα θεατή) -->
+    <div class="thought-bubble" id="bubble0"><div class="text"></div><div class="tail"></div></div>
 
     <!-- Κοντρόλς -->
     <div class="controls" id="controls">
@@ -278,7 +245,6 @@
     <div class="floor"></div>
     <img class="audience" src="koino.png" alt="κοινό">
 
-    <!-- Anchors θεατών -->
     <div class="viewers">
       <div class="viewer" data-idx="0"></div>
       <div class="viewer" data-idx="1"></div>
@@ -289,7 +255,6 @@
 
     <button class="start-btn" id="startBtn" data-i18n="startBtn">Έναρξη</button>
 
-    <!-- Countdown -->
     <div class="countdown-overlay" id="countdownOverlay">
       <div class="countdown-box">
         <div class="countdown-main" id="cdMain">Η παράσταση αρχίζει...</div>
@@ -298,7 +263,6 @@
       </div>
     </div>
 
-    <!-- Προαγγελία Πράξης 2 -->
     <div class="actbreak" id="actBreak">
       <div class="box" style="background:rgba(0,0,0,.7);border:1px solid rgba(255,255,255,.25);border-radius:12px;padding:16px 20px;max-width:520px">
         <h3 id="actBreakTitle">Τέλος Πράξης 1</h3>
@@ -307,7 +271,7 @@
       </div>
     </div>
 
-    <!-- ====== ΦΟΥΑΓΙΕ / ΠΡΑΞΗ 3 ====== -->
+    <!-- ΦΟΥΑΓΙΕ -->
     <button class="btn-foyer" id="btnFoyer">Φουαγιέ</button>
     <div class="foyer" id="foyer">
       <div class="wrap" id="foyerWrap">
@@ -322,16 +286,15 @@
         <button class="end-btn" id="btnEnd">Τέλος Παράστασης</button>
       </div>
     </div>
-    <!-- ====== ΤΕΛΟΣ ΦΟΥΑΓΙΕ ====== -->
+    <!-- /ΦΟΥΑΓΙΕ -->
 
   </div>
 
 <script>
-/* ====== ΦΥΣΙΚΑ ====== */
+/* ====== Βασικά μεγέθη ====== */
 const m=70, T=6.0, A_m=3.0;
 const omega=2*Math.PI/T;
 const D=Math.round(m*omega*omega);
-const E_mech=0.5*D*A_m*A_m;
 const pxPerMeter=50; let A_px=pxPerMeter*A_m;
 
 /* ====== I18N ====== */
@@ -350,22 +313,7 @@ const i18n = {
     actBreakTitle:"Τέλος Πράξης 1",
     actBreakMsg:"Ο m,D συνεχίζει. Είστε έτοιμοι για τη Δεύτερη Πράξη;",
     act2Btn:"Έναρξη Πράξης 2",
-    thoughts: {
-      t1:"Ο m<sub>1</sub>D<sub>1</sub> ήταν ήδη σε κίνηση!",
-      t2:"…χρονική στιγμή t<sub>0</sub>=0 με το άνοιγμα της κουρτίνας!",
-      t3:"… και η κίνηση είναι ευθύγραμμη και παλινδρομική!",
-      t4:"… και επαναλαμβανόμενη, περιοδική, άρα ταλάντωση!",
-      t5:"Μήπως είναι Απλή Αρμονική Ταλάντωση;",
-      t6:"… αν είναι Α.Α.Τ. τότε οι τιμές που μετράμε πρέπει να επαληθεύουν την χ=Αημ(ωt+φ₀)!",
-      t7:"… αν κάνουμε διάγραμμα x–t, αυτό θα το επιβεβαιώσει!",
-      t9phi:(x0,phi)=>`… όντως είναι ΑΑΤ και αφού το x₀=${x0}m υπάρχει φ₀=${phi}°. Χαχα, ένα το κρατούμενο!`,
-      t7A:(A)=>`…με A=${A}m!`,
-      t8Tw:(Tval,om)=>`… και T=${Tval}s και επομένως ω=${om}rad/s!`,
-      t11:"… επομένως η ταχύτητα δίνεται από τον νόμο v=ωA·συν(ωt+φ₀)!",
-      t13:"…και η επιτάχυνση από τον τύπο a=−ω²A·ημ(ωt+φ₀)!",
-      t15:"Αλλά η σχέση χ=<b>Αημ(ωt+φ₀)</b> (1) περιέχεται στην (3) δηλαδή a=−ω²<b>Aημ(ωt+φ₀)=−ω²x</b>!",
-      t18:"Τέλεια! όλο το σετ νόμων της Α.Α.Τ!"
-    }
+    thoughts: {} /* bubbles χωρίς κείμενο */
   },
   en: {}
 };
@@ -394,10 +342,7 @@ langSwitch.addEventListener('click',(e)=>{
   setLang(btn.dataset.lang);
 });
 
-/* === helpers === */
-function localizeTrig(txt){ if(!txt) return txt; return (LANG==='gr') ? txt.replaceAll('sin','ημ').replaceAll('cos','συν') : txt.replaceAll('ημ','sin').replaceAll('συν','cos'); }
-
-/* ====== DOM ====== */
+/* ====== DOM refs ====== */
 const stage=document.getElementById('stage');
 const actor=document.getElementById('actor');
 const springEl=document.getElementById('spring');
@@ -432,7 +377,6 @@ const lawCharts=document.getElementById('lawCharts');
 const measureBox=document.getElementById('measureBox');
 const measureTBody=document.getElementById('measureTBody');
 const actBreak=document.getElementById('actBreak');
-const curtainUpper=document.querySelector('.curtain-upper');
 
 /* helpers */
 function positionParamsBox(){
@@ -458,7 +402,7 @@ function updateRuler(){
   }
 }
 
-/* Δεξιά κουρτίνα & x–t */
+/* Δεξιά πάνελ */
 let graphEnabled=false, uXT=null;
 function positionRightPanel(){
   const W=stage.clientWidth, H=stage.clientHeight;
@@ -494,7 +438,7 @@ function anchorX(){ return stage.clientWidth*0.18; }
 let lastSampleObsTime=-Infinity; const sampleInterval=0.25;
 function logMeasurement(tObs,xMeters){
   if(!obsStarted || mode==='pause') return;
-  if(tObs-lastSampleObsTime<sampleInterval) return; lastSampleObsTime=-Infinity+sampleInterval, lastSampleObsTime=tObs;
+  if(tObs-lastSampleObsTime<sampleInterval) return; lastSampleObsTime=tObs;
   const tr=document.createElement('tr');
   tr.className='new';
   tr.innerHTML=`<td>${(measureTBody.children.length+1)}</td><td>${tObs.toFixed(2)}</td><td>${xMeters.toFixed(2)}</td>`;
@@ -523,27 +467,27 @@ function setMode(newMode){
   slowHint.textContent = (mode==='slow' && slowFactor<1) ? `SLOW-MO ×${slowFactor.toFixed(2)}` : '';
 }
 
-/* Timeline Πράξης 1 (συνοπτικά) */
+/* Timeline Πράξης 1 (μόνο bubbles-όνομα) */
 const thoughtScriptBase=[
-  {kind:'bubble',    atT:1.05, viewer:0, key:'t1',  yOffset:120, xShift:-40},
-  {kind:'bubble',    atT:1.15, viewer:1, key:'t2',  yOffset:125, xShift:-20},
-  {kind:'bubble',    atT:1.80, viewer:3, key:'t3',  yOffset:130, xShift: 10},
-  {kind:'bubble',    atT:2.30, viewer:4, key:'t4',  yOffset:130, xShift: 30},
-  {kind:'bubble',    atT:2.90, viewer:2, key:'t5',  yOffset:135, xShift:-30},
-  {kind:'bubble',    atT:3.40, viewer:1, key:'t6',  yOffset:135, xShift:-10},
-  {kind:'bubble',    atT:3.80, viewer:3, key:'t7',  yOffset:135, xShift: 10},
+  {kind:'bubble',    atT:1.05, viewer:0, yOffset:120, xShift:-40},
+  {kind:'bubble',    atT:1.15, viewer:1, yOffset:125, xShift:-20},
+  {kind:'bubble',    atT:1.80, viewer:3, yOffset:130, xShift: 10},
+  {kind:'bubble',    atT:2.30, viewer:4, yOffset:130, xShift: 30},
+  {kind:'bubble',    atT:2.90, viewer:2, yOffset:135, xShift:-30},
+  {kind:'bubble',    atT:3.40, viewer:1, yOffset:135, xShift:-10},
+  {kind:'bubble',    atT:3.80, viewer:3, yOffset:135, xShift: 10},
   {kind:'graph',     atT:4.00},
-  {kind:'bubbleDyn', atT:4.60, viewer:0, what:'phi', yOffset:135, xShift:-20},
-  {kind:'bubbleDyn', atT:5.20, viewer:2, what:'A',   yOffset:135, xShift:  0},
-  {kind:'bubbleDyn', atT:5.70, viewer:4, what:'Tw',  yOffset:135, xShift: 20},
+  {kind:'bubble',    atT:4.60, viewer:0, yOffset:135, xShift:-20},
+  {kind:'bubble',    atT:5.20, viewer:2, yOffset:135, xShift:  0},
+  {kind:'bubble',    atT:5.70, viewer:4, yOffset:135, xShift: 20},
   {kind:'law',       atT:6.10, lawText:'x(t) = A·sin(ωt + φ₀)', alsoParams:true},
-  {kind:'bubble',    atT:6.60, viewer:1, key:'t11', yOffset:130, xShift:-20},
+  {kind:'bubble',    atT:6.60, viewer:1, yOffset:130, xShift:-20},
   {kind:'law',       atT:6.90, lawText:'v(t) = ωA·cos(ωt + φ₀)'},
-  {kind:'bubble',    atT:7.60, viewer:3, key:'t13', yOffset:140, xShift: 10},
+  {kind:'bubble',    atT:7.60, viewer:3, yOffset:140, xShift: 10},
   {kind:'law',       atT:7.85, lawText:'a(t) = −ω²A·sin(ωt + φ₀)'},
-  {kind:'bubble',    atT:8.50, viewer:0, key:'t15', yOffset:125, xShift:-30},
+  {kind:'bubble',    atT:8.50, viewer:0, yOffset:125, xShift:-30},
   {kind:'law',       atT:8.80, lawText:'a(x) = −ω²·x'},
-  {kind:'bubble',    atT:9.60, viewer:2, key:'t18', yOffset:130, xShift:  0},
+  {kind:'bubble',    atT:9.60, viewer:2, yOffset:130, xShift:  0},
   {kind:'close',     atT:10.20}
 ];
 let thoughtScript=[...thoughtScriptBase];
@@ -552,7 +496,7 @@ let isBubbleActive=false;
 let bubbleAutoTimer=null;
 let obsStarted=false, obsStartPlaybackOffset=0;
 
-/* Ρολόι & animation */
+/* Ρολόι & γραφήματα */
 let t0=performance.now(), lastFrame=performance.now(); let playbackTime=0;
 function ensureXTReady(){ if(!graphEnabled) return; if(window.uPlot && !uXT){ initXTChart(); } if(uXT){ drawXTChart(); } }
 function initXTChart(){
@@ -560,8 +504,7 @@ function initXTChart(){
   xtChart.style.display='block'; positionRightPanel();
   let w=Math.floor(xtChart.clientWidth)||260, h=Math.floor(xtChart.clientHeight)||140;
   const xData=buildSeriesData();
-  const opts={
-    width:w, height:h,
+  const opts={width:w, height:h,
     scales:{ x:{time:false, range:[0,T]}, y:{range:[-A_m*1.1, A_m*1.1]} },
     axes:[
       { stroke:"#fff", grid:{show:true, stroke:"rgba(255,255,255,0.25)"},
@@ -583,34 +526,37 @@ function buildSeriesData(){
 }
 function drawXTChart(){ if(uXT){ uXT.setData(buildSeriesData()); } }
 
-/* auto-duration σκέψης */
-function computeThoughtDuration(text){
-  const s=(text??''); const len=s.length;
-  const BASE=0.8, PER_CHAR=0.055, MIN=2.2, MAX=10.0;
-  let auto = BASE + PER_CHAR*len;
-  auto = Math.max(MIN, Math.min(MAX, auto));
-  const DEFAULT_BUBBLE=3.0;
-  const scale = (typeof bubbleDurationSec==='number'&&bubbleDurationSec>0) ? (bubbleDurationSec/DEFAULT_BUBBLE) : 1.0;
-  return Math.max(MIN, Math.min(MAX, auto*scale));
+/* ====== BUBBLES: μόνο "ΘΕΑΤΗΣ N" με χρώμα ====== */
+const VIEWERS_COLORS = ['#ff6b6b','#ffd166','#06d6a0','#118ab2','#c77dff'];
+function tint(hex, alpha){
+  const c = hex.replace('#','');
+  const r=parseInt(c.slice(0,2),16), g=parseInt(c.slice(2,4),16), b=parseInt(c.slice(4,6),16);
+  return `rgba(${r},${g},${b},${alpha})`;
 }
-
-/* bubbles – με force-close ώστε να μη «χάνονται» */
 const BASE_BUBBLE_LIFT=96; let bubbleAltLower=false;
+let bubbleAutoTO=null;
 function forceCloseBubbleNow(){
-  if(bubbleAutoTimer){ clearTimeout(bubbleAutoTimer); bubbleAutoTimer=null; }
-  bubbleEl.classList.remove('active','checked','closing');
+  if(bubbleAutoTO){ clearTimeout(bubbleAutoTO); bubbleAutoTO=null; }
+  bubbleEl.classList.remove('active','closing');
   bubbleEl.style.display='none'; bubbleEl.style.opacity='0';
   isBubbleActive=false;
 }
-function showThoughtForViewer(vIdx,text,durationSecs,customLift,xShift=0, force=false){
+function showThoughtForViewer(vIdx, _textIgnored, durationSecs, customLift, xShift=0, force=false){
   if(force && isBubbleActive){ forceCloseBubbleNow(); }
   const viewerEl=document.querySelector(`.viewer[data-idx="${vIdx}"]`); if(!viewerEl) return;
-  bubbleEl.querySelector('.text').innerHTML=text||'';
+
+  const color = VIEWERS_COLORS[vIdx % VIEWERS_COLORS.length];
+  const label = `ΘΕΑΤΗΣ ${vIdx+1}`;
+  const textEl = bubbleEl.querySelector('.text');
+  textEl.innerHTML = `<strong>${label}</strong>`;
+  bubbleEl.style.background = tint(color, .25);
+  bubbleEl.style.borderColor = tint(color, .8);
+
   const W=stage.clientWidth; const leftCurtainRight=W*0.18; const rightCurtainLeft=W*0.82; const pad=12;
   const vRect=viewerEl.getBoundingClientRect(); const sRect=stage.getBoundingClientRect();
   const viewerCenterX=(vRect.left+vRect.width/2 - sRect.left); let desiredCenterX=viewerCenterX+(xShift||0);
   bubbleEl.style.display='block'; bubbleEl.style.opacity='0'; bubbleEl.style.left='0px'; bubbleEl.style.top='0px';
-  const bw=bubbleEl.offsetWidth||240;
+  const bw=bubbleEl.offsetWidth||180;
   const minLeft=leftCurtainRight+pad; const maxLeft=rightCurtainLeft-pad-bw;
   let leftPx=desiredCenterX - bw/2; if(leftPx<minLeft) leftPx=minLeft; if(leftPx>maxLeft) leftPx=maxLeft;
   const baseLift=(typeof customLift==='number'?customLift:BASE_BUBBLE_LIFT);
@@ -619,24 +565,13 @@ function showThoughtForViewer(vIdx,text,durationSecs,customLift,xShift=0, force=
   bubbleEl.style.left=leftPx+'px'; bubbleEl.style.top=topPx+'px';
   void bubbleEl.offsetWidth;
   bubbleEl.classList.add('active'); bubbleEl.style.opacity='1';
-  isBubbleActive=true; setMode('slow');
-  const dur=(typeof durationSecs==='number')?durationSecs:computeThoughtDuration(text);
-  if(bubbleAutoTimer){ clearTimeout(bubbleAutoTimer); bubbleAutoTimer=null; }
-  bubbleAutoTimer=setTimeout(()=>{ resumeFromBubble('run'); }, Math.max(0.5,dur)*1000);
-}
-function resumeFromBubble(nextMode='run'){
-  if(bubbleAutoTimer){ clearTimeout(bubbleAutoTimer); bubbleAutoTimer=null; }
-  bubbleEl.classList.add('checked');
-  setTimeout(()=>{ bubbleEl.classList.add('closing'); },200);
-  setTimeout(()=>{
-    bubbleEl.classList.remove('active'); bubbleEl.style.display='none'; bubbleEl.style.opacity='0';
-    bubbleEl.classList.remove('checked','closing');
-    isBubbleActive=false;
-  },800);
-  setMode(nextMode==='slow'?'slow':'run');
+  isBubbleActive=true;
+  const dur=(typeof durationSecs==='number')?durationSecs:3.0;
+  if(bubbleAutoTO){ clearTimeout(bubbleAutoTO); bubbleAutoTO=null; }
+  bubbleAutoTO=setTimeout(()=>{ bubbleEl.classList.add('closing'); setTimeout(forceCloseBubbleNow, 800); }, Math.max(0.5,dur)*1000);
 }
 
-/* Νόμοι + μικρο-γραφικά (placeholder) */
+/* ====== Νόμοι ====== */
 function positionLawCharts(){
   const r=lawsPane.getBoundingClientRect(), s=stage.getBoundingClientRect();
   const lc=document.getElementById('lawCharts');
@@ -653,7 +588,7 @@ function addLaw(txt){
   const li=document.createElement('li'); li.textContent=txt; lawsList.appendChild(li);
 }
 
-/* Παράμετροι στην κουρτίνα */
+/* Παράμετροι */
 function showCurtainParams(){
   const phi0deg=((omega*obsStartPlaybackOffset)*180/Math.PI + 360)%360;
   paramAEl.textContent  =`A = ${A_m.toFixed(2)} m`;
@@ -662,32 +597,21 @@ function showCurtainParams(){
   paramsBoxEl.style.display='block'; positionParamsBox();
 }
 
-/* Timeline handler */
+/* Timeline */
 function handleTimelineEvent(th){
   if(th.kind==='bubble'){
-    const txt = (i18n[LANG].thoughts[th.key]||'');
-    showThoughtForViewer(th.viewer,txt,bubbleDurationSec,th.yOffset,th.xShift||0,true);
-  }else if(th.kind==='bubbleDyn'){
-    if(th.what==='A'){
-      showThoughtForViewer(th.viewer, i18n[LANG].thoughts.t7A(A_m.toFixed(2)), bubbleDurationSec, th.yOffset, th.xShift||0,true);
-    }else if(th.what==='Tw'){
-      showThoughtForViewer(th.viewer, i18n[LANG].thoughts.t8Tw(T.toFixed(2), omega.toFixed(3)), bubbleDurationSec, th.yOffset, th.xShift||0,true);
-    }else if(th.what==='phi'){
-      const x0 = (A_m*Math.sin(omega*(0+obsStartPlaybackOffset))).toFixed(2);
-      const phi0deg=((omega*obsStartPlaybackOffset)*180/Math.PI + 360)%360;
-      showThoughtForViewer(th.viewer, i18n[LANG].thoughts.t9phi(x0, phi0deg.toFixed(1)), bubbleDurationSec, th.yOffset, th.xShift||0,true);
-    }
+    showThoughtForViewer(th.viewer, null, bubbleDurationSec, th.yOffset, th.xShift||0, true);
   }else if(th.kind==='graph'){
     graphEnabled=true; ensureXTReady();
   }else if(th.kind==='law'){
-    addLaw(localizeTrig(th.lawText));
+    addLaw(th.lawText);
     if(th.alsoParams){ showCurtainParams(); }
   }else if(th.kind==='close'){
     closeCurtainsSequence();
   }
 }
 
-/* Κύριο animation */
+/* Animation */
 let L0_px; let skaterWidthPx; let hookOffsetPx;
 function animate(now){
   const realDt=(now-lastFrame)/1000; lastFrame=now;
@@ -711,7 +635,6 @@ function animate(now){
     }
   }
 
-  /* Skater + spring */
   const ax=anchorX();
   const centerX=stage.clientWidth/2;
   const skaterHookX=centerX + A_px*Math.sin(omega*playbackTime);
@@ -733,7 +656,7 @@ function animate(now){
 }
 requestAnimationFrame(animate);
 
-/* Κλείσιμο αυλαίας + actBreak */
+/* Αυλαία */
 function closeCurtainsSequence(){
   const curtainUpper=document.querySelector('.curtain-upper');
   curtainUpper.classList.add('slow-close');
@@ -756,8 +679,8 @@ function closeCurtainsSequence(){
 
 /* Κουμπιά */
 document.getElementById('btnPause').addEventListener('click',()=>{ setMode(mode==='pause'?'run':'pause'); });
-document.getElementById('btnSlow') .addEventListener('click', ()=>{ resumeFromBubble('slow'); });
-document.getElementById('btnPlay') .addEventListener('click', ()=>{ resumeFromBubble('run');  });
+document.getElementById('btnSlow') .addEventListener('click', ()=>{ setMode('slow'); });
+document.getElementById('btnPlay') .addEventListener('click', ()=>{ setMode('run');  });
 document.getElementById('btnAct2').addEventListener('click', ()=>{
   actBreak.style.display='none';
   springEl.style.display='block';
@@ -765,7 +688,7 @@ document.getElementById('btnAct2').addEventListener('click', ()=>{
 });
 function resetShow(){
   try{ foyerClose(true); }catch(_){}
-  if(bubbleAutoTimer){ clearTimeout(bubbleAutoTimer); bubbleAutoTimer=null; }
+  if(bubbleAutoTO){ clearTimeout(bubbleAutoTO); bubbleAutoTO=null; }
   thoughtScript=[...thoughtScriptBase];
   nextThoughtIdx=0; isBubbleActive=false;
   lastSampleObsTime=-Infinity; measureTBody.innerHTML='';
@@ -779,7 +702,7 @@ function resetShow(){
   measureBox.style.display='none';
   paramsBoxEl.style.display='none';
   markerEl.style.opacity='0';
-  bubbleEl.classList.remove('active','checked','closing'); bubbleEl.style.display='none'; bubbleEl.style.opacity='0';
+  bubbleEl.classList.remove('active','closing'); bubbleEl.style.display='none'; bubbleEl.style.opacity='0';
   actBreak.style.display='none';
   settingsPanel.style.display='none';
   lawsList.innerHTML=''; lawsPane.style.display='none';
@@ -815,17 +738,17 @@ startBtn.addEventListener('click', startShowCountdown);
 const ro=new ResizeObserver(()=>{ positionRightPanel(); if(uXT){ drawXTChart(); } positionLawCharts(); if(typeof repositionFoyer==='function'){ repositionFoyer(); } });
 ro.observe(stage);
 
-/* Αρχικοποίηση */
+/* Init */
 setLang('gr');
 resetShow();
 </script>
 
-<!-- ====== ΦΟΥΑΓΙΕ ΛΟΓΙΚΗ (baseline, σταθερό ύψος, εφαπτόμενες στήλες, force-bubbles) ====== -->
+<!-- ====== ΦΟΥΑΓΙΕ ΛΟΓΙΚΗ (σταθερό ύψος, εφαπτόμενες στήλες, sync ανά γραμμή) ====== -->
 <script>
-/* CONFIG: σταθερό ύψος πίνακα σε pixels (0 = αυτόματο από κουρτίνα) */
-const FOYER_FIXED_HEIGHT_PX = 445;   // π.χ. 560
+/* CONFIG */
+const FOYER_FIXED_HEIGHT_PX = 445;   /* ύψος πίνακα όπως ζήτησες */
+const BASELINE = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--baseline'))||18;
 
-/* Στοιχεία */
 const foyer     = document.getElementById('foyer');
 const wrap      = document.getElementById('foyerWrap');
 const boardL    = document.getElementById('boardLeft');
@@ -837,16 +760,13 @@ const btnAuto   = document.getElementById('foyerAuto');
 const btnClose  = document.getElementById('foyerClose');
 const btnEnd    = document.getElementById('btnEnd');
 
-const BASELINE = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--baseline'))||18;
-
-/* Θέσεις/διαστάσεις Φουαγιέ */
 function foyerRect(){
   const sRect=stage.getBoundingClientRect();
   const cu = document.querySelector('.curtain-upper').getBoundingClientRect();
-  const left = stage.clientWidth*0.18;          // από αριστερή σταθερή κουρτίνα
-  const top  = 0;                               // από πάνω άκρη οθόνης
-  const width= stage.clientWidth - left;        // μέχρι δεξί άκρο οθόνης
-  const autoH= (cu.top - sRect.top);            // όπως πριν (TOP → TOP κουρτίνας)
+  const left = stage.clientWidth*0.18;
+  const top  = 0;
+  const width= stage.clientWidth - left;        /* δεξιά μέχρι άκρη οθόνης */
+  const autoH= (cu.top - sRect.top);
   const height = (FOYER_FIXED_HEIGHT_PX>0) ? FOYER_FIXED_HEIGHT_PX : autoH;
   return {left, top, width, height};
 }
@@ -858,175 +778,158 @@ function repositionFoyer(){
   foyer.style.height = r.height+'px';
 }
 
-/* Χρώματα θεατών */
-function tint(hex, alpha){
-  const c = hex.replace('#','');
-  const r=parseInt(c.slice(0,2),16), g=parseInt(c.slice(2,4),16), b=parseInt(c.slice(4,6),16);
-  return `rgba(${r},${g},${b},${alpha})`;
+/* Pretty math (ρίζες) + typewriter */
+function prettyMath(src){
+  if(!src) return '';
+  let s = String(src);
+  s = s.replaceAll('omega','ω').replaceAll('phi','φ')
+       .replaceAll('^2','²').replaceAll('_0','₀');
+
+  s = s.replace(/sqrt\{([^}]+)\}/g, (_,inner) =>
+    `<span class="sqrt"><span class="radic">√</span><span class="bar">${inner}</span></span>`);
+  s = s.replace(/√\(([^)]+)\)/g,  (_,inner) =>
+    `<span class="sqrt"><span class="radic">√</span><span class="bar">${inner}</span></span>`);
+  return s;
 }
-const VIEWERS_COLORS = ['#ff6b6b','#ffd166','#06d6a0','#118ab2','#c77dff'];
+function wrapChars(html){
+  const tpl = document.createElement('template');
+  tpl.innerHTML = html.trim();
+  const walker = document.createTreeWalker(tpl.content, NodeFilter.SHOW_TEXT, null, false);
+  const texts = [];
+  while(walker.nextNode()) texts.push(walker.currentNode);
+  texts.forEach(node=>{
+    const frag = document.createDocumentFragment();
+    for(const ch of node.nodeValue){
+      const span = document.createElement('span');
+      span.className = 'tw-ch';
+      span.textContent = ch;
+      frag.appendChild(span);
+    }
+    node.parentNode.replaceChild(frag, node);
+  });
+  return tpl.content;
+}
+async function addTypewriterTo(container, html, {cps=28} = {}){
+  const line = document.createElement('div');
+  line.className = 'right-line';
+  line.style.fontFamily = 'ui-monospace, SFMono-Regular, Menlo, Consolas, "Courier New", monospace';
+  container.appendChild(line);
 
-/* Δεδομένα Φουαγιέ — ΠΛΗΡΗΣ ΜΕΤΑΦΟΡΑ ΑΠΟ ΤΟ PDF */
+  const pretty = prettyMath(html || '');
+  const frag = wrapChars(pretty);
+  line.appendChild(frag);
+
+  const chars = line.querySelectorAll('.tw-ch');
+  const dt = Math.max(6, Math.floor(1000 / cps));
+
+  await new Promise(resolve=>{
+    let i = 0;
+    const tick = () => {
+      if(i < chars.length){
+        for(let k=0; k<3 && i<chars.length; k++, i++){
+          chars[i].classList.add('on');
+        }
+        setTimeout(tick, dt);
+      } else {
+        resolve();
+      }
+    };
+    tick();
+  });
+}
+
+/* Δεδομένα Φουαγιέ (1:1) */
 const FOYER_DATA = [
-  {
-    v: 1,
-    left: "Θεατής 1: Οι (1), (2), (3) και (5) μας βοηθούν να «προφητεύουμε» τη θέση, την ταχύτητα, την επιτάχυνση και την συνολική δύναμη που δέχεται κάθε στιγμή ο (m₁ ,D₁) χωρίς να χρειαστεί να ξαναμπούμε για τη συνέχεια της παράστασης!",
-    right: `(1) x(t)=A·ημ(ωt+φ₀)
-(2) υ(t)=ωA·συν(ωt+φ₀)
-(3) α(t)=−ω²A·ημ(ωt+φ₀)
-(5) ΣF=−m·ω²A·ημ(ωt+φ₀)`
-  },
-
-  {
-    v: 2,
-    left: "Θεατής 2: Η (3)’ και η (6) όμως μας βοηθούν να … «προφητεύουμε» την επιτάχυνση και τη συνολική δύναμη που δέχεται αρκεί να ξέρουμε σε ποιο σημείο της σκηνής βρίσκεται ο (m₁ ,D₁) χωρίς φυσικά και αναγκαστικά να συνεχίσουμε να είμαστε θεατές!",
-    right: `(3)’ α(x)=−ω²·x
-(6)  ΣF=−m·ω²·x`
-  },
-
-  {
-    v: 3,
-    left: `Θεατής 3: Λοιπόν!
+  { v:1, left:"Θεατής 1: Οι (1), (2), (3) και (5) μας βοηθούν να «προφητεύουμε» τη θέση, την ταχύτητα, την επιτάχυνση και την συνολική δύναμη που δέχεται κάθε στιγμή ο (m₁ ,D₁) χωρίς να χρειαστεί να ξαναμπούμε για τη συνέχεια της παράστασης!", right:"(1) x(t)=A·ημ(ωt+φ₀)\n(2) υ(t)=ωA·συν(ωt+φ₀)\n(3) α(t)=−ω²A·ημ(ωt+φ₀)\n(5) ΣF=−m·ω²A·ημ(ωt+φ₀)"},
+  { v:2, left:"Θεατής 2: Η (3)’ και η (6) όμως μας βοηθούν να … «προφητεύουμε» την επιτάχυνση και τη συνολική δύναμη που δέχεται αρκεί να ξέρουμε σε ποιο σημείο της σκηνής βρίσκεται ο (m₁ ,D₁) χωρίς φυσικά και αναγκαστικά να συνεχίσουμε να είμαστε θεατές!", right:"(3)’ α(x)=−ω²·x\n(6)  ΣF=−m·ω²·x" },
+  { v:3, left:`Θεατής 3: Λοιπόν!
 1. Διαπιστώνουμε αγαπητοί μου ότι δεν μπορούμε προς το παρόν να «προφητέψουμε» κάτι ανάλογο με αυτό που συμπεραίνει εδώ ο θεατής 2 για την ταχύτητα και τη σχέση της με τη θέση του (m₁ ,D₁).
 2. Σκέφτομαι ότι αυτά που είδαμε γενικεύονται για κάθε πρωταγωνιστή (m,D) σε ανάλογη Παράσταση ΑΑΤ.
 3. Ως γνώστες όμως της …Αλγεβρικής και με λίγη “αλγεβρική περιέργεια” να τι μπορούμε να κάνουμε (και γενικεύοντας, αναφερόμενοι πλέον στον τυχαίο (m,D)) για να καλύψουμε και το κενό 1.:
-✓ Λύνουμε την (1) ως προς ημ(ωt+φ₀) και υψώνουμε στο τετράγωνο. Το ίδιο για την (2) ως προς συν(ωt+φ₀) και υψώνουμε. Στη συνέχεια προσθέτουμε κατά μέλη.`,
-    right: `x=A·ημ(ωt+φ₀)  (1)
+✓ Λύνουμε την (1) ως προς ημ(ωt+φ₀) και υψώνουμε στο τετράγωνο. Το ίδιο για την (2) ως προς συν(ωt+φ₀) και υψώνουμε. Στη συνέχεια προσθέτουμε κατά μέλη.`, 
+    right:`x=A·ημ(ωt+φ₀)  (1)
 υ=ωA·συν(ωt+φ₀) (2)
 
 ημ(ωt+φ₀)=x/A
 συν(ωt+φ₀)=υ/(ωA)
 
 ⇒ ημ²(ωt+φ₀)+συν²(ωt+φ₀)=1
-⇒ 1 = x²/A² + υ²/(ω²A²)  (8)`
-  },
-
-  {
-    v: 3,
-    left: `Θεατής 3:
+⇒ 1 = x²/A² + υ²/(ω²A²)  (8)`},
+  { v:3, left:`Θεατής 3:
 ✓ Ιδού η σχέση που μας έλειπε. Τώρα «προφητεύουμε» και την ταχύτητα όταν γνωρίζουμε τη θέση του πρωταγωνιστή στη σκηνή αλλά και
-✓ Μπορούμε να βγάλουμε μια σχέση (σκεφτόμενοι ανάλογα) ανάμεσα στην επιτάχυνση και την ταχύτητα! Δηλαδή, λύνουμε την (3) ως προς ημ(ωt+φ₀) και υψώνουμε. Κάνουμε το ίδιο με την (2) ως προς συν(ωt+φ₀) και υψώνουμε. Μετά προσθέτουμε κατά μέλη.`,
-    right: `α=−ω²A·ημ(ωt+φ₀)  (3)
+✓ Μπορούμε να βγάλουμε μια σχέση (σκεφτόμενοι ανάλογα) ανάμεσα στην επιτάχυνση και την ταχύτητα! Δηλαδή, λύνουμε την (3) ως προς ημ(ωt+φ₀) και υψώνουμε. Κάνουμε το ίδιο με την (2) ως προς συν(ωt+φ₀) και υψώνουμε. Μετά προσθέτουμε κατά μέλη.`, 
+    right:`α=−ω²A·ημ(ωt+φ₀)  (3)
 υ= ωA·συν(ωt+φ₀)    (2)
 
 ημ(ωt+φ₀)= −α/(ω²A)
 συν(ωt+φ₀)=  υ/(ωA)
 
-⇒ 1 = α²/(ω⁴A²) + υ²/(ω²A²)  (9)  bingo!`
-  },
-
-  {
-    v: 4,
-    left: "Θεατής 4: Θα ήταν καλύτερα αν την (8) την φέρναμε στη μορφή υ= … Δείτε:",
-    right: `(8) 1 = x²/A² + υ²/(ω²A²)
-⇔ ω²A² = ω²x² + υ²`
-  },
-
-  { v: 1, left: "Θεατής 1: …μισό, μισό …", right: `` },
-
-  {
-    v: 4,
-    left: "Θεατής 4: να ολοκληρώσω, …, την οποία λύνουμε ως προς υ",
-    right: `⇔ υ = ±ω·√(A²−x²)  (10)`
-  },
-
-  {
-    v: 4,
-    left: "Θεατής 4: όπως όμως και την (9)",
-    right: `(9) 1 = α²/(ω⁴A²) + υ²/(ω²A²)
-⇔ α = ±ω·√(ω²A² − υ²)  (11)`
-  },
-
-  {
-    v: 4,
-    left: "Θεατής 4: χμμ αλλά και (αν σκεφτούμε ότι ωA=υmax)",
-    right: `(11) ⇔ α = ±ω·√((ωA)² − υ²)
-⇔ a = ±ω·√(υ_max² − υ²)  (12)`
-  },
-
-  { v: 4, left: "Θεατής 4: τέλος από εμένα και… ο λόγος στον Θεατή 1!", right: `` },
-
-  {
-    v: 1,
-    left: "Θεατής 1: Το σημείο στο οποίο διέκοψα είχε γραφτεί ω²A² = ω²x² + υ². Σκέφτομαι λοιπόν τα εξής: Αν πολλαπλασιάσουμε και τα δύο μέλη με ½m, δείτε! η σχέση γράφεται:",
-    right: `½ m ω²A² = ½ m ω²x² + ½ m υ²  (12)`
-  },
-
-  {
-    v: 1,
-    left: `Θεατής 1: Αλλά:
+⇒ 1 = α²/(ω⁴A²) + υ²/(ω²A²)  (9)`},
+  { v:4, left:"Θεατής 4: Θα ήταν καλύτερα αν την (8) την φέρναμε στη μορφή υ= … Δείτε:", right:`(8) 1 = x²/A² + υ²/(ω²A²)
+⇔ ω²A² = ω²x² + υ²`},
+  { v:1, left:"Θεατής 1: …μισό, μισό …", right:`` },
+  { v:4, left:"Θεατής 4: να ολοκληρώσω, …, την οποία λύνουμε ως προς υ", right:`⇔ υ = ±√(ω²(A²−x²)) = ±ω·√(A²−x²)  (10)`},
+  { v:4, left:"Θεατής 4: όπως όμως και την (9)", right:`(9) 1 = α²/(ω⁴A²) + υ²/(ω²A²)
+⇔ α = ±√(ω²(ω²A² − υ²)) = ±ω·√(ω²A² − υ²)  (11)`},
+  { v:4, left:"Θεατής 4: χμμ αλλά και (αν σκεφτούμε ότι ωA=υmax)", right:`(11) ⇔ α = ±ω·√((ωA)² − υ²)
+⇔ a = ±ω·√(υ_max² − υ²)  (12)`},
+  { v:4, left:"Θεατής 4: τέλος από εμένα και… ο λόγος στον Θεατή 1!", right:`` },
+  { v:1, left:"Θεατής 1: Το σημείο στο οποίο διέκοψα είχε γραφτεί ω²A² = ω²x² + υ². Σκέφτομαι λοιπόν τα εξής: Αν πολλαπλασιάσουμε και τα δύο μέλη με ½m, δείτε! η σχέση γράφεται:", right:`½ m ω²A² = ½ m ω²x² + ½ m υ²  (12)`},
+  { v:1, left:`Θεατής 1: Αλλά:
 • Ο παράγοντας ½ m υ² είναι η κινητική ενέργεια K του … πρωταγωνιστή (m,D)
 • Ο παράγοντας αυτός προστίθεται στον ½ m ω² x² ο οποίος δεν μπορεί παρά να είναι και αυτός ενέργεια! (πρόσθεση κάνουμε ανάμεσα σε ομοειδή). Όμως ο παράγοντας αυτός εξαρτάται από τη θέση του πρωταγωνιστή άρα δεν μπορεί παρά να παριστάνει τη Δυναμική του Ενέργεια U (λόγω θέσης) του πρωταγωνιστή (m,D)!
 • Έτσι ο παράγοντας ½ m ω² A² του πρώτου μέλους
   – Πρώτον δεν μπορεί παρά ως άθροισμα Κ και U να «παριστάνει» τη μηχανική ενέργεια ΕΜ του πρωταγωνιστή (m,D).
   – Δεύτερον, συγκρίνοντας με τη μορφή της U=½ m ω² x² (παρατηρούμε μέγιστη απομάκρυνση). Άρα ½ m ω² A² παριστάνει και την μέγιστη Δυναμική Ενέργεια U_max του (m,D).
-  – Τρίτον, ως σταθερή ποσότητα Μηχανικής Ενέργειας, η (12) μας οδηγεί στην «Α.Δ.Μ.Ε.Τ.» του πρωταγωνιστή Ταλαντωτή (m,D)!`,
-    right: `(Α.Δ.Μ.Ε.Τ.)`
-  },
-
-  {
-    v: 5,
-    left: "Θεατής 5: Δηλαδή γνωρίζουμε πλέον και το … budget της παράστασης! Και, δεν έχουμε επομένως λέω εγώ, κανένα ιδιαίτερο λόγο να περάσουμε στην αίθουσα να παρακολουθήσουμε την 3η πράξη περί ενέργειας! Το έργο το …ξαναείδαμε!",
-    right: ``
-  },
-
-  {
-    v: 4,
-    left: "Θεατής 4: Φυσικά! Αν και η “αλγεβρική περιέργεια” μας οδηγεί και σε μια πιο συμμαζεμένη έκφραση αυτής της … Αρχής Διατήρησης της Μηχανικής Ενέργειας του …Ταλαντωτή (m,D). Είπαμε πιο πάνω για αυτή τη σταθερά D=mω² που βάλαμε και στη σχέση (7)",
-    right: `Νόμος του Νεύτωνα:
-ΣF = −D·x  (7)`
-  },
-
-  {
-    v: 4,
-    left: "Θεατής 4: Αυτή αν χρησιμοποιηθεί στην (12) αυτή γράφεται:",
-    right: `½ D A² = ½ D x² + ½ m υ²  (13)
-(Α.Δ.Μ.Ε.Τ. του (m,D))`
-  },
-
-  {
-    v: 2,
-    left: "Θεατής 2: Να φύγουμε λέω και εγώ, αλλά με μια επίγευση από την αποψινή παράσταση του (m₁,D₁) συνοψίζοντας: Ο κάθε πρωταγωνιστής ταλαντωτής (m,D) χαρακτηρίζεται απολύτως από τον «σωματότυπό του» (m) και την «χρονική» εμμονή του (ω) ή ισοδύναμα και ας το κρατήσουμε αυτό, από τα δικά του (m,D). Θα είναι λοιπόν για μας στο εξής ο ταλαντωτής (m,D), τα όρια στην παράστασή του (το μήκος σκηνής) τα καθορίζει πάντα ο κάθε κύριος … Ενεργειούλης και την έναρξή της εμείς οι θεατές!",
-    right: ``
-  }
+  – Τρίτον, ως σταθερή ποσότητα Μηχανικής Ενέργειας, η (12) μας οδηγεί στην «Α.Δ.Μ.Ε.Τ.» του πρωταγωνιστή Ταλαντωτή (m,D)!`, right:`(Α.Δ.Μ.Ε.Τ.)`},
+  { v:5, left:"Θεατής 5: Δηλαδή γνωρίζουμε πλέον και το … budget της παράστασης! Και, δεν έχουμε επομένως λέω εγώ, κανένα ιδιαίτερο λόγο να περάσουμε στην αίθουσα να παρακολουθήσουμε την 3η πράξη περί ενέργειας! Το έργο το …ξαναείδαμε!", right:`` },
+  { v:4, left:"Θεατής 4: Φυσικά! Αν και η “αλγεβρική περιέργεια” μας οδηγεί και σε μια πιο συμμαζεμένη έκφραση αυτής της … Αρχής Διατήρησης της Μηχανικής Ενέργειας του …Ταλαντωτή (m,D). Είπαμε πιο πάνω για αυτή τη σταθερά D=mω² που βάλαμε και στη σχέση (7)", right:`ΣF = −D·x  (7)`},
+  { v:4, left:"Θεατής 4: Αυτή αν χρησιμοποιηθεί στην (12) αυτή γράφεται:", right:`½ D A² = ½ D x² + ½ m υ²  (13)\n(Α.Δ.Μ.Ε.Τ. του (m,D))`},
+  { v:2, left:"Θεατής 2: Να φύγουμε λέω και εγώ, αλλά με μια επίγευση από την αποψινή παράσταση του (m₁,D₁) συνοψίζοντας: Ο κάθε πρωταγωνιστής ταλαντωτής (m,D) χαρακτηρίζεται απολύτως από τον «σωματότυπό του» (m) και την «χρονική» εμμονή του (ω) ή ισοδύναμα και ας το κρατήσουμε αυτό, από τα δικά του (m,D). Θα είναι λοιπόν για μας στο εξής ο ταλαντωτής (m,D), τα όρια στην παράστασή του (το μήκος σκηνής) τα καθορίζει πάντα ο κάθε κύριος … Ενεργειούλης και την έναρξή της εμείς οι θεατές!", right:`` }
 ];
 
-/* Scroll sync */
+/* Scroll sync (κάθετες μπάρεζ) */
 let _syncLock=false;
 function syncScroll(from, to){ if(_syncLock) return; _syncLock=true; to.scrollTop=from.scrollTop; _syncLock=false; }
 boardL.addEventListener('scroll', ()=>syncScroll(boardL, boardR));
 boardR.addEventListener('scroll', ()=>syncScroll(boardR, boardL));
 
-/* Baseline snap */
+/* Baseline snap + σύγκλιση ύψους ανά γραμμή */
 function snapToBaseline(px){ return Math.ceil(px/BASELINE)*BASELINE; }
-
-/* Γέμισμα σειράς */
-let fIdx=0, foyerAuto=false, foyerAutoTimer=null;
-function appendRow(item){
-  const color = VIEWERS_COLORS[(item.v-1)%VIEWERS_COLORS.length];
-
-  const Lwrap = document.createElement('div'); Lwrap.className='row-left';  Lwrap.style.borderLeftColor=color;
-  Lwrap.innerHTML = `<span style="font-weight:700;color:${color}">ΘΕΑΤΗΣ ${item.v}:</span> ${item.left.replace(/^Θεατής\\s+\\d+:\\s*/i,'')}`;
-
-  const Rwrap = document.createElement('div'); Rwrap.className='row-right'; Rwrap.style.borderLeftColor=color;
-  Rwrap.textContent = item.right || '';
-
-  boardL.appendChild(Lwrap);
-  boardR.appendChild(Rwrap);
-
-  // ίσο ύψος + κλείδωμα σε baseline
+function equalizeHeights(Lwrap, Rwrap){
   const h = Math.max(Lwrap.clientHeight, Rwrap.clientHeight);
   const hs = snapToBaseline(h);
   Lwrap.style.minHeight = hs+'px';
   Rwrap.style.minHeight = hs+'px';
+}
 
-  // scroll στο τέλος (και σύγκλιση)
+/* Ροή/Auto */
+let fIdx=0, foyerAuto=false, foyerAutoTimer=null;
+
+/* Append μιας «καταχώρισης» με τέλειο ταίριασμα L-R */
+function appendRow(item){
+  const colorList = ['#ff6b6b','#ffd166','#06d6a0','#118ab2','#c77dff'];
+  const color = colorList[(item.v-1)%colorList.length];
+
+  const Lwrap = document.createElement('div'); Lwrap.className='row-left';  Lwrap.style.borderLeftColor=color;
+  Lwrap.innerHTML = `<span style="font-weight:700;color:${color}">ΘΕΑΤΗΣ ${item.v}:</span> ${item.left.replace(/^Θεατής\\s+\\d+:\\s*/i,'')}`;
+  boardL.appendChild(Lwrap);
+
+  const Rwrap = document.createElement('div'); Rwrap.className='row-right'; Rwrap.style.borderLeftColor=color;
+  boardR.appendChild(Rwrap);
+
+  /* δεξιά: typewriter + pretty sqrt */
+  addTypewriterTo(Rwrap, item.right||'', {cps:28}).then(()=>equalizeHeights(Lwrap,Rwrap));
+  /* και πριν τελειώσει η γραφομηχανή, κάνε μια πρώτη σύγκλιση */
+  setTimeout(()=>equalizeHeights(Lwrap,Rwrap), 50);
+
+  /* scroll στο τέλος */
   boardL.scrollTop = boardL.scrollHeight;
 
-  // bubble στον σωστό θεατή (force)
+  /* bubble μόνο όνομα, στον σωστό θεατή */
   try{
     const viewerIdx = (item.v-1)%5;
-    showThoughtForViewer(viewerIdx, item.left.replace(/^Θεατής\\s+\\d+:\\s*/i,''), undefined, 135, 0, true);
+    showThoughtForViewer(viewerIdx, null, 3.0, 135, 0, true);
   }catch(_){}
 }
 
@@ -1036,7 +939,7 @@ function foyerStep(dir){
     appendRow(FOYER_DATA[fIdx++]);
     if(foyerAuto && fIdx<FOYER_DATA.length){
       const prev = FOYER_DATA[fIdx-1];
-      const delay = computeThoughtDuration(prev.left) + 0.6;
+      const delay = 0.6 + Math.max(2.0, (prev.left||'').length * 0.02);
       foyerAutoTimer = setTimeout(()=>foyerStep(+1), delay*1000);
     }else if(foyerAuto && fIdx>=FOYER_DATA.length){
       foyerAuto=false; btnAuto.textContent='Auto ▷';
@@ -1064,101 +967,8 @@ function foyerClose(silent){
   if(foyerAutoTimer){ clearTimeout(foyerAutoTimer); foyerAutoTimer=null; }
   foyerAuto=false; if(!silent){ btnAuto.textContent='Auto ▷'; }
 }
-</script>
 
-<!-- helpers για typewriter/δεξιά στήλη (ξεχωριστό script) -->
-<script>
-// Επιλογή δεξιάς στήλης με ασφάλεια (ό,τι id έχεις τώρα)
-function pickRightPanel(){
-  return document.getElementById('boardRight')
-      || document.getElementById('foyerBoardRight')
-      || document.querySelector('.board-right')
-      || document.getElementById('foyerBoard'); // fallback
-}
-
-// Μετατρέπει √( … ) ή sqrt{…} σε markup με «μπάρα»
-function prettyMath(src){
-  if(!src) return '';
-  let s = String(src);
-
-  // ελαφριά τυποποίηση συμβόλων
-  s = s.replaceAll('omega','ω').replaceAll('phi','φ')
-       .replaceAll('^2','²').replaceAll('_0','₀');
-
-  // sqrt{…}
-  s = s.replace(/sqrt\{([^}]+)\}/g, (_,inner) =>
-    `<span class="sqrt"><span class="radic">√</span><span class="bar">${inner}</span></span>`);
-
-  // √(…)
-  s = s.replace(/√\(([^)]+)\)/g, (_,inner) =>
-    `<span class="sqrt"><span class="radic">√</span><span class="bar">${inner}</span></span>`);
-
-  return s;
-}
-
-// Τυλίγει κάθε χαρακτήρα σε <span class="tw-ch"> για ασφαλές typewriter ακόμη και με HTML
-function wrapChars(html){
-  const tpl = document.createElement('template');
-  tpl.innerHTML = html.trim();
-  const walker = document.createTreeWalker(tpl.content, NodeFilter.SHOW_TEXT, null, false);
-  const texts = [];
-  while(walker.nextNode()) texts.push(walker.currentNode);
-  texts.forEach(node=>{
-    const frag = document.createDocumentFragment();
-    for(const ch of node.nodeValue){
-      const span = document.createElement('span');
-      span.className = 'tw-ch';
-      span.textContent = ch;
-      frag.appendChild(span);
-    }
-    node.parentNode.replaceChild(frag, node);
-  });
-  return tpl.content;
-}
-
-// Γράφει μια ΓΡΑΜΜΗ δεξιά, με εφέ γραφομηχανής (cps: chars/sec)
-async function addRightLineTypewriter(html, {cps=28} = {}){
-  const panel = pickRightPanel();
-  if(!panel) return;
-
-  const line = document.createElement('div');
-  line.className = 'right-line';
-  line.style.fontFamily = 'ui-monospace, SFMono-Regular, Menlo, Consolas, "Courier New", monospace';
-  panel.appendChild(line);
-
-  const pretty = prettyMath(html);
-  const frag = wrapChars(pretty);
-  line.appendChild(frag);
-
-  const chars = line.querySelectorAll('.tw-ch');
-  const dt = Math.max(6, Math.floor(1000 / cps)); // ms/char
-
-  await new Promise(resolve=>{
-    let i = 0;
-    const tick = () => {
-      if(i < chars.length){
-        for(let k=0; k<3 && i<chars.length; k++, i++){
-          chars[i].classList.add('on');
-        }
-        setTimeout(tick, dt);
-      } else {
-        resolve();
-      }
-    };
-    tick();
-  });
-}
-</script>
-
-<!-- (προαιρετική) helper για bubbles με μόνο όνομα/χρώμα -->
-<script>
-function foyerShowBubble(vId /*, textIgnored */){
-  // placeholder: δεν καλείται στην παρούσα ροή
-}
-</script>
-
-<!-- Χειριστές Foyer -->
-<script>
+/* Χειριστές */
 btnFoyer.addEventListener('click', ()=>foyerOpen(true));
 btnClose.addEventListener('click', ()=>foyerClose());
 btnPrev.addEventListener('click', ()=>foyerStep(-1));
@@ -1177,14 +987,14 @@ document.addEventListener('act2-ended', ()=>foyerOpen(true));
 document.addEventListener('keydown', (e)=>{ if(e.key.toLowerCase()==='f'){ (foyer.style.display==='block')?foyerClose():foyerOpen(true); }});
 </script>
 
-<!-- === Boot/Adapter === -->
+<!-- Προαιρετικά external αρχεία (όπως ήταν) -->
 <script src="intro_boot.js"></script>
 <script src="adapter.js"></script>
 <script src="ui_laws_layout_v4.js"></script>
 <script src="act2.js"></script>
 
 <script>
-/* Bridge: όταν κλείσει η σκηνή της 1ης, δείξε προαγγελία 2ης */
+/* Bridge: λήξη πράξης 1 → προαγγελία πράξης 2 */
 (function(){
   const stage = document.getElementById('stage');
   let seenOpen = stage.classList.contains('open');
@@ -1200,115 +1010,6 @@ document.addEventListener('keydown', (e)=>{ if(e.key.toLowerCase()==='f'){ (foye
     }
   });
   obs.observe(stage, {attributes:true});
-})();
-</script>
-
-<!-- === Typewriter shim (δεξί πάνελ) === -->
-<script>
-(function(){
-  'use strict';
-  function pickRightPanel(){
-    const sels = [
-      '#foyerRight', '#boardRight', '#foyerBoardRight', '#blackboardRight',
-      '.board-right', '.foyer-right', '[data-foyer-right="1"]'
-    ];
-    for (const s of sels){
-      const el = document.querySelector(s);
-      if (el) return el;
-    }
-    return null;
-  }
-  function wrapChars(root){
-    const spans = [];
-    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
-      acceptNode: (n)=> n.nodeValue.trim().length ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP
-    });
-    const toWrap = [];
-    while (walker.nextNode()) toWrap.push(walker.currentNode);
-    toWrap.forEach(textNode=>{
-      const frag = document.createDocumentFragment();
-      const str = textNode.nodeValue;
-      for (let i=0;i<str.length;i++){
-        const ch = str[i];
-        const span = document.createElement('span');
-        span.className = 'twc';
-        span.style.opacity = '0';
-        span.textContent = ch;
-        frag.appendChild(span);
-        spans.push(span);
-      }
-      textNode.parentNode.replaceChild(frag, textNode);
-    });
-    return spans;
-  }
-  function addRightLineTypewriter(html, opts){
-    const el = pickRightPanel();
-    if (!el) { console.warn('[typewriter] right panel not found'); return; }
-    const cps   = (opts && +opts.cps>0) ? +opts.cps : 26;
-    const pause = (opts && +opts.pause>=0) ? +opts.pause : 250;
-    const line  = document.createElement('div');
-    line.className = 'right-line';
-    line.style.margin = '0 0 6px 0';
-    line.style.whiteSpace = 'pre-wrap';
-    line.innerHTML = html;
-    const spans = wrapChars(line);
-    el.appendChild(line);
-    if (!spans.length) return;
-    const dt = Math.max(8, Math.floor(1000 / cps));
-    let i = 0;
-    function tick(){
-      const batch = Math.max(1, Math.floor(cps/6));
-      for (let k=0;k<batch && i<spans.length;k++, i++){
-        spans[i].style.opacity = '1';
-      }
-      if (i < spans.length) {
-        setTimeout(tick, dt);
-      } else {
-        setTimeout(()=>{}, pause);
-      }
-      try { el.scrollTop = el.scrollHeight; } catch(_){}
-    }
-    tick();
-  }
-  function enableRightPanelTypewriterShim(){
-    const el = pickRightPanel();
-    if (!el) return;
-    if (el.__twShim) return;
-    el.__twShim = true;
-    const origInsert = el.insertAdjacentHTML.bind(el);
-    el.insertAdjacentHTML = function(where, html){
-      if (String(where).toLowerCase() === 'beforeend') {
-        addRightLineTypewriter(html);
-      } else {
-        origInsert(where, html);
-      }
-    };
-    const origAppend = el.appendChild.bind(el);
-    el.appendChild = function(node){
-      if (node && node.classList && node.classList.contains('right-line')) {
-        return origAppend(node);
-      }
-      const html = node && (node.outerHTML || node.textContent || '');
-      if (html && html.trim()) {
-        addRightLineTypewriter(html);
-        return node;
-      }
-      return origAppend(node);
-    };
-    window.addRightLineTypewriter = addRightLineTypewriter;
-    const css = document.createElement('style');
-    css.textContent = `.right-line .twc { transition: opacity .03s linear; }`;
-    document.head.appendChild(css);
-  }
-  function boot(){
-    try { enableRightPanelTypewriterShim(); }
-    catch (e){ console.error('[typewriter] shim failed', e); }
-  }
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', boot, {once:true});
-  } else {
-    boot();
-  }
 })();
 </script>
 
