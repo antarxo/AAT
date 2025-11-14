@@ -86,7 +86,8 @@
     position:absolute;max-width:220px;background:rgba(255,255,255,.82);color:#000;
     font-size:var(--bubble-font);line-height:1.2;padding:8px 10px 10px;
     border:2px solid transparent;border-radius:10px;
-    box-shadow:0 6px 12px rgba(0,0,0,.4);z-index:340;pointer-events:none;opacity:0;display:none;transition:opacity .25s ease, transform .25s ease
+    box-shadow:0 6px 12px rgba(0,0,0,.4);z-index:750;pointer-events:none;opacity:0;display:none;transition:opacity .25s ease, transform .25s ease
+  .thought-bubble
   }
   .thought-bubble.active{opacity:1;transform:translateY(-2px);animation:popIn .25s ease}
   .thought-bubble.closing{opacity:0}
@@ -911,27 +912,37 @@ function appendRow(item){
   const colorList = ['#ff6b6b','#ffd166','#06d6a0','#118ab2','#c77dff'];
   const color = colorList[(item.v-1)%colorList.length];
 
-  const Lwrap = document.createElement('div'); Lwrap.className='row-left';  Lwrap.style.borderLeftColor=color;
-  Lwrap.innerHTML = `<span style="font-weight:700;color:${color}">ΘΕΑΤΗΣ ${item.v}:</span> ${item.left.replace(/^Θεατής\\s+\\d+:\\s*/i,'')}`;
-  boardL.appendChild(Lwrap);
+  // 1) Bubble πρώτα (μπροστά από όλα)
+  const viewerIdx = (item.v-1) % 5;
+  showThoughtForViewer(viewerIdx, null, 3.0, 135, 0, true);
 
-  const Rwrap = document.createElement('div'); Rwrap.className='row-right'; Rwrap.style.borderLeftColor=color;
-  boardR.appendChild(Rwrap);
+  // 2) Με μικρό lead, γράφουμε στον πίνακα
+  const BUBBLE_LEAD_MS = 300;
 
-  /* δεξιά: typewriter + pretty sqrt */
-  addTypewriterTo(Rwrap, item.right||'', {cps:28}).then(()=>equalizeHeights(Lwrap,Rwrap));
-  /* και πριν τελειώσει η γραφομηχανή, κάνε μια πρώτη σύγκλιση */
-  setTimeout(()=>equalizeHeights(Lwrap,Rwrap), 50);
+  setTimeout(()=>{
+    // ΑΡΙΣΤΕΡΑ
+    const Lwrap = document.createElement('div');
+    Lwrap.className='row-left';
+    Lwrap.style.borderLeftColor=color;
+    Lwrap.innerHTML = `<span style="font-weight:700;color:${color}">ΘΕΑΤΗΣ ${item.v}:</span> ${String(item.left||'').replace(/^Θεατής\s+\d+:\s*/i,'')}`;
+    boardL.appendChild(Lwrap);
 
-  /* scroll στο τέλος */
-  boardL.scrollTop = boardL.scrollHeight;
+    // ΔΕΞΙΑ
+    const Rwrap = document.createElement('div');
+    Rwrap.className='row-right';
+    Rwrap.style.borderLeftColor=color;
+    boardR.appendChild(Rwrap);
 
-  /* bubble μόνο όνομα, στον σωστό θεατή */
-  try{
-    const viewerIdx = (item.v-1)%5;
-    showThoughtForViewer(viewerIdx, null, 3.0, 135, 0, true);
-  }catch(_){}
+    // typewriter + pretty sqrt
+    addTypewriterTo(Rwrap, item.right||'', {cps:28}).then(()=>equalizeHeights(Lwrap,Rwrap));
+    setTimeout(()=>equalizeHeights(Lwrap,Rwrap), 50);
+
+    // scroll στο τέλος
+    boardL.scrollTop = boardL.scrollHeight;
+
+  }, BUBBLE_LEAD_MS);
 }
+
 
 function foyerStep(dir){
   if(dir>0){
