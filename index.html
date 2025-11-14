@@ -164,6 +164,24 @@
   .foyer-ctrls{display:flex;gap:8px;position:absolute;right:8px;top:8px;z-index:502}
   .foyer-ctrls button{background:#700;color:#fff;border:none;border-radius:8px;padding:8px 10px;font-size:14px;cursor:pointer}
   .end-btn{position:absolute;bottom:10px;right:10px;z-index:502;background:#333;color:#fff;border:1px solid rgba(255,255,255,.25);border-radius:8px;padding:8px 12px;font-size:14px;cursor:pointer}
+/* ── Math sqrt markup (καλύτερο οπτικά) ─────────────────────────────── */
+.sqrt {
+  display:inline-flex; align-items:flex-start; white-space:nowrap;
+}
+.sqrt .radic { font-size:1.15em; line-height:1; padding-right:2px; }
+.sqrt .bar {
+  border-top:1px solid currentColor; padding:0 .20em .05em .25em;
+  line-height:1; display:inline-block;
+}
+
+/* ── Typewriter για «Δεξιά» στήλη μόνο ─────────────────────────────── */
+.tw-ch { opacity:0; }
+.tw-ch.on { opacity:1; transition:opacity .02s linear; }
+
+/* Μικρότερα γράμματα στο φουαγιέ, όπως ζήτησες */
+#foyer, #foyer .blackboard { font-size:14px; }
+#boardRight, #foyerBoardRight, .board-right { font-size:13px; line-height:1.3; }
+
 </style>
 </head>
 <body>
@@ -1055,6 +1073,105 @@ function foyerClose(silent){
   if(foyerAutoTimer){ clearTimeout(foyerAutoTimer); foyerAutoTimer=null; }
   foyerAuto=false; if(!silent){ btnAuto.textContent='Auto ▷'; }
 }
+<script>
+// Επιλογή δεξιάς στήλης με ασφάλεια (ό,τι id έχεις τώρα)
+function pickRightPanel(){
+  return document.getElementById('boardRight')
+      || document.getElementById('foyerBoardRight')
+      || document.querySelector('.board-right')
+      || document.getElementById('foyerBoard'); // fallback
+}
+
+// Μετατρέπει √( … ) ή sqrt{…} σε markup με «μπάρα»
+function prettyMath(src){
+  if(!src) return '';
+  let s = String(src);
+
+  // ελαφριά τυποποίηση συμβόλων
+  s = s.replaceAll('omega','ω').replaceAll('phi','φ')
+       .replaceAll('^2','²').replaceAll('_0','₀');
+
+  // sqrt{…}
+  s = s.replace(/sqrt\{([^}]+)\}/g, (_,inner) =>
+    `<span class="sqrt"><span class="radic">√</span><span class="bar">${inner}</span></span>`);
+
+  // √(…)
+  s = s.replace(/√\(([^)]+)\)/g, (_,inner) =>
+    `<span class="sqrt"><span class="radic">√</span><span class="bar">${inner}</span></span>`);
+
+  return s;
+}
+
+// Τυλίγει κάθε χαρακτήρα σε <span class="tw-ch"> για ασφαλές typewriter ακόμη και με HTML
+function wrapChars(html){
+  const tpl = document.createElement('template');
+  tpl.innerHTML = html.trim();
+  const walker = document.createTreeWalker(tpl.content, NodeFilter.SHOW_TEXT, null, false);
+  const texts = [];
+  while(walker.nextNode()) texts.push(walker.currentNode);
+  texts.forEach(node=>{
+    const frag = document.createDocumentFragment();
+    for(const ch of node.nodeValue){
+      const span = document.createElement('span');
+      span.className = 'tw-ch';
+      span.textContent = ch;
+      frag.appendChild(span);
+    }
+    node.parentNode.replaceChild(frag, node);
+  });
+  return tpl.content;
+}
+
+// Γράφει μια ΓΡΑΜΜΗ δεξιά, με εφέ γραφομηχανής (cps: chars/sec)
+async function addRightLineTypewriter(html, {cps=28} = {}){
+  const panel = pickRightPanel();
+  if(!panel) return;
+
+  const line = document.createElement('div');
+  line.className = 'right-line';
+  // μονόχωρο font βοηθά να «διαβάζεται» σταδιακά
+  line.style.fontFamily = 'ui-monospace, SFMono-Regular, Menlo, Consolas, "Courier New", monospace';
+  panel.appendChild(line);
+
+  const pretty = prettyMath(html);
+  const frag = wrapChars(pretty);
+  line.appendChild(frag);
+
+  const chars = line.querySelectorAll('.tw-ch');
+  const dt = Math.max(6, Math.floor(1000 / cps)); // ms/char
+
+  await new Promise(resolve=>{
+    let i = 0;
+    const tick = () => {
+      if(i < chars.length){
+        // αποκαλύπτουμε «μπουκέτα» για ομαλότητα
+        for(let k=0; k<3 && i<chars.length; k++, i++){
+          chars[i].classList.add('on');
+        }
+        setTimeout(tick, dt);
+      } else {
+        resolve();
+      }
+    };
+    tick();
+  });
+}
+</script>
+<script>
+function foyerShowBubble(vId /*, textIgnored */){
+  const slot = front.querySelector(`.foyer-viewer[data-vid="${vId}"]`);
+  if(!slot) return;
+  const vInfo = FOYER_VIEWERS.find(v=>v.id===vId);
+  const bubble = slot.querySelector('.foyer-bubble');
+  const t = bubble.querySelector('.text');
+  // Μόνο όνομα θεατή, χωρίς περιεχόμενο διαλόγου
+  t.textContent = vInfo ? vInfo.name : `ΘΕΑΤΗΣ ${vId}`;
+  bubble.style.backgroundColor = tint(vInfo?.color || '#888', 0.92);
+  bubble.style.display='block';
+  const dur = 2.2; // σύντομο flash για αναγνώριση «ποιος μιλάει»
+  setTimeout(()=>{ bubble.style.display='none'; }, dur*1000);
+}
+</script>
 
 /* Χειριστές */
 btnFoyer.addEventListener('click', ()=>foyerOpen(true));
@@ -1098,6 +1215,149 @@ document.addEventListener('keydown', (e)=>{ if(e.key.toLowerCase()==='f'){ (foye
     }
   });
   obs.observe(stage, {attributes:true});
+})();
+</script>
+<script>
+/* === Typewriter για τη ΔΕΞΙΑ στήλη του φουαγιέ — drop-in shim === */
+(function(){
+  'use strict';
+
+  // 1) Εντοπισμός δεξιού πάνελ (δοκιμάζει αρκετά ids/classes)
+  function pickRightPanel(){
+    const sels = [
+      '#foyerRight', '#boardRight', '#foyerBoardRight', '#blackboardRight',
+      '.board-right', '.foyer-right', '[data-foyer-right="1"]'
+    ];
+    for (const s of sels){
+      const el = document.querySelector(s);
+      if (el) return el;
+    }
+    return null;
+  }
+
+  // 2) Βοηθητικό: τυλίγει ΚΑΘΕ χαρακτήρα κειμένου σε <span.twc> για progressive reveal
+  function wrapChars(root){
+    const spans = [];
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+      acceptNode: (n)=> n.nodeValue.trim().length ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP
+    });
+    const toWrap = [];
+    while (walker.nextNode()) toWrap.push(walker.currentNode);
+
+    toWrap.forEach(textNode=>{
+      const frag = document.createDocumentFragment();
+      const str = textNode.nodeValue;
+      for (let i=0;i<str.length;i++){
+        const ch = str[i];
+        // Κρατάμε ακριβώς τα κενά/line breaks
+        const span = document.createElement('span');
+        span.className = 'twc';
+        span.style.opacity = '0';
+        span.textContent = ch;
+        frag.appendChild(span);
+        spans.push(span);
+      }
+      textNode.parentNode.replaceChild(frag, textNode);
+    });
+    return spans;
+  }
+
+  // 3) Γράψιμο γραμμής με γραφομηχανή (δέχεται HTML)
+  function addRightLineTypewriter(html, opts){
+    const el = pickRightPanel();
+    if (!el) { console.warn('[typewriter] right panel not found'); return; }
+
+    const cps   = (opts && +opts.cps>0) ? +opts.cps : 26; // chars per second
+    const pause = (opts && +opts.pause>=0) ? +opts.pause : 250;
+
+    const line  = document.createElement('div');
+    line.className = 'right-line';
+    line.style.margin = '0 0 6px 0';
+    line.style.whiteSpace = 'pre-wrap';
+    line.innerHTML = html;
+
+    // Τυλίγουμε χαρακτήρες
+    const spans = wrapChars(line);
+    el.appendChild(line);
+
+    // Progressive reveal
+    if (!spans.length) return; // καθαρό HTML χωρίς text
+    const dt = Math.max(8, Math.floor(1000 / cps));
+    let i = 0;
+    function tick(){
+      // Αποκαλύπτουμε «πακέτα» για πιο ομαλή κίνηση σε υψηλά cps
+      const batch = Math.max(1, Math.floor(cps/6));
+      for (let k=0;k<batch && i<spans.length;k++, i++){
+        spans[i].style.opacity = '1';
+      }
+      if (i < spans.length) {
+        setTimeout(tick, dt);
+      } else {
+        setTimeout(()=>{}, pause);
+      }
+      // auto-scroll στο κάτω μέρος κάθε βήμα
+      try { el.scrollTop = el.scrollHeight; } catch(_){}
+    }
+    tick();
+  }
+
+  // 4) Shim: μετατρέπει append/insert σε typewriter ΜΟΝΟ για το δεξί πάνελ
+  function enableRightPanelTypewriterShim(){
+    const el = pickRightPanel();
+    if (!el) return;
+
+    // προστασία: μην το ξανα-πατσάρουμε
+    if (el.__twShim) return;
+    el.__twShim = true;
+
+    // patch insertAdjacentHTML (μόνο στο 'beforeend')
+    const origInsert = el.insertAdjacentHTML.bind(el);
+    el.insertAdjacentHTML = function(where, html){
+      if (String(where).toLowerCase() === 'beforeend') {
+        addRightLineTypewriter(html);
+      } else {
+        origInsert(where, html);
+      }
+    };
+
+    // patch appendChild
+    const origAppend = el.appendChild.bind(el);
+    el.appendChild = function(node){
+      // Αν μας δώσουν έτοιμο element, το μετατρέπουμε σε HTML για typewriter.
+      // Ειδική περίπτωση: όταν καλούμε ΕΜΕΙΣ el.appendChild(line) μέσα στο addRightLineTypewriter,
+      // δεν θέλουμε να γίνει recursion:
+      if (node && node.classList && node.classList.contains('right-line')) {
+        return origAppend(node);
+      }
+      const html = node && (node.outerHTML || node.textContent || '');
+      if (html && html.trim()) {
+        addRightLineTypewriter(html);
+        return node; // «πλασματική» επιτυχία για συμβατότητα
+      }
+      return origAppend(node);
+    };
+
+    // (Προαιρετικά) helper global για άμεση χρήση όπου χρειαστεί
+    window.addRightLineTypewriter = addRightLineTypewriter;
+
+    // CSS για πιο ομαλή εμφάνιση
+    const css = document.createElement('style');
+    css.textContent = `
+      .right-line .twc { transition: opacity .03s linear; }
+    `;
+    document.head.appendChild(css);
+  }
+
+  // 5) Εκκίνηση αφού φορτωθεί το DOM (και υπάρχουν τα στοιχεία φουαγιέ)
+  function boot(){
+    try { enableRightPanelTypewriterShim(); }
+    catch (e){ console.error('[typewriter] shim failed', e); }
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot, {once:true});
+  } else {
+    boot();
+  }
 })();
 </script>
 
