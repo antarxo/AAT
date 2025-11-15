@@ -1522,146 +1522,150 @@ document.getElementById('btnFoyer').addEventListener('click', ()=>foyerOpen(true
   })();
 
   // ===================  (3) ΦΟΥΑΓΙΕ: θέση/δύο στήλες/συγχρονισμός  ===================
-  (function(){
-    const foyer = by('foyer');
-    const board = by('foyerBoard');      // main scroll container
-    const front = by('foyerFront');      // καρέ θεατών (ήδη υπάρχει)
-    const btnF  = by('btnFoyer');
-    const prev  = by('foyerPrev');
-    const next  = by('foyerNext');
-    const autoB = by('foyerAuto');
-    const close = by('foyerClose');
 
-    // Επαναφέρουμε το layout του πίνακα: δύο στήλες, ίδια σειρά.
-    // Αν δεν υπάρχει, χτίζουμε εσωτερικό grid.
-    let rowsWrap = board.querySelector('.fb-rows');
-    if(!rowsWrap){
-      rowsWrap = document.createElement('div');
-      rowsWrap.className = 'fb-rows';
-      board.innerHTML = '';
-      board.appendChild(rowsWrap);
-    }
-    // Στυλ (μόνο για το board)
-    (function ensureFoyerStyles(){
-      const st=document.createElement('style');
-      st.textContent = `
+// === Foyer module (safe init, χωρίς αλλαγές περιεχομένου) ===
+(function(){
+  'use strict';
+  const by=id=>document.getElementById(id);
+
+  const FOYER_VIEWERS = [
+    { id:1, name:'ΘΕΑΤΗΣ 1', color:'#ff6b6b' },
+    { id:2, name:'ΘΕΑΤΗΣ 2', color:'#ffd166' },
+    { id:3, name:'ΘΕΑΤΗΣ 3', color:'#06d6a0' },
+    { id:4, name:'ΘΕΑΤΗΣ 4', color:'#118ab2' },
+    { id:5, name:'ΘΕΑΤΗΣ 5', color:'#c77dff' },
+  ];
+  const vInfo = id => FOYER_VIEWERS.find(v=>v.id===id)||{name:'ΘΕΑΤΗΣ '+id, color:'#666'};
+
+  // inject styles μία φορά
+  if(!document.getElementById('foyerStyles')){
+    const st=document.createElement('style'); st.id='foyerStyles';
+    st.textContent = `
       .fb-rows{display:block}
       .fb-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:6px 0;align-items:flex-start}
       .fb-left{font-size:13px;line-height:1.35}
       .fb-right{font-size:13px;line-height:1.20;text-align:left;white-space:pre-wrap}
-      .foyer{left:18%;width:64%;top:12%;height:445px;z-index:500;display:none;position:absolute}
-      .foyer .blackboard{height:100%}
-      .foyer-badge{position:absolute;z-index:650;padding:4px 8px;border-radius:999px;font-size:12px;color:#fff;border:1px solid rgba(255,255,255,.35);background:rgba(0,0,0,.55)}
-      `;
-      document.head.appendChild(st);
-    })();
+      .foyer{position:absolute;left:18%;width:64%;top:12%;height:445px;z-index:500;display:none}
+      .foyer .blackboard{height:100%;overflow:auto}
+      .foyer-badge{position:absolute;z-index:650;padding:4px 8px;border-radius:999px;font-size:12px;color:#fff;border:1px solid rgba(255,255,255,.35)}
+    `;
+    document.head.appendChild(st);
+  }
 
-    // Badge πάνω από τον θεατή (μόνο το όνομα/χρώμα)
-    function showSpeakerBadge(vId, name, color){
-      // βρίσκουμε το seat
-      const slot = front.querySelector(`.foyer-viewer[data-vid="${vId}"]`);
-      if(!slot) return;
-      let b = slot.querySelector('.foyer-badge');
-      if(!b){
-        b=document.createElement('div');
-        b.className='foyer-badge';
-        slot.appendChild(b);
-      }
-      b.textContent = name || ('ΘΕΑΤΗΣ '+vId);
-      b.style.backgroundColor = color || 'rgba(0,0,0,.6)';
-      b.style.left='50%'; b.style.top='-26px'; b.style.transform='translateX(-50%)';
-      b.style.display='block';
-      setTimeout(()=>{ b.style.display='none'; }, 1300);
+  let idx=0, auto=false, timer=null;
+
+  function tint(hex, alpha){
+    const c=hex.replace('#','');
+    const r=parseInt(c.slice(0,2),16), g=parseInt(c.slice(2,4),16), b=parseInt(c.slice(4,6),16);
+    return `rgba(${r},${g},${b},${alpha})`;
+  }
+
+  function showBadge(front, vId, name, color){
+    const slot = front.querySelector(`.foyer-viewer[data-vid="${vId}"]`);
+    if(!slot) return;
+    let b = slot.querySelector('.foyer-badge');
+    if(!b){ b=document.createElement('div'); b.className='foyer-badge'; slot.appendChild(b); }
+    b.textContent = name;
+    b.style.backgroundColor=tint(color,0.55);
+    b.style.borderColor=tint(color,0.85);
+    b.style.left='50%'; b.style.top='-26px'; b.style.transform='translateX(-50%)';
+    b.style.display='block';
+    setTimeout(()=>{ b.style.display='none'; }, 1300);
+  }
+
+  function addRow(board, rowsWrap, item){
+    const row=document.createElement('div'); row.className='fb-row';
+    const l=document.createElement('div'); l.className='fb-left';
+    const r=document.createElement('div'); r.className='fb-right';
+    l.innerHTML=item.left||''; r.innerHTML=item.right||'';
+    row.append(l,r);
+    rowsWrap.appendChild(row);
+    board.scrollTop=board.scrollHeight;
+  }
+
+  function getDATA(){ return (window.FOYER_DATA && Array.isArray(window.FOYER_DATA)) ? window.FOYER_DATA : []; }
+
+  function reposition(foyer, stage){
+    const sRect=stage.getBoundingClientRect();
+    foyer.style.left = (sRect.width*0.18)+'px';
+    foyer.style.width= (sRect.width*0.64)+'px';
+    foyer.style.top='12%';
+    foyer.style.height='445px';
+  }
+
+  function openFoyer(){
+    const foyer=by('foyer'); const board=by('foyerBoard'); const front=by('foyerFront'); const stage=by('stage');
+    if(!foyer||!board||!front||!stage){ console.error('[Foyer] DOM missing'); return; }
+
+    // blackboard rows wrapper — φτιάξ’ το τώρα (όχι πριν υπάρξει το DOM)
+    let rowsWrap = board.querySelector('.fb-rows');
+    if(!rowsWrap){ rowsWrap=document.createElement('div'); rowsWrap.className='fb-rows'; board.innerHTML=''; board.appendChild(rowsWrap); }
+
+    // αν δεν έχουν μπει τα “seats”, χτίσ’ τα τώρα
+    if(!front.children.length){
+      FOYER_VIEWERS.forEach(v=>{
+        const slot=document.createElement('div'); slot.className='foyer-viewer'; slot.dataset.vid=v.id;
+        const tag=document.createElement('div'); tag.className='foyer-tag';
+        tag.textContent=v.name; tag.style.backgroundColor=tint(v.color,0.45); tag.style.border=`1px solid ${tint(v.color,0.85)}`;
+        slot.appendChild(tag); front.appendChild(slot);
+      });
     }
 
-    // ΑΡΙΣΤΕΡΑ/ΔΕΞΙΑ προσθήκη σε κοινή σειρά
-    function addRow({v,left,right,color,name}){
-      const row=document.createElement('div'); row.className='fb-row';
-      const l = document.createElement('div'); l.className='fb-left';
-      const r = document.createElement('div'); r.className='fb-right';
-      l.innerHTML = left || '';
-      r.innerHTML = right|| '';
-      // έντονα: απλό <b>...> σε ό,τι θέλεις να κάνεις bold στο data
-      row.append(l,r);
-      rowsWrap.appendChild(row);
-      // scroll
-      board.scrollTop = board.scrollHeight;
-      // badge
-      showSpeakerBadge(v, name||('ΘΕΑΤΗΣ '+v), color);
+    foyer.style.display='block';
+    reposition(foyer, stage);
+
+    // auto-run
+    const DATA=getDATA();
+    idx=0; auto=true; rowsWrap.innerHTML='';
+
+    if(DATA.length){
+      const first=DATA[0], vi=vInfo(first.v);
+      addRow(board, rowsWrap, first);
+      showBadge(front, vi.id, vi.name, vi.color);
+      idx=1;
+
+      const tick=()=>{
+        if(!auto) return;
+        if(idx>=DATA.length){ auto=false; return; }
+        const it=DATA[idx++], v=vInfo(it.v);
+        addRow(board, rowsWrap, it);
+        showBadge(front, v.id, v.name, v.color);
+        const delay = 650 + Math.min(1200, (String(it.left||'').length + String(it.right||'').length)*12);
+        timer=setTimeout(tick, delay);
+      };
+      timer=setTimeout(tick, 650);
     }
 
-    // Auto‐player με FOYER_DATA (κρατάω τη δική σου μεταβλητή όπως είναι)
-    const FOYER_VIEWERS = [
-      { id:1, name:'ΘΕΑΤΗΣ 1', color:'#ff6b6b' },
-      { id:2, name:'ΘΕΑΤΗΣ 2', color:'#ffd166' },
-      { id:3, name:'ΘΕΑΤΗΣ 3', color:'#06d6a0' },
-      { id:4, name:'ΘΕΑΤΗΣ 4', color:'#118ab2' },
-      { id:5, name:'ΘΕΑΤΗΣ 5', color:'#c77dff' },
-    ];
-    function vInfo(id){ return FOYER_VIEWERS.find(x=>x.id===id)||{name:'ΘΕΑΤΗΣ '+id,color:'#666'}; }
+    // να κρατιέται σωστά στο resize
+    new ResizeObserver(()=>reposition(foyer, stage)).observe(stage);
+  }
 
-    // Αν η FOYER_DATA υπάρχει ήδη στο index σου, τη χρησιμοποιούμε 1:1.
-    // Δεν αγγίζω περιεχόμενα/κείμενα.
-    const DATA = (window.FOYER_DATA && Array.isArray(window.FOYER_DATA)) ? window.FOYER_DATA : [];
+  function closeFoyer(){
+    const foyer=by('foyer'); if(foyer) foyer.style.display='none';
+    auto=false; if(timer){ clearTimeout(timer); timer=null; }
+  }
 
-    let idx=0, auto=false, timer=null;
-    function step(dir){
-      if(dir>0 && idx>=DATA.length) return;
-      if(dir<0 && idx<=0){ idx=0; return; }
-      const item = (dir>0) ? DATA[idx++] : DATA[--idx];
-      const v = vInfo(item.v);
-      addRow({v:item.v, left:item.left, right:item.right, color:v.color, name:v.name});
-      if(auto && idx<DATA.length){
-        const delay = 650 + Math.min(1200, (String(item.left||'').length + String(item.right||'').length)*12);
-        timer = setTimeout(()=>step(+1), delay);
-      }else if(auto && idx>=DATA.length){
-        auto=false; if(autoB) autoB.textContent='Auto ▷';
-      }
-    }
-    function openFoyer(){
-      foyer.style.display='block';
-      // auto on open
-      auto=true; if(autoB) autoB.textContent='Auto ❚❚';
-      // reset state οπτικά — δεν σβήνω DATA
-      rowsWrap.innerHTML=''; idx=0;
-      // 1ο βήμα αμέσως
-      if(DATA.length){ step(+1); }
-    }
-    function closeFoyer(){
-      foyer.style.display='none';
-      auto=false; if(autoB) autoB.textContent='Auto ▷';
-      if(timer){ clearTimeout(timer); timer=null; }
-    }
+  // Expose
+  window.foyerOpen  = openFoyer;
+  window.foyerClose = closeFoyer;
 
-    // Buttons
-    btnF && btnF.addEventListener('click', openFoyer);
-    close && close.addEventListener('click', closeFoyer);
-    prev && prev.addEventListener('click', ()=>step(-1));
-    next && next.addEventListener('click', ()=>step(+1));
-    autoB&& autoB.addEventListener('click', ()=>{
-      auto=!auto; autoB.textContent = auto ? 'Auto ❚❚' : 'Auto ▷';
-      if(auto && idx<DATA.length) step(+1);
-      if(!auto && timer){ clearTimeout(timer); timer=null; }
-    });
+  // Κουμπιά: bind μετά το DOMContentLoaded για σιγουριά
+  function bindButtons(){
+    const btnF=by('btnFoyer'), prev=by('foyerPrev'), next=by('foyerNext'), autoB=by('foyerAuto'), close=by('foyerClose');
+    if(btnF)  btnF.onclick = openFoyer;
+    if(close) close.onclick = closeFoyer;
+    // (προαιρετικά) prev/next το κρατάμε απλό: reopen για replay
+    if(prev) prev.onclick = ()=>{ window.foyerOpen(); };
+    if(next) next.onclick = ()=>{ window.foyerOpen(); };
+    if(autoB) autoB.onclick = ()=>{ /* toggle απλό: ξανανοίγει */ window.foyerOpen(); };
+  }
+  document.addEventListener('DOMContentLoaded', bindButtons);
 
-    // Αυτόματο άνοιγμα μετά την Πράξη 2 (όπως συμφωνήσαμε)
-    document.addEventListener('act2-ended', ()=>{ openFoyer(); });
+  // Άνοιγμα αμέσως μόλις τελειώσει η Πράξη 2
+  document.addEventListener('act2-ended', ()=>openFoyer());
+})();
 
-    // Να “κάθεται” σωστά στο κέντρο μεταξύ κουρτινών και με ύψος 445
-    function repositionFoyer(){
-      const sRect=stage.getBoundingClientRect();
-      const left   = sRect.width*0.18;
-      const width  = sRect.width*0.64;
-      foyer.style.left = left+'px';
-      foyer.style.width= width+'px';
-      foyer.style.top  = '12%';
-      foyer.style.height='445px';
-    }
-    repositionFoyer();
-    new ResizeObserver(()=>repositionFoyer()).observe(stage);
-    window.foyerOpen = openFoyer;      // κρατάω και τα globals αν τα χρησιμοποιείς αλλού
-    window.foyerClose= closeFoyer;
-  })();
+
 
   // ===================  εκκίνηση/τοποθέτηση ===================
   (function boot(){
