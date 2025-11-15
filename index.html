@@ -10,8 +10,7 @@
 
 <style>
   :root{
-    /* Σταθερό ύψος Φουαγιέ (όπως συμφωνήθηκε) */
-    --foyer-h: 445px;
+    --foyer-h: 445px; /* σταθερό ύψος φουαγιέ */
   }
 
   /* ====== ΒΑΣΙΚΑ ====== */
@@ -47,7 +46,7 @@
   .viewers{position:absolute;left:18%;width:64%;bottom:0;display:flex;justify-content:space-between;z-index:159;padding:0 4vw 12px}
   .viewer{width:60px;height:100px;background:url('https://upload.wikimedia.org/wikipedia/commons/f/f9/Silhouette_icon.svg') no-repeat center/contain;filter:grayscale(1) brightness(.6);opacity:.75}
 
-  /* Τίτλοι (ενημερώνονται δυναμικά ανά πράξη) */
+  /* Τίτλοι */
   .signboard{position:absolute;top:-6px;left:50%;transform:translateX(-50%);background:transparent;border:none;border-radius:10px;padding:12px 18px;color:#ddd;font-family:'Georgia',serif;text-align:center;z-index:165;line-height:1.25}
   .signboard h1{font-size:32px;margin:0;color:#fff}
   .signboard .sb-lineA{font-size:18px;font-style:italic;margin-top:2px;color:#ddd}
@@ -60,10 +59,12 @@
   .clock{position:absolute;top:10px;left:calc(82vw + 9vw);transform:translateX(-50%);background:rgba(0,0,0,.5);color:#fff;padding:6px 10px;font-size:16px;font-family:"Courier New",monospace;border-radius:6px;border:1px solid rgba(255,255,255,.3);z-index:265;pointer-events:none;display:none}
   .clock .hint{font-size:10px;color:#ffd27a;opacity:.9;margin-left:6px}
   .measure-box{position:absolute;left:calc(82vw + 9vw);transform:translateX(-50%);top:54px;width:calc(18vw - 16px);z-index:262;background:rgba(0,0,0,.45);color:#fff;border:1px solid rgba(255,255,255,.25);border-radius:8px;padding:6px 8px;display:none;height:50vh;overflow-y:auto}
-  /* Πλαίσιο Νόμων — χωρίς scroll, μεγαλώνει προς τα κάτω, κάθε νόμος ως γραμμή, όχι λίστα */
+
+  /* Πλαίσιο Νόμων — χωρίς scroll, μεγαλώνει προς τα κάτω, κάθε νόμος ως γραμμή */
   .laws{position:absolute;left:2%;top:44px;width:16%;background:rgba(20,0,0,.6);color:#fff;border:1px solid rgba(255,200,200,.3);border-radius:8px;padding:6px 8px;font-size:16px;line-height:1.45;z-index:260;display:none;overflow:visible}
   .laws h4{margin:0 0 6px 0}
   .laws-body .law-line{padding:4px 6px;margin:2px 0;border-left:3px solid rgba(255,210,122,.6);background:rgba(255,210,122,.08)}
+
   .params-box{position:absolute;top:33px; z-index:268;background:rgba(0,0,0,.5);color:#fff;border:1px solid rgba(255,255,255,.25);border-radius:8px;padding:6px 10px;font-size:16px;line-height:1.45;display:none}
 
   #xtChart{position:absolute;display:none;z-index:266;pointer-events:none;border:1px dashed rgba(255,255,255,.25)}
@@ -88,7 +89,7 @@
   .marker-line{position:absolute;left:50%;bottom:8px;width:2px;height:70px;background:#ffd27a;box-shadow:0 0 4px rgba(255,210,122,.8);transform:translateX(-50%)}
   .marker-tip{position:absolute;left:50%;bottom:0;width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:8px solid #ffd27a;filter:drop-shadow(0 2px 2px rgba(255,210,122,.8));transform:translateX(-50%)}
 
-  /* Bubbles Πράξεων (πάνω απ’ όλα) */
+  /* Bubbles Πράξεων (Act I/II) */
   @keyframes popIn{0%{transform:scale(.9);opacity:0}60%{transform:scale(1.04);opacity:1}100%{transform:scale(1)}}
   .thought-bubble{
     position:absolute;max-width:420px;background:rgba(255,255,255,.82);color:#000;
@@ -130,7 +131,7 @@
   .actbreak{position:absolute;background:rgba(0,0,0,.55);color:#fff;z-index:410;display:none;align-items:center;justify-content:center;text-align:center}
 
   /* ====== ΦΟΥΑΓΙΕ (ενιαία 3η πράξη) ====== */
-  .foyer{position:absolute;left:18%;width:64%;top:12%;height:var(--foyer-h);z-index:500;display:none}
+  .foyer{position:absolute;left:18%;width:64%;top:0; /* ΑΚΡΙΒΩΣ στο πάνω περίγραμμα */ height:var(--foyer-h);z-index:500;display:none}
   .foyer .wrap{position:absolute;inset:0;display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid rgba(255,255,255,.25);border-radius:10px;overflow:hidden}
   .board-left,.board-right{
     background:#0d2a1e url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%228%22 height=%228%22><circle cx=%224%22 cy=%224%22 r=%221%22 fill=%22rgba(255,255,255,0.03)%22/></svg>') repeat;
@@ -142,24 +143,12 @@
   .cell.left{white-space:pre-wrap}
   .sync-row{display:block}
 
-  /* “Σκιά” για τετραγωνικές ρίζες όταν επιλέγεται ρητά */
-  .sqrt{display:inline-block;border-top:2px solid currentColor;padding-top:2px;position:relative}
-  .sqrt:before{content:'√';position:relative;left:-2px}
-
-  /* Foyer bubbles — μόνο όνομα θεατή, πάνω από τον πίνακα, ευθυγραμμισμένα οριζόντια με τον θεατή */
+  /* Foyer bubbles: πάνω από τα κεφάλια θεατών, χωρίς περιεχόμενο, μόνο όνομα */
   .foyer-bubble{
-    position:absolute; z-index:520; display:none; pointer-events:none;
-    left:50%; transform:translateX(-50%); bottom: calc(var(--foyer-h) + 12px);
+    position:absolute; z-index:760; display:none; pointer-events:none;
     min-width:120px; text-align:center; color:#fff; font-weight:700; font-size:13px;
     padding:6px 10px; border-radius:999px; border:1px solid rgba(255,255,255,.35);
     box-shadow:0 6px 12px rgba(0,0,0,.35)
-  }
-
-  /* Κουμπί Φουαγιέ */
-  .btn-foyer{
-    position:absolute; top:8px; right:calc(18% + 8px); z-index:501;
-    background:#004b6b; color:#fff; border:none; border-radius:8px; padding:8px 12px;
-    font-size:14px; cursor:pointer
   }
 </style>
 </head>
@@ -187,7 +176,7 @@
       <div class="sb-lineD" id="sbLineD">(*) ... εσείς</div>
     </div>
 
-    <!-- Παράμετροι A, ω, φ0 -->
+    <!-- Παράμετροι -->
     <div class="params-box" id="paramsBox">
       <div class="param" id="paramA"></div>
       <div class="param" id="paramW"></div>
@@ -504,15 +493,17 @@ const thoughtScriptBase=[
   {kind:'bubbleDyn', atT:4.60, viewer:0, what:'phi', yOffset:135, xShift:-20},
   {kind:'bubbleDyn', atT:5.20, viewer:2, what:'A',   yOffset:135, xShift:  0},
   {kind:'bubbleDyn', atT:5.70, viewer:4, what:'Tw',  yOffset:135, xShift: 20},
-  {kind:'law',       atT:6.10, lawText:'x(t) = A·sin(ωt + φ₀)', alsoParams:true},
+
+  /* === ΖΗΤΗΘΗΚΕ: μορφή χ=Αημ(ωt+φ0) (n) στην 1η πράξη === */
+  {kind:'law',       atT:6.10, lawText:'x=Αημ(ωt+φ0) (1)', alsoParams:true},
   {kind:'bubble',    atT:6.60, viewer:1, key:'t11', yOffset:130, xShift:-20},
-  {kind:'law',       atT:6.90, lawText:'v(t) = ωA·cos(ωt + φ₀)'},
+  {kind:'law',       atT:6.90, lawText:'v=ωA·συν(ωt+φ0) (2)'},
   {kind:'lawPlot',   atT:7.00, plot:'v'},
   {kind:'bubble',    atT:7.60, viewer:3, key:'t13', yOffset:140, xShift: 10},
-  {kind:'law',       atT:7.85, lawText:'a(t) = −ω²A·sin(ωt + φ₀)'},
+  {kind:'law',       atT:7.85, lawText:'a=−ω²A·ημ(ωt+φ0) (3)'},
   {kind:'lawPlot',   atT:7.95, plot:'a'},
   {kind:'bubble',    atT:8.50, viewer:0, key:'t15', yOffset:125, xShift:-30},
-  {kind:'law',       atT:8.80, lawText:'a(x) = −ω²·x'},
+  {kind:'law',       atT:8.80, lawText:'a(x)=−ω²·x (4)'},
   {kind:'lawPlot',   atT:9.10, plot:'ax'},
   {kind:'bubble',    atT:9.60, viewer:2, key:'t18', yOffset:130, xShift:  0},
   {kind:'close',     atT:10.20}
@@ -623,7 +614,7 @@ function addLaw(txt){
   }
   const div=document.createElement('div');
   div.className='law-line';
-  div.textContent=t;       // μορφή: χ=Αημ(ωt+φ0) (1)
+  div.textContent=t;       /* μορφή: χ=Αημ(ωt+φ0) (1) */
   lawsBody.appendChild(div);
   lawCount++; positionLawCharts();
 }
@@ -767,7 +758,7 @@ function resetShow(){
   const fb=document.getElementById('xtFallback'); if(fb) fb.remove();
   xtChart.style.display='none';
   springEl.style.display='none';
-  // Επαναφορά τίτλων Πράξης 1
+  /* τίτλοι Πράξης 1 */
   document.querySelector('[data-i18n="actTitle"]').textContent=i18n[LANG].act1Title;
   document.getElementById('sbLineA').textContent = i18n[LANG].sbA1;
   document.getElementById('sbLineB').innerHTML  = i18n[LANG].sbB1;
@@ -866,7 +857,7 @@ const FOYER_VIEWERS = [
   { id:5, name:'ΘΕΑΤΗΣ 5', color:'#c77dff' },
 ];
 
-/* ΣΗΜΑΝΤΙΚΟ: placeholder — συμπλήρωσε 1:1 από το .pdf/.docx όταν το περάσουμε όλο */
+/* (placeholder — περιεχόμενα όπως έχουν περαστεί) */
 const FOYER_DATA = [
   { v:1, left:"Θεατής 1: Οι (1), (2), (3) και (5) μας βοηθούν να «προφητεύουμε» τη θέση, την ταχύτητα, την επιτάχυνση και την συνολική δύναμη που δέχεται κάθε στιγμή ο (m₁ ,D₁) χωρίς να χρειαστεί να ξαναμπούμε για τη συνέχεια της παράστασης!", right:"(1) x(t)=A·ημ(ωt+φ₀)\n(2) v(t)=ωA·συν(ωt+φ₀)\n(3) a(t)=−ω²A·ημ(ωt+φ₀)\n(5) ΣF=−m·ω²A·ημ(ωt+φ₀)"},
   { v:2, left:"Θεατής 2: Η (3)’ και η (6) όμως μας βοηθούν να … «προφητεύουμε» την επιτάχυνση και τη συνολική δύναμη που δέχεται αρκεί να ξέρουμε σε ποιο σημείο της σκηνής βρίσκεται ο (m₁ ,D₁) χωρίς φυσικά και αναγκαστικά να συνεχίσουμε να είμαστε θεατές!", right:"(3)’ a(x)=−ω²·x\n(6)  ΣF=−m·ω²·x" },
@@ -906,6 +897,8 @@ function typeWriter(el, text, speed=12){
     if(i<=src.length) setTimeout(tick, speed);
   })();
 }
+
+/* === ΖΗΤΗΘΗΚΕ: bubbles ΦΟΥΑΓΙΕ πάνω από τα κεφάλια των θεατών (μόνο όνομα) === */
 function showSpeakerChip(viewerId){
   const vInfo = FOYER_VIEWERS.find(x=>x.id===viewerId);
   const anchor = document.querySelector(`.viewer[data-idx="${viewerId-1}"]`);
@@ -915,9 +908,10 @@ function showSpeakerChip(viewerId){
   fbubble.textContent = vInfo.name;
   fbubble.style.backgroundColor = tint(vInfo.color,0.85);
   fbubble.style.borderColor     = 'rgba(255,255,255,.35)';
-  // οριζόντια στο κέντρο του θεατή
   const centerX = (aRect.left + aRect.width/2) - sRect.left;
+  const topPx   = Math.max(10, (aRect.top - sRect.top) - 110); /* πάνω από κεφάλι */
   fbubble.style.left = centerX + 'px';
+  fbubble.style.top  = topPx + 'px';
   fbubble.style.transform = 'translateX(-50%)';
   fbubble.style.display = 'block';
   setTimeout(()=>{ fbubble.style.display='none'; }, 1200);
@@ -932,7 +926,7 @@ function syncScroll(from,to){
 boardLeft.addEventListener('scroll', ()=>syncScroll(boardLeft,boardRight));
 boardRight.addEventListener('scroll',()=>syncScroll(boardRight,boardLeft));
 
-/* Εισαγωγή σειράς με equalize ύψους και χρωματισμούς */
+/* Εισαγωγή σειράς */
 function addRow(leftText, rightText, viewer){
   const viewerInfo = FOYER_VIEWERS.find(v=>v.id===viewer) || FOYER_VIEWERS[0];
   const bgLeft  = tint(viewerInfo.color, 0.22);
@@ -950,10 +944,8 @@ function addRow(leftText, rightText, viewer){
   boardRight.appendChild(r);
   boardLeft.appendChild(l);
 
-  // typewriter στο δεξί
   typeWriter(r, rightText, 10);
 
-  // equalize ύψη
   requestAnimationFrame(()=>{
     const h = Math.max(l.offsetHeight, r.offsetHeight);
     l.style.minHeight = h+'px';
@@ -981,7 +973,7 @@ function repositionFoyer(){
   const sRect=stage.getBoundingClientRect();
   foyer.style.left = (sRect.width*0.18)+'px';
   foyer.style.width= (sRect.width*0.64)+'px';
-  foyer.style.top='12%';
+  foyer.style.top='0'; /* ΑΚΡΙΒΩΣ πάνω περίγραμμα */
   foyer.style.height=getComputedStyle(document.documentElement).getPropertyValue('--foyer-h')||'445px';
 }
 function foyerOpen(auto=true){
@@ -1105,24 +1097,22 @@ document.getElementById('btnFoyer').addEventListener('click', ()=>foyerOpen(true
       stage.classList.add('open');
       springEl.style.display='block';
 
-      /* === Αλλαγή τίτλων Πράξης 2 (όπως ζητήθηκε) === */
+      /* τίτλοι Πράξης 2 */
       document.querySelector('[data-i18n="actTitle"]').textContent=i18n[LANG].act2Title;
       document.getElementById('sbLineA').textContent = i18n[LANG].sbA2;
       document.getElementById('sbLineB').innerHTML  = i18n[LANG].sbB2;
       document.getElementById('sbLineC').textContent = i18n[LANG].sbC2;
       document.getElementById('sbLineD').textContent = i18n[LANG].sbD2;
 
-      // Επιπλέον ενημέρωση “τεχνικών” στοιχείων στη 2η πράξη
-      addLaw('x(t) = A·ημ(ωt + φ₀) (1)'); // ώστε οι νόμοι να γράφονται ΑΡΙΣΤΕΡΑ (πλαίσιο νόμων)
+      addLaw('x=Αημ(ωt+φ0) (1)'); /* οι νόμοι γράφονται στο αριστερό πλαίσιο */
 
       for(const step of seq){
         if(step.law){ addLaw(step.law); await new Promise(r=>setTimeout(r,220)); continue; }
         if(step.gStart) startGhost();
-        await BUBBLE.say(step.v, step.t, step.y, step.x); // διάλογοι αυτούσιοι
+        await BUBBLE.say(step.v, step.t, step.y, step.x);
         if(step.gStop)  stopGhost();
       }
 
-      // Μετάβαση στο Φουαγιέ (χωρίς αλλαγές στο φουαγιέ)
       markerEl.style.opacity='0';
       curtainUpper.classList.add('slow-close');
       stage.classList.remove('open');
@@ -1134,7 +1124,6 @@ document.getElementById('btnFoyer').addEventListener('click', ()=>foyerOpen(true
     }catch(e){
       console.error('Act2 error:', e);
     }finally{
-      stopGhost();
       running=false;
     }
   }
