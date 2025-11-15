@@ -37,12 +37,7 @@
   .floor{position:absolute;left:0;bottom:calc(32vh - 8px);width:100%;height:2px;background:#888;z-index:155;pointer-events:none}
 
   /* Κοινό */
-  .audience{
-    position:absolute; left:18%; bottom:0;
-    width:64%; height:auto; max-height:none;
-    object-position:bottom center; z-index:158; pointer-events:none;
-    filter:contrast(1.05) brightness(.95); display:block;
-  }
+  .audience{position:absolute; left:18%; bottom:0; width:64%; height:auto; object-position:bottom center; z-index:158; pointer-events:none; filter:contrast(1.05) brightness(.95); display:block;}
   .viewers{position:absolute;left:18%;width:64%;bottom:0;display:flex;justify-content:space-between;z-index:159;padding:0 4vw 12px}
   .viewer{width:60px;height:100px;background:url('https://upload.wikimedia.org/wikipedia/commons/f/f9/Silhouette_icon.svg') no-repeat center/contain;filter:grayscale(1) brightness(.6);opacity:.75}
 
@@ -89,8 +84,7 @@
   @keyframes popIn{0%{transform:scale(.9);opacity:0}60%{transform:scale(1.04);opacity:1}100%{transform:scale(1)}}
   .thought-bubble{
     position:absolute;max-width:420px;background:rgba(255,255,255,.82);color:#000;
-    font-size:15px;line-height:1.45;padding:10px 12px 12px;
-    border:2px solid transparent;border-radius:10px;
+    font-size:15px;line-height:1.45;padding:10px 12px 12px;border:2px solid transparent;border-radius:10px;
     border-image:repeating-linear-gradient(90deg, rgba(0,0,0,.6) 0 6px, transparent 6px 10px, rgba(0,0,0,.6) 10px 12px, transparent 12px 16px) 1;
     box-shadow:0 6px 12px rgba(0,0,0,.4);z-index:340;pointer-events:none;opacity:0;display:none;transition:opacity .25s ease, transform .25s ease
   }
@@ -150,6 +144,13 @@
     min-width:120px; text-align:center; color:#fff; font-weight:700; font-size:13px;
     padding:6px 10px; border-radius:999px; border:1px solid rgba(255,255,255,.35);
     box-shadow:0 6px 12px rgba(0,0,0,.35)
+  }
+
+  /* Κουμπί Φουαγιέ */
+  .btn-foyer{
+    position:absolute; top:8px; right:calc(18% + 8px); z-index:501;
+    background:#004b6b; color:#fff; border:none; border-radius:8px; padding:8px 12px;
+    font-size:14px; cursor:pointer
   }
 </style>
 </head>
@@ -218,6 +219,9 @@
       <button id="btnReset" title="reset">↺</button>
     </div>
     <button class="btn-end" id="btnEndShow">Τέλος Παράστασης</button>
+
+    <!-- Κουμπί Φουαγιέ -->
+    <button class="btn-foyer" id="btnFoyer" title="Φουαγιέ">Φουαγιέ</button>
 
     <div class="settings" id="settingsPanel">
       <h5 data-i18n="settingsTitle">Ρυθμίσεις ροής</h5>
@@ -358,7 +362,7 @@ langSwitch.addEventListener('click',(e)=>{
   setLang(btn.dataset.lang);
 });
 
-/* === Localize trig in law strings === */
+/* Localize trig */
 function localizeTrig(txt){
   if(!txt) return txt;
   return (LANG==='gr') ? txt.replaceAll('sin','ημ').replaceAll('cos','συν')
@@ -382,6 +386,7 @@ const btnPlay=document.getElementById('btnPlay');
 const btnSettings=document.getElementById('btnSettings');
 const btnReset=document.getElementById('btnReset');
 const btnEndShow=document.getElementById('btnEndShow');
+const btnFoyer=document.getElementById('btnFoyer');
 const settingsPanel=document.getElementById('settingsPanel');
 const slFirst=document.getElementById('slFirst'), valFirst=document.getElementById('valFirst');
 const slScale=document.getElementById('slScale'), valScale=document.getElementById('valScale');
@@ -403,7 +408,7 @@ const measureTBody=document.getElementById('measureTBody');
 const actBreak=document.getElementById('actBreak');
 const curtainUpper=document.querySelector('.curtain-upper');
 
-/* === SAFE STUBS για το φουαγιέ ώστε να μην σκάει το reset πριν φορτωθεί === */
+/* SAFE STUBS για το φουαγιέ */
 if (typeof window.foyerOpen  !== 'function') window.foyerOpen  = function(){};
 if (typeof window.foyerClose !== 'function') window.foyerClose = function(){};
 
@@ -584,7 +589,7 @@ function animate(now){
     actor.style.transform='none';
     actor.style.left=(skaterHookX-hookOffsetPx)+'px';
     markerEl.style.left=skaterHookX+'px';
-    spotlight.style.background=`radial-gradient(220px 140px at ${skaterHookX}px ${stage.clientHeight*0.62}px, rgba(255,255,220,.65), rgba(255,255,220,0) 70%)`;
+    spotlight.style.background=`radial-gradient(220px 140px at ${skaterHookX}px ${stage.clientHeight*0.62}px, rgba(255,255,220,.65), rgba(255,255,255,0) 70%)`;
 
     const xMeters=(skaterHookX-centerX)/pxPerMeter;
     logMeasurement(tObs,xMeters);
@@ -659,7 +664,7 @@ function resumeFromBubble(nextMode='run'){
   setMode(nextMode==='slow'?'slow':'run');
 }
 
-/* Νόμοι + μίνι-γραφικά (σκιές) */
+/* Νόμοι + μικρο-γραφικά (σκια) */
 let lawCount=0;
 function addLaw(txt){
   if(!firstLawShown){
@@ -692,7 +697,6 @@ function buildSeriesData(){
 }
 function x0Val(){ return A_m*Math.sin(omega*(0+obsStartPlaybackOffset)); }
 
-/* init/resize x–t (χωρίς recursion) */
 function initXTChart(){
   if(uXT) return;
   xtChart.style.display='block';
@@ -719,11 +723,9 @@ function ensureXTReady(){
   xtInitInProgress = true;
   requestAnimationFrame(()=>{ try{ initXTChart(); } finally{ xtInitInProgress=false; } });
 }
-
-/* Fallback canvas */
 function renderXTCanvasFallback(){}
 
-/* Μίνι-γραφικά νόμων (dummy καμβάδες) */
+/* Μίνι-γραφικά νόμων (dummy) */
 let vCan=null,aCan=null,axCan=null;
 function sizeLawCanvas(c){ const w=Math.floor(stage.clientWidth*0.16); const h=140; c.width=w; c.height=h; c.style.width=w+'px'; c.style.height=h+'px'; }
 function positionLawCharts(){
@@ -792,7 +794,7 @@ btnSlow .addEventListener('click', ()=>{ resumeFromBubble('slow'); });
 btnPlay .addEventListener('click', ()=>{ resumeFromBubble('run');  });
 document.getElementById('btnAct2').addEventListener('click', ()=>{
   actBreak.style.display='none';
-  springEl.style.display='block'; // Πράξη 2: εμφανίζεται το ελατήριο
+  springEl.style.display='block'; // Πράξη 2
   document.dispatchEvent(new CustomEvent('act2-start'));
 });
 function resetShow(){
@@ -821,7 +823,6 @@ function resetShow(){
   const fb=document.getElementById('xtFallback'); if(fb) fb.remove();
   xtChart.style.display='none';
   springEl.style.display='none';
-  // Κλείσιμο φουαγιέ με ασφάλεια
   if (typeof window.foyerClose === 'function') window.foyerClose(true);
   t0=performance.now(); lastFrame=t0; playbackTime=0;
 }
@@ -884,7 +885,7 @@ const FOYER_VIEWERS = [
   { id:5, name:'ΘΕΑΤΗΣ 5', color:'#c77dff' },
 ];
 
-/* Δεδομένα Φουαγιέ — (όπως τα θέλεις, 1:1) */
+/* Δεδομένα Φουαγιέ (χωρίς περικοπές θα επεκταθούν στο επόμενο βήμα) */
 const FOYER_DATA = [
   { v:1, left:"Θεατής 1: Οι (1), (2), (3) και (5) μας βοηθούν να «προφητεύουμε» τη θέση, την ταχύτητα, την επιτάχυνση και την συνολική δύναμη που δέχεται κάθε στιγμή ο (m₁ ,D₁) χωρίς να χρειαστεί να ξαναμπούμε για τη συνέχεια της παράστασης!", right:"(1) x(t)=A·ημ(ωt+φ₀)\n(2) v(t)=ωA·συν(ωt+φ₀)\n(3) a(t)=−ω²A·ημ(ωt+φ₀)\n(5) ΣF=−m·ω²A·ημ(ωt+φ₀)"},
   { v:2, left:"Θεατής 2: Η (3)’ και η (6) όμως μας βοηθούν να … «προφητεύουμε» την επιτάχυνση και τη συνολική δύναμη που δέχεται αρκεί να ξέρουμε σε ποιο σημείο της σκηνής βρίσκεται ο (m₁ ,D₁) χωρίς φυσικά και αναγκαστικά να συνεχίσουμε να είμαστε θεατές!", right:"(3)’ a(x)=−ω²·x\n(6)  ΣF=−m·ω²·x" },
@@ -957,7 +958,6 @@ function addRow(leftText, rightText, viewer){
 
   showSpeakerChip(viewer);
 }
-
 function foyerStep(){
   if(foyerIdx>=FOYER_DATA.length){ foyerAuto=false; return; }
   const it = FOYER_DATA[foyerIdx++];
@@ -968,7 +968,6 @@ function foyerStep(){
     foyerTimer = setTimeout(foyerStep, delay);
   }
 }
-
 function foyerOpen(auto=true){
   foyer.style.display='block';
   boardLeft.innerHTML=''; boardRight.innerHTML='';
@@ -982,14 +981,17 @@ function foyerClose(silent=false){
   if(!silent){ /* noop */ }
 }
 
-// Άνοιγμα φουαγιέ αυτόματα με το τέλος της Πράξης 2
+/* Κουμπί Φουαγιέ (ανοίγει σε auto) */
+document.getElementById('btnFoyer').addEventListener('click', ()=>foyerOpen(true));
+
+/* Άνοιγμα φουαγιέ αυτόματα στο τέλος της Πράξης 2 */
 ['act2-ended','act2:ended','actII-ended'].forEach(evt=>{
   document.addEventListener(evt, ()=>foyerOpen(true));
 });
 </script>
 <!-- ====== ΤΕΛΟΣ ΦΟΥΑΓΙΕ ====== -->
 
-<!-- Boot & adapters (όπως έχεις) -->
+<!-- Boot & adapters -->
 <script src="intro_boot.js"></script>
 <script src="adapter.js"></script>
 
