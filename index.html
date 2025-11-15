@@ -403,6 +403,10 @@ const measureTBody=document.getElementById('measureTBody');
 const actBreak=document.getElementById('actBreak');
 const curtainUpper=document.querySelector('.curtain-upper');
 
+/* === SAFE STUBS για το φουαγιέ ώστε να μην σκάει το reset πριν φορτωθεί === */
+if (typeof window.foyerOpen  !== 'function') window.foyerOpen  = function(){};
+if (typeof window.foyerClose !== 'function') window.foyerClose = function(){};
+
 /* Position helpers */
 function positionParamsBox(){
   const rightEdge = stage.clientWidth*0.82;
@@ -423,7 +427,7 @@ slDur.addEventListener('input',()=>{ bubbleDurationSec=parseFloat(slDur.value); 
 slSlow.addEventListener('input',()=>{ slowFactor=parseFloat(slSlow.value); valSlow.textContent=`${slowFactor.toFixed(2)}×`; });
 btnSettings.addEventListener('click',()=>{ settingsPanel.style.display=(settingsPanel.style.display==='block'?'none':'block'); });
 
-/* Timeline Πράξης 1 (συντομευμένα εδώ – ίδια λογική) */
+/* Timeline Πράξης 1 */
 const thoughtScriptBase=[
   {kind:'bubble',    atT:1.05, viewer:0, key:'t1',  yOffset:120, xShift:-40},
   {kind:'bubble',    atT:1.15, viewer:1, key:'t2',  yOffset:125, xShift:-20},
@@ -655,7 +659,7 @@ function resumeFromBubble(nextMode='run'){
   setMode(nextMode==='slow'?'slow':'run');
 }
 
-/* Νόμοι + μικρο-γραφικά */
+/* Νόμοι + μίνι-γραφικά (σκιές) */
 let lawCount=0;
 function addLaw(txt){
   if(!firstLawShown){
@@ -716,10 +720,10 @@ function ensureXTReady(){
   requestAnimationFrame(()=>{ try{ initXTChart(); } finally{ xtInitInProgress=false; } });
 }
 
-/* Fallback canvas (συντομευμένο) */
+/* Fallback canvas */
 function renderXTCanvasFallback(){}
 
-/* Γραφήματα νόμων (σκιαγραφημένα) */
+/* Μίνι-γραφικά νόμων (dummy καμβάδες) */
 let vCan=null,aCan=null,axCan=null;
 function sizeLawCanvas(c){ const w=Math.floor(stage.clientWidth*0.16); const h=140; c.width=w; c.height=h; c.style.width=w+'px'; c.style.height=h+'px'; }
 function positionLawCharts(){
@@ -817,8 +821,8 @@ function resetShow(){
   const fb=document.getElementById('xtFallback'); if(fb) fb.remove();
   xtChart.style.display='none';
   springEl.style.display='none';
-  // Φουαγιέ
-  foyerClose(true);
+  // Κλείσιμο φουαγιέ με ασφάλεια
+  if (typeof window.foyerClose === 'function') window.foyerClose(true);
   t0=performance.now(); lastFrame=t0; playbackTime=0;
 }
 btnReset.addEventListener('click', resetShow);
@@ -855,7 +859,7 @@ startBtn.addEventListener('click', startShowCountdown);
 
 /* Παρατηρητής μεγέθους */
 const ro=new ResizeObserver(()=>{ positionRightPanel();
-  if(uXT){ drawXTChart(); } else if(document.getElementById('xtFallback')){}
+  if(uXT){ drawXTChart(); }
   positionLawCharts(); positionParamsBox();
 });
 ro.observe(stage);
@@ -880,7 +884,7 @@ const FOYER_VIEWERS = [
   { id:5, name:'ΘΕΑΤΗΣ 5', color:'#c77dff' },
 ];
 
-/* Δεδομένα Φουαγιέ — (ΑΠΑΡΑΛΛΑΚΤΑ από σενάριο που έδωσες) */
+/* Δεδομένα Φουαγιέ — (όπως τα θέλεις, 1:1) */
 const FOYER_DATA = [
   { v:1, left:"Θεατής 1: Οι (1), (2), (3) και (5) μας βοηθούν να «προφητεύουμε» τη θέση, την ταχύτητα, την επιτάχυνση και την συνολική δύναμη που δέχεται κάθε στιγμή ο (m₁ ,D₁) χωρίς να χρειαστεί να ξαναμπούμε για τη συνέχεια της παράστασης!", right:"(1) x(t)=A·ημ(ωt+φ₀)\n(2) v(t)=ωA·συν(ωt+φ₀)\n(3) a(t)=−ω²A·ημ(ωt+φ₀)\n(5) ΣF=−m·ω²A·ημ(ωt+φ₀)"},
   { v:2, left:"Θεατής 2: Η (3)’ και η (6) όμως μας βοηθούν να … «προφητεύουμε» την επιτάχυνση και τη συνολική δύναμη που δέχεται αρκεί να ξέρουμε σε ποιο σημείο της σκηνής βρίσκεται ο (m₁ ,D₁) χωρίς φυσικά και αναγκαστικά να συνεχίσουμε να είμαστε θεατές!", right:"(3)’ a(x)=−ω²·x\n(6)  ΣF=−m·ω²·x" },
@@ -912,10 +916,10 @@ function tint(hex, alpha){
   return `rgba(${r},${g},${b},${alpha})`;
 }
 
-/* Μικρό “typewriter” για δεξιά στήλη */
+/* Typewriter για δεξιά στήλη */
 function typeWriter(el, text, speed=12){
   el.innerHTML=''; let i=0;
-  const src = text.replaceAll('sqrt(','√('); // πρόχειρη ρίζα
+  const src = text.replaceAll('sqrt(','√(');
   (function tick(){
     el.innerHTML = src.slice(0,i).replaceAll('\n','<br>');
     i++;
@@ -923,7 +927,7 @@ function typeWriter(el, text, speed=12){
   })();
 }
 
-/* Προβολή ονόματος θεατή ως bubble-chip */
+/* Bubble-chip με μόνο «ΘΕΑΤΗΣ n» */
 function showSpeakerChip(viewerId){
   const v = FOYER_VIEWERS.find(x=>x.id===viewerId);
   if(!v) return;
@@ -937,30 +941,17 @@ function showSpeakerChip(viewerId){
 /* Βήμα-βήμα αναπαραγωγή */
 let foyerIdx=0, foyerAuto=true, foyerTimer=null;
 function addRow(leftText, rightText, viewer){
-  // αριστερά
   const l = document.createElement('div');
   l.className = 'cell left';
   l.innerHTML = leftText;
 
-  // δεξιά (με typewriter)
   const r = document.createElement('div');
   r.className = 'cell right';
   boardRight.appendChild(r);
   typeWriter(r, rightText, 10);
 
-  // τοποθέτηση συγχρονισμένα (ίδια σειρά)
-  const rowL = document.createElement('div'); rowL.className='row';
-  const rowR = document.createElement('div'); rowR.className='row';
-  const c1=document.createElement('div'); c1.className='cell left';
-  c1.innerHTML = leftText;
-  const c2=document.createElement('div'); c2.className='cell right';
-  c2.innerHTML = ''; // θα γραφτεί με typewriter δίπλα
-
-  // αλλά αντί για δύο grid κοντέινερ, γράφουμε απευθείας στα δύο panels:
   boardLeft.appendChild(l);
-  // δεξιά ήδη βάλαμε r με typewriter
 
-  // scroll sync
   boardLeft.scrollTop  = boardLeft.scrollHeight;
   boardRight.scrollTop = boardRight.scrollHeight;
 
@@ -973,7 +964,7 @@ function foyerStep(){
   addRow(it.left, it.right, it.v);
   if(foyerAuto){
     const len = (String(it.left).length + String(it.right).length);
-    const delay = Math.min(12000, Math.max(2500, 45*len/4)); // χρόνος ανάλογα με κείμενο
+    const delay = Math.min(12000, Math.max(2500, 45*len/4));
     foyerTimer = setTimeout(foyerStep, delay);
   }
 }
