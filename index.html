@@ -144,6 +144,19 @@
   .sync-row{display:block}
 
   /* Foyer bubbles: πάνω από τα κεφάλια θεατών, χωρίς περιεχόμενο, μόνο όνομα */
+  .btn-foyer{
+    position:absolute;
+    bottom:12px;
+    left:12px;
+    z-index:300;
+    background:#333;
+    border:1px solid rgba(255,255,255,.25);
+    color:#fff;
+    border-radius:8px;
+    padding:8px 12px;
+    cursor:pointer;
+  }
+
   .foyer-bubble{
     position:absolute; z-index:760; display:none; pointer-events:none;
     min-width:120px; text-align:center; color:#fff; font-weight:700; font-size:13px;
@@ -338,7 +351,42 @@ const i18n = {
       t18:"Τέλεια! όλο το σετ νόμων της Α.Α.Τ!"
     }
   },
-  en: {}
+  en: {
+    act1Title:"Act I: Kinematics in... algebraic form",
+    act2Title:"Act II: Dynamics of the oscillator (m,D)",
+    sbA1:"Starring the oscillator (m₁, D₁) and the spectators(*)",
+    sbB1:'in the monologue <span class="hl">"endless back-and-forth"</span>... on stage!',
+    sbC1:"Production & Direction: Mr. Energioulis",
+    sbD1:"(*) ...you",
+    sbA2:"The forces speak. The (m,D) is revealed.",
+    sbB2:"Scenes with spring, phases and equations.",
+    sbC2:"Stage consultant: Mr. Energioulis",
+    sbD2:"—",
+    startBtn:"Start",
+    cdMain:"The show is about to begin...",
+    cdSub:"time to use pen and paper!",
+    measurementsTitle:"Measurements",
+    lawsTitle:"S.H.M. laws",
+    actBreakTitle:"End of Act I",
+    actBreakMsg:"The (m,D) continues. Are you ready for Act II?",
+    act2Btn:"Start Act II",
+    thoughts: {
+      t1:"The (m₁,D₁) was already in motion!",
+      t2:"…at time t₀ = 0, when the curtain opened!",
+      t3:"…and the motion is straight-line and back-and-forth!",
+      t4:"…and repeating, periodic, so it's an oscillation!",
+      t5:"Could this be Simple Harmonic Motion?",
+      t6:"…if it is S.H.M., then the values we measure must satisfy x=A·sin(ωt+φ₀)!",
+      t7:"…if we draw an x–t graph, that will confirm it!",
+      t9phi:(x0,phi)=>`…indeed it is S.H.M., and since x₀=${x0}m there is a phase φ₀=${phi}°. Nice, one result secured!`,
+      t7A:(A)=>`…with A=${A}m!`,
+      t8Tw:(Tval,om)=>`…and T=${Tval}s and therefore ω=${om}rad/s!`,
+      t11:"…therefore the velocity is given by v=ωA·cos(ωt+φ₀)!",
+      t13:"…and the acceleration by a=−ω²A·sin(ωt+φ₀)!",
+      t15:"But the relation x=<b>A·sin(ωt+φ₀)</b> (1) is contained in (3), i.e. a=−ω²<b>A·sin(ωt+φ₀)=−ω²x</b>!",
+      t18:"Perfect! The full S.H.M. law set!"
+    }
+  }
 };
 let LANG='gr', firstLawShown=false;
 const langSwitch = document.getElementById('langSwitch');
@@ -726,11 +774,7 @@ function handleTimelineEvent(th){
 btnPause.addEventListener('click',()=>{ setMode(mode==='pause'?'run':'pause'); });
 btnSlow .addEventListener('click', ()=>{ setMode('slow');  });
 btnPlay .addEventListener('click', ()=>{ setMode('run');  });
-document.getElementById('btnAct2').addEventListener('click', ()=>{
-  actBreak.style.display='none';
-  springEl.style.display='block';
-  document.dispatchEvent(new CustomEvent('act2-start'));
-});
+document.getElementById('btnAct2').addEventListener('click', ()=>document.dispatchEvent(new Event('act2-start')));
 
 function resetShow(){
   if(bubbleAutoTimer){ clearTimeout(bubbleAutoTimer); bubbleAutoTimer=null; }
@@ -884,7 +928,7 @@ const FOYER_DATA = [
   {
     v: 3,
     left: `Θεατής 3: Λοιπόν!
-1. Διαπιστώνουμε αγαπητοί μου ότι δεν μπορούμε προς το παρόν να «προφητέψουμε» κάτι ανάλογο με αυτό που συμπεραίνει εδώ ο θεατής 2 για την ταχύτητα και τη σχέση της με τη θέση του (m₁ ,D₁).
+1. Διαπιστώνουμε αγαπητοί μου ότι δεν μπορούμε προς το παρόν να ...τής 2 για την ταχύτητα και τη σχέση της με τη θέση του (m₁ ,D₁).
 2. Σκέφτομαι ότι αυτά που είδαμε γενικεύονται για κάθε πρωταγωνιστή (m,D) σε ανάλογη Παράσταση ΑΑΤ.
 3. Ως γνώστες όμως της …Αλγεβρικής και με λίγη “αλγεβρική περιέργεια” να τι μπορούμε να κάνουμε (και γενικεύοντας, αναφερόμενοι πλέον στον τυχαίο (m,D)) για να καλύψουμε και το κενό 1.:
 ✓ Λύνουμε την (1) ως προς ημ(ωt+φ₀) και υψώνουμε στο τετράγωνο. Το ίδιο για την (2) ως προς συν(ωt+φ₀) και υψώνουμε. Στη συνέχεια προσθέτουμε κατά μέλη.`,
@@ -1010,7 +1054,7 @@ function typeWriter(el, text, speed=12){
   })();
 }
 
-/* === ΖΗΤΗΘΗΚΕ: bubbles ΦΟΥΑΓΙΕ πάνω από τα κεφάλια των θεατών (μόνο όνομα) === */
+/* === ΖΗΤΗΘΗΚΕ: bubbles ΦΟΥΑΓΙΕ πάνω από τα κεφάλια θεατών (μόνο όνομα) === */
 function showSpeakerChip(viewerId){
   const vInfo = FOYER_VIEWERS.find(x=>x.id===viewerId);
   const anchor = document.querySelector(`.viewer[data-idx="${viewerId-1}"]`);
@@ -1242,7 +1286,7 @@ const seq = [
       await new Promise(r=>setTimeout(r,1600));
       curtainUpper.classList.remove('slow-close');
 
-      foyerOpen(true);
+      setTimeout(()=>foyerOpen(true), 200);
       finished=true;
     }catch(e){
       console.error('Act2 error:', e);
