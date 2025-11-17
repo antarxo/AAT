@@ -143,16 +143,18 @@
   .cell.right{text-align:left;white-space:pre-wrap}
   .cell.left{white-space:pre-wrap}
   .cell.formula{
-    background:rgba(255,255,255,0.26)!important;
     color:#fffde7;
     border-left-width:6px!important;
     border-left-color:rgba(255,255,255,0.9)!important;
     font-weight:600;
     box-shadow:0 0 0 1px rgba(0,0,0,0.35) inset;
   }
+  .cell.right.formula{
+    background:rgba(8,8,18,0.95)!important;
+  }
   .sync-row{display:block}
 
-  /* Foyer bubbles: πάνω από τα κεφάλια θεατών, χωρίς περιεχόμενο, μόνο όνομα */
+  /* Foyer bubbles: πάνω από τα κεφάλια θεατών */
   .btn-foyer{
     position:absolute;
     bottom:12px;
@@ -861,6 +863,41 @@ function setMode(newMode){
   slowHint.textContent = (mode==='slow' && slowFactor<1) ? `SLOW-MO ×${slowFactor.toFixed(2)}` : '';
 }
 
+/* ====== typewriter HTML για bubbles (Act I/II) ====== */
+function typeWriterHTML(el, html, speed, done){
+  el.innerHTML = html || '';
+  const textNodes=[];
+  function collect(node){
+    if(node.nodeType===3){
+      textNodes.push({node, text:node.textContent});
+      node.textContent='';
+    }else if(node.nodeType===1){
+      for(const child of node.childNodes) collect(child);
+    }
+  }
+  collect(el);
+  const totalChars = textNodes.reduce((s,o)=>s+o.text.length,0);
+  let i=0;
+  (function tick(){
+    let remaining = i;
+    for(const obj of textNodes){
+      if(remaining>obj.text.length){
+        obj.node.textContent=obj.text;
+        remaining-=obj.text.length;
+      }else{
+        obj.node.textContent=obj.text.slice(0, remaining);
+        remaining=0;
+      }
+    }
+    i++;
+    if(i<=totalChars){
+      setTimeout(tick, speed);
+    }else{
+      if(typeof done==='function') done();
+    }
+  })();
+}
+
 /* ====== Bubbles (ενιαίος scheduler) ====== */
 class BubbleScheduler {
   constructor(el){ this.el=el; this._queue=Promise.resolve(); this._currentCancel=null; this._ALLOWED=new Set(['b','strong','i','em','sub','sup','br','span']); }
@@ -892,14 +929,23 @@ class BubbleScheduler {
   showOnce({viewer,text,lift,xShift}){
     return new Promise(resolve=>{
       if(this._currentCancel){ try{ this._currentCancel(); }catch{} this._currentCancel=null; }
-      this.el.querySelector('.text').innerHTML=this.sanitize(text||'');
+      const textEl=this.el.querySelector('.text');
+      const sanitized = this.sanitize(text||'');
+      const plain = sanitized.replace(/<[^>]+>/g,'');
+      const totalChars = Math.max(plain.length,10);
+      const baseMs = bubbleDurationSec*1000;
+      const speed = Math.max(15, Math.min(80, Math.round(baseMs/totalChars)));
+
       this.placeAtViewer(viewer,lift,xShift);
-      void this.el.offsetWidth;
-      this.el.classList.add('active'); this.el.style.opacity='1'; isBubbleActive=true; setMode('slow');
+      this.el.classList.add('active');
+      this.el.style.opacity='1';
+      isBubbleActive=true;
+      setMode('slow');
 
       let done=false;
       const cancel=()=>{
-        if(done) return; done=true;
+        if(done) return;
+        done=true;
         this.el.classList.add('closing');
         setTimeout(()=>{
           this.el.classList.remove('active','closing');
@@ -908,7 +954,11 @@ class BubbleScheduler {
         },220);
       };
       this._currentCancel=cancel;
-      setTimeout(cancel, this.computeDur(text)*1000);
+
+      typeWriterHTML(textEl, sanitized, speed, ()=>{
+        const extraPause = 500;
+        setTimeout(cancel, extraPause);
+      });
     });
   }
   say(viewer,text,lift=110,xShift=0){
@@ -1312,12 +1362,17 @@ function tint(hex, alpha){
   return `rgba(${r},${g},${b},${alpha})`;
 }
 
-/* typewriter ΜΕ callback */
+/* typewriter ΜΕ scroll προς τα κάτω */
 function typeWriter(el, text, speed=12, done){
   el.innerHTML=''; let i=0;
   const src = String(text||'').replaceAll('sqrt(','√(');
   (function tick(){
     el.innerHTML = src.slice(0,i).replaceAll('\n','<br>');
+    // πάντα να φαίνεται η τελευταία γραμμή
+    try{
+      boardLeft.scrollTop  = boardLeft.scrollHeight;
+      boardRight.scrollTop = boardRight.scrollHeight;
+    }catch(e){}
     i++;
     if(i<=src.length){
       setTimeout(tick, speed);
@@ -1341,8 +1396,7 @@ function showSpeakerChip(viewerId){
   fbubble.style.left = centerX + 'px';
   fbubble.style.top  = topPx + 'px';
   fbubble.style.transform = 'translateX(-50%)';
-  fbubble.style.display = 'block';
-  setTimeout(()=>{ fbubble.style.display='none'; }, 1200);
+  fbubble.style.display = 'block'; // μένει ορατό μέχρι να μιλήσει άλλος
 }
 
 /* Scroll sync */
@@ -1358,7 +1412,7 @@ function isFormulaBlock(text){
   const s = String(text||'').trim();
   if(!s) return false;
   if(/^\(\d+\)/.test(s)) return true;
-  if(/[ΑA]\.[ΔD]\.[ΜM]\.[ΕE]\.[ΤT]/.test(s)) return true; // Α.Δ.Μ.Ε.Τ. / A.D.M.E.T.
+  if(/[ΑA]\.[ΔD]\.[ΜM]\.[ΕE]\.[ΤT]/.test(s)) return true;
   if(/M\.E\.C/.test(s)) return true;
   if(/[⇒⇔]/.test(s)) return true;
   if(/Νόμος του Νεύτωνα/i.test(s) || /Newton’s law/i.test(s)) return true;
@@ -1367,9 +1421,9 @@ function isFormulaBlock(text){
 
 /* Εισαγωγή σειράς με λογική:
    1) typewriter αριστερά
-   2) μόλις τελειώσει, typewriter δεξιά
+   2) μόλις ολοκληρωθεί, typewriter δεξιά
    3) align ύψη
-   4) callback για να ξεκινήσει ο επόμενος θεατής */
+   4) callback για επόμενο θεατή */
 function addRow(leftText, rightText, viewer, whenDone){
   const viewerInfo = FOYER_VIEWERS.find(v=>v.id===viewer) || FOYER_VIEWERS[0];
   const bgLeft  = tint(viewerInfo.color, 0.22);
@@ -1384,8 +1438,8 @@ function addRow(leftText, rightText, viewer, whenDone){
   r.style.background = bgRight;
   r.style.borderLeft = `4px solid ${tint(viewerInfo.color,0.55)}`;
 
-  if (isFormulaBlock(leftText) || isFormulaBlock(rightText)){
-    l.classList.add('formula');
+  // Σκούρο φόντο μόνο στη ΔΕΞΙΑ στήλη για σχέσεις/τύπους
+  if (isFormulaBlock(rightText)){
     r.classList.add('formula');
   }
 
@@ -1405,9 +1459,10 @@ function addRow(leftText, rightText, viewer, whenDone){
     });
   }
 
+  const rt = (rightText||'').trim();
+
   // 1. γράφουμε πρώτα την άποψη αριστερά
   typeWriter(l, leftText, 10, ()=>{
-    const rt = (rightText||'').trim();
     if(rt.length>0){
       // 2. μετά το αλγεβρικό δεξιά
       typeWriter(r, rightText, 10, finalizeRow);
