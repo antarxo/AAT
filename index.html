@@ -129,6 +129,7 @@
 
   /* Προαγγελία Πράξης 2 */
   .actbreak{position:absolute;background:rgba(0,0,0,.55);color:#fff;z-index:410;display:none;align-items:center;justify-content:center;text-align:center}
+  .foyerbreak{position:absolute;background:rgba(0,0,0,.55);color:#fff;z-index:410;display:none;align-items:center;justify-content:center;text-align:center}
 
   /* ====== ΦΟΥΑΓΙΕ (ενιαία 3η πράξη) ====== */
   .foyer{position:absolute;left:18%;width:64%;top:0; /* ΑΚΡΙΒΩΣ στο πάνω περίγραμμα */ height:var(--foyer-h);z-index:500;display:none}
@@ -141,6 +142,12 @@
   .cell{padding:6px 10px;border-bottom:1px dashed rgba(255,255,255,.12)}
   .cell.right{text-align:left;white-space:pre-wrap}
   .cell.left{white-space:pre-wrap}
+  .cell.formula{
+    background:rgba(255,255,255,0.16)!important;
+    border-left-width:6px!important;
+    font-weight:600;
+    box-shadow:0 0 0 1px rgba(255,255,255,0.08) inset;
+  }
   .sync-row{display:block}
 
   /* Foyer bubbles: πάνω από τα κεφάλια θεατών, χωρίς περιεχόμενο, μόνο όνομα */
@@ -293,6 +300,15 @@
       </div>
     </div>
 
+    <!-- Πλαίσιο μετάβασης στο Φουαγιέ (μετά την Πράξη 2) -->
+    <div class="foyerbreak" id="foyerBreak">
+      <div class="box" style="background:rgba(0,0,0,.7);border:1px solid rgba(255,255,255,.25);border-radius:12px;padding:16px 20px;max-width:520px">
+        <h3 id="foyerBreakTitle">Τέλος Πράξης 2</h3>
+        <p id="foyerBreakMsg">Θέλετε να περάσετε στο φουαγιέ για τη συζήτηση;</p>
+        <button id="btnFoyerGo" style="background:#2c7a7b;color:#fff;border:none;border-radius:8px;padding:10px 16px;font-size:16px;cursor:pointer">Μετάβαση στο Φουαγιέ</button>
+      </div>
+    </div>
+
     <!-- ====== ΦΟΥΑΓΙΕ ====== -->
     <div class="foyer" id="foyer">
       <div class="wrap">
@@ -334,6 +350,9 @@ const i18n = {
     actBreakTitle:"Τέλος Πράξης 1",
     actBreakMsg:"Ο m,D συνεχίζει. Είστε έτοιμοι για τη Δεύτερη Πράξη;",
     act2Btn:"Έναρξη Πράξης 2",
+    foyerBreakTitle:"Τέλος Πράξης 2",
+    foyerBreakMsg:"Θέλετε να περάσετε στο φουαγιέ για τη συζήτηση;",
+    foyerBreakBtn:"Μετάβαση στο Φουαγιέ",
     thoughts: {
       t1:"Ο m<sub>1</sub>D<sub>1</sub> ήταν ήδη σε κίνηση!",
       t2:"…χρονική στιγμή t<sub>0</sub>=0 με το άνοιγμα της κουρτίνας!",
@@ -371,7 +390,105 @@ const i18n = {
       a18:'Λοιπόν, αν την αποδώσουμε στο ελαστικό αίτιο, ως δική του σταθερά D, τότε όλα βγάζουν νόημα: Ο ηθοποιός έχει τη δική του σταθερή μάζα m₁, το ελαστικό αίτιο τη δική του σταθερά D₁. Έτσι, εξηγείται ότι ο ηθοποιός ανεξαρτήτως σκηνής και παραγωγού «εμμονικά» διατηρεί την περίοδό του σταθερή! Μας το δείχνει η (6’) D = mω², που λέει ότι με σταθερά τα m και D, σταθερή θα είναι η ω του ηθοποιού!',
       a19:'… χμμμ, δικαιολογημένα λοιπόν τον πρωταγωνιστή–ταλαντωτή (=ηθοποιός + ελαστικό αίτιο) τον λένε (m,D)!',
       a20:'…αλλά και η (6) – μη ξεχνιόμαστε! – γίνεται ΣF = −D·x (7)!'
-    }
+    },
+    foyer: [
+      {
+        left: "Θεατής 1: Οι (1), (2), (3) και (5) μας βοηθούν να «προφητεύουμε» τη θέση, την ταχύτητα, την επιτάχυνση και την συνολική δύναμη που δέχεται κάθε στιγμή ο (m₁ ,D₁) χωρίς να χρειαστεί να ξαναμπούμε για τη συνέχεια της παράστασης!",
+        right: `(1) x(t)=A·ημ(ωt+φ₀)
+(2) υ(t)=ωA·συν(ωt+φ₀)
+(3) α(t)=−ω²A·ημ(ωt+φ₀)
+(5) ΣF=−m·ω²A·ημ(ωt+φ₀)`
+      },
+      {
+        left: "Θεατής 2: Η (3)’ και η (6)",
+        right: `(3)’ α(x)=−ω²·x
+(6)  ΣF=−m·ω²·x`
+      },
+      {
+        left: "Θεατής 2: όμως μας βοηθούν να … «προφητεύουμε» την επιτάχυνση και την συνολική δύναμη που δέχεται αρκεί να ξέρουμε σε ποιο σημείο της σκηνής βρίσκεται ο (m₁ ,D₁) χωρίς φυσικά και αναγκαστικά να συνεχίσουμε να είμαστε θεατές!",
+        right: ``
+      },
+      {
+        left: `Θεατής 3: Λοιπόν!
+1. Διαπιστώνουμε αγαπητοί μου ότι δεν μπορούμε προς το παρόν να ...τής 2 για την ταχύτητα και τη σχέση της με τη θέση του (m₁ ,D₁).
+2. Σκέφτομαι ότι αυτά που είδαμε γενικεύονται για κάθε πρωταγωνιστή (m,D) σε ανάλογη Παράσταση ΑΑΤ.
+3. Ως γνώστες όμως της …Αλγεβρικής και με λίγη “αλγεβρική περιέργεια” να τι μπορούμε να κάνουμε (και γενικεύοντας, αναφερόμενοι πλέον στον τυχαίο (m,D)) για να καλύψουμε και το κενό 1.:
+✓ Λύνουμε την (1) ως προς ημ(ωt+φ₀) και υψώνουμε στο τετράγωνο. Το ίδιο για την (2) ως προς συν(ωt+φ₀) και υψώνουμε. Στη συνέχεια προσθέτουμε κατά μέλη.`,
+        right: `x=A·ημ(ωt+φ₀)  (1)
+υ=ωA·συν(ωt+φ₀) (2)
+
+ημ(ωt+φ₀)=x/A
+συν(ωt+φ₀)=υ/(ωA)
+
+⇒ ημ²(ωt+φ₀)+συν²(ωt+φ₀)=1
+⇒ 1 = x²/A² + υ²/(ω²A²)  (8)`
+      },
+      {
+        left: `Θεατής 3:
+✓ Ιδού η σχέση που μας έλειπε. Τώρα «προφητεύουμε» και την ταχύτητα όταν γνωρίζουμε τη θέση του πρωταγονιστή στη σκηνή αλλά και
+✓ Μπορούμε να βγάλουμε μια σχέση (σκεφτόμενοι ανάλογα) ανάμεσα στην επιτάχυνση και την ταχύτητα! Δηλαδή, λύνουμε την (3) ως προς ημ(ωt+φ₀) και υψώνουμε. Κάνουμε το ίδιο με την (2) ως προς συν(ωt+φ₀) και υψώνουμε. Μετά προσθέτουμε κατά μέλη.`,
+        right: `α=−ω²A·ημ(ωt+φ₀)  (3)
+υ= ωA·συν(ωt+φ₀)    (2)
+
+ημ(ωt+φ₀)= −α/(ω²A)
+συν(ωt+φ₀)=  υ/(ωA)
+
+⇒ 1 = α²/(ω⁴A²) + υ²/(ω²A²)  (9)  bingo!`
+      },
+      {
+        left: "Θεατής 4: Θα ήταν καλύτερα αν την (8) την φέρναμε στη μορφή υ= … Δείτε:",
+        right: `(8) 1 = x²/A² + υ²/(ω²A²)
+⇔ ω²A² = ω²x² + υ²`
+      },
+      { left: "Θεατής 1: …μισό, μισό …", right: `` },
+      {
+        left: "Θεατής 4: να ολοκληρώσω, …, την οποία λύνουμε ως προς υ",
+        right: `⇔ υ = ±ω·√(A²−x²)  (10)`
+      },
+      {
+        left: "Θεατής 4: όπως όμως και την (9)",
+        right: `(9) 1 = α²/(ω⁴A²) + υ²/(ω²A²)
+⇔ α = ±ω·√(ω²A² − υ²)  (11)`
+      },
+      {
+        left: "Θεατής 4: χμμ αλλά και (αν σκεφτούμε ότι ωA=υmax)",
+        right: `(11) ⇔ α = ±ω·√((ωA)² − υ²)
+⇔ a = ±ω·√(υ_max² − υ²)  (12)`
+      },
+      { left: "Θεατής 4: τέλος από εμένα και… ο λόγος στον Θεατή 1!", right: `` },
+      {
+        left: "Θεατής 1: Το σημείο στο οποίο διέκοψα είχε γραφτεί ω²A² = ω²x² + υ². Σκέφτομαι λοιπόν τα εξής: Αν πολλαπλασιάσουμε και τα δύο μέλη με ½m, δείτε! η σχέση γράφεται:",
+        right: `½ m ω²A² = ½ m ω²x² + ½ m υ²  (12)`
+      },
+      {
+        left: `Θεατής 1: Αλλά:
+• Ο παράγοντας ½ m υ² είναι η κινητική ενέργεια K του … πρωταγωνιστή (m,D)
+• Ο παράγοντας αυτός προστίθεται στον ½ m ω² x² ο οποίος δεν μπορεί παρά να είναι και αυτός ενέργεια! (πρόσθεση κάνουμε ανάμεσα σε ομοειδή). Όμως ο παράγοντας αυτός εξαρτάται από τη θέση του πρωταγωνιστή άρα δεν μπορεί παρά να παριστάνει τη Δυναμική του Ενέργεια U (λόγω θέσης) του πρωταγωνιστή (m,D)!
+• Έτσι ο παράγοντας ½ m ω² A² του πρώτου μέλους
+  – Πρώτον δεν μπορεί παρά ως άθροισμα Κ και U να «παριστάνει» τη μηχανική ενέργεια ΕΜ του πρωταγωνιστή (m,D).
+  – Δεύτερον, συγκρίνοντας με τη μορφή της U=½ m ω² x² (παρατηρούμε μέγιστη απομάκρυνση). Άρα ½ m ω² A² παριστάνει και την μέγιστη Δυναμική Ενέργεια U_max του (m,D).
+  – Τρίτον, ως σταθερή ποσότητα Μηχανικής Ενέργειας, η (12) μας οδηγεί στην «Α.Δ.Μ.Ε.Τ.» του πρωταγωνιστή Ταλαντωτή (m,D)!`,
+        right: `(Α.Δ.Μ.Ε.Τ.)`
+      },
+      {
+        left: "Θεατής 5: Δηλαδή γνωρίζουμε πλέον και το … budget της παράστασης! Και, δεν έχουμε επομένως λέω εγώ, κανένα ιδιαίτερο λόγο να περάσουμε στην αίθουσα να παρακολουθήσουμε την 3η πράξη περί ενέργειας! Το έργο το …ξαναείδαμε!",
+        right: ``
+      },
+      {
+        left: "Θεατής 4: Φυσικά! Αν και η “αλγεβρική περιέργεια” μας οδηγεί και σε μια πιο συμμαζεμένη έκφραση αυτής της … Αρχής Διατήρησης της Μηχανικής Ενέργειας του …Ταλαντωτή (m,D). Είπαμε πιο πάνω για αυτή τη σταθερά D=mω² που βάλαμε και στη σχέση (7)",
+        right: `Νόμος του Νεύτωνα:
+ΣF = −D·x  (7)`
+      },
+      {
+        left: "Θεατής 4: Αυτή αν χρησιμοποιηθεί στην (12) αυτή γράφεται:",
+        right: `½ D A² = ½ D x² + ½ m υ²  (13)
+(Α.Δ.Μ.Ε.Τ. του (m,D))`
+      },
+      {
+        left: "Θεατής 2: Να φύγουμε λέω και εγώ, αλλά με μια επίγευση από την αποψινή παράσταση του (m₁,D₁) συνοψίζοντας: Ο κάθε πρωταγωνιστής ταλαντωτής (m,D) χαρακτηρίζεται απολύτως από τον «σωματότυπό του» (m) και την «χρονική» εμμονή του (ω) ή ισοδύναμα και ας το κρατήσουμε αυτό, από τα δικά του (m,D). Θα είναι λοιπόν για μας στο εξής ο ταλαντωτής (m,D), τα όρια στην παράστασή του (το μήκος σκηνής) τα καθορίζει πάντα ο κάθε κύριος … Ενεργειούλης και την έναρξή της εμείς οι θεατές!",
+        right: ``
+      }
+    ]
   },
   en: {
     act1Title:"Act I: Kinematics in... algebraic form",
@@ -392,6 +509,9 @@ const i18n = {
     actBreakTitle:"End of Act I",
     actBreakMsg:"The (m,D) continues. Are you ready for Act II?",
     act2Btn:"Start Act II",
+    foyerBreakTitle:"End of Act II",
+    foyerBreakMsg:"Do you want to move to the foyer for the discussion?",
+    foyerBreakBtn:"Go to foyer",
     thoughts: {
       t1:"The (m₁,D₁) was already in motion!",
       t2:"…at time t₀ = 0, when the curtain opened!",
@@ -429,7 +549,105 @@ const i18n = {
       a18:'So, if we assign this to the elastic cause as its own constant D, then everything clicks: the actor has his own fixed mass m₁, the elastic cause has its own fixed D₁. Thus, it’s explained why the actor, regardless of stage and producer, “stubbornly” keeps the same period! Relation (6’) D = mω² tells us that if m and D are fixed, then ω of the actor is fixed too!',
       a19:'…hmm, so it’s justified that the protagonist–oscillator (=actor + elastic cause) is named (m,D)!',
       a20:'…and (6) – don’t forget! – becomes ΣF = −D·x (7)!'
-    }
+    },
+    foyer: [
+      {
+        left: "Spectator 1: Relations (1), (2), (3) and (5) help us “predict” the position, velocity, acceleration and the total force acting at every instant on (m₁ ,D₁) without needing to go back inside for the continuation of the play!",
+        right: `(1) x(t)=A·sin(ωt+φ₀)
+(2) v(t)=ωA·cos(ωt+φ₀)
+(3) a(t)=−ω²A·sin(ωt+φ₀)
+(5) ΣF=−m·ω²A·sin(ωt+φ₀)`
+      },
+      {
+        left: "Spectator 2: But (3)’ and (6)",
+        right: `(3)’ a(x)=−ω²·x
+(6)  ΣF=−m·ω²·x`
+      },
+      {
+        left: "Spectator 2: however they help us “predict” the acceleration and the total force acting, as long as we know at which point of the stage (m₁ ,D₁) is located, without us having to remain spectators, of course!",
+        right: ``
+      },
+      {
+        left: `Spectator 3: So then!
+1. We realise, my friends, that for the moment we cannot really use (2) for the velocity and its relation with the position of (m₁ ,D₁).
+2. I think that what we saw generalises to any protagonist (m,D) in a similar S.H.M. play.
+3. As people who know a bit of algebra, and with a bit of “algebraic curiosity”, here is what we can do (and in general, referring now to an arbitrary (m,D)) to fill in gap 1:
+✓ We solve (1) for sin(ωt+φ₀) and square. We do the same with (2) for cos(ωt+φ₀) and square. Then we add the two equations member by member.`,
+        right: `x=A·sin(ωt+φ₀)  (1)
+v=ωA·cos(ωt+φ₀) (2)
+
+sin(ωt+φ₀)=x/A
+cos(ωt+φ₀)=v/(ωA)
+
+⇒ sin²(ωt+φ₀)+cos²(ωt+φ₀)=1
+⇒ 1 = x²/A² + v²/(ω²A²)  (8)`
+      },
+      {
+        left: `Spectator 3:
+✓ Here is the relation we were missing. Now we can also “predict” the velocity when we know the position of the protagonist on stage, and
+✓ We can extract (by similar thinking) a relation between acceleration and velocity! That is, we solve (3) for sin(ωt+φ₀) and square. We do the same with (2) for cos(ωt+φ₀) and square. Then we add member by member.`,
+        right: `a=−ω²A·sin(ωt+φ₀)  (3)
+v= ωA·cos(ωt+φ₀)    (2)
+
+sin(ωt+φ₀)= −a/(ω²A)
+cos(ωt+φ₀)=  v/(ωA)
+
+⇒ 1 = a²/(ω⁴A²) + v²/(ω²A²)  (9)  bingo!`
+      },
+      {
+        left: "Spectator 4: It would be better if we rewrote (8) in the form v= … Look:",
+        right: `(8) 1 = x²/A² + v²/(ω²A²)
+⇔ ω²A² = ω²x² + v²`
+      },
+      { left: "Spectator 1: Wait, wait a second…", right: `` },
+      {
+        left: "Spectator 4: let me finish… we solve it for v",
+        right: `⇔ v = ±ω·√(A²−x²)  (10)`
+      },
+      {
+        left: "Spectator 4: and we can do the same with (9)",
+        right: `(9) 1 = a²/(ω⁴A²) + v²/(ω²A²)
+⇔ a = ±ω·√(ω²A² − v²)  (11)`
+      },
+      {
+        left: "Spectator 4: hmm, and also (if we think that ωA=v_max)",
+        right: `(11) ⇔ a = ±ω·√((ωA)² − v²)
+⇔ a = ±ω·√(v_max² − v²)  (12)`
+      },
+      { left: "Spectator 4: that’s all from me… the floor goes to Spectator 1!", right: `` },
+      {
+        left: "Spectator 1: The point where I stopped was ω²A² = ω²x² + v². So I’m thinking: if we multiply both sides by ½m, look! the relation becomes:",
+        right: `½ m ω²A² = ½ m ω²x² + ½ m v²  (12)`
+      },
+      {
+        left: `Spectator 1: But:
+• The factor ½ m v² is the kinetic energy K of the protagonist (m,D).
+• This term is added to ½ m ω² x² which must clearly also be an energy term! (we only add like quantities). But this term depends on the position of the protagonist, so it must represent the potential energy U (due to position) of the protagonist (m,D)!
+• Thus the term ½ m ω² A² on the left
+  – First, as the sum K+U, cannot be anything other than the mechanical energy E_M of the protagonist (m,D).
+  – Second, comparing with U=½ m ω² x² (and observing the maximum displacement), ½ m ω² A² is also the maximum potential energy U_max of (m,D).
+  – Third, as a constant amount of mechanical energy, (12) leads us to the “M.E.C.” (Mechanical Energy Conservation) of the oscillating protagonist (m,D)!`,
+        right: `(A.D.M.E.T. of the oscillator)`
+      },
+      {
+        left: "Spectator 5: So we now also know the budget of the play! Which means, I’d say, that we have no real reason to go back into the hall to watch the 3rd act about energy. We’ve basically seen this play already!",
+        right: ``
+      },
+      {
+        left: "Spectator 4: Of course! Although our “algebraic curiosity” also leads us to a more compact expression of this Mechanical Energy Conservation of the oscillator (m,D). We mentioned earlier this constant D=mω² which we also used in relation (7).",
+        right: `Newton’s law:
+ΣF = −D·x  (7)`
+      },
+      {
+        left: "Spectator 4: If we use this in (12), that equation becomes:",
+        right: `½ D A² = ½ D x² + ½ m v²  (13)
+(M.E.C. of (m,D))`
+      },
+      {
+        left: "Spectator 2: Let’s leave, I’d say, but with a kind of aftertaste from tonight’s performance of (m₁,D₁), summing up: every protagonist oscillator (m,D) is completely characterised by its “body type” (m) and its “time stubbornness” (ω), or equivalently – and let’s keep this – by its own (m,D). So from now on the oscillator (m,D) is our protagonist; the limits of its performance (the length of the stage) are always set by Mr Energioulis, and the start of it is set by us, the spectators!",
+        right: ``
+      }
+    ]
   }
 };
 let LANG='gr', firstLawShown=false;
@@ -449,6 +667,9 @@ function setLang(lang){
   document.getElementById('actBreakTitle').textContent=i18n[lang].actBreakTitle;
   document.getElementById('actBreakMsg').textContent=i18n[lang].actBreakMsg;
   document.getElementById('btnAct2').textContent=i18n[lang].act2Btn;
+  document.getElementById('foyerBreakTitle').textContent=i18n[lang].foyerBreakTitle;
+  document.getElementById('foyerBreakMsg').textContent=i18n[lang].foyerBreakMsg;
+  document.getElementById('btnFoyerGo').textContent=i18n[lang].foyerBreakBtn;
   if(firstLawShown) document.getElementById('lawsTitle').textContent=i18n[lang].lawsTitle;
 }
 langSwitch.addEventListener('click',(e)=>{
@@ -501,6 +722,8 @@ const lawCharts=document.getElementById('lawCharts');
 const measureBox=document.getElementById('measureBox');
 const measureTBody=document.getElementById('measureTBody');
 const actBreak=document.getElementById('actBreak');
+const foyerBreak=document.getElementById('foyerBreak');
+const btnFoyerGo=document.getElementById('btnFoyerGo');
 const curtainUpper=document.querySelector('.curtain-upper');
 
 /* ====== ΑΣΦΑΛΗ STUBS ΦΟΥΑΓΙΕ ====== */
@@ -836,6 +1059,7 @@ function resetShow(){
   markerEl.style.opacity='0';
   bubbleEl.classList.remove('active','checked','closing'); bubbleEl.style.display='none'; bubbleEl.style.opacity='0';
   actBreak.style.display='none';
+  foyerBreak.style.display='none';
   settingsPanel.style.display='none';
   measureTBody.innerHTML='';
   lawsBody.innerHTML=''; lawsPane.style.display='none';
@@ -1094,8 +1318,6 @@ function typeWriter(el, text, speed=12){
     if(i<=src.length) setTimeout(tick, speed);
   })();
 }
-
-/* bubbles Φουαγιέ πάνω από θεατές */
 function showSpeakerChip(viewerId){
   const vInfo = FOYER_VIEWERS.find(x=>x.id===viewerId);
   const anchor = document.querySelector(`.viewer[data-idx="${viewerId-1}"]`);
@@ -1123,6 +1345,17 @@ function syncScroll(from,to){
 boardLeft.addEventListener('scroll', ()=>syncScroll(boardLeft,boardRight));
 boardRight.addEventListener('scroll',()=>syncScroll(boardRight,boardLeft));
 
+function isFormulaBlock(text){
+  const s = String(text||'').trim();
+  if(!s) return false;
+  if(/^\(\d+\)/.test(s)) return true;
+  if(/[ΑA]\.[ΔD]\.[ΜM]\.[ΕE]\.[ΤT]/.test(s)) return true; // Α.Δ.Μ.Ε.Τ. / A.D.M.E.T.
+  if(/M\.E\.C/.test(s)) return true;
+  if(/[⇒⇔]/.test(s)) return true;
+  if(/Νόμος του Νεύτωνα/i.test(s) || /Newton’s law/i.test(s)) return true;
+  return false;
+}
+
 /* Εισαγωγή σειράς */
 function addRow(leftText, rightText, viewer){
   const viewerInfo = FOYER_VIEWERS.find(v=>v.id===viewer) || FOYER_VIEWERS[0];
@@ -1130,17 +1363,23 @@ function addRow(leftText, rightText, viewer){
   const bgRight = tint(viewerInfo.color, 0.16);
 
   const l = document.createElement('div'); l.className='cell left sync-row';
-  l.innerHTML = leftText;
+  const r = document.createElement('div'); r.className='cell right sync-row';
+
   l.style.background = bgLeft;
   l.style.borderLeft = `4px solid ${tint(viewerInfo.color,0.85)}`;
 
-  const r = document.createElement('div'); r.className='cell right sync-row';
   r.style.background = bgRight;
   r.style.borderLeft = `4px solid ${tint(viewerInfo.color,0.55)}`;
+
+  if (isFormulaBlock(leftText) || isFormulaBlock(rightText)){
+    l.classList.add('formula');
+    r.classList.add('formula');
+  }
 
   boardRight.appendChild(r);
   boardLeft.appendChild(l);
 
+  typeWriter(l, leftText, 10);
   typeWriter(r, rightText, 10);
 
   requestAnimationFrame(()=>{
@@ -1158,10 +1397,14 @@ function addRow(leftText, rightText, viewer){
 let foyerIdx=0, foyerAuto=true, foyerTimer=null;
 function foyerStep(){
   if(foyerIdx>=FOYER_DATA.length){ foyerAuto=false; return; }
-  const it = FOYER_DATA[foyerIdx++];
-  addRow(it.left, it.right, it.v);
+  const it = FOYER_DATA[foyerIdx];
+  const texts = (i18n[LANG].foyer && i18n[LANG].foyer[foyerIdx])
+    ? i18n[LANG].foyer[foyerIdx]
+    : { left: it.left || '', right: it.right || '' };
+  foyerIdx++;
+  addRow(texts.left, texts.right, it.v);
   if(foyerAuto){
-    const len = (String(it.left).length + String(it.right).length);
+    const len = (String(texts.left).length + String(texts.right).length);
     const delay = Math.min(12000, Math.max(2500, 45*len/4));
     foyerTimer = setTimeout(foyerStep, delay);
   }
@@ -1186,6 +1429,10 @@ function foyerClose(silent=false){
   foyer.style.display='none';
 }
 btnFoyer.addEventListener('click', ()=>foyerOpen(true));
+btnFoyerGo.addEventListener('click', ()=>{
+  foyerBreak.style.display='none';
+  foyerOpen(true);
+});
 
 /* ====== ΠΡΑΞΗ 2 (ghost παραλληλισμός) ====== */
 (function(){
@@ -1300,8 +1547,6 @@ btnFoyer.addEventListener('click', ()=>foyerOpen(true));
       document.getElementById('sbLineC').textContent = i18n[LANG].sbC2;
       document.getElementById('sbLineD').textContent = i18n[LANG].sbD2;
 
-      addLaw('x=Αημ(ωt+φ0) (1)');
-
       for(const step of seq){
         if(step.law){ addLaw(step.law); await new Promise(r=>setTimeout(r,220)); continue; }
         if(step.gStart) startGhost();
@@ -1315,7 +1560,16 @@ btnFoyer.addEventListener('click', ()=>foyerOpen(true));
       await new Promise(r=>setTimeout(r,1600));
       curtainUpper.classList.remove('slow-close');
 
-      setTimeout(()=>foyerOpen(true), 200);
+      const cuRect = curtainUpper.getBoundingClientRect();
+      const sRect = stage.getBoundingClientRect();
+      const centralLeftPx = sRect.left + stage.clientWidth*0.18;
+      const centralWidthPx = stage.clientWidth*0.64;
+      foyerBreak.style.left   = (centralLeftPx - sRect.left) + 'px';
+      foyerBreak.style.top    = (cuRect.top  - sRect.top ) + 'px';
+      foyerBreak.style.width  = centralWidthPx + 'px';
+      foyerBreak.style.height = cuRect.height + 'px';
+      foyerBreak.style.display='flex';
+
       finished=true;
     }catch(e){
       console.error('Act2 error:', e);
@@ -1332,7 +1586,7 @@ const ro=new ResizeObserver(()=>{ positionRightPanel(); if(uXT){ drawXTChart(); 
 ro.observe(stage);
 
 (function(){
-  const must={stage,actor,springEl,startBtn,clockEl,rulerEl,markerEl,btnPause,btnSlow,btnPlay,btnSettings,btnReset,settingsPanel,xtChart,paramsBoxEl,lawsPane,lawCharts,measureBox,actBreak,spotlight,curtainUpper};
+  const must={stage,actor,springEl,startBtn,clockEl,rulerEl,markerEl,btnPause,btnSlow,btnPlay,btnSettings,btnReset,settingsPanel,xtChart,paramsBoxEl,lawsPane,lawCharts,measureBox,actBreak,spotlight,curtainUpper,foyerBreak,btnFoyerGo};
   const miss=Object.entries(must).filter(([k,v])=>!v).map(([k])=>k);
   if(miss.length) console.error('Λείπουν στοιχεία:', miss.join(', '));
 })();
