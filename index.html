@@ -115,12 +115,14 @@
     min-width:120px;
     text-align:center;
     color:#fff;
-    font-weight:700;
+    font-weight:800;
     font-size:13px;
-    padding:6px 10px;
+    padding:6px 12px;
     border-radius:999px;
-    border:1px solid rgba(255,255,255,.35);
-    box-shadow:0 6px 12px rgba(0,0,0,.35);
+    border:2px solid rgba(255,255,255,.65);
+    box-shadow:0 6px 14px rgba(0,0,0,.5);
+    letter-spacing:0.03em;
+    text-shadow:0 1px 2px rgba(0,0,0,.7);
   }
 
   /* Κουμπιά */
@@ -165,7 +167,6 @@
   .cell.formula{
     color:#fffde7;
     border-left-width:6px!important;
-    border-left-color:rgba(255,255,255,0.9)!important;
     font-weight:600;
     box-shadow:0 0 0 1px rgba(0,0,0,0.35) inset;
   }
@@ -969,14 +970,27 @@ class BubbleScheduler {
     const vRect=v.getBoundingClientRect();
     const W=stage.clientWidth;
     const xL=W*0.18, xR=W*0.82, pad=12;
-    this.el.style.display='block'; this.el.style.opacity='0'; this.el.style.left='0px'; this.el.style.top='0px';
-    const bw=this.el.offsetWidth||320;
+
+    // Προετοιμασία bubble για σωστό width
+    this.el.style.display='block';
+    this.el.style.opacity='0';
+    this.el.style.left='0px';
+    this.el.style.top='0px';
+
+    const bw=this.el.offsetWidth || 320;
     const vCenter=(vRect.left+vRect.width/2)-sRect.left;
+    const vMidY = (vRect.top + vRect.bottom)/2 - sRect.top;
+
     const side = (vCenter < W/2) ? 1 : -1; // αριστεροί → κείμενο δεξιά, δεξιοί → κείμενο αριστερά
-    let leftPx = vCenter + side*(160 + (xShift||0)) - bw/2;
-    leftPx=Math.max(xL+pad, Math.min(leftPx, xR-pad-bw));
-    const topPx=Math.max(40,(vRect.top-sRect.top)- (lift||140));
-    this.el.style.left=leftPx+'px'; this.el.style.top=topPx+'px';
+    const horizGap = (vRect.width/2) + 170 + (xShift || 0);
+
+    let leftPx = vCenter + side*horizGap - bw/2;
+    leftPx = Math.max(xL+pad, Math.min(leftPx, xR-pad-bw));
+
+    const topPx = Math.max(40, vMidY - 40); // περίπου στο ύψος του κεφαλιού, όχι από πάνω του
+
+    this.el.style.left = leftPx + 'px';
+    this.el.style.top  = topPx + 'px';
   }
   showOnce({viewer,text,lift,xShift}){
     return new Promise(resolve=>{
@@ -1465,7 +1479,7 @@ function showSpeakerChip(viewerId){
   const aRect = anchor.getBoundingClientRect();
   fbubble.textContent = vInfo.name;
   fbubble.style.backgroundColor = tint(vInfo.color,0.85);
-  fbubble.style.borderColor     = 'rgba(255,255,255,.35)';
+  fbubble.style.borderColor     = 'rgba(255,255,255,.85)';
   const centerX = (aRect.left + aRect.width/2) - sRect.left;
   const topPx   = Math.max(10, (aRect.top - sRect.top) - 110);
   fbubble.style.left = centerX + 'px';
