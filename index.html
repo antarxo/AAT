@@ -92,16 +92,35 @@
   /* Bubbles Πράξεων (Act I/II) */
   @keyframes popIn{0%{transform:scale(.9);opacity:0}60%{transform:scale(1.04);opacity:1}100%{transform:scale(1)}}
   .thought-bubble{
-    position:absolute;max-width:420px;background:rgba(255,255,255,.82);color:#000;
+    position:absolute;max-width:420px;background:rgba(255,255,255,.92);color:#000;
     font-size:15px;line-height:1.45;padding:10px 12px 12px;border:2px solid transparent;border-radius:10px;
     border-image:repeating-linear-gradient(90deg, rgba(0,0,0,.6) 0 6px, transparent 6px 10px, rgba(0,0,0,.6) 10px 12px, transparent 12px 16px) 1;
     box-shadow:0 6px 12px rgba(0,0,0,.4);z-index:750;pointer-events:none;opacity:0;display:none;transition:opacity .25s ease, transform .25s ease
   }
   .thought-bubble.active{opacity:1;transform:translateY(-2px);animation:popIn .25s ease}
   .thought-bubble.closing{opacity:0}
-  .thought-bubble .tail{position:absolute;left:50%;bottom:-10px;transform:translateX(-50%);width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-top:10px solid rgba(255,255,255,.82);filter:drop-shadow(0 2px 2px rgba(0,0,0,.4))}
+  .thought-bubble .tail{display:none;} /* χωρίς βελάκι στις Πράξεις */
   .thought-bubble .checkmark{position:absolute;top:-8px;right:-8px;background:#2ecc71;color:#fff;font-size:11px;line-height:1;border-radius:50%;border:1px solid rgba(0,0,0,.4);width:18px;height:18px;display:none;align-items:center;justify-content:center;font-family:system-ui,sans-serif;font-weight:600}
   .thought-bubble.checked .checkmark{display:flex}
+
+  .thought-bubble .text{word-wrap:break-word}
+
+  /* Bubble-ετικέτα θεατή για Πράξη 1 & 2 */
+  .act-bubble{
+    position:absolute;
+    z-index:755;
+    display:none;
+    pointer-events:none;
+    min-width:110px;
+    text-align:center;
+    color:#fff;
+    font-weight:700;
+    font-size:13px;
+    padding:6px 10px;
+    border-radius:999px;
+    border:1px solid rgba(255,255,255,.35);
+    box-shadow:0 6px 12px rgba(0,0,0,.35);
+  }
 
   /* Κουμπιά */
   .controls{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.2);border-radius:8px;padding:6px 8px;display:flex;gap:8px;z-index:300}
@@ -229,8 +248,10 @@
     <div class="ruler" id="ruler"></div>
     <div class="marker" id="marker"><div class="marker-line"></div><div class="marker-tip"></div></div>
 
-    <!-- Bubble Act I/II -->
+    <!-- Bubble Act I/II κείμενο -->
     <div class="thought-bubble" id="bubble0"><div class="text"></div><div class="checkmark">✓</div><div class="tail"></div></div>
+    <!-- Bubble-ετικέτα πάνω από θεατή -->
+    <div class="act-bubble" id="actBubble">ΘΕΑΤΗΣ 1</div>
 
     <!-- Κοντρόλς -->
     <div class="controls" id="controls">
@@ -700,6 +721,7 @@ const slowHint=document.getElementById('slowHint');
 const rulerEl=document.getElementById('ruler');
 const markerEl=document.getElementById('marker');
 const bubbleEl=document.getElementById('bubble0');
+const actBubble=document.getElementById('actBubble');
 const btnPause=document.getElementById('btnPause');
 const btnSlow=document.getElementById('btnSlow');
 const btnPlay=document.getElementById('btnPlay');
@@ -890,6 +912,14 @@ function typeWriterHTML(el, html, speed, done){
       }
     }
     i++;
+    try{
+      // κρατάμε πάντα το τέλος ορατό
+      const panelParent = el.closest('.thought-bubble');
+      if(panelParent){
+        const st = panelParent.offsetTop + panelParent.offsetHeight;
+        // όχι scrolling, απλά αφήνουμε το stage όπως είναι
+      }
+    }catch(e){}
     if(i<=totalChars){
       setTimeout(tick, speed);
     }else{
@@ -898,9 +928,22 @@ function typeWriterHTML(el, html, speed, done){
   })();
 }
 
+/* ====== Βοηθητικό για χρώματα ====== */
+function tint(hex, alpha){
+  const c = hex.replace('#','');
+  const r=parseInt(c.slice(0,2),16), g=parseInt(c.slice(2,4),16), b=parseInt(c.slice(4,6),16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
 /* ====== Bubbles (ενιαίος scheduler) ====== */
 class BubbleScheduler {
-  constructor(el){ this.el=el; this._queue=Promise.resolve(); this._currentCancel=null; this._ALLOWED=new Set(['b','strong','i','em','sub','sup','br','span']); }
+  constructor(panelEl, labelEl){
+    this.el=panelEl;
+    this.labelEl=labelEl;
+    this._queue=Promise.resolve();
+    this._currentCancel=null;
+    this._ALLOWED=new Set(['b','strong','i','em','sub','sup','br','span']);
+  }
   sanitize(html){
     const wrap=document.createElement('div'); wrap.innerHTML=html||'';
     wrap.querySelectorAll('*').forEach(n=>{
@@ -914,16 +957,40 @@ class BubbleScheduler {
     const s=String(text||''); const len=s.length; const BASE=0.8, PER=0.055, MIN=2.0, MAX=10.0;
     return Math.max(MIN, Math.min(MAX, BASE+PER*len)) * (bubbleDurationSec/3.0);
   }
-  placeAtViewer(vIdx, lift=110, xShift=0){
-    const v=document.querySelector(`.viewer[data-idx="${vIdx}"]`); if(!v) return;
-    const sRect=stage.getBoundingClientRect(), vRect=v.getBoundingClientRect();
-    const W=stage.clientWidth, xL=W*0.18, xR=W*0.82, pad=12;
+  showSpeaker(viewer){
+    if(!this.labelEl) return;
+    const v=document.querySelector(`.viewer[data-idx="${viewer}"]`);
+    if(!v){ this.labelEl.style.display='none'; return; }
+    const sRect=stage.getBoundingClientRect();
+    const vRect=v.getBoundingClientRect();
+    const centerX=(vRect.left+vRect.width/2)-sRect.left;
+    const topPx=Math.max(10,(vRect.top-sRect.top)-110);
+    const nameGr=`ΘΕΑΤΗΣ ${viewer+1}`;
+    const nameEn=`SPECTATOR ${viewer+1}`;
+    this.labelEl.textContent=(LANG==='gr'?nameGr:nameEn);
+    // προσπάθεια για ίδιο χρώμα με FOYER_VIEWERS αν υπάρχει
+    if(typeof FOYER_VIEWERS!=='undefined'){
+      const fv = FOYER_VIEWERS[viewer] || FOYER_VIEWERS[0];
+      this.labelEl.style.backgroundColor=tint(fv.color,0.9);
+    }
+    this.labelEl.style.left=centerX+'px';
+    this.labelEl.style.top=topPx+'px';
+    this.labelEl.style.transform='translateX(-50%)';
+    this.labelEl.style.display='block';
+  }
+  placePanelNearViewer(viewer,lift=140,xShift=0){
+    const v=document.querySelector(`.viewer[data-idx="${viewer}"]`); if(!v) return;
+    const sRect=stage.getBoundingClientRect();
+    const vRect=v.getBoundingClientRect();
+    const W=stage.clientWidth;
+    const xL=W*0.18, xR=W*0.82, pad=12;
     this.el.style.display='block'; this.el.style.opacity='0'; this.el.style.left='0px'; this.el.style.top='0px';
-    const bw=this.el.offsetWidth||280;
-    const vCenter=(vRect.left+vRect.width/2) - sRect.left;
-    let leftPx=vCenter+(xShift||0)-bw/2;
+    const bw=this.el.offsetWidth||320;
+    const vCenter=(vRect.left+vRect.width/2)-sRect.left;
+    const side = (vCenter < W/2) ? 1 : -1; // αριστεροί → κείμενο δεξιά, δεξιοί → κείμενο αριστερά
+    let leftPx = vCenter + side*(140 + (xShift||0)) - bw/2;
     leftPx=Math.max(xL+pad, Math.min(leftPx, xR-pad-bw));
-    const topPx=Math.max(10, (vRect.top-sRect.top)-(typeof lift==='number'?lift:110));
+    const topPx=Math.max(40,(vRect.top-sRect.top)- (lift||140));
     this.el.style.left=leftPx+'px'; this.el.style.top=topPx+'px';
   }
   showOnce({viewer,text,lift,xShift}){
@@ -936,7 +1003,11 @@ class BubbleScheduler {
       const baseMs = bubbleDurationSec*1000;
       const speed = Math.max(15, Math.min(80, Math.round(baseMs/totalChars)));
 
-      this.placeAtViewer(viewer,lift,xShift);
+      // μικρό bubble με όνομα θεατή
+      this.showSpeaker(viewer);
+      // πάνελ κειμένου δίπλα
+      this.placePanelNearViewer(viewer,lift,xShift);
+
       this.el.classList.add('active');
       this.el.style.opacity='1';
       isBubbleActive=true;
@@ -950,7 +1021,9 @@ class BubbleScheduler {
         setTimeout(()=>{
           this.el.classList.remove('active','closing');
           this.el.style.display='none'; this.el.style.opacity='0';
-          isBubbleActive=false; resolve();
+          isBubbleActive=false;
+          if(this.labelEl) this.labelEl.style.display='none';
+          resolve();
         },220);
       };
       this._currentCancel=cancel;
@@ -961,13 +1034,18 @@ class BubbleScheduler {
       });
     });
   }
-  say(viewer,text,lift=110,xShift=0){
+  say(viewer,text,lift=140,xShift=0){
     this._queue=this._queue.then(()=>this.showOnce({viewer,text,lift,xShift}));
     return this._queue;
   }
-  clear(){ if(this._currentCancel){ try{ this._currentCancel(); }catch{} this._currentCancel=null; this._queue=Promise.resolve(); } }
+  clear(){
+    if(this._currentCancel){ try{ this._currentCancel(); }catch{} this._currentCancel=null; }
+    this._queue=Promise.resolve();
+    this.el.style.display='none';
+    if(this.labelEl) this.labelEl.style.display='none';
+  }
 }
-const BUBBLE = new BubbleScheduler(bubbleEl);
+const BUBBLE = new BubbleScheduler(bubbleEl, actBubble);
 
 /* ====== ΝΟΜΟΙ & ΜΙΝΙ-ΓΡΑΦΙΚΑ ====== */
 let lawCount=0;
@@ -1110,6 +1188,7 @@ function resetShow(){
   paramsBoxEl.style.display='none';
   markerEl.style.opacity='0';
   bubbleEl.classList.remove('active','checked','closing'); bubbleEl.style.display='none'; bubbleEl.style.opacity='0';
+  actBubble.style.display='none';
   actBreak.style.display='none';
   foyerBreak.style.display='none';
   settingsPanel.style.display='none';
@@ -1356,19 +1435,12 @@ const boardRight = document.getElementById('boardRight');
 const foyer      = document.getElementById('foyer');
 const fbubble    = document.getElementById('foyerBubble');
 
-function tint(hex, alpha){
-  const c = hex.replace('#','');
-  const r=parseInt(c.slice(0,2),16), g=parseInt(c.slice(2,4),16), b=parseInt(c.slice(4,6),16);
-  return `rgba(${r},${g},${b},${alpha})`;
-}
-
 /* typewriter ΜΕ scroll προς τα κάτω */
 function typeWriter(el, text, speed=12, done){
   el.innerHTML=''; let i=0;
   const src = String(text||'').replaceAll('sqrt(','√(');
   (function tick(){
     el.innerHTML = src.slice(0,i).replaceAll('\n','<br>');
-    // πάντα να φαίνεται η τελευταία γραμμή
     try{
       boardLeft.scrollTop  = boardLeft.scrollHeight;
       boardRight.scrollTop = boardRight.scrollHeight;
