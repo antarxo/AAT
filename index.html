@@ -105,13 +105,14 @@
 
   .thought-bubble .text{word-wrap:break-word}
 
-  /* Bubble-ετικέτα θεατή για Πράξη 1 & 2 */
-  .act-bubble{
+  /* Ενιαία bubbles θεατών (Πράξεις + Φουαγιέ) */
+  .act-bubble,
+  .foyer-bubble{
     position:absolute;
-    z-index:755;
+    z-index:760;
     display:none;
     pointer-events:none;
-    min-width:110px;
+    min-width:120px;
     text-align:center;
     color:#fff;
     font-weight:700;
@@ -173,7 +174,7 @@
   }
   .sync-row{display:block}
 
-  /* Foyer bubbles: πάνω από τα κεφάλια θεατών */
+  /* Foyer button */
   .btn-foyer{
     position:absolute;
     bottom:12px;
@@ -185,13 +186,6 @@
     border-radius:8px;
     padding:8px 12px;
     cursor:pointer;
-  }
-
-  .foyer-bubble{
-    position:absolute; z-index:760; display:none; pointer-events:none;
-    min-width:120px; text-align:center; color:#fff; font-weight:700; font-size:13px;
-    padding:6px 10px; border-radius:999px; border:1px solid rgba(255,255,255,.35);
-    box-shadow:0 6px 12px rgba(0,0,0,.35)
   }
 </style>
 </head>
@@ -250,7 +244,7 @@
 
     <!-- Bubble Act I/II κείμενο -->
     <div class="thought-bubble" id="bubble0"><div class="text"></div><div class="checkmark">✓</div><div class="tail"></div></div>
-    <!-- Bubble-ετικέτα πάνω από θεατή -->
+    <!-- Bubble-ετικέτα πάνω από θεατή (Πράξεις) -->
     <div class="act-bubble" id="actBubble">ΘΕΑΤΗΣ 1</div>
 
     <!-- Κοντρόλς -->
@@ -912,14 +906,6 @@ function typeWriterHTML(el, html, speed, done){
       }
     }
     i++;
-    try{
-      // κρατάμε πάντα το τέλος ορατό
-      const panelParent = el.closest('.thought-bubble');
-      if(panelParent){
-        const st = panelParent.offsetTop + panelParent.offsetHeight;
-        // όχι scrolling, απλά αφήνουμε το stage όπως είναι
-      }
-    }catch(e){}
     if(i<=totalChars){
       setTimeout(tick, speed);
     }else{
@@ -968,7 +954,6 @@ class BubbleScheduler {
     const nameGr=`ΘΕΑΤΗΣ ${viewer+1}`;
     const nameEn=`SPECTATOR ${viewer+1}`;
     this.labelEl.textContent=(LANG==='gr'?nameGr:nameEn);
-    // προσπάθεια για ίδιο χρώμα με FOYER_VIEWERS αν υπάρχει
     if(typeof FOYER_VIEWERS!=='undefined'){
       const fv = FOYER_VIEWERS[viewer] || FOYER_VIEWERS[0];
       this.labelEl.style.backgroundColor=tint(fv.color,0.9);
@@ -988,7 +973,7 @@ class BubbleScheduler {
     const bw=this.el.offsetWidth||320;
     const vCenter=(vRect.left+vRect.width/2)-sRect.left;
     const side = (vCenter < W/2) ? 1 : -1; // αριστεροί → κείμενο δεξιά, δεξιοί → κείμενο αριστερά
-    let leftPx = vCenter + side*(140 + (xShift||0)) - bw/2;
+    let leftPx = vCenter + side*(160 + (xShift||0)) - bw/2;
     leftPx=Math.max(xL+pad, Math.min(leftPx, xR-pad-bw));
     const topPx=Math.max(40,(vRect.top-sRect.top)- (lift||140));
     this.el.style.left=leftPx+'px'; this.el.style.top=topPx+'px';
@@ -1003,35 +988,53 @@ class BubbleScheduler {
       const baseMs = bubbleDurationSec*1000;
       const speed = Math.max(15, Math.min(80, Math.round(baseMs/totalChars)));
 
-      // μικρό bubble με όνομα θεατή
-      this.showSpeaker(viewer);
-      // πάνελ κειμένου δίπλα
-      this.placePanelNearViewer(viewer,lift,xShift);
-
-      this.el.classList.add('active');
-      this.el.style.opacity='1';
-      isBubbleActive=true;
-      setMode('slow');
-
       let done=false;
+      let started=false;
+
+      // Bubble θεατή πρώτα (πάνω από τον θεατή)
+      this.showSpeaker(viewer);
+
+      const timerId = setTimeout(()=>{
+        if(done) return;
+        started=true;
+
+        // Σκέψη (thought bubble) λίγο μετά, στο πλάι του θεατή
+        this.placePanelNearViewer(viewer,lift,xShift);
+
+        this.el.classList.add('active');
+        this.el.style.opacity='1';
+        isBubbleActive=true;
+        setMode('slow');
+
+        typeWriterHTML(textEl, sanitized, speed, ()=>{
+          const extraPause = 500;
+          setTimeout(()=>cancel(), extraPause);
+        });
+      }, 220);
+
       const cancel=()=>{
         if(done) return;
         done=true;
+        clearTimeout(timerId);
+        if(!started){
+          // Δεν πρόλαβε να ανοίξει το thought bubble, κλείνουμε μόνο το label
+          if(this.labelEl) this.labelEl.style.display='none';
+          isBubbleActive=false;
+          setMode('run');
+          resolve();
+          return;
+        }
         this.el.classList.add('closing');
         setTimeout(()=>{
           this.el.classList.remove('active','closing');
           this.el.style.display='none'; this.el.style.opacity='0';
           isBubbleActive=false;
           if(this.labelEl) this.labelEl.style.display='none';
+          setMode('run');
           resolve();
         },220);
       };
       this._currentCancel=cancel;
-
-      typeWriterHTML(textEl, sanitized, speed, ()=>{
-        const extraPause = 500;
-        setTimeout(cancel, extraPause);
-      });
     });
   }
   say(viewer,text,lift=140,xShift=0){
@@ -1468,7 +1471,7 @@ function showSpeakerChip(viewerId){
   fbubble.style.left = centerX + 'px';
   fbubble.style.top  = topPx + 'px';
   fbubble.style.transform = 'translateX(-50%)';
-  fbubble.style.display = 'block'; // μένει ορατό μέχρι να μιλήσει άλλος
+  fbubble.style.display = 'block';
 }
 
 /* Scroll sync */
@@ -1510,7 +1513,6 @@ function addRow(leftText, rightText, viewer, whenDone){
   r.style.background = bgRight;
   r.style.borderLeft = `4px solid ${tint(viewerInfo.color,0.55)}`;
 
-  // Σκούρο φόντο μόνο στη ΔΕΞΙΑ στήλη για σχέσεις/τύπους
   if (isFormulaBlock(rightText)){
     r.classList.add('formula');
   }
@@ -1533,10 +1535,8 @@ function addRow(leftText, rightText, viewer, whenDone){
 
   const rt = (rightText||'').trim();
 
-  // 1. γράφουμε πρώτα την άποψη αριστερά
   typeWriter(l, leftText, 10, ()=>{
     if(rt.length>0){
-      // 2. μετά το αλγεβρικό δεξιά
       typeWriter(r, rightText, 10, finalizeRow);
     }else{
       finalizeRow();
