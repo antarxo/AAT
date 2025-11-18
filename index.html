@@ -1085,9 +1085,27 @@ function positionLawCharts(){
   lawCharts.style.left= '2%';
   lawCharts.style.width= '16%';
 }
-function ensureVelocityChart(){ if(!vCan){ vCan = document.createElement('canvas'); lawCharts.appendChild(vCan); } sizeLawCanvas(vCan); }
-function ensureAccelerationChart(){ if(!aCan){ aCan = document.createElement('canvas'); lawCharts.appendChild(aCan); } sizeLawCanvas(aCan); }
-function ensureAxChart(){ if(!axCan){ axCan = document.createElement('canvas'); lawCharts.appendChild(axCan); }
+function ensureVelocityChart(){
+  if(!vCan){
+    vCan = document.createElement('canvas');
+    lawCharts.appendChild(vCan);
+  }
+  sizeLawCanvas(vCan);
+}
+function ensureAccelerationChart(){
+  if(!aCan){
+    aCan = document.createElement('canvas');
+    lawCharts.appendChild(aCan);
+  }
+  sizeLawCanvas(aCan);
+}
+function ensureAxChart(){
+  if(!axCan){
+    axCan = document.createElement('canvas');
+    lawCharts.appendChild(axCan);
+  }
+  sizeLawCanvas(axCan);
+}
 
 /* Παράμετροι A, ω, φ0 */
 function showCurtainParams(){
