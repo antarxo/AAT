@@ -1,0 +1,217 @@
+{
+  "act1": [
+    {
+      "id": "t1",
+      "text": "The (m₁,D₁) was already in motion!"
+    },
+    {
+      "id": "t2",
+      "text": "…at time t₀ = 0, when the curtain opened!"
+    },
+    {
+      "id": "t3",
+      "text": "…and the motion is straight-line and back-and-forth!"
+    },
+    {
+      "id": "t4",
+      "text": "…and repeating, periodic, so it's an oscillation!"
+    },
+    {
+      "id": "t5",
+      "text": "Could this be Simple Harmonic Motion?"
+    },
+    {
+      "id": "t6",
+      "text": "…if it is S.H.M., then the values we measure must satisfy x=A·sin(ωt+φ₀)!"
+    },
+    {
+      "id": "t7",
+      "text": "…if we draw an x–t graph, that will confirm it!"
+    },
+    {
+      "id": "t11",
+      "text": "…therefore the velocity is given by v=ωA·cos(ωt+φ₀)!"
+    },
+    {
+      "id": "t13",
+      "text": "…and the acceleration by a=−ω²A·sin(ωt+φ₀)!"
+    },
+    {
+      "id": "t15",
+      "text": "But the relation x=<b>A·sin(ωt+φ₀)</b> (1) is contained in (3), i.e. a=−ω²<b>A·sin(ωt+φ₀)=−ω²x</b>!"
+    },
+    {
+      "id": "t18",
+      "text": "Perfect! The full S.H.M. law set!"
+    }
+  ],
+  "act2": [
+    {
+      "id": "a1",
+      "text": "Whoa! The m₁D₁ is tied to a spring!"
+    },
+    {
+      "id": "a2",
+      "text": "This very m<sub>1</sub>D₁ I’m sure I’ve seen before with the same spring mechanism in another play, but with a different producer!"
+    },
+    {
+      "id": "a3",
+      "text": "...yes, and there again it moved with the same period, stubbornly, but with a larger amplitude A!"
+    },
+    {
+      "id": "a4",
+      "text": "A memory pops up: the same m₁D₁ on another stage, with different amplitude–different energy but a shape of the same kind."
+    },
+    {
+      "id": "a5",
+      "text": "Hmm… Maybe the true protagonist is the moving actor together with his tools!"
+    },
+    {
+      "id": "a6",
+      "text": "Now I think I understand why they don’t call him just m₁ but m₁,D₁…"
+    },
+    {
+      "id": "a7",
+      "text": "… m₁ is the actor’s mass, but the oscillator clearly means the combination of the actor (m₁) and the “elastic” force cause, which D₁ seems to refer to!"
+    },
+    {
+      "id": "a8",
+      "text": "…so m₁ and D₁ always go together as a package! Both together form the oscillator – the protagonist!"
+    },
+    {
+      "id": "a9",
+      "text": "…that is, every oscillator is characterized 1. by its mass and 2. by the elastic force–cause that time-regulates (T) its oscillation!"
+    },
+    {
+      "id": "a10",
+      "text": "…I’m starting to be convinced why its characteristic name is mD and not just m!..."
+    },
+    {
+      "id": "a11",
+      "text": "Therefore each oscillator’s peculiarity – its “stubbornness” in having a characteristic period T (and thus a characteristic f and ω) – is due 1. to its “body type” m and 2. to the elastic cause (which is probably encoded in the D of its name)!"
+    },
+    {
+      "id": "a12",
+      "text": "Whoa… come on, leave it, let’s move on…."
+    },
+    {
+      "id": "a13",
+      "text": "Let’s see how Newton’s 2nd law is written for the case of the oscillator!"
+    },
+    {
+      "id": "a14",
+      "text": "… ΣF = m·a in general, and therefore here, with the help of (3), ΣF = −mω²A·sin(ωt+φ₀) (5)!"
+    },
+    {
+      "id": "a15",
+      "text": "…and based on (4) it can also be written as ΣF = −mω²x (6)!"
+    },
+    {
+      "id": "a16",
+      "text": "But! Equation (6), look at it, contains two actor constants: the “body type” (m) and the “stubbornness” (ω)!"
+    },
+    {
+      "id": "a17",
+      "text": "Shall we merge these two constants into one and call it D = mω² (6’)? Does that make sense?"
+    },
+    {
+      "id": "a18",
+      "text": "So, if we assign this to the elastic cause as its own constant D, then everything clicks: the actor has his own fixed mass m₁, the elastic cause has its own fixed D₁. Thus, it’s explained why the actor, regardless of stage and producer, “stubbornly” keeps the same period! Relation (6’) D = mω² tells us that if m and D are fixed, then ω of the actor is fixed too!"
+    },
+    {
+      "id": "a19",
+      "text": "…hmm, so it’s justified that the protagonist–oscillator (=actor + elastic cause) is named (m,D)!"
+    },
+    {
+      "id": "a20",
+      "text": "…and (6) – don’t forget! – becomes ΣF = −D·x (7)!"
+    }
+  ],
+  "foyer": [
+    {
+      "viewer": 1,
+      "left": "Spectator 1: Relations (1), (2), (3) and (5) help us “predict” the position, velocity, acceleration and the total force acting at every instant on (m₁ ,D₁) without needing to go back inside for the continuation of the play!",
+      "right": "(1) x(t)=A·sin(ωt+φ₀)\n(2) v(t)=ωA·cos(ωt+φ₀)\n(3) a(t)=−ω²A·sin(ωt+φ₀)\n(5) ΣF=−m·ω²A·sin(ωt+φ₀)"
+    },
+    {
+      "viewer": 2,
+      "left": "Spectator 2: But (3)’ and (6)",
+      "right": "(3)’ a(x)=−ω²·x\n(6)  ΣF=−m·ω²·x"
+    },
+    {
+      "viewer": 2,
+      "left": "Spectator 2: however they help us “predict” the acceleration and the total force acting, as long as we know at which point of the stage (m₁ ,D₁) is located, without us having to remain spectators, of course!",
+      "right": ""
+    },
+    {
+      "viewer": 3,
+      "left": "Spectator 3: So then!\n1. We realise, my friends, that for the moment we cannot really use (2) for the velocity and its relation with the position of (m₁ ,D₁).\n2. I think that what we saw generalises to any protagonist (m,D) in a similar S.H.M. play.\n3. As people who know a bit of algebra, and with a bit of “algebraic curiosity”, here is what we can do (and in general, referring now to an arbitrary (m,D)) to fill in gap 1:\n✓ We solve (1) for sin(ωt+φ₀) and square. We do the same with (2) for cos(ωt+φ₀) and square. Then we add the two equations member by member.",
+      "right": "x=A·sin(ωt+φ₀)  (1)\nv=ωA·cos(ωt+φ₀) (2)\n\nsin(ωt+φ₀)=x/A\ncos(ωt+φ₀)=v/(ωA)\n\n⇒ sin²(ωt+φ₀)+cos²(ωt+φ₀)=1\n⇒ 1 = x²/A² + v²/(ω²A²)  (8)"
+    },
+    {
+      "viewer": 3,
+      "left": "Spectator 3:\n✓ Here is the relation we were missing. Now we can also “predict” the velocity when we know the position of the protagonist on stage, and\n✓ We can extract (by similar thinking) a relation between acceleration and velocity! That is, we solve (3) for sin(ωt+φ₀) and square. We do the same with (2) for cos(ωt+φ₀) and square. Then we add member by member.",
+      "right": "a=−ω²A·sin(ωt+φ₀)  (3)\nv= ωA·cos(ωt+φ₀)    (2)\n\nsin(ωt+φ₀)= −a/(ω²A)\ncos(ωt+φ₀)=  v/(ωA)\n\n⇒ 1 = a²/(ω⁴A²) + v²/(ω²A²)  (9)  bingo!"
+    },
+    {
+      "viewer": 4,
+      "left": "Spectator 4: It would be better if we rewrote (8) in the form v= … Look:",
+      "right": "(8) 1 = x²/A² + v²/(ω²A²)\n⇔ ω²A² = ω²x² + v²"
+    },
+    {
+      "viewer": 1,
+      "left": "Spectator 1: Wait, wait a second…",
+      "right": ""
+    },
+    {
+      "viewer": 4,
+      "left": "Spectator 4: let me finish… we solve it for v",
+      "right": "⇔ v = ±ω·√(A²−x²)  (10)"
+    },
+    {
+      "viewer": 4,
+      "left": "Spectator 4: and we can do the same with (9)",
+      "right": "(9) 1 = a²/(ω⁴A²) + v²/(ω²A²)\n⇔ a = ±ω·√(ω²A² − v²)  (11)"
+    },
+    {
+      "viewer": 4,
+      "left": "Spectator 4: hmm, and also (if we think that ωA=v_max)",
+      "right": "(11) ⇔ a = ±ω·√((ωA)² − v²)\n⇔ a = ±ω·√(v_max² − v²)  (12)"
+    },
+    {
+      "viewer": 4,
+      "left": "Spectator 4: that’s all from me… the floor goes to Spectator 1!",
+      "right": ""
+    },
+    {
+      "viewer": 1,
+      "left": "Spectator 1: The point where I stopped was ω²A² = ω²x² + v². So I’m thinking: if we multiply both sides by ½m, look! the relation becomes:",
+      "right": "½ m ω²A² = ½ m ω²x² + ½ m v²  (12)"
+    },
+    {
+      "viewer": 1,
+      "left": "Spectator 1: But:\n• The factor ½ m v² is the kinetic energy K of the protagonist (m,D).\n• This term is added to ½ m ω² x² which must clearly also be an energy term! (we only add like quantities). But this term depends on the position of the protagonist, so it must represent the potential energy U (due to position) of the protagonist (m,D)!\n• Thus the term ½ m ω² A² on the left\n  – First, as the sum K+U, cannot be anything other than the mechanical energy E_M of the protagonist (m,D).\n  – Second, comparing with U=½ m ω² x² (and observing the maximum displacement), ½ m ω² A² is also the maximum potential energy U_max of (m,D).\n  – Third, as a constant amount of mechanical energy, (12) leads us to the “M.E.C.” (Mechanical Energy Conservation) of the oscillating protagonist (m,D)!",
+      "right": "(A.D.M.E.T. of the oscillator)"
+    },
+    {
+      "viewer": 5,
+      "left": "Spectator 5: So we now also know the budget of the play! Which means, I’d say, that we have no real reason to go back into the hall to watch the 3rd act about energy. We’ve basically seen this play already!",
+      "right": ""
+    },
+    {
+      "viewer": 4,
+      "left": "Spectator 4: Of course! Although our “algebraic curiosity” also leads us to a more compact expression of this Mechanical Energy Conservation of the oscillator (m,D). We mentioned earlier this constant D=mω² which we also used in relation (7).",
+      "right": "Newton’s law:\nΣF = −D·x  (7)"
+    },
+    {
+      "viewer": 4,
+      "left": "Spectator 4: If we use this in (12), that equation becomes:",
+      "right": "½ D A² = ½ D x² + ½ m v²  (13)\n(M.E.C. of (m,D))"
+    },
+    {
+      "viewer": 2,
+      "left": "Spectator 2: Let’s leave, I’d say, but with a kind of aftertaste from tonight’s performance of (m₁,D₁), summing up: every protagonist oscillator (m,D) is completely characterised by its “body type” (m) and its “time stubbornness” (ω), or equivalently – and let’s keep this – by its own (m,D). So from now on the oscillator (m,D) is our protagonist; the limits of its performance (the length of the stage) are always set by Mr Energioulis, and the start of it is set by us, the spectators!",
+      "right": ""
+    }
+  ]
+}
