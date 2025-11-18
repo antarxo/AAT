@@ -1,0 +1,86 @@
+{
+  "act1": [
+    { "kind": "bubble",    "atT": 1.05, "viewer": 0, "key": "t1",  "yOffset": 120, "xShift": -40 },
+    { "kind": "bubble",    "atT": 1.15, "viewer": 1, "key": "t2",  "yOffset": 125, "xShift": -20 },
+    { "kind": "bubble",    "atT": 1.80, "viewer": 3, "key": "t3",  "yOffset": 130, "xShift": 10  },
+    { "kind": "bubble",    "atT": 2.30, "viewer": 4, "key": "t4",  "yOffset": 130, "xShift": 30  },
+    { "kind": "bubble",    "atT": 2.90, "viewer": 2, "key": "t5",  "yOffset": 135, "xShift": -30 },
+    { "kind": "bubble",    "atT": 3.40, "viewer": 1, "key": "t6",  "yOffset": 135, "xShift": -10 },
+    { "kind": "bubble",    "atT": 3.80, "viewer": 3, "key": "t7",  "yOffset": 135, "xShift": 10  },
+
+    { "kind": "graph",     "atT": 4.00 },
+
+    { "kind": "bubbleDyn", "atT": 4.60, "viewer": 0, "what": "phi", "yOffset": 135, "xShift": -20 },
+    { "kind": "bubbleDyn", "atT": 5.20, "viewer": 2, "what": "A",   "yOffset": 135, "xShift": 0   },
+    { "kind": "bubbleDyn", "atT": 5.70, "viewer": 4, "what": "Tw",  "yOffset": 135, "xShift": 20  },
+
+    { "kind": "law",       "atT": 6.10, "lawText": "x=Αημ(ωt+φ0) (1)",           "alsoParams": true },
+    { "kind": "bubble",    "atT": 6.60, "viewer": 1, "key": "t11", "yOffset": 130, "xShift": -20 },
+    { "kind": "law",       "atT": 6.90, "lawText": "v=ωA·συν(ωt+φ0) (2)" },
+    { "kind": "lawPlot",   "atT": 7.00, "plot": "v" },
+
+    { "kind": "bubble",    "atT": 7.60, "viewer": 3, "key": "t13", "yOffset": 140, "xShift": 10  },
+    { "kind": "law",       "atT": 7.85, "lawText": "a=−ω²A·ημ(ωt+φ0) (3)" },
+    { "kind": "lawPlot",   "atT": 7.95, "plot": "a" },
+
+    { "kind": "bubble",    "atT": 8.50, "viewer": 0, "key": "t15", "yOffset": 125, "xShift": -30 },
+    { "kind": "law",       "atT": 8.80, "lawText": "a(x)=−ω²·x (4)" },
+    { "kind": "lawPlot",   "atT": 9.10, "plot": "ax" },
+
+    { "kind": "bubble",    "atT": 9.60, "viewer": 2, "key": "t18", "yOffset": 130, "xShift": 0   },
+    { "kind": "close",     "atT": 10.20 }
+  ],
+
+  "act2": [
+    { "kind": "bubble", "viewer": 0, "key": "a1",  "y": 135, "x": -20 },
+
+    { "kind": "bubble", "viewer": 1, "key": "a2",  "y": 135, "x": -10, "gStart": true },
+    { "kind": "bubble", "viewer": 3, "key": "a3",  "y": 135, "x": 10  },
+    { "kind": "bubble", "viewer": 2, "key": "a4",  "y": 130, "x": -10, "gStop": true },
+
+    { "kind": "bubble", "viewer": 4, "key": "a5",  "y": 130, "x": 20 },
+    { "kind": "bubble", "viewer": 0, "key": "a6",  "y": 130, "x": -20 },
+    { "kind": "bubble", "viewer": 1, "key": "a7",  "y": 130, "x": -10 },
+    { "kind": "bubble", "viewer": 3, "key": "a8",  "y": 130, "x": 10  },
+    { "kind": "bubble", "viewer": 2, "key": "a9",  "y": 130, "x": 0   },
+    { "kind": "bubble", "viewer": 4, "key": "a10", "y": 130, "x": 20 },
+    { "kind": "bubble", "viewer": 0, "key": "a11", "y": 130, "x": -20 },
+    { "kind": "bubble", "viewer": 1, "key": "a12", "y": 125, "x": -10 },
+    { "kind": "bubble", "viewer": 3, "key": "a13", "y": 130, "x": 10  },
+
+    { "kind": "bubble", "viewer": 2, "key": "a14", "y": 130, "x": 0   },
+    { "kind": "law",    "law": "ΣF = −m·ω²·A·ημ(ωt+φ₀) (5)" },
+
+    { "kind": "bubble", "viewer": 4, "key": "a15", "y": 130, "x": 20 },
+    { "kind": "law",    "law": "ΣF = −m·ω²·x (6)" },
+
+    { "kind": "bubble", "viewer": 0, "key": "a16", "y": 130, "x": -20 },
+    { "kind": "bubble", "viewer": 1, "key": "a17", "y": 130, "x": -10 },
+    { "kind": "law",    "law": "D = m·ω² (6′)" },
+
+    { "kind": "bubble", "viewer": 3, "key": "a18", "y": 130, "x": 10  },
+    { "kind": "bubble", "viewer": 2, "key": "a19", "y": 130, "x": 0   },
+    { "kind": "bubble", "viewer": 4, "key": "a20", "y": 130, "x": 20 },
+    { "kind": "law",    "law": "ΣF = −D·x (7)" }
+  ],
+
+  "foyer": [
+    { "v": 1 },
+    { "v": 2 },
+    { "v": 2 },
+    { "v": 3 },
+    { "v": 3 },
+    { "v": 4 },
+    { "v": 1 },
+    { "v": 4 },
+    { "v": 4 },
+    { "v": 4 },
+    { "v": 4 },
+    { "v": 1 },
+    { "v": 1 },
+    { "v": 5 },
+    { "v": 4 },
+    { "v": 4 },
+    { "v": 2 }
+  ]
+}
