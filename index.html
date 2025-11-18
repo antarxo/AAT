@@ -596,6 +596,11 @@ const i18n = {
   }
 };
 
+const DIALOGS = {
+  gr: { act1:{}, act2:{}, foyer:[] },
+  en: { act1:{}, act2:{}, foyer:[] }
+};
+
 let LANG='gr', firstLawShown=false;
 
 /* ====== Default timelines & meta (αν δεν βρεθεί timeline.json) ====== */
@@ -641,17 +646,87 @@ const defaultFoyerMeta = [
 let FOYER_META = [...defaultFoyerMeta];
 let ACT2_TIMELINE = null;
 
-/* ====== Loader JSON: texts-<lang>.json (προαιρετικό override) ====== */
+/* ====== Δημιουργία default DIALOGS από i18n ====== */
+function buildDialogsForLang(lang){
+  const src = i18n[lang];
+  if(!src) return;
+  const dlg = DIALOGS[lang] || (DIALOGS[lang]={act1:{},act2:{},foyer:[]});
+  dlg.act1 = {};
+  dlg.act2 = {};
+  dlg.foyer = [];
+
+  if(src.thoughts){
+    Object.keys(src.thoughts).forEach(k=>{
+      const v = src.thoughts[k];
+      if(typeof v === 'string'){
+        dlg.act1[k] = v;
+      }
+    });
+  }
+  if(src.act2){
+    Object.keys(src.act2).forEach(k=>{
+      const v = src.act2[k];
+      if(typeof v === 'string'){
+        dlg.act2[k] = v;
+      }
+    });
+  }
+  if(Array.isArray(src.foyer)){
+    dlg.foyer = src.foyer.map(row=>({
+      left: row.left || '',
+      right: row.right || ''
+      // viewer: από FOYER_META ή από dialogs-*.json override
+    }));
+  }
+}
+
+/* ====== Loader JSON: texts-<lang>.json (προαιρετικό override i18n) ====== */
 async function loadLangOverrides(lang){
   try{
     const resp = await fetch(`texts-${lang}.json`, {cache:'no-store'});
-    if(!resp.ok) return;
-    const data = await resp.json();
-    if(data && typeof data==="object"){
-      i18n[lang] = data;
+    if(resp.ok){
+      const data = await resp.json();
+      if(data && typeof data==="object"){
+        i18n[lang] = data;
+      }
     }
   }catch(err){
     console.warn('Δεν φορτώθηκαν JSON κείμενα για', lang, err);
+  }
+  buildDialogsForLang(lang);
+}
+
+/* ====== Loader JSON: dialogs-<lang>.json (ενιαία κείμενα Π1/Π2/Φουαγιέ) ====== */
+async function loadDialogOverrides(lang){
+  try{
+    const resp = await fetch(`dialogs-${lang}.json`, {cache:'no-store'});
+    if(!resp.ok) return;
+    const data = await resp.json();
+    const dlg = DIALOGS[lang] || (DIALOGS[lang]={act1:{},act2:{},foyer:[]});
+
+    if(Array.isArray(data.act1)){
+      data.act1.forEach(item=>{
+        if(item && item.id && typeof item.text==='string'){
+          dlg.act1[item.id] = item.text;
+        }
+      });
+    }
+    if(Array.isArray(data.act2)){
+      data.act2.forEach(item=>{
+        if(item && item.id && typeof item.text==='string'){
+          dlg.act2[item.id] = item.text;
+        }
+      });
+    }
+    if(Array.isArray(data.foyer)){
+      dlg.foyer = data.foyer.map(it=>({
+        left: it.left || '',
+        right: it.right || '',
+        viewer: (typeof it.viewer==='number'? it.viewer : undefined)
+      }));
+    }
+  }catch(err){
+    console.warn('Δεν φορτώθηκαν dialogs για', lang, err);
   }
 }
 
@@ -674,7 +749,7 @@ async function loadTimeline(){
     }else{
       thoughtScriptBase = [...defaultThoughtScriptBase];
     }
-    thoughtScript = [...thoughtScriptBase];
+   thoughtScript = [...thoughtScriptBase];
 
     if(Array.isArray(data.act2)){
       ACT2_TIMELINE = data.act2.map(ev => ({...ev}));
@@ -725,6 +800,22 @@ function localizeTrig(txt){
   if(!txt) return txt;
   return (LANG==='gr') ? txt.replaceAll('sin','ημ').replaceAll('cos','συν')
                        : txt.replaceAll('ημ','sin').replaceAll('συν','cos');
+}
+
+/* Ενιαία πρόσβαση σε κείμενα Πράξης 1/2 */
+function getAct1BubbleText(id){
+  const dlg = DIALOGS[LANG];
+  if(dlg && dlg.act1 && dlg.act1[id]) return dlg.act1[id];
+  const src = i18n[LANG] && i18n[LANG].thoughts;
+  if(src && typeof src[id]==='string') return src[id];
+  return '';
+}
+function getAct2BubbleText(id){
+  const dlg = DIALOGS[LANG];
+  if(dlg && dlg.act2 && dlg.act2[id]) return dlg.act2[id];
+  const src = i18n[LANG] && i18n[LANG].act2;
+  if(src && typeof src[id]==='string') return src[id];
+  return '';
 }
 
 /* ====== DOM ====== */
@@ -1172,7 +1263,7 @@ function closeCurtainsSequence(){
 /* ====== HANDLER TIMELINE ΠΡΑΞΗΣ 1 ====== */
 function handleTimelineEvent(th){
   if(th.kind==='bubble'){
-    const txt = (i18n[LANG].thoughts[th.key]||'');
+    const txt = getAct1BubbleText(th.key);
     BUBBLE.say(th.viewer, txt, th.yOffset, th.xShift||0);
   }else if(th.kind==='bubbleDyn'){
     if(th.what==='A'){
@@ -1436,15 +1527,17 @@ function addRow(leftText, rightText, viewer, whenDone){
 
 let foyerIdx=0, foyerAuto=true, foyerTimer=null;
 function foyerStep(){
-  if(!i18n[LANG] || !i18n[LANG].foyer) return;
-  if(!FOYER_META || foyerIdx>=FOYER_META.length || foyerIdx>=i18n[LANG].foyer.length){
+  const dlgLang = DIALOGS[LANG];
+  if(!dlgLang || !Array.isArray(dlgLang.foyer)) return;
+  if(foyerIdx>=dlgLang.foyer.length){
     foyerAuto=false; return;
   }
-  const it   = FOYER_META[foyerIdx];
-  const text = i18n[LANG].foyer[foyerIdx];
+  const text = dlgLang.foyer[foyerIdx] || {};
+  const meta = FOYER_META && FOYER_META[foyerIdx];
+  const viewerId = (typeof text.viewer==='number') ? text.viewer : (meta ? meta.v : 1);
   foyerIdx++;
 
-  addRow(text.left, text.right, it.v, ()=>{
+  addRow(text.left || '', text.right || '', viewerId, ()=>{
     const len = (String(text.left||'').length + String(text.right||'').length);
     const baseDelay = 600;
     const extra     = Math.min(2000, Math.max(400, 15*len/4));
@@ -1602,7 +1695,7 @@ btnFoyerGo.addEventListener('click', ()=>{
           continue;
         }
         if(step.gStart) startGhost();
-        await BUBBLE.say(step.v, i18n[LANG].act2[step.key], step.y, step.x);
+        await BUBBLE.say(step.v, getAct2BubbleText(step.key), step.y, step.x);
         if(step.gStop)  stopGhost();
       }
 
@@ -1639,6 +1732,7 @@ langSwitch.addEventListener('click', async (e)=>{
   [...langSwitch.querySelectorAll('button')].forEach(b=>b.classList.toggle('on', b===btn));
   const lang = btn.dataset.lang;
   await loadLangOverrides(lang);
+  await loadDialogOverrides(lang);
   setLang(lang);
 });
 
@@ -1655,6 +1749,7 @@ ro.observe(stage);
 (async ()=>{
   await loadLangOverrides('gr');
   await loadTimeline();
+  await loadDialogOverrides('gr');
   setLang('gr');
   resetShow();
 })();
