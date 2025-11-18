@@ -342,7 +342,7 @@
   </div>
 
 <script>
-/* ====== ΚΕΙΜΕΝΑ (i18n) — default, μπορούν να παρακαμφθούν από JSON ====== */
+/* ====== ΚΕΙΜΕΝΑ (i18n) — UI/βασικά, τα dialogs τα παίρνουμε από dialogs-*.json ====== */
 const i18n = {
   gr: {
     act1Title:"Πράξη 1η: Η Κινηματική στα ... Αλγεβρικά",
@@ -404,70 +404,7 @@ const i18n = {
       a19:'… χμμμ, δικαιολογημένα λοιπόν τον πρωταγωνιστή–ταλαντωτή (=ηθοποιός + ελαστικό αίτιο) τον λένε (m,D)!',
       a20:'…αλλά και η (6) – μη ξεχνιόμαστε! – γίνεται ΣF = −D·x (7)!'
     },
-    foyer: [
-      {
-        left: "Θεατής 1: Οι (1), (2), (3) και (5) μας βοηθούν να «προφητεύουμε» τη θέση, την ταχύτητα, την επιτάχυνση και την συνολική δύναμη που δέχεται κάθε στιγμή ο (m₁ ,D₁) χωρίς να χρειαστεί να ξαναμπούμε για τη συνέχεια της παράστασης!",
-        right: "(1) x(t)=A·ημ(ωt+φ₀)\n(2) υ(t)=ωA·συν(ωt+φ₀)\n(3) α(t)=−ω²A·ημ(ωt+φ₀)\n(5) ΣF=−m·ω²A·ημ(ωt+φ₀)"
-      },
-      {
-        left: "Θεατής 2: Η (3)’ και η (6)",
-        right: "(3)’ α(x)=−ω²·x\n(6)  ΣF=−m·ω²·x"
-      },
-      {
-        left: "Θεατής 2: όμως μας βοηθούν να … «προφητεύουμε» την επιτάχυνση και την συνολική δύναμη που δέχεται αρκεί να ξέρουμε σε ποιο σημείο της σκηνής βρίσκεται ο (m₁ ,D₁) χωρίς φυσικά και αναγκαστικά να συνεχίσουμε να είμαστε θεατές!",
-        right: ""
-      },
-      {
-        left: "Θεατής 3: Λοιπόν!\n1. Διαπιστώνουμε αγαπητοί μου ότι δεν μπορούμε προς το παρόν να ...τής 2 για την ταχύτητα και τη σχέση της με τη θέση του (m₁ ,D₁).\n2. Σκέφτομαι ότι αυτά που είδαμε γενικεύονται για κάθε πρωταγωνιστή (m,D) σε ανάλογη Παράσταση ΑΑΤ.\n3. Ως γνώστες όμως της …Αλγεβρικής και με λίγη “αλγεβρική περιέργεια” να τι μπορούμε να κάνουμε (και γενικεύοντας, αναφερόμενοι πλέον στον τυχαίο (m,D)) για να καλύψουμε και το κενό 1.:\n✓ Λύνουμε την (1) ως προς ημ(ωt+φ₀) και υψώνουμε στο τετράγωνο. Το ίδιο για την (2) ως προς συν(ωt+φ₀) και υψώνουμε. Στη συνέχεια προσθέτουμε κατά μέλη.",
-        right: "x=A·ημ(ωt+φ₀)  (1)\nυ=ωA·συν(ωt+φ₀) (2)\n\nημ(ωt+φ₀)=x/A\nσυν(ωt+φ₀)=υ/(ωA)\n\n⇒ ημ²(ωt+φ₀)+συν²(ωt+φ₀)=1\n⇒ 1 = x²/A² + υ²/(ω²A²)  (8)"
-      },
-      {
-        left: "Θεατής 3:\n✓ Ιδού η σχέση που μας έλειπε. Τώρα «προφητεύουμε» και την ταχύτητα όταν γνωρίζουμε τη θέση του πρωταγονιστή στη σκηνή αλλά και\n✓ Μπορούμε να βγάλουμε μια σχέση (σκεφτόμενοι ανάλογα) ανάμεσα στην επιτάχυνση και την ταχύτητα! Δηλαδή, λύνουμε την (3) ως προς ημ(ωt+φ₀) και υψώνουμε. Κάνουμε το ίδιο με την (2) ως προς συν(ωt+φ₀) και υψώνουμε. Μετά προσθέτουμε κατά μέλη.",
-        right: "α=−ω²A·ημ(ωt+φ₀)  (3)\nυ= ωA·συν(ωt+φ₀)    (2)\n\nημ(ωt+φ₀)= −α/(ω²A)\nσυν(ωt+φ₀)=  υ/(ωA)\n\n⇒ 1 = α²/(ω⁴A²) + υ²/(ω²A²)  (9)  bingo!"
-      },
-      {
-        left: "Θεατής 4: Θα ήταν καλύτερα αν την (8) την φέρναμε στη μορφή υ= … Δείτε:",
-        right: "(8) 1 = x²/A² + υ²/(ω²A²)\n⇔ ω²A² = ω²x² + υ²"
-      },
-      { left: "Θεατής 1: …μισό, μισό …", right: "" },
-      {
-        left: "Θεατής 4: να ολοκληρώσω, …, την οποία λύνουμε ως προς υ",
-        right: "⇔ υ = ±ω·√(A²−x²)  (10)"
-      },
-      {
-        left: "Θεατής 4: όπως όμως και την (9)",
-        right: "(9) 1 = α²/(ω⁴A²) + υ²/(ω²A²)\n⇔ α = ±ω·√(ω²A² − υ²)  (11)"
-      },
-      {
-        left: "Θεατής 4: χμμ αλλά και (αν σκεφτούμε ότι ωA=υmax)",
-        right: "(11) ⇔ α = ±ω·√((ωA)² − υ²)\n⇔ a = ±ω·√(υ_max² − υ²)  (12)"
-      },
-      { left: "Θεατής 4: τέλος από εμένα και… ο λόγος στον Θεατή 1!", right: "" },
-      {
-        left: "Θεατής 1: Το σημείο στο οποίο διέκοψα είχε γραφτεί ω²A² = ω²x² + υ². Σκέφτομαι λοιπόν τα εξής: Αν πολλαπλασιάσουμε και τα δύο μέλη με ½m, δείτε! η σχέση γράφεται:",
-        right: "½ m ω²A² = ½ m ω²x² + ½ m υ²  (12)"
-      },
-      {
-        left: "Θεατής 1: Αλλά:\n• Ο παράγοντας ½ m υ² είναι η κινητική ενέργεια K του … πρωταγωνιστή (m,D)\n• Ο παράγοντας αυτός προστίθεται στον ½ m ω² x² ο οποίος δεν μπορεί παρά να είναι και αυτός ενέργεια! (πρόσθεση κάνουμε ανάμεσα σε ομοειδή). Όμως ο παράγοντας αυτός εξαρτάται από τη θέση του πρωταγωνιστή άρα δεν μπορεί παρά να παριστάνει τη Δυναμική του Ενέργεια U (λόγω θέσης) του πρωταγωνιστή (m,D)!\n• Έτσι ο παράγοντας ½ m ω² A² του πρώτου μέλους\n  – Πρώτον δεν μπορεί παρά ως άθροισμα Κ και U να «παριστάνει» τη μηχανική ενέργεια ΕΜ του πρωταγωνιστή (m,D).\n  – Δεύτερον, συγκρίνοντας με τη μορφή της U=½ m ω² x² (παρατηρούμε μέγιστη απομάκρυνση). Άρα ½ m ω² A² παριστάνει και την μέγιστη Δυναμική Ενέργεια U_max του (m,D).\n  – Τρίτον, ως σταθερή ποσότητα Μηχανικής Ενέργειας, η (12) μας οδηγεί στην «Α.Δ.Μ.Ε.Τ.» του πρωταγωνιστή Ταλαντωτή (m,D)!",
-        right: "(Α.Δ.Μ.Ε.Τ.)"
-      },
-      {
-        left: "Θεατής 5: Δηλαδή γνωρίζουμε πλέον και το … budget της παράστασης! Και, δεν έχουμε επομένως λέω εγώ, κανένα ιδιαίτερο λόγο να περάσουμε στην αίθουσα να παρακολουθήσουμε την 3η πράξη περί ενέργειας! Το έργο το …ξαναείδαμε!",
-        right: ""
-      },
-      {
-        left: "Θεατής 4: Φυσικά! Αν και η “αλγεβρική περιέργεια” μας οδηγεί και σε μια πιο συμμαζεμένη έκφραση αυτής της … Αρχής Διατήρησης της Μηχανικής Ενέργειας του …Ταλαντωτή (m,D). Είπαμε πιο πάνω για αυτή τη σταθερά D=mω² που βάλαμε και στη σχέση (7)",
-        right: "Νόμος του Νεύτωνα:\nΣF = −D·x  (7)"
-      },
-      {
-        left: "Θεατής 4: Αυτή αν χρησιμοποιηθεί στην (12) αυτή γράφεται:",
-        right: "½ D A² = ½ D x² + ½ m υ²  (13)\n(Α.Δ.Μ.Ε.Τ. του (m,D))"
-      },
-      {
-        left: "Θεατής 2: Να φύγουμε λέω και εγώ, αλλά με μια επίγευση από την αποψινή παράσταση του (m₁,D₁) συνοψίζοντας: Ο κάθε πρωταγωνιστής ταλαντωτής (m,D) χαρακτηρίζεται απολύτως από τον «σωματότυπό του» (m) και την «χρονική» εμμονή του (ω) ή ισοδύναμα και ας το κρατήσουμε αυτό, από τα δικά του (m,D). Θα είναι λοιπόν για μας στο εξής ο ταλαντωτής (m,D), τα όρια στην παράστασή του (το μήκος σκηνής) τα καθορίζει πάντα ο κάθε κύριος … Ενεργειούλης και την έναρξή της εμείς οι θεατές!",
-        right: ""
-      }
-    ]
+    foyer: [] // τα actual κείμενα πλέον έρχονται από dialogs-gr.json
   },
   en: {
     act1Title:"Act I: Kinematics in... algebraic form",
@@ -529,70 +466,7 @@ const i18n = {
       a19:'…hmm, so it’s justified that the protagonist–oscillator (=actor + elastic cause) is named (m,D)!',
       a20:'…and (6) – don’t forget! – becomes ΣF = −D·x (7)!'
     },
-    foyer: [
-      {
-        left: "Spectator 1: Relations (1), (2), (3) and (5) help us “predict” the position, velocity, acceleration and the total force acting at every instant on (m₁ ,D₁) without needing to go back inside for the continuation of the play!",
-        right: "(1) x(t)=A·sin(ωt+φ₀)\n(2) v(t)=ωA·cos(ωt+φ₀)\n(3) a(t)=−ω²A·sin(ωt+φ₀)\n(5) ΣF=−m·ω²A·sin(ωt+φ₀)"
-      },
-      {
-        left: "Spectator 2: But (3)’ and (6)",
-        right: "(3)’ a(x)=−ω²·x\n(6)  ΣF=−m·ω²·x"
-      },
-      {
-        left: "Spectator 2: however they help us “predict” the acceleration and the total force acting, as long as we know at which point of the stage (m₁ ,D₁) is located, without us having to remain spectators, of course!",
-        right: ""
-      },
-      {
-        left: "Spectator 3: So then!\n1. We realise, my friends, that for the moment we cannot really use (2) for the velocity and its relation with the position of (m₁ ,D₁).\n2. I think that what we saw generalises to any protagonist (m,D) in a similar S.H.M. play.\n3. As people who know a bit of algebra, and with a bit of “algebraic curiosity”, here is what we can do (and in general, referring now to an arbitrary (m,D)) to fill in gap 1:\n✓ We solve (1) for sin(ωt+φ₀) and square. We do the same with (2) for cos(ωt+φ₀) and square. Then we add the two equations member by member.",
-        right: "x=A·sin(ωt+φ₀)  (1)\nv=ωA·cos(ωt+φ₀) (2)\n\nsin(ωt+φ₀)=x/A\ncos(ωt+φ₀)=v/(ωA)\n\n⇒ sin²(ωt+φ₀)+cos²(ωt+φ₀)=1\n⇒ 1 = x²/A² + v²/(ω²A²)  (8)"
-      },
-      {
-        left: "Spectator 3:\n✓ Here is the relation we were missing. Now we can also “predict” the velocity when we know the position of the protagonist on stage, and\n✓ We can extract (by similar thinking) a relation between acceleration and velocity! That is, we solve (3) for sin(ωt+φ₀) and square. We do the same with (2) for cos(ωt+φ₀) and square. Then we add member by member.",
-        right: "a=−ω²A·sin(ωt+φ₀)  (3)\nv= ωA·cos(ωt+φ₀)    (2)\n\nsin(ωt+φ₀)= −a/(ω²A)\ncos(ωt+φ₀)=  v/(ωA)\n\n⇒ 1 = a²/(ω⁴A²) + v²/(ω²A²)  (9)  bingo!"
-      },
-      {
-        left: "Spectator 4: It would be better if we rewrote (8) in the form v= … Look:",
-        right: "(8) 1 = x²/A² + v²/(ω²A²)\n⇔ ω²A² = ω²x² + v²"
-      },
-      { left: "Spectator 1: Wait, wait a second…", right: "" },
-      {
-        left: "Spectator 4: let me finish… we solve it for v",
-        right: "⇔ v = ±ω·√(A²−x²)  (10)"
-      },
-      {
-        left: "Spectator 4: and we can do the same with (9)",
-        right: "(9) 1 = a²/(ω⁴A²) + v²/(ω²A²)\n⇔ a = ±ω·√(ω²A² − v²)  (11)"
-      },
-      {
-        left: "Spectator 4: hmm, and also (if we think that ωA=v_max)",
-        right: "(11) ⇔ a = ±ω·√((ωA)² − v²)\n⇔ a = ±ω·√(v_max² − v²)  (12)"
-      },
-      { left: "Spectator 4: that’s all from me… the floor goes to Spectator 1!", right: "" },
-      {
-        left: "Spectator 1: The point where I stopped was ω²A² = ω²x² + v². So I’m thinking: if we multiply both sides by ½m, look! the relation becomes:",
-        right: "½ m ω²A² = ½ m ω²x² + ½ m v²  (12)"
-      },
-      {
-        left: "Spectator 1: But:\n• The factor ½ m v² is the kinetic energy K of the protagonist (m,D).\n• This term is added to ½ m ω² x² which must clearly also be an energy term! (we only add like quantities). But this term depends on the position of the protagonist, so it must represent the potential energy U (due to position) of the protagonist (m,D)!\n• Thus the term ½ m ω² A² on the left\n  – First, as the sum K+U, cannot be anything other than the mechanical energy E_M of the protagonist (m,D).\n  – Second, comparing with U=½ m ω² x² (and observing the maximum displacement), ½ m ω² A² is also the maximum potential energy U_max of (m,D).\n  – Third, as a constant amount of mechanical energy, (12) leads us to the “M.E.C.” (Mechanical Energy Conservation) of the oscillating protagonist (m,D)!",
-        right: "(A.D.M.E.T. of the oscillator)"
-      },
-      {
-        left: "Spectator 5: So we now also know the budget of the play! Which means, I’d say, that we have no real reason to go back into the hall to watch the 3rd act about energy. We’ve basically seen this play already!",
-        right: ""
-      },
-      {
-        left: "Spectator 4: Of course! Although our “algebraic curiosity” also leads us to a more compact expression of this Mechanical Energy Conservation of the oscillator (m,D). We mentioned earlier this constant D=mω² which we also used in relation (7).",
-        right: "Newton’s law:\nΣF = −D·x  (7)"
-      },
-      {
-        left: "Spectator 4: If we use this in (12), that equation becomes:",
-        right: "½ D A² = ½ D x² + ½ m v²  (13)\n(M.E.C. of (m,D))"
-      },
-      {
-        left: "Spectator 2: Let’s leave, I’d say, but with a kind of aftertaste from tonight’s performance of (m₁,D₁), summing up: every protagonist oscillator (m,D) is completely characterised by its “body type” (m) and its “time stubbornness” (ω), or equivalently – and let’s keep this – by its own (m,D). So from now on the oscillator (m,D) is our protagonist; the limits of its performance (the length of the stage) are always set by Mr Energioulis, and the start of it is set by us, the spectators!",
-        right: ""
-      }
-    ]
+    foyer: []
   }
 };
 
@@ -645,56 +519,6 @@ const defaultFoyerMeta = [
 
 let FOYER_META = [...defaultFoyerMeta];
 let ACT2_TIMELINE = null;
-
-/* ====== Δημιουργία default DIALOGS από i18n ====== */
-function buildDialogsForLang(lang){
-  const src = i18n[lang];
-  if(!src) return;
-  const dlg = DIALOGS[lang] || (DIALOGS[lang]={act1:{},act2:{},foyer:[]});
-  dlg.act1 = {};
-  dlg.act2 = {};
-  dlg.foyer = [];
-
-  if(src.thoughts){
-    Object.keys(src.thoughts).forEach(k=>{
-      const v = src.thoughts[k];
-      if(typeof v === 'string'){
-        dlg.act1[k] = v;
-      }
-    });
-  }
-  if(src.act2){
-    Object.keys(src.act2).forEach(k=>{
-      const v = src.act2[k];
-      if(typeof v === 'string'){
-        dlg.act2[k] = v;
-      }
-    });
-  }
-  if(Array.isArray(src.foyer)){
-    dlg.foyer = src.foyer.map(row=>({
-      left: row.left || '',
-      right: row.right || ''
-      // viewer: από FOYER_META ή από dialogs-*.json override
-    }));
-  }
-}
-
-/* ====== Loader JSON: texts-<lang>.json (προαιρετικό override i18n) ====== */
-async function loadLangOverrides(lang){
-  try{
-    const resp = await fetch(`texts-${lang}.json`, {cache:'no-store'});
-    if(resp.ok){
-      const data = await resp.json();
-      if(data && typeof data==="object"){
-        i18n[lang] = data;
-      }
-    }
-  }catch(err){
-    console.warn('Δεν φορτώθηκαν JSON κείμενα για', lang, err);
-  }
-  buildDialogsForLang(lang);
-}
 
 /* ====== Loader JSON: dialogs-<lang>.json (ενιαία κείμενα Π1/Π2/Φουαγιέ) ====== */
 async function loadDialogOverrides(lang){
@@ -749,7 +573,7 @@ async function loadTimeline(){
     }else{
       thoughtScriptBase = [...defaultThoughtScriptBase];
     }
-   thoughtScript = [...thoughtScriptBase];
+    thoughtScript = [...thoughtScriptBase];
 
     if(Array.isArray(data.act2)){
       ACT2_TIMELINE = data.act2.map(ev => ({...ev}));
@@ -1731,7 +1555,6 @@ langSwitch.addEventListener('click', async (e)=>{
   const btn=e.target.closest('button[data-lang]'); if(!btn) return;
   [...langSwitch.querySelectorAll('button')].forEach(b=>b.classList.toggle('on', b===btn));
   const lang = btn.dataset.lang;
-  await loadLangOverrides(lang);
   await loadDialogOverrides(lang);
   setLang(lang);
 });
@@ -1747,7 +1570,6 @@ ro.observe(stage);
 })();
 
 (async ()=>{
-  await loadLangOverrides('gr');
   await loadTimeline();
   await loadDialogOverrides('gr');
   setLang('gr');
