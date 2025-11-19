@@ -2,128 +2,272 @@
   "act1": [
     {
       "id": "t1",
+      "viewer": 0,
+      "atT": 1.05,
+      "yOffset": 120,
+      "xShift": -40,
       "text": "The (m₁,D₁) was already in motion!"
     },
     {
       "id": "t2",
+      "viewer": 1,
+      "atT": 1.15,
+      "yOffset": 125,
+      "xShift": -20,
       "text": "…at time t₀ = 0, when the curtain opened!"
     },
     {
       "id": "t3",
+      "viewer": 3,
+      "atT": 1.8,
+      "yOffset": 130,
+      "xShift": 10,
       "text": "…and the motion is straight-line and back-and-forth!"
     },
     {
       "id": "t4",
+      "viewer": 4,
+      "atT": 2.3,
+      "yOffset": 130,
+      "xShift": 30,
       "text": "…and repeating, periodic, so it's an oscillation!"
     },
     {
       "id": "t5",
+      "viewer": 2,
+      "atT": 2.9,
+      "yOffset": 135,
+      "xShift": -30,
       "text": "Could this be Simple Harmonic Motion?"
     },
     {
       "id": "t6",
+      "viewer": 1,
+      "atT": 3.4,
+      "yOffset": 135,
+      "xShift": -10,
       "text": "…if it is S.H.M., then the values we measure must satisfy x=A·sin(ωt+φ₀)!"
     },
     {
       "id": "t7",
+      "viewer": 3,
+      "atT": 3.8,
+      "yOffset": 135,
+      "xShift": 10,
       "text": "…if we draw an x–t graph, that will confirm it!"
     },
     {
       "id": "t11",
+      "viewer": 1,
+      "atT": 6.6,
+      "yOffset": 130,
+      "xShift": -20,
       "text": "…therefore the velocity is given by v=ωA·cos(ωt+φ₀)!"
     },
     {
       "id": "t13",
+      "viewer": 3,
+      "atT": 7.6,
+      "yOffset": 140,
+      "xShift": 10,
       "text": "…and the acceleration by a=−ω²A·sin(ωt+φ₀)!"
     },
     {
       "id": "t15",
+      "viewer": 0,
+      "atT": 8.5,
+      "yOffset": 125,
+      "xShift": -30,
       "text": "But the relation x=<b>A·sin(ωt+φ₀)</b> (1) is contained in (3), i.e. a=−ω²<b>A·sin(ωt+φ₀)=−ω²x</b>!"
     },
     {
       "id": "t18",
+      "viewer": 2,
+      "atT": 9.6,
+      "yOffset": 130,
+      "xShift": 0,
       "text": "Perfect! The full S.H.M. law set!"
     }
   ],
   "act2": [
     {
       "id": "a1",
+      "viewer": 0,
+      "y": 135,
+      "x": -20,
+      "gStart": false,
+      "gStop": false,
       "text": "Whoa! The m₁D₁ is tied to a spring!"
     },
     {
       "id": "a2",
+      "viewer": 1,
+      "y": 135,
+      "x": -10,
+      "gStart": true,
+      "gStop": false,
       "text": "This very m<sub>1</sub>D₁ I’m sure I’ve seen before with the same spring mechanism in another play, but with a different producer!"
     },
     {
       "id": "a3",
+      "viewer": 3,
+      "y": 135,
+      "x": 10,
+      "gStart": false,
+      "gStop": false,
       "text": "...yes, and there again it moved with the same period, stubbornly, but with a larger amplitude A!"
     },
     {
       "id": "a4",
+      "viewer": 2,
+      "y": 130,
+      "x": -10,
+      "gStart": false,
+      "gStop": true,
       "text": "A memory pops up: the same m₁D₁ on another stage, with different amplitude–different energy but a shape of the same kind."
     },
     {
       "id": "a5",
+      "viewer": 4,
+      "y": 130,
+      "x": 20,
+      "gStart": false,
+      "gStop": false,
       "text": "Hmm… Maybe the true protagonist is the moving actor together with his tools!"
     },
     {
       "id": "a6",
+      "viewer": 0,
+      "y": 130,
+      "x": -20,
+      "gStart": false,
+      "gStop": false,
       "text": "Now I think I understand why they don’t call him just m₁ but m₁,D₁…"
     },
     {
       "id": "a7",
+      "viewer": 1,
+      "y": 130,
+      "x": -10,
+      "gStart": false,
+      "gStop": false,
       "text": "… m₁ is the actor’s mass, but the oscillator clearly means the combination of the actor (m₁) and the “elastic” force cause, which D₁ seems to refer to!"
     },
     {
       "id": "a8",
+      "viewer": 3,
+      "y": 130,
+      "x": 10,
+      "gStart": false,
+      "gStop": false,
       "text": "…so m₁ and D₁ always go together as a package! Both together form the oscillator – the protagonist!"
     },
     {
       "id": "a9",
+      "viewer": 2,
+      "y": 130,
+      "x": 0,
+      "gStart": false,
+      "gStop": false,
       "text": "…that is, every oscillator is characterized 1. by its mass and 2. by the elastic force–cause that time-regulates (T) its oscillation!"
     },
     {
       "id": "a10",
+      "viewer": 4,
+      "y": 130,
+      "x": 20,
+      "gStart": false,
+      "gStop": false,
       "text": "…I’m starting to be convinced why its characteristic name is mD and not just m!..."
     },
     {
       "id": "a11",
+      "viewer": 0,
+      "y": 130,
+      "x": -20,
+      "gStart": false,
+      "gStop": false,
       "text": "Therefore each oscillator’s peculiarity – its “stubbornness” in having a characteristic period T (and thus a characteristic f and ω) – is due 1. to its “body type” m and 2. to the elastic cause (which is probably encoded in the D of its name)!"
     },
     {
       "id": "a12",
+      "viewer": 1,
+      "y": 125,
+      "x": -10,
+      "gStart": false,
+      "gStop": false,
       "text": "Whoa… come on, leave it, let’s move on…."
     },
     {
       "id": "a13",
+      "viewer": 3,
+      "y": 130,
+      "x": 10,
+      "gStart": false,
+      "gStop": false,
       "text": "Let’s see how Newton’s 2nd law is written for the case of the oscillator!"
     },
     {
       "id": "a14",
+      "viewer": 2,
+      "y": 130,
+      "x": 0,
+      "gStart": false,
+      "gStop": false,
       "text": "… ΣF = m·a in general, and therefore here, with the help of (3), ΣF = −mω²A·sin(ωt+φ₀) (5)!"
     },
     {
       "id": "a15",
+      "viewer": 4,
+      "y": 130,
+      "x": 20,
+      "gStart": false,
+      "gStop": false,
       "text": "…and based on (4) it can also be written as ΣF = −mω²x (6)!"
     },
     {
       "id": "a16",
+      "viewer": 0,
+      "y": 130,
+      "x": -20,
+      "gStart": false,
+      "gStop": false,
       "text": "But! Equation (6), look at it, contains two actor constants: the “body type” (m) and the “stubbornness” (ω)!"
     },
     {
       "id": "a17",
+      "viewer": 1,
+      "y": 130,
+      "x": -10,
+      "gStart": false,
+      "gStop": false,
       "text": "Shall we merge these two constants into one and call it D = mω² (6’)? Does that make sense?"
     },
     {
       "id": "a18",
+      "viewer": 3,
+      "y": 130,
+      "x": 10,
+      "gStart": false,
+      "gStop": false,
       "text": "So, if we assign this to the elastic cause as its own constant D, then everything clicks: the actor has his own fixed mass m₁, the elastic cause has its own fixed D₁. Thus, it’s explained why the actor, regardless of stage and producer, “stubbornly” keeps the same period! Relation (6’) D = mω² tells us that if m and D are fixed, then ω of the actor is fixed too!"
     },
     {
       "id": "a19",
+      "viewer": 2,
+      "y": 130,
+      "x": 0,
+      "gStart": false,
+      "gStop": false,
       "text": "…hmm, so it’s justified that the protagonist–oscillator (=actor + elastic cause) is named (m,D)!"
     },
     {
       "id": "a20",
+      "viewer": 4,
+      "y": 130,
+      "x": 20,
+      "gStart": false,
+      "gStop": false,
       "text": "…and (6) – don’t forget! – becomes ΣF = −D·x (7)!"
     }
   ],
