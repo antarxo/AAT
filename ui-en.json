@@ -1,0 +1,41 @@
+{
+  "pageTitle": "Theatre Stage — Unified Edition (Act I + Act II + Foyer)",
+
+  "act1Title": "Act I: Kinematics in... algebraic form",
+  "act2Title": "Act II: Dynamics of the oscillator (m,D)",
+
+  "sbA1": "Starring the oscillator (m₁, D₁) and the spectators(*)",
+  "sbB1": "in the monologue <span class=\"hl\">\"endless back-and-forth\"</span>... on stage!",
+  "sbC1": "Production & Direction: Mr. Energioulis",
+  "sbD1": "(*) ...you",
+
+  "sbA2": "The forces speak. The (m,D) is revealed.",
+  "sbB2": "Scenes with spring, phases and equations.",
+  "sbC2": "Stage consultant: Mr. Energioulis",
+  "sbD2": "—",
+
+  "startBtn": "Start",
+
+  "cdMain": "The show is about to begin...",
+  "cdSub": "time to use pen and paper!",
+
+  "measurementsTitle": "Measurements",
+  "lawsTitle": "S.H.M. laws",
+
+  "settingsTitle": "Flow settings",
+  "startThoughts": "Thoughts start (k·T):",
+  "flowScale": "Flow scale (×):",
+  "bubbleDur": "Thought duration (s):",
+  "slowFactor": "Slow motion (×):",
+
+  "actBreakTitle": "End of Act I",
+  "actBreakMsg": "The (m,D) continues. Are you ready for Act II?",
+  "act2Btn": "Start Act II",
+
+  "foyerBreakTitle": "End of Act II",
+  "foyerBreakMsg": "Do you want to move to the foyer for the discussion?",
+  "foyerBreakBtn": "Go to foyer",
+
+  "foyerBtnLabel": "Foyer",
+  "endShowBtn": "End of show"
+}
