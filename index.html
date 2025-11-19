@@ -81,8 +81,7 @@
   .marker-line{position:absolute;left:50%;bottom:8px;width:2px;height:70px;background:#ffd27a;box-shadow:0 0 4px rgba(255,210,122,.8);transform:translateX(-50%)}
   .marker-tip{position:absolute;left:50%;bottom:0;width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:8px solid #ffd27a;filter:drop-shadow(0 2px 2px rgba(255,210,122,.8));transform:translateX(-50%)}
 
-  @keyframes popIn{0%{transform:scale(.9);opacity:0}60%{transform:scale(1.04);opacity:1}100%{transform:scale(1)}
-  }
+  @keyframes popIn{0%{transform:scale(.9);opacity:0}60%{transform:scale(1.04);opacity:1}100%{transform:scale(1)}}
   .thought-bubble{
     position:absolute;max-width:420px;background:rgba(255,255,255,.92);color:#000;
     font-size:15px;line-height:1.45;padding:10px 12px 12px;border:2px solid transparent;border-radius:10px;
@@ -751,14 +750,13 @@ class BubbleScheduler {
     this.labelEl.style.display='block';
   }
 
-  /* === ΣΤΑΘΕΡΕΣ ΘΕΣΕΙΣ ΑΝΑ ΘΕΑΤΗ, ΜΕΣΑ ΣΤΟ 64% === */
+  /* === ΣΤΑΘΕΡΑ, ΣΥΝΕΠΗ BUBBLES ΑΝΑ ΘΕΑΤΗ, ΜΕΣΑ ΣΤΗ ΣΚΗΝΗ 64% === */
   placePanelNearViewer(viewer,lift=140,xShift=0){
     const W = stage.clientWidth;
     const H = stage.clientHeight;
 
     const xL = W * 0.18;
     const xR = W * 0.82;
-    const centerWidth = xR - xL;
     const pad = 12;
 
     this.el.style.display='block';
@@ -768,14 +766,24 @@ class BubbleScheduler {
 
     const bw = this.el.offsetWidth || 320;
 
-    const totalViewers = Math.max(1, (document.querySelectorAll('.viewer').length || 5));
-    const idx = Math.max(0, Math.min(totalViewers-1, viewer|0));
-    const rel = (idx + 1) / (totalViewers + 1); // π.χ. 1/6, 2/6, ..., 5/6
+    const vEl = document.querySelector(`.viewer[data-idx="${viewer}"]`);
+    const sRect = stage.getBoundingClientRect();
 
-    const baseCenterX = xL + rel * centerWidth;
+    let baseCenterX;
+    if(vEl){
+      const vRect = vEl.getBoundingClientRect();
+      baseCenterX = (vRect.left + vRect.width/2) - sRect.left;
+    }else{
+      const totalViewers = Math.max(1, (document.querySelectorAll('.viewer').length || 5));
+      const idx = Math.max(0, Math.min(totalViewers-1, viewer|0));
+      const rel = (idx + 1) / (totalViewers + 1);
+      baseCenterX = xL + rel * (xR - xL);
+    }
 
-    let leftPx = baseCenterX - bw/2 + (xShift || 0);
-    leftPx = Math.max(xL + pad, Math.min(leftPx, xR - pad - bw));
+    let centerX = baseCenterX + (xShift || 0);
+    centerX = Math.max(xL + pad + bw/2, Math.min(centerX, xR - pad - bw/2));
+
+    const leftPx = centerX - bw/2;
 
     const baseTop = H * 0.23;
     const liftVal = (typeof lift === 'number' ? lift : 135);
@@ -998,6 +1006,10 @@ function handleTimelineEvent(th){
 btnPause.addEventListener('click',()=>{ setMode(mode==='pause'?'run':'pause'); });
 btnSlow .addEventListener('click', ()=>{ setMode('slow');  });
 btnPlay .addEventListener('click', ()=>{ setMode('run');  });
+
+btnSettings.addEventListener('click',()=>{
+  settingsPanel.style.display = (settingsPanel.style.display==='block' ? 'none' : 'block');
+});
 
 function resetShow(){
   if(bubbleAutoTimer){ clearTimeout(bubbleAutoTimer); bubbleAutoTimer=null; }
@@ -1351,7 +1363,7 @@ window.foyerClose = foyerClose;
 
   async function playAct2(){
     if(running || finished) return;
-    const seq = Array.isArray(window.ACT2_TIMELINE) ? window.ACT2_TIMELINE : [];
+    const seq = Array.isArray(ACT2_TIMELINE) ? ACT2_TIMELINE : [];
     if(!seq.length){ finished=true; return; }
 
     running=true;
