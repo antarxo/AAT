@@ -309,16 +309,12 @@
   </div>
 
 <script>
-/* ====== ΔΙΑΛΟΓΟΙ (εξωτερικά JSON) ====== */
+/* ====== GLOBAL DATA HOLDERS ====== */
 const DIALOGS = {
   gr: { act1:{}, act2:{}, foyer:[] },
   en: { act1:{}, act2:{}, foyer:[] }
 };
 
-let LANG = 'gr';
-let firstLawShown = false;
-
-/* ====== ΔΥΝΑΜΙΚΕΣ ΦΡΑΣΕΙΣ (όχι UI) ====== */
 const i18nDyn = {
   gr: {
     thoughts: {
@@ -336,66 +332,16 @@ const i18nDyn = {
   }
 };
 
-/* ====== UI (εξωτερικά JSON) ====== */
 const UI = {};
+let LANG = 'gr';
 
-async function loadUI(lang){
-  try{
-    const resp = await fetch(`ui-${lang}.json`, {cache:'no-store'});
-    if(!resp.ok){
-      console.warn('ui json not found for', lang);
-      return;
-    }
-    UI[lang] = await resp.json();
-  }catch(err){
-    console.warn('ui json error for', lang, err);
-  }
-}
+let thoughtScriptBase = [];
+let thoughtScript     = [];
+let FOYER_META        = [];
+let ACT2_TIMELINE     = [];
+let FOYER_VIEWERS     = [];
 
-/* ====== TIMELINE DEFAULTS ====== */
-const defaultThoughtScriptBase = [
-  {kind:'bubble',    atT:1.05, viewer:0, key:'t1',  yOffset:120, xShift:-40},
-  {kind:'bubble',    atT:1.15, viewer:1, key:'t2',  yOffset:125, xShift:-20},
-  {kind:'bubble',    atT:1.80, viewer:3, key:'t3',  yOffset:130, xShift: 10},
-  {kind:'bubble',    atT:2.30, viewer:4, key:'t4',  yOffset:130, xShift: 30},
-  {kind:'bubble',    atT:2.90, viewer:2, key:'t5',  yOffset:135, xShift:-30},
-  {kind:'bubble',    atT:3.40, viewer:1, key:'t6',  yOffset:135, xShift:-10},
-  {kind:'bubble',    atT:3.80, viewer:3, key:'t7',  yOffset:135, xShift: 10},
-
-  {kind:'graph',     atT:4.00},
-
-  {kind:'bubbleDyn', atT:4.60, viewer:0, what:'phi', yOffset:135, xShift:-20},
-  {kind:'bubbleDyn', atT:5.20, viewer:2, what:'A',   yOffset:135, xShift:  0},
-  {kind:'bubbleDyn', atT:5.70, viewer:4, what:'Tw',  yOffset:135, xShift: 20},
-
-  {kind:'law',       atT:6.10, lawText:'x=Αημ(ωt+φ0) (1)', alsoParams:true},
-  {kind:'bubble',    atT:6.60, viewer:1, key:'t11', yOffset:130, xShift:-20},
-  {kind:'law',       atT:6.90, lawText:'v=ωA·συν(ωt+φ0) (2)'},
-  {kind:'lawPlot',   atT:7.00, plot:'v'},
-
-  {kind:'bubble',    atT:7.60, viewer:3, key:'t13', yOffset:140, xShift: 10},
-  {kind:'law',       atT:7.85, lawText:'a=−ω²A·ημ(ωt+φ0) (3)'},
-  {kind:'lawPlot',   atT:7.95, plot:'a'},
-
-  {kind:'bubble',    atT:8.50, viewer:0, key:'t15', yOffset:125, xShift:-30},
-  {kind:'law',       atT:8.80, lawText:'a(x)=−ω²·x (4)'},
-  {kind:'lawPlot',   atT:9.10, plot:'ax'},
-
-  {kind:'bubble',    atT:9.60, viewer:2, key:'t18', yOffset:130, xShift:  0},
-  {kind:'close',     atT:10.20}
-];
-
-let thoughtScriptBase = [...defaultThoughtScriptBase];
-let thoughtScript     = [...thoughtScriptBase];
-
-const defaultFoyerMeta = [
-  {v:1},{v:2},{v:2},{v:3},{v:3},{v:4},{v:1},{v:4},{v:4},{v:4},{v:4},{v:1},{v:1},{v:5},{v:4},{v:4},{v:2}
-];
-
-let FOYER_META   = [...defaultFoyerMeta];
-let ACT2_TIMELINE = null;
-
-/* ====== LOADERS ====== */
+/* ====== TIMELINE / DIALOG / UI LOADERS ====== */
 async function loadDialogOverrides(lang){
   try{
     const resp = await fetch(`dialogs-${lang}.json`, {cache:'no-store'});
@@ -424,54 +370,57 @@ async function loadDialogOverrides(lang){
         viewer: (typeof it.viewer==='number'? it.viewer : undefined)
       }));
     }
-  }catch(err){
-    console.warn('Δεν φορτώθηκαν dialogs για', lang, err);
-  }
+  }catch(e){}
 }
 
 async function loadTimeline(){
   try{
     const resp = await fetch('timeline.json', {cache:'no-store'});
-    if(!resp.ok){
-      console.warn('timeline.json δεν βρέθηκε, χρησιμοποιώ default timelines');
-      thoughtScriptBase = [...defaultThoughtScriptBase];
-      thoughtScript     = [...thoughtScriptBase];
-      FOYER_META        = [...defaultFoyerMeta];
-      ACT2_TIMELINE     = null;
-      return;
-    }
+    if(!resp.ok) return;
     const data = await resp.json() || {};
 
     if(Array.isArray(data.act1)){
-      thoughtScriptBase = data.act1.map(ev => ({...ev}));
+      thoughtScriptBase = data.act1.map(ev=>({...ev}));
+      thoughtScript     = [...thoughtScriptBase];
     }else{
-      thoughtScriptBase = [...defaultThoughtScriptBase];
+      thoughtScriptBase = [];
+      thoughtScript     = [];
     }
-    thoughtScript = [...thoughtScriptBase];
 
     if(Array.isArray(data.act2)){
-      ACT2_TIMELINE = data.act2.map(ev => ({...ev}));
+      ACT2_TIMELINE = data.act2.map(ev=>({...ev}));
     }else{
-      ACT2_TIMELINE = null;
+      ACT2_TIMELINE = [];
     }
 
     if(Array.isArray(data.foyer)){
-      FOYER_META = data.foyer.map(ev => ({...ev}));
+      FOYER_META = data.foyer.map(ev=>({...ev}));
     }else{
-      FOYER_META = [...defaultFoyerMeta];
+      FOYER_META = [];
     }
-
-  }catch(err){
-    console.warn('Σφάλμα φόρτωσης timeline.json, χρησιμοποιώ default timelines', err);
-    thoughtScriptBase = [...defaultThoughtScriptBase];
-    thoughtScript     = [...thoughtScriptBase];
-    FOYER_META        = [...defaultFoyerMeta];
-    ACT2_TIMELINE     = null;
-  }
+  }catch(e){}
 }
 
-/* ====== I18N ΒΟΗΘΗΤΙΚΑ ====== */
+async function loadUI(lang){
+  try{
+    const resp = await fetch(`ui-${lang}.json`, {cache:'no-store'});
+    if(!resp.ok) return;
+    UI[lang] = await resp.json();
+  }catch(e){}
+}
+
+async function loadViewers(){
+  try{
+    const resp = await fetch('viewers.json', {cache:'no-store'});
+    if(!resp.ok) return;
+    const data = await resp.json();
+    if(Array.isArray(data)) FOYER_VIEWERS = data;
+  }catch(e){}
+}
+
+/* ====== I18N / UI ====== */
 const langSwitch = document.getElementById('langSwitch');
+let firstLawShown = false;
 
 function setLang(lang){
   LANG = lang;
@@ -674,7 +623,6 @@ slFirst.addEventListener('input',()=>{ firstThoughtMul=parseFloat(slFirst.value)
 slScale.addEventListener('input',()=>{ timelineScale=parseFloat(slScale.value); valScale.textContent=`${timelineScale.toFixed(1)}×`; });
 slDur.addEventListener('input',()=>{ bubbleDurationSec=parseFloat(slDur.value); valDur.textContent=`${bubbleDurationSec.toFixed(1)}s`; });
 slSlow.addEventListener('input',()=>{ slowFactor=parseFloat(slSlow.value); valSlow.textContent=`${slowFactor.toFixed(2)}×`; });
-btnSettings.addEventListener('click',()=>{ settingsPanel.style.display=(settingsPanel.style.display==='block'?'none':'block'); });
 
 /* ====== TIMELINE STATE ====== */
 let nextThoughtIdx=0;
@@ -743,8 +691,8 @@ function typeWriterHTML(el, html, speed, done){
 
 /* ====== ΧΡΩΜΑΤΑ ====== */
 function tint(hex, alpha){
-  const c = hex.replace('#','');
-  const r=parseInt(c.slice(0,2),16), g=parseInt(c.slice(2,4),16), b=parseInt(c.slice(4,6),16);
+  const c = (hex||'#ffffff').replace('#','');
+  const r=parseInt(c.slice(0,2),16)||255, g=parseInt(c.slice(2,4),16)||255, b=parseInt(c.slice(4,6),16)||255;
   return `rgba(${r},${g},${b},${alpha})`;
 }
 
@@ -772,19 +720,30 @@ class BubbleScheduler {
   }
   showSpeaker(viewer){
     if(!this.labelEl) return;
-    const v=document.querySelector(`.viewer[data-idx="${viewer}"]`);
-    if(!v){ this.labelEl.style.display='none'; return; }
+    const viewersArr = Array.isArray(FOYER_VIEWERS) ? FOYER_VIEWERS : [];
+    const fv = viewersArr[viewer] || viewersArr[0] || null;
+
+    const vEl=document.querySelector(`.viewer[data-idx="${viewer}"]`);
+    if(!vEl){ this.labelEl.style.display='none'; return; }
     const sRect=stage.getBoundingClientRect();
-    const vRect=v.getBoundingClientRect();
+    const vRect=vEl.getBoundingClientRect();
     const centerX=(vRect.left+vRect.width/2)-sRect.left;
     const topPx=Math.max(10,(vRect.top-sRect.top)-110);
-    const nameGr=`ΘΕΑΤΗΣ ${viewer+1}`;
-    const nameEn=`SPECTATOR ${viewer+1}`;
-    this.labelEl.textContent=(LANG==='gr'?nameGr:nameEn);
-    if(typeof FOYER_VIEWERS!=='undefined'){
-      const fv = FOYER_VIEWERS[viewer] || FOYER_VIEWERS[0];
+
+    let labelText='';
+    if(fv){
+      if(LANG==='en'){
+        labelText = fv.name_en || fv.name || (`SPECTATOR ${viewer+1}`);
+      }else{
+        labelText = fv.name_gr || fv.name || (`ΘΕΑΤΗΣ ${viewer+1}`);
+      }
       this.labelEl.style.backgroundColor=tint(fv.color,0.9);
+    }else{
+      labelText = (LANG==='en' ? `SPECTATOR ${viewer+1}` : `ΘΕΑΤΗΣ ${viewer+1}`);
+      this.labelEl.style.backgroundColor='rgba(0,0,0,0.7)';
     }
+
+    this.labelEl.textContent = labelText;
     this.labelEl.style.left=centerX+'px';
     this.labelEl.style.top=topPx+'px';
     this.labelEl.style.transform='translateX(-50%)';
@@ -1014,7 +973,7 @@ function handleTimelineEvent(th){
   }else if(th.kind==='graph'){
     initXTChart(); drawXTChart();
   }else if(th.kind==='law'){
-    addLaw(th.lawText);
+    if(th.lawText) addLaw(th.lawText);
     if(th.alsoParams){ showCurtainParams(); }
   }else if(th.kind==='lawPlot'){
     if(th.plot==='v') ensureVelocityChart();
@@ -1095,7 +1054,7 @@ function startShowCountdown(){
 }
 startBtn.addEventListener('click', startShowCountdown);
 
-/* ====== ΑΝΙΜΑΤΙΟΝ ====== */
+/* ====== ANIMATION LOOP ====== */
 let L0_px; let skaterWidthPx; let hookOffsetPx;
 function animate(now){
   const realDt=(now-lastFrame)/1000; lastFrame=now;
@@ -1114,8 +1073,7 @@ function animate(now){
     const baseMul=(th.atT??0);
     const eventAtSec=(baseMul+shiftMul)*T*timelineScale;
     if(tObs>=eventAtSec){
-      try{ handleTimelineEvent(th); }catch(e){ console.error('timeline event error:',e); }
-      finally{ nextThoughtIdx+=1; }
+      try{ handleTimelineEvent(th); }finally{ nextThoughtIdx+=1; }
     }
   }
 
@@ -1144,14 +1102,6 @@ function animate(now){
 requestAnimationFrame(animate);
 
 /* ====== ΦΟΥΑΓΙΕ ====== */
-const FOYER_VIEWERS = [
-  { id:1, name:'ΘΕΑΤΗΣ 1', color:'#ff6b6b' },
-  { id:2, name:'ΘΕΑΤΗΣ 2', color:'#ffd166' },
-  { id:3, name:'ΘΕΑΤΗΣ 3', color:'#06d6a0' },
-  { id:4, name:'ΘΕΑΤΗΣ 4', color:'#118ab2' },
-  { id:5, name:'ΘΕΑΤΗΣ 5', color:'#c77dff' },
-];
-
 const boardLeft  = document.getElementById('boardLeft');
 const boardRight = document.getElementById('boardRight');
 const foyer      = document.getElementById('foyer');
@@ -1176,12 +1126,18 @@ function typeWriter(el, text, speed=12, done){
 }
 
 function showSpeakerChip(viewerId){
-  const vInfo = FOYER_VIEWERS.find(x=>x.id===viewerId);
+  const vInfo = (Array.isArray(FOYER_VIEWERS) ? FOYER_VIEWERS : []).find(x=>x.id===viewerId) || FOYER_VIEWERS[0];
   const anchor = document.querySelector(`.viewer[data-idx="${viewerId-1}"]`);
   if(!vInfo || !anchor) return;
   const sRect = stage.getBoundingClientRect();
   const aRect = anchor.getBoundingClientRect();
-  fbubble.textContent = vInfo.name;
+  let labelText;
+  if(LANG==='en'){
+    labelText = vInfo.name_en || vInfo.name || `SPECTATOR ${viewerId}`;
+  }else{
+    labelText = vInfo.name_gr || vInfo.name || `ΘΕΑΤΗΣ ${viewerId}`;
+  }
+  fbubble.textContent = labelText;
   fbubble.style.backgroundColor = tint(vInfo.color,0.85);
   fbubble.style.borderColor     = 'rgba(255,255,255,.85)';
   const centerX = (aRect.left + aRect.width/2) - sRect.left;
@@ -1212,7 +1168,9 @@ function isFormulaBlock(text){
 }
 
 function addRow(leftText, rightText, viewer, whenDone){
-  const viewerInfo = FOYER_VIEWERS.find(v=>v.id===viewer) || FOYER_VIEWERS[0];
+  const baseViewer = (Array.isArray(FOYER_VIEWERS) ? FOYER_VIEWERS : []);
+  const viewerInfo = baseViewer.find(v=>v.id===viewer) || baseViewer[0] || {color:'#ffffff'};
+
   const bgLeft  = tint(viewerInfo.color, 0.22);
   const bgRight = tint(viewerInfo.color, 0.16);
 
@@ -1265,7 +1223,15 @@ function foyerStep(){
   }
   const text = dlgLang.foyer[foyerIdx] || {};
   const meta = FOYER_META && FOYER_META[foyerIdx];
-  const viewerId = (typeof text.viewer==='number') ? text.viewer : (meta ? meta.v : 1);
+  let viewerId;
+  if(typeof text.viewer==='number'){
+    viewerId = text.viewer;
+  }else if(meta){
+    if(typeof meta.viewer==='number') viewerId = meta.viewer;
+    else if(typeof meta.v==='number') viewerId = meta.v;
+  }
+  if(typeof viewerId!=='number') viewerId=1;
+
   foyerIdx++;
 
   addRow(text.left || '', text.right || '', viewerId, ()=>{
@@ -1303,6 +1269,8 @@ btnFoyerGo.addEventListener('click', ()=>{
   foyerBreak.style.display='none';
   foyerOpen(true);
 });
+window.foyerOpen  = foyerOpen;
+window.foyerClose = foyerClose;
 
 /* ====== ΠΡΑΞΗ 2 (GHOST) ====== */
 (function(){
@@ -1369,42 +1337,12 @@ btnFoyerGo.addEventListener('click', ()=>{
     if(ghostSpring){ ghostSpring.style.display='none'; ghostSpring.style.transform='scaleX(1)'; }
   }
 
-  const defaultSeq = [
-    {v:0, key:'a1',  y:135, x:-20},
-
-    {v:1, key:'a2',  y:135, x:-10, gStart:true},
-    {v:3, key:'a3',  y:135, x: 10},
-    {v:2, key:'a4',  y:130, x:-10, gStop:true},
-
-    {v:4, key:'a5',  y:130, x:20},
-    {v:0, key:'a6',  y:130, x:-20},
-    {v:1, key:'a7',  y:130, x:-10},
-    {v:3, key:'a8',  y:130, x:10},
-    {v:2, key:'a9',  y:130, x:0},
-    {v:4, key:'a10', y:130, x:20},
-    {v:0, key:'a11', y:130, x:-20},
-    {v:1, key:'a12', y:125, x:-10},
-    {v:3, key:'a13', y:130, x:10},
-
-    {v:2, key:'a14', y:130, x:0},
-    {law:'ΣF = −m·ω²·A·ημ(ωt+φ₀) (5)'},
-    {v:4, key:'a15', y:130, x:20},
-    {law:'ΣF = −m·ω²·x (6)'},
-
-    {v:0, key:'a16', y:130, x:-20},
-    {v:1, key:'a17', y:130, x:-10},
-    {law:'D = m·ω² (6′)'},
-    {v:3, key:'a18', y:130, x:10},
-    {v:2, key:'a19', y:130, x:0},
-    {v:4, key:'a20', y:130, x:20},
-    {law:'ΣF = −D·x (7)'}
-  ];
-
   let running=false, finished=false;
 
   async function playAct2(){
     if(running || finished) return;
-    const seq = Array.isArray(window.ACT2_TIMELINE) ? window.ACT2_TIMELINE : defaultSeq;
+    const seq = Array.isArray(window.ACT2_TIMELINE) ? window.ACT2_TIMELINE : [];
+    if(!seq.length){ finished=true; return; }
 
     running=true;
     try{
@@ -1427,13 +1365,21 @@ btnFoyerGo.addEventListener('click', ()=>{
       if(sbD && ui.sbD2) sbD.textContent = ui.sbD2;
 
       for(const step of seq){
-        if(step.law){
-          addLaw(step.law);
+        if(step.lawText || step.law){
+          const lawTxt = step.lawText || step.law;
+          addLaw(lawTxt);
           await new Promise(r=>setTimeout(r,220));
           continue;
         }
+        const viewerIdx = (typeof step.v==='number' ? step.v :
+                           (typeof step.viewer==='number' ? step.viewer : 0));
+        const yOff = (typeof step.y==='number' ? step.y :
+                      (typeof step.yOffset==='number' ? step.yOffset : 135));
+        const xShift = (typeof step.x==='number' ? step.x :
+                        (typeof step.xShift==='number' ? step.xShift : 0));
+
         if(step.gStart) startGhost();
-        await BUBBLE.say(step.v, getAct2BubbleText(step.key), step.y, step.x);
+        await BUBBLE.say(viewerIdx, getAct2BubbleText(step.key), yOff, xShift);
         if(step.gStop)  stopGhost();
       }
 
@@ -1455,7 +1401,6 @@ btnFoyerGo.addEventListener('click', ()=>{
 
       finished=true;
     }catch(e){
-      console.error('Act2 error:', e);
     }finally{
       running=false;
     }
@@ -1481,18 +1426,13 @@ const ro=new ResizeObserver(()=>{ positionRightPanel(); if(uXT){ drawXTChart(); 
 ro.observe(stage);
 
 /* ====== BOOTSTRAP ====== */
-(function(){
-  const must={stage,actor,springEl,startBtn,clockEl,rulerEl,markerEl,btnPause,btnSlow,btnPlay,btnSettings,btnReset,settingsPanel,xtChart,paramsBoxEl,lawsPane,lawCharts,measureBox,actBreak,spotlight,curtainUpper,foyerBreak,btnFoyerGo};
-  const miss=Object.entries(must).filter(([k,v])=>!v).map(([k])=>k);
-  if(miss.length) console.error('Λείπουν στοιχεία:', miss.join(', '));
-})();
-
 (async ()=>{
   await loadTimeline();
   await loadDialogOverrides('gr');
   await loadDialogOverrides('en');
   await loadUI('gr');
   await loadUI('en');
+  await loadViewers();
   setLang('gr');
   resetShow();
 })();
