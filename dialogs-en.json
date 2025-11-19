@@ -274,86 +274,120 @@
   "foyer": [
     {
       "viewer": 1,
+      "typeMs": 4000,
+      "pauseMs": 1500,
       "left": "Spectator 1: Relations (1), (2), (3) and (5) help us “predict” the position, velocity, acceleration and the total force acting at every instant on (m₁ ,D₁) without needing to go back inside for the continuation of the play!",
       "right": "(1) x(t)=A·sin(ωt+φ₀)\n(2) v(t)=ωA·cos(ωt+φ₀)\n(3) a(t)=−ω²A·sin(ωt+φ₀)\n(5) ΣF=−m·ω²A·sin(ωt+φ₀)"
     },
     {
       "viewer": 2,
+      "typeMs": 4000,
+      "pauseMs": 1500,
       "left": "Spectator 2: But (3)’ and (6)",
       "right": "(3)’ a(x)=−ω²·x\n(6)  ΣF=−m·ω²·x"
     },
     {
       "viewer": 2,
+      "typeMs": 4000,
+      "pauseMs": 1500,
       "left": "Spectator 2: however they help us “predict” the acceleration and the total force acting, as long as we know at which point of the stage (m₁ ,D₁) is located, without us having to remain spectators, of course!",
       "right": ""
     },
     {
       "viewer": 3,
+      "typeMs": 4000,
+      "pauseMs": 1500,
       "left": "Spectator 3: So then!\n1. We realise, my friends, that for the moment we cannot really use (2) for the velocity and its relation with the position of (m₁ ,D₁).\n2. I think that what we saw generalises to any protagonist (m,D) in a similar S.H.M. play.\n3. As people who know a bit of algebra, and with a bit of “algebraic curiosity”, here is what we can do (and in general, referring now to an arbitrary (m,D)) to fill in gap 1:\n✓ We solve (1) for sin(ωt+φ₀) and square. We do the same with (2) for cos(ωt+φ₀) and square. Then we add the two equations member by member.",
       "right": "x=A·sin(ωt+φ₀)  (1)\nv=ωA·cos(ωt+φ₀) (2)\n\nsin(ωt+φ₀)=x/A\ncos(ωt+φ₀)=v/(ωA)\n\n⇒ sin²(ωt+φ₀)+cos²(ωt+φ₀)=1\n⇒ 1 = x²/A² + v²/(ω²A²)  (8)"
     },
     {
       "viewer": 3,
+      "typeMs": 4000,
+      "pauseMs": 1500,
       "left": "Spectator 3:\n✓ Here is the relation we were missing. Now we can also “predict” the velocity when we know the position of the protagonist on stage, and\n✓ We can extract (by similar thinking) a relation between acceleration and velocity! That is, we solve (3) for sin(ωt+φ₀) and square. We do the same with (2) for cos(ωt+φ₀) and square. Then we add member by member.",
       "right": "a=−ω²A·sin(ωt+φ₀)  (3)\nv= ωA·cos(ωt+φ₀)    (2)\n\nsin(ωt+φ₀)= −a/(ω²A)\ncos(ωt+φ₀)=  v/(ωA)\n\n⇒ 1 = a²/(ω⁴A²) + v²/(ω²A²)  (9)  bingo!"
     },
     {
       "viewer": 4,
+      "typeMs": 4000,
+      "pauseMs": 1500,
       "left": "Spectator 4: It would be better if we rewrote (8) in the form v= … Look:",
       "right": "(8) 1 = x²/A² + v²/(ω²A²)\n⇔ ω²A² = ω²x² + v²"
     },
     {
       "viewer": 1,
+      "typeMs": 4000,
+      "pauseMs": 1500,
       "left": "Spectator 1: Wait, wait a second…",
       "right": ""
     },
     {
       "viewer": 4,
+      "typeMs": 4000,
+      "pauseMs": 1500,
       "left": "Spectator 4: let me finish… we solve it for v",
       "right": "⇔ v = ±ω·√(A²−x²)  (10)"
     },
     {
       "viewer": 4,
+      "typeMs": 4000,
+      "pauseMs": 1500,
       "left": "Spectator 4: and we can do the same with (9)",
       "right": "(9) 1 = a²/(ω⁴A²) + v²/(ω²A²)\n⇔ a = ±ω·√(ω²A² − v²)  (11)"
     },
     {
       "viewer": 4,
+      "typeMs": 4000,
+      "pauseMs": 1500,
       "left": "Spectator 4: hmm, and also (if we think that ωA=v_max)",
       "right": "(11) ⇔ a = ±ω·√((ωA)² − v²)\n⇔ a = ±ω·√(v_max² − v²)  (12)"
     },
     {
       "viewer": 4,
+      "typeMs": 4000,
+      "pauseMs": 1500,
       "left": "Spectator 4: that’s all from me… the floor goes to Spectator 1!",
       "right": ""
     },
     {
       "viewer": 1,
+      "typeMs": 4000,
+      "pauseMs": 1500,
       "left": "Spectator 1: The point where I stopped was ω²A² = ω²x² + v². So I’m thinking: if we multiply both sides by ½m, look! the relation becomes:",
       "right": "½ m ω²A² = ½ m ω²x² + ½ m v²  (12)"
     },
     {
       "viewer": 1,
+      "typeMs": 4000,
+      "pauseMs": 1500,
       "left": "Spectator 1: But:\n• The factor ½ m v² is the kinetic energy K of the protagonist (m,D).\n• This term is added to ½ m ω² x² which must clearly also be an energy term! (we only add like quantities). But this term depends on the position of the protagonist, so it must represent the potential energy U (due to position) of the protagonist (m,D)!\n• Thus the term ½ m ω² A² on the left\n  – First, as the sum K+U, cannot be anything other than the mechanical energy E_M of the protagonist (m,D).\n  – Second, comparing with U=½ m ω² x² (and observing the maximum displacement), ½ m ω² A² is also the maximum potential energy U_max of (m,D).\n  – Third, as a constant amount of mechanical energy, (12) leads us to the “M.E.C.” (Mechanical Energy Conservation) of the oscillating protagonist (m,D)!",
       "right": "(A.D.M.E.T. of the oscillator)"
     },
     {
       "viewer": 5,
+      "typeMs": 4000,
+      "pauseMs": 1500,
       "left": "Spectator 5: So we now also know the budget of the play! Which means, I’d say, that we have no real reason to go back into the hall to watch the 3rd act about energy. We’ve basically seen this play already!",
       "right": ""
     },
     {
       "viewer": 4,
+      "typeMs": 4000,
+      "pauseMs": 1500,
       "left": "Spectator 4: Of course! Although our “algebraic curiosity” also leads us to a more compact expression of this Mechanical Energy Conservation of the oscillator (m,D). We mentioned earlier this constant D=mω² which we also used in relation (7).",
       "right": "Newton’s law:\nΣF = −D·x  (7)"
     },
     {
       "viewer": 4,
+      "typeMs": 4000,
+      "pauseMs": 1500,
       "left": "Spectator 4: If we use this in (12), that equation becomes:",
       "right": "½ D A² = ½ D x² + ½ m v²  (13)\n(M.E.C. of (m,D))"
     },
     {
       "viewer": 2,
+      "typeMs": 4000,
+      "pauseMs": 1500,
       "left": "Spectator 2: Let’s leave, I’d say, but with a kind of aftertaste from tonight’s performance of (m₁,D₁), summing up: every protagonist oscillator (m,D) is completely characterised by its “body type” (m) and its “time stubbornness” (ω), or equivalently – and let’s keep this – by its own (m,D). So from now on the oscillator (m,D) is our protagonist; the limits of its performance (the length of the stage) are always set by Mr Energioulis, and the start of it is set by us, the spectators!",
       "right": ""
     }
