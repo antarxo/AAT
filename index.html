@@ -81,7 +81,8 @@
   .marker-line{position:absolute;left:50%;bottom:8px;width:2px;height:70px;background:#ffd27a;box-shadow:0 0 4px rgba(255,210,122,.8);transform:translateX(-50%)}
   .marker-tip{position:absolute;left:50%;bottom:0;width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:8px solid #ffd27a;filter:drop-shadow(0 2px 2px rgba(255,210,122,.8));transform:translateX(-50%)}
 
-  @keyframes popIn{0%{transform:scale(.9);opacity:0}60%{transform:scale(1.04);opacity:1}100%{transform:scale(1)}}
+  @keyframes popIn{0%{transform:scale(.9);opacity:0}60%{transform:scale(1.04);opacity:1}100%{transform:scale(1)}
+  }
   .thought-bubble{
     position:absolute;max-width:420px;background:rgba(255,255,255,.92);color:#000;
     font-size:15px;line-height:1.45;padding:10px 12px 12px;border:2px solid transparent;border-radius:10px;
@@ -749,33 +750,42 @@ class BubbleScheduler {
     this.labelEl.style.transform='translateX(-50%)';
     this.labelEl.style.display='block';
   }
+
+  /* === ΣΤΑΘΕΡΕΣ ΘΕΣΕΙΣ ΑΝΑ ΘΕΑΤΗ, ΜΕΣΑ ΣΤΟ 64% === */
   placePanelNearViewer(viewer,lift=140,xShift=0){
-    const v=document.querySelector(`.viewer[data-idx="${viewer}"]`); if(!v) return;
-    const sRect=stage.getBoundingClientRect();
-    const vRect=v.getBoundingClientRect();
-    const W=stage.clientWidth;
-    const xL=W*0.18, xR=W*0.82, pad=12;
+    const W = stage.clientWidth;
+    const H = stage.clientHeight;
+
+    const xL = W * 0.18;
+    const xR = W * 0.82;
+    const centerWidth = xR - xL;
+    const pad = 12;
 
     this.el.style.display='block';
     this.el.style.opacity='0';
     this.el.style.left='0px';
     this.el.style.top='0px';
 
-    const bw=this.el.offsetWidth || 320;
-    const vCenter=(vRect.left+vRect.width/2)-sRect.left;
-    const vMidY=(vRect.top+vRect.bottom)/2 - sRect.top;
+    const bw = this.el.offsetWidth || 320;
 
-    const side = (vCenter < W/2) ? 1 : -1;
-    const horizGap = (vRect.width/2) + 170 + (xShift || 0);
+    const totalViewers = Math.max(1, (document.querySelectorAll('.viewer').length || 5));
+    const idx = Math.max(0, Math.min(totalViewers-1, viewer|0));
+    const rel = (idx + 1) / (totalViewers + 1); // π.χ. 1/6, 2/6, ..., 5/6
 
-    let leftPx = vCenter + side*horizGap - bw/2;
-    leftPx = Math.max(xL+pad, Math.min(leftPx, xR-pad-bw));
+    const baseCenterX = xL + rel * centerWidth;
 
-    const topPx = Math.max(40, vMidY - 40);
+    let leftPx = baseCenterX - bw/2 + (xShift || 0);
+    leftPx = Math.max(xL + pad, Math.min(leftPx, xR - pad - bw));
 
-    this.el.style.left=leftPx+'px';
-    this.el.style.top =topPx+'px';
+    const baseTop = H * 0.23;
+    const liftVal = (typeof lift === 'number' ? lift : 135);
+    const deltaY = (135 - liftVal);
+    const topPx = Math.max(40, baseTop + deltaY);
+
+    this.el.style.left = leftPx + 'px';
+    this.el.style.top  = topPx + 'px';
   }
+
   showOnce({viewer,text,lift,xShift}){
     return new Promise(resolve=>{
       if(this._currentCancel){ try{ this._currentCancel(); }catch{} this._currentCancel=null; }
