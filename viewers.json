@@ -1,0 +1,7 @@
+[
+  { "id": 1, "name_gr": "ΘΕΑΤΗΣ 1", "name_en": "SPECTATOR 1", "color": "#ff6b6b" },
+  { "id": 2, "name_gr": "ΘΕΑΤΗΣ 2", "name_en": "SPECTATOR 2", "color": "#ffd166" },
+  { "id": 3, "name_gr": "ΘΕΑΤΗΣ 3", "name_en": "SPECTATOR 3", "color": "#06d6a0" },
+  { "id": 4, "name_gr": "ΘΕΑΤΗΣ 4", "name_en": "SPECTATOR 4", "color": "#118ab2" },
+  { "id": 5, "name_gr": "ΘΕΑΤΗΣ 5", "name_en": "SPECTATOR 5", "color": "#c77dff" }
+]
