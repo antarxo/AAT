@@ -115,7 +115,7 @@
   }
 
   .controls{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.2);border-radius:8px;padding:6px 8px;display:flex;gap:8px;z-index:300}
-  .controls button{background:none;border:0;color:#fff;font-size:16px;line-height:1;cursor:pointer;min-width:32px;min-height:32px;border-radius:4px;padding:4px 6px;transition:transform .08s ease}
+  .controls button{background:none;border:0;color:#fff;font-size:16px;line-height:1;cursor:pointer;min-width:32px;min-height:32px;border-radius:4px;padding:4px 6px;transition:transform .08s.ease}
   .controls button:active{transform:translateY(1px)}
   .controls button.active{background:rgba(255,255,255,.2)}
   #btnSlow{display:none}
@@ -365,6 +365,7 @@ async function loadDialogOverrides(lang){
     }
     if(Array.isArray(data.foyer)){
       dlg.foyer = data.foyer.map(it=>({
+        id: it.id || undefined,
         left: it.left || '',
         right: it.right || '',
         viewer: (typeof it.viewer==='number'? it.viewer : undefined)
@@ -654,7 +655,7 @@ function setMode(newMode){
   slowHint.textContent = (mode==='slow' && slowFactor<1) ? `SLOW-MO ×${slowFactor.toFixed(2)}` : '';
 }
 
-/* ====== TYPEWRITER HTML ====== */
+/* ====== TYPEWRITER HTML (ΠΡΑΞΕΙΣ) ====== */
 function typeWriterHTML(el, html, speed, done){
   el.innerHTML = html || '';
   const textNodes=[];
@@ -750,7 +751,7 @@ class BubbleScheduler {
     this.labelEl.style.display='block';
   }
 
-  /* === ΣΤΑΘΕΡΑ, ΣΥΝΕΠΗ BUBBLES ΑΝΑ ΘΕΑΤΗ, ΜΕΣΑ ΣΤΗ ΣΚΗΝΗ 64% === */
+  /* === Bubbles κουμπωμένα σε θεατή μέσα στο 64% === */
   placePanelNearViewer(viewer,lift=140,xShift=0){
     const W = stage.clientWidth;
     const H = stage.clientHeight;
@@ -794,14 +795,18 @@ class BubbleScheduler {
     this.el.style.top  = topPx + 'px';
   }
 
-  showOnce({viewer,text,lift,xShift}){
+  showOnce({viewer,text,lift,xShift,durSec,pauseAfterSec}){
     return new Promise(resolve=>{
       if(this._currentCancel){ try{ this._currentCancel(); }catch{} this._currentCancel=null; }
       const textEl=this.el.querySelector('.text');
       const sanitized = this.sanitize(text||'');
       const plain = sanitized.replace(/<[^>]+>/g,'');
       const totalChars = Math.max(plain.length,10);
-      const baseMs = bubbleDurationSec*1000;
+
+      const effectiveDurSec = (typeof durSec==='number' && durSec>0)
+        ? durSec
+        : (bubbleDurationSec || 3.0);
+      const baseMs = effectiveDurSec*1000;
       const speed = Math.max(15, Math.min(80, Math.round(baseMs/totalChars)));
 
       let done=false;
@@ -821,7 +826,9 @@ class BubbleScheduler {
         setMode('slow');
 
         typeWriterHTML(textEl, sanitized, speed, ()=>{
-          const extraPause = 500;
+          const extraPause = (typeof pauseAfterSec==='number' && pauseAfterSec>=0)
+            ? pauseAfterSec*1000
+            : 500;
           setTimeout(()=>cancel(), extraPause);
         });
       }, 220);
@@ -850,8 +857,8 @@ class BubbleScheduler {
       this._currentCancel=cancel;
     });
   }
-  say(viewer,text,lift=140,xShift=0){
-    this._queue=this._queue.then(()=>this.showOnce({viewer,text,lift,xShift}));
+  say(viewer,text,lift=140,xShift=0,durSec=null,pauseAfterSec=null){
+    this._queue=this._queue.then(()=>this.showOnce({viewer,text,lift,xShift,durSec,pauseAfterSec}));
     return this._queue;
   }
   clear(){
@@ -976,17 +983,47 @@ function closeCurtainsSequence(){
 function handleTimelineEvent(th){
   if(th.kind==='bubble'){
     const txt = getAct1BubbleText(th.key);
-    BUBBLE.say(th.viewer, txt, th.yOffset, th.xShift||0);
+    BUBBLE.say(
+      th.viewer,
+      txt,
+      th.yOffset,
+      th.xShift||0,
+      typeof th.dur==='number' ? th.dur : null,
+      typeof th.pauseAfter==='number' ? th.pauseAfter : null
+    );
   }else if(th.kind==='bubbleDyn'){
     const dyn = (i18nDyn[LANG] && i18nDyn[LANG].thoughts) || {};
+    const dur = (typeof th.dur==='number' ? th.dur : null);
+    const pa  = (typeof th.pauseAfter==='number' ? th.pauseAfter : null);
     if(th.what==='A'){
-      BUBBLE.say(th.viewer, dyn.t7A ? dyn.t7A(A_m.toFixed(2)) : '', th.yOffset, th.xShift||0);
+      BUBBLE.say(
+        th.viewer,
+        dyn.t7A ? dyn.t7A(A_m.toFixed(2)) : '',
+        th.yOffset,
+        th.xShift||0,
+        dur,
+        pa
+      );
     }else if(th.what==='Tw'){
-      BUBBLE.say(th.viewer, dyn.t8Tw ? dyn.t8Tw(T.toFixed(2), omega.toFixed(3)) : '', th.yOffset, th.xShift||0);
+      BUBBLE.say(
+        th.viewer,
+        dyn.t8Tw ? dyn.t8Tw(T.toFixed(2), omega.toFixed(3)) : '',
+        th.yOffset,
+        th.xShift||0,
+        dur,
+        pa
+      );
     }else if(th.what==='phi'){
       const x0 = x0Val().toFixed(2);
       const phi0deg=((omega*obsStartPlaybackOffset)*180/Math.PI + 360)%360;
-      BUBBLE.say(th.viewer, dyn.t9phi ? dyn.t9phi(x0, phi0deg.toFixed(1)) : '', th.yOffset, th.xShift||0);
+      BUBBLE.say(
+        th.viewer,
+        dyn.t9phi ? dyn.t9phi(x0, phi0deg.toFixed(1)) : '',
+        th.yOffset,
+        th.xShift||0,
+        dur,
+        pa
+      );
     }
   }else if(th.kind==='graph'){
     initXTChart(); drawXTChart();
@@ -1129,9 +1166,22 @@ const boardRight = document.getElementById('boardRight');
 const foyer      = document.getElementById('foyer');
 const fbubble    = document.getElementById('foyerBubble');
 
-function typeWriter(el, text, speed=12, done){
+function typeWriter(el, text, opt=12, done){
   el.innerHTML=''; let i=0;
   const src = String(text||'').replaceAll('sqrt(','√(');
+  const total = src.length || 1;
+
+  let speed;
+  if(typeof opt === 'number'){
+    speed = opt;
+  }else if(opt && typeof opt === 'object'){
+    const durSec = (typeof opt.durationSec==='number' && opt.durationSec>0) ? opt.durationSec : 2.0;
+    const durMs  = durSec*1000;
+    speed = Math.max(10, Math.round(durMs/total));
+  }else{
+    speed = 12;
+  }
+
   (function tick(){
     el.innerHTML = src.slice(0,i).replaceAll('\n','<br>');
     try{
@@ -1189,7 +1239,7 @@ function isFormulaBlock(text){
   return false;
 }
 
-function addRow(leftText, rightText, viewer, whenDone){
+function addRow(leftText, rightText, viewer, durLeftSec, durRightSec, pauseAfterSec, whenDone){
   const baseViewer = (Array.isArray(FOYER_VIEWERS) ? FOYER_VIEWERS : []);
   const viewerInfo = baseViewer.find(v=>v.id===viewer) || baseViewer[0] || {color:'#ffffff'};
 
@@ -1221,15 +1271,18 @@ function addRow(leftText, rightText, viewer, whenDone){
       r.style.minHeight = h+'px';
       boardLeft.scrollTop  = boardLeft.scrollHeight;
       boardRight.scrollTop = boardRight.scrollHeight;
-      if(typeof whenDone==='function') whenDone();
+      if(typeof whenDone==='function') whenDone(pauseAfterSec);
     });
   }
 
   const rt = (rightText||'').trim();
 
-  typeWriter(l, leftText, 10, ()=>{
+  const leftOpt  = (typeof durLeftSec  === 'number' && durLeftSec>0)  ? {durationSec:durLeftSec}  : 10;
+  const rightOpt = (typeof durRightSec === 'number' && durRightSec>0) ? {durationSec:durRightSec} : 10;
+
+  typeWriter(l, leftText, leftOpt, ()=>{
     if(rt.length>0){
-      typeWriter(r, rightText, 10, finalizeRow);
+      typeWriter(r, rightText, rightOpt, finalizeRow);
     }else{
       finalizeRow();
     }
@@ -1240,11 +1293,25 @@ let foyerIdx=0, foyerAuto=true, foyerTimer=null;
 function foyerStep(){
   const dlgLang = DIALOGS[LANG];
   if(!dlgLang || !Array.isArray(dlgLang.foyer)) return;
-  if(foyerIdx>=dlgLang.foyer.length){
-    foyerAuto=false; return;
+
+  const metaArr = Array.isArray(FOYER_META) ? FOYER_META : [];
+
+  const meta = metaArr[foyerIdx] || null;
+  let text = null;
+
+  if(meta && meta.id){
+    text = (dlgLang.foyer || []).find(e => e && e.id === meta.id) || null;
+  }else{
+    text = dlgLang.foyer[foyerIdx] || null;
   }
-  const text = dlgLang.foyer[foyerIdx] || {};
-  const meta = FOYER_META && FOYER_META[foyerIdx];
+
+  if(!text){
+    if(foyerIdx >= (dlgLang.foyer||[]).length){
+      foyerAuto=false;
+    }
+    return;
+  }
+
   let viewerId;
   if(typeof text.viewer==='number'){
     viewerId = text.viewer;
@@ -1254,17 +1321,34 @@ function foyerStep(){
   }
   if(typeof viewerId!=='number') viewerId=1;
 
+  const durLeft  = meta && typeof meta.durLeft  === 'number' ? meta.durLeft  : undefined;
+  const durRight = meta && typeof meta.durRight === 'number' ? meta.durRight : undefined;
+  const pauseAfterSec = meta && typeof meta.pauseAfter === 'number' ? meta.pauseAfter : undefined;
+
   foyerIdx++;
 
-  addRow(text.left || '', text.right || '', viewerId, ()=>{
-    const len = (String(text.left||'').length + String(text.right||'').length);
-    const baseDelay = 600;
-    const extra     = Math.min(2000, Math.max(400, 15*len/4));
-    const delay = baseDelay + extra;
-    if(foyerAuto){
-      foyerTimer = setTimeout(foyerStep, delay);
+  addRow(
+    text.left || '',
+    text.right || '',
+    viewerId,
+    durLeft,
+    durRight,
+    pauseAfterSec,
+    (pause)=>{
+      const len = (String(text.left||'').length + String(text.right||'').length);
+      let delay;
+      if(typeof pause === 'number'){
+        delay = Math.max(0, pause*1000);
+      }else{
+        const baseDelay = 600;
+        const extra     = Math.min(2000, Math.max(400, 15*len/4));
+        delay = baseDelay + extra;
+      }
+      if(foyerAuto){
+        foyerTimer = setTimeout(foyerStep, delay);
+      }
     }
-  });
+  );
 }
 
 function repositionFoyer(){
@@ -1401,7 +1485,14 @@ window.foyerClose = foyerClose;
                         (typeof step.xShift==='number' ? step.xShift : 0));
 
         if(step.gStart) startGhost();
-        await BUBBLE.say(viewerIdx, getAct2BubbleText(step.key), yOff, xShift);
+        await BUBBLE.say(
+          viewerIdx,
+          getAct2BubbleText(step.key),
+          yOff,
+          xShift,
+          typeof step.dur==='number' ? step.dur : null,
+          typeof step.pauseAfter==='number' ? step.pauseAfter : null
+        );
         if(step.gStop)  stopGhost();
       }
 
