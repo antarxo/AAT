@@ -38,46 +38,29 @@
   .actor img{width:100%;height:auto;display:block;filter:drop-shadow(0 4px 6px rgba(0,0,0,.6))}
   .floor{position:absolute;left:0;bottom:calc(32vh - 8px);width:100%;height:2px;background:#888;z-index:155;pointer-events:none}
 
-  .audience{
+  .audience{position:absolute; left:18%; bottom:0; width:64%; height:auto; object-position:bottom center; z-index:158; pointer-events:none; filter:contrast(1.05) brightness(.95); display:block;}
+
+  /* avatars του φουαγιέ (πίσω από koino.png, μόνο στο foyer) */
+  .viewer-avatars{
     position:absolute;
     left:18%;
-    bottom:0;
     width:64%;
-    height:auto;
-    object-position:bottom center;
-    z-index:158;
+    bottom:300px;           /* ~300px πάνω από τη βάση του koino.png */
+    display:none;
+    justify-content:space-between;
+    align-items:flex-end;
     pointer-events:none;
-    filter:contrast(1.05) brightness(.95);
-    display:block;
+    z-index:157;            /* πίσω από koino.png που είναι 158 */
+  }
+  .viewer-avatars img.viewer-avatar{
+    width:80px;
+    height:auto;
+    object-fit:contain;
+    filter:drop-shadow(0 4px 6px rgba(0,0,0,.6));
   }
 
-  /* Οι avatars θεατές: μόνο στο φουαγιέ, πίσω από το koino.png */
-  .viewers{
-    position:absolute;
-    left:18%;
-    width:64%;
-    bottom:300px; /* κάτω μέρος avatars 300px πάνω από το κάτω μέρος του koino.png */
-    display:none; /* κρυφοί στις Πράξεις 1 & 2, δείχνουν μόνο στο φουαγιέ */
-    justify-content:space-between;
-    z-index:157; /* πίσω από το .audience */
-    padding:0 4vw 0;
-    pointer-events:none;
-  }
-  .viewer{
-    width:60px;
-    height:100px;
-    background-position:center bottom;
-    background-repeat:no-repeat;
-    background-size:contain;
-    filter:grayscale(1) brightness(.6);
-    opacity:.75;
-    transition:transform 0.25s ease, filter 0.25s ease, opacity 0.25s ease;
-  }
-  .viewer-active{
-    transform:translateY(-22px) scale(1.08);
-    filter:grayscale(0.1) brightness(1.4);
-    opacity:1;
-  }
+  .viewers{position:absolute;left:18%;width:64%;bottom:0;display:flex;justify-content:space-between;z-index:159;padding:0 4vw 12px}
+  .viewer{width:60px;height:100px;background:url('https://upload.wikimedia.org/wikipedia/commons/f/f9/Silhouette_icon.svg') no-repeat center/contain;filter:grayscale(1) brightness(.6);opacity:.75}
 
   .signboard{position:absolute;top:-6px;left:50%;transform:translateX(-50%);background:transparent;border:none;border-radius:10px;padding:12px 18px;color:#ddd;font-family:'Georgia',serif;text-align:center;z-index:165;line-height:1.25}
   .signboard h1{font-size:32px;margin:0;color:#fff}
@@ -123,9 +106,9 @@
     position:absolute;max-width:420px;background:rgba(255,255,255,.92);color:#000;
     font-size:15px;line-height:1.45;padding:10px 12px 12px;border:2px solid transparent;border-radius:10px;
     border-image:repeating-linear-gradient(90deg, rgba(0,0,0,.6) 0 6px, transparent 6px 10px, rgba(0,0,0,.6) 10px 12px, transparent 12px 16px) 1;
-    box-shadow:0 6px 12px rgba(0,0,0,.4);z-index:750;pointer-events:none;opacity:0;display:none;transition:opacity .25s ease, transform .25s ease
+    box-shadow:0 6px 12px rgba(0,0,0,.4);z-index:750;pointer-events:none;opacity:0;display:none;transition:opacity .25s ease, transform .25s.ease
   }
-  .thought-bubble.active{opacity:1;transform:translateY(-2px);animation:popIn .25s ease}
+  .thought-bubble.active{opacity:1;transform:translateY(-2px);animation:popIn .25s.ease}
   .thought-bubble.closing{opacity:0}
   .thought-bubble .tail{display:none;}
   .thought-bubble .checkmark{position:absolute;top:-8px;right:-8px;background:#2ecc71;color:#fff;font-size:11px;line-height:1;border-radius:50%;border:1px solid rgba(0,0,0,.4);width:18px;height:18px;display:none;align-items:center;justify-content:center;font-family:system-ui,sans-serif;font-weight:600}
@@ -300,6 +283,7 @@
     <div class="actor" id="actor"><img src="skater.png" alt="Skater"></div>
     <div class="floor"></div>
     <img class="audience" src="koino.png" alt="κοινό">
+    <div class="viewer-avatars" id="viewerAvatars"></div>
 
     <div class="viewers">
       <div class="viewer" data-idx="0"></div>
@@ -377,7 +361,6 @@ let thoughtScript     = [];
 let FOYER_META        = [];
 let ACT2_TIMELINE     = [];
 let FOYER_VIEWERS     = [];
-let VIEWERS_VISIBLE   = false;
 
 /* ====== TIMELINE / DIALOG / UI LOADERS ====== */
 async function loadDialogOverrides(lang){
@@ -448,35 +431,13 @@ async function loadUI(lang){
   }catch(e){}
 }
 
-function applyViewerIcons(){
-  try{
-    if(!Array.isArray(FOYER_VIEWERS)) return;
-    const wrap = document.querySelector('.viewers');
-    if(!wrap) return;
-    const els = wrap.querySelectorAll('.viewer');
-    els.forEach((el, idx)=>{
-      const v = FOYER_VIEWERS[idx];
-      if(v && v.icon){
-        el.style.backgroundImage = `url('${v.icon}')`;
-      }else{
-        el.style.backgroundImage = 'url("https://upload.wikimedia.org/wikipedia/commons/f/f9/Silhouette_icon.svg")';
-      }
-      el.style.backgroundRepeat   = 'no-repeat';
-      el.style.backgroundSize     = 'contain';
-      el.style.backgroundPosition = 'center bottom';
-    });
-  }catch(e){}
-}
-
 async function loadViewers(){
   try{
     const resp = await fetch('viewers.json', {cache:'no-store'});
     if(!resp.ok) return;
     const data = await resp.json();
-    if(Array.isArray(data)){
-      FOYER_VIEWERS = data;
-      applyViewerIcons();
-    }
+    if(Array.isArray(data)) FOYER_VIEWERS = data;
+    buildViewerAvatars();
   }catch(e){}
 }
 
@@ -551,6 +512,8 @@ function setLang(lang){
   if(lblScale && ui.flowScale)     lblScale.textContent = ui.flowScale;
   if(lblDur   && ui.bubbleDur)     lblDur.textContent   = ui.bubbleDur;
   if(lblSlow  && ui.slowFactor)    lblSlow.textContent  = ui.slowFactor;
+
+  buildViewerAvatars();
 }
 
 function localizeTrig(txt){
@@ -611,6 +574,7 @@ const actBreak=document.getElementById('actBreak');
 const foyerBreak=document.getElementById('foyerBreak');
 const btnFoyerGo=document.getElementById('btnFoyerGo');
 const curtainUpper=document.querySelector('.curtain-upper');
+const viewerAvatars=document.getElementById('viewerAvatars');
 
 if (typeof window.foyerOpen  !== 'function') window.foyerOpen  = function(){};
 if (typeof window.foyerClose !== 'function') window.foyerClose = function(){};
@@ -785,35 +749,12 @@ class BubbleScheduler {
     const viewersArr = Array.isArray(FOYER_VIEWERS) ? FOYER_VIEWERS : [];
     const fv = viewersArr[viewer] || viewersArr[0] || null;
 
-    const W = stage.clientWidth;
-    const H = stage.clientHeight;
-    const xL = W * 0.18;
-    const xR = W * 0.82;
-
-    let centerX;
-    let topPx;
-
-    if(VIEWERS_VISIBLE){
-      const vEl = document.querySelector(`.viewer[data-idx="${viewer}"]`);
-      const sRect=stage.getBoundingClientRect();
-      if(vEl){
-        const vRect=vEl.getBoundingClientRect();
-        centerX=(vRect.left+vRect.width/2)-sRect.left;
-        topPx=Math.max(10,(vRect.top-sRect.top)-110);
-      }else{
-        const totalSlots = 5;
-        const idx = Math.max(0, Math.min(totalSlots-1, viewer|0));
-        const rel = (idx + 1) / (totalSlots + 1);
-        centerX = xL + rel*(xR-xL);
-        topPx   = H*0.18;
-      }
-    }else{
-      const totalSlots = 5;
-      const idx = Math.max(0, Math.min(totalSlots-1, viewer|0));
-      const rel = (idx + 1) / (totalSlots + 1);
-      centerX = xL + rel*(xR-xL);
-      topPx   = H*0.18;
-    }
+    const vEl=document.querySelector(`.viewer[data-idx="${viewer}"]`);
+    if(!vEl){ this.labelEl.style.display='none'; return; }
+    const sRect=stage.getBoundingClientRect();
+    const vRect=vEl.getBoundingClientRect();
+    const centerX=(vRect.left+vRect.width/2)-sRect.left;
+    const topPx=Math.max(10,(vRect.top-sRect.top)-110);
 
     let labelText='';
     if(fv){
@@ -835,7 +776,6 @@ class BubbleScheduler {
     this.labelEl.style.display='block';
   }
 
-  /* === Bubbles κουμπωμένα σε θεατή μέσα στο 64% === */
   placePanelNearViewer(viewer,lift=140,xShift=0){
     const W = stage.clientWidth;
     const H = stage.clientHeight;
@@ -851,7 +791,7 @@ class BubbleScheduler {
 
     const bw = this.el.offsetWidth || 320;
 
-    const vEl = VIEWERS_VISIBLE ? document.querySelector(`.viewer[data-idx="${viewer}"]`) : null;
+    const vEl = document.querySelector(`.viewer[data-idx="${viewer}"]`);
     const sRect = stage.getBoundingClientRect();
 
     let baseCenterX;
@@ -877,10 +817,6 @@ class BubbleScheduler {
 
     this.el.style.left = leftPx + 'px';
     this.el.style.top  = topPx + 'px';
-  }
-
-  showSpeakerForBubble(viewer){
-    this.showSpeaker(viewer);
   }
 
   showOnce({viewer,text,lift,xShift,durSec,pauseAfterSec}){
@@ -1136,9 +1072,6 @@ btnSettings.addEventListener('click',()=>{
   settingsPanel.style.display = (settingsPanel.style.display==='block' ? 'none' : 'block');
 });
 
-const viewersWrap = document.querySelector('.viewers');
-const viewerEls   = viewersWrap ? viewersWrap.querySelectorAll('.viewer') : [];
-
 function resetShow(){
   if(bubbleAutoTimer){ clearTimeout(bubbleAutoTimer); bubbleAutoTimer=null; }
   thoughtScript = [...thoughtScriptBase];
@@ -1166,14 +1099,6 @@ function resetShow(){
   if(uXT){ try{ uXT.destroy(); }catch(e){}; uXT=null; }
   xtChart.style.display='none';
   springEl.style.display='none';
-
-  if(viewersWrap){
-    viewersWrap.style.display='none';
-  }
-  viewerEls.forEach(v => v.classList.remove('viewer-active'));
-  const fbubbleTmp = document.getElementById('foyerBubble');
-  if(fbubbleTmp) fbubbleTmp.style.display='none';
-  VIEWERS_VISIBLE=false;
 
   window.foyerClose(true);
   setLang(LANG);
@@ -1297,18 +1222,9 @@ function typeWriter(el, text, opt=12, done){
 }
 
 function showSpeakerChip(viewerId){
-  const arr = Array.isArray(FOYER_VIEWERS) ? FOYER_VIEWERS : [];
-  let idx = arr.findIndex(x => x.id === viewerId);
-  if(idx < 0) idx = viewerId - 1;
-  if(idx < 0) idx = 0;
-
-  const vInfo = arr[idx] || arr[0];
-  const anchor = viewerEls[idx];
+  const vInfo = (Array.isArray(FOYER_VIEWERS) ? FOYER_VIEWERS : []).find(x=>x.id===viewerId) || FOYER_VIEWERS[0];
+  const anchor = document.querySelector(`.viewer[data-idx="${viewerId-1}"]`);
   if(!vInfo || !anchor) return;
-
-  viewerEls.forEach(v => v.classList.remove('viewer-active'));
-  anchor.classList.add('viewer-active');
-
   const sRect = stage.getBoundingClientRect();
   const aRect = anchor.getBoundingClientRect();
   let labelText;
@@ -1348,7 +1264,7 @@ function isFormulaBlock(text){
 }
 
 function addRow(leftText, rightText, viewer, durLeftSec, durRightSec, pauseAfterSec, whenDone){
-  const baseViewer = Array.isArray(FOYER_VIEWERS) ? FOYER_VIEWERS : [];
+  const baseViewer = (Array.isArray(FOYER_VIEWERS) ? FOYER_VIEWERS : []);
   const viewerInfo = baseViewer.find(v=>v.id===viewer) || baseViewer[0] || {color:'#ffffff'};
 
   const bgLeft  = tint(viewerInfo.color, 0.22);
@@ -1466,15 +1382,28 @@ function repositionFoyer(){
   foyer.style.top='0';
   foyer.style.height=getComputedStyle(document.documentElement).getPropertyValue('--foyer-h')||'445px';
 }
+
+/* avatars από viewers.json */
+function buildViewerAvatars(){
+  if(!viewerAvatars) return;
+  viewerAvatars.innerHTML='';
+  if(!Array.isArray(FOYER_VIEWERS) || !FOYER_VIEWERS.length) return;
+
+  FOYER_VIEWERS.forEach((v,idx)=>{
+    const img=document.createElement('img');
+    img.className='viewer-avatar';
+    if(v.icon){ img.src=v.icon; }
+    img.alt = (LANG==='en'
+      ? (v.name_en || v.name || `Spectator ${idx+1}`)
+      : (v.name_gr || v.name || `Θεατής ${idx+1}`)
+    );
+    viewerAvatars.appendChild(img);
+  });
+}
+
 function foyerOpen(auto=true){
   foyer.style.display='block';
-  if(viewersWrap){
-    viewersWrap.style.display='flex';
-  }
-  VIEWERS_VISIBLE = true;
-  viewerEls.forEach(v => v.classList.remove('viewer-active'));
-  fbubble.style.display = 'none';
-
+  if(viewerAvatars) viewerAvatars.style.display='flex';
   boardLeft.innerHTML=''; boardRight.innerHTML='';
   foyerIdx=0; foyerAuto= !!auto;
   if(foyerTimer){ clearTimeout(foyerTimer); foyerTimer=null; }
@@ -1484,12 +1413,7 @@ function foyerOpen(auto=true){
 function foyerClose(silent=false){
   if(foyerTimer){ clearTimeout(foyerTimer); foyerTimer=null; }
   foyer.style.display='none';
-  if(viewersWrap){
-    viewersWrap.style.display='none';
-  }
-  viewerEls.forEach(v => v.classList.remove('viewer-active'));
-  fbubble.style.display='none';
-  VIEWERS_VISIBLE=false;
+  if(viewerAvatars) viewerAvatars.style.display='none';
 }
 btnFoyer.addEventListener('click', ()=>foyerOpen(true));
 btnFoyerGo.addEventListener('click', ()=>{
