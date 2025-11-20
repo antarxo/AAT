@@ -349,26 +349,39 @@ async function loadDialogOverrides(lang){
     const data = await resp.json();
     const dlg = DIALOGS[lang] || (DIALOGS[lang]={act1:{},act2:{},foyer:[]});
 
+    // ACT 1: υποστήριξη {id,text} ή {key,text} ή {left/right}
     if(Array.isArray(data.act1)){
-      data.act1.forEach(item=>{
-        if(item && item.id && typeof item.text==='string'){
-          dlg.act1[item.id] = item.text;
-        }
+      data.act1.forEach((item, idx)=>{
+        if(!item) return;
+        const id = item.id || item.key || `a1_${idx}`;
+        let text = '';
+        if(typeof item.text === 'string') text = item.text;
+        else if(typeof item.left === 'string') text = item.left;
+        if(id && text) dlg.act1[id] = text;
       });
     }
+
+    // ACT 2: ίδια λογική
     if(Array.isArray(data.act2)){
-      data.act2.forEach(item=>{
-        if(item && item.id && typeof item.text==='string'){
-          dlg.act2[item.id] = item.text;
-        }
+      data.act2.forEach((item, idx)=>{
+        if(!item) return;
+        const id = item.id || item.key || `a2_${idx}`;
+        let text = '';
+        if(typeof item.text === 'string') text = item.text;
+        else if(typeof item.left === 'string') text = item.left;
+        if(id && text) dlg.act2[id] = text;
       });
     }
+
+    // FOYER: left/right + viewer ή v
     if(Array.isArray(data.foyer)){
-      dlg.foyer = data.foyer.map(it=>({
-        id: it.id || undefined,
-        left: it.left || '',
+      dlg.foyer = data.foyer.map((it, idx)=>({
+        id: it.id || it.key || `f_${idx}`,
+        left: it.left || it.text || '',
         right: it.right || '',
-        viewer: (typeof it.viewer==='number'? it.viewer : undefined)
+        viewer: (typeof it.viewer==='number'
+                  ? it.viewer
+                  : (typeof it.v==='number' ? it.v : undefined))
       }));
     }
   }catch(e){}
@@ -1198,8 +1211,10 @@ function typeWriter(el, text, opt=12, done){
 }
 
 function showSpeakerChip(viewerId){
-  const vInfo = (Array.isArray(FOYER_VIEWERS) ? FOYER_VIEWERS : []).find(x=>x.id===viewerId) || FOYER_VIEWERS[0];
-  const anchor = document.querySelector(`.viewer[data-idx="${viewerId-1}"]`);
+  const arr = Array.isArray(FOYER_VIEWERS) ? FOYER_VIEWERS : [];
+  const idx = Math.max(0, viewerId-1);
+  const vInfo = arr[idx] || arr[0];
+  const anchor = document.querySelector(`.viewer[data-idx="${idx}"]`);
   if(!vInfo || !anchor) return;
   const sRect = stage.getBoundingClientRect();
   const aRect = anchor.getBoundingClientRect();
@@ -1240,8 +1255,9 @@ function isFormulaBlock(text){
 }
 
 function addRow(leftText, rightText, viewer, durLeftSec, durRightSec, pauseAfterSec, whenDone){
-  const baseViewer = (Array.isArray(FOYER_VIEWERS) ? FOYER_VIEWERS : []);
-  const viewerInfo = baseViewer.find(v=>v.id===viewer) || baseViewer[0] || {color:'#ffffff'};
+  const arr = Array.isArray(FOYER_VIEWERS) ? FOYER_VIEWERS : [];
+  const idx = Math.max(0, viewer-1);
+  const viewerInfo = arr[idx] || arr[0] || {color:'#ffffff'};
 
   const bgLeft  = tint(viewerInfo.color, 0.22);
   const bgRight = tint(viewerInfo.color, 0.16);
