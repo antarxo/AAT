@@ -17,7 +17,7 @@
   .stage{position:relative;width:100vw;height:100vh;overflow:hidden}
 
   .curtain-top,.curtain-upper,.curtain-side{position:absolute;transition:transform 1.2s cubic-bezier(.2,.9,.2,1),opacity 1s}
-  .curtain-top{top:0;left:0;width:100%;height:calc(28% - 30px);background:linear-gradient(to bottom,#230000,#180000);box-shadow:0 5px 18px rgba(0,0,0,.8);z-index:160}
+  .curtain-top{top:0;left:0;width:100%;height:calc(28% - 30px);background:linear-gradient(to.bottom,#230000,#180000);box-shadow:0 5px 18px rgba(0,0,0,.8);z-index:160}
   .curtain-upper{
     top:calc(28% - 23px);
     left:0;width:100%;height:calc(40% + 30px);
@@ -51,17 +51,20 @@
     display:block;
   }
 
-  /* avatars θεατών στο φουαγιέ – πάνω από το koino.png */
+  /* === AVATARS ΘΕΑΤΩΝ ΓΙΑ ΦΟΥΑΓΙΕ ===
+     - Πίσω από το koino.png (z-index 157 < 158)
+     - 200px πιο ψηλά από το κάτω μέρος
+  */
   .viewer-avatars{
     position:absolute;
     left:18%;
     width:64%;
-    bottom:0;
+    bottom:200px;
     display:none;
     justify-content:space-between;
     align-items:flex-end;
     pointer-events:none;
-    z-index:159; /* πάνω από audience (158) */
+    z-index:157;
     padding:0 4vw 12px;
   }
   .viewer-avatars img.viewer-avatar{
@@ -295,6 +298,8 @@
     <div class="actor" id="actor"><img src="skater.png" alt="Skater"></div>
     <div class="floor"></div>
     <img class="audience" src="koino.png" alt="κοινό">
+
+    <!-- AVATAR ΕΙΚΟΝΕΣ ΘΕΑΤΩΝ ΓΙΑ ΤΟ ΦΟΥΑΓΙΕ -->
     <div class="viewer-avatars" id="viewerAvatars"></div>
 
     <div class="viewers">
@@ -375,7 +380,7 @@ let ACT2_TIMELINE     = [];
 let FOYER_VIEWERS     = [];
 
 /* ====== TIMELINE / DIALOG / UI LOADERS ====== */
-async function loadDialogOverrides(lang){
+async function.loadDialogOverrides(lang){
   try{
     const resp = await fetch(`dialogs-${lang}.json`, {cache:'no-store'});
     if(!resp.ok) return;
@@ -446,18 +451,13 @@ async function loadUI(lang){
 async function loadViewers(){
   try{
     const resp = await fetch('viewers.json', {cache:'no-store'});
-    if(!resp.ok){
-      FOYER_VIEWERS = [];
-      buildViewerAvatars();
-      return;
+    if(!resp.ok) return;
+    const.data = await resp.json();
+    if(Array.isArray(data)){
+      FOYER_VIEWERS = data;
+      if(viewerAvatars) buildViewerAvatars();
     }
-    const data = await resp.json();
-    if(Array.isArray(data)) FOYER_VIEWERS = data;
-    buildViewerAvatars();
-  }catch(e){
-    FOYER_VIEWERS = [];
-    buildViewerAvatars();
-  }
+  }catch(e){}
 }
 
 /* ====== I18N / UI ====== */
@@ -523,7 +523,7 @@ function setLang(lang){
   const settingsTitleEl = document.querySelector('[data-i18n="settingsTitle"]');
   if(settingsTitleEl && ui.settingsTitle) settingsTitleEl.textContent = ui.settingsTitle;
 
-  const lblStart = document.querySelector('label[for="slFirst"]');
+  const.lblStart = document.querySelector('label[for="slFirst"]');
   const lblScale = document.querySelector('label[for="slScale"]');
   const lblDur   = document.querySelector('label[for="slDur"]');
   const lblSlow  = document.querySelector('label[for="slSlow"]');
@@ -531,8 +531,6 @@ function setLang(lang){
   if(lblScale && ui.flowScale)     lblScale.textContent = ui.flowScale;
   if(lblDur   && ui.bubbleDur)     lblDur.textContent   = ui.bubbleDur;
   if(lblSlow  && ui.slowFactor)    lblSlow.textContent  = ui.slowFactor;
-
-  buildViewerAvatars();
 }
 
 function localizeTrig(txt){
@@ -553,7 +551,7 @@ function getAct2BubbleText(id){
 }
 
 /* ====== DOM ====== */
-const stage=document.getElementById('stage');
+const.stage=document.getElementById('stage');
 const actor=document.getElementById('actor');
 const springEl=document.getElementById('spring');
 const spotlight=document.getElementById('spotlight');
@@ -582,18 +580,23 @@ const xtChart=document.getElementById('xtChart');
 const paramsBoxEl=document.getElementById('paramsBox');
 const paramAEl=document.getElementById('paramA');
 const paramWEl=document.getElementById('paramW');
-const paramPhiEl=document.getElementById('paramPhi');
+const.paramPhiEl=document.getElementById('paramPhi');
 const lawsPane=document.getElementById('laws');
 const lawsTitle=document.getElementById('lawsTitle');
-const lawsBody=document.getElementById('lawsBody');
+const.lawsBody=document.getElementById('lawsBody');
 const lawCharts=document.getElementById('lawCharts');
-const measureBox=document.getElementById('measureBox');
+const.measureBox=document.getElementById('measureBox');
 const measureTBody=document.getElementById('measureTBody');
 const actBreak=document.getElementById('actBreak');
 const foyerBreak=document.getElementById('foyerBreak');
 const btnFoyerGo=document.getElementById('btnFoyerGo');
 const curtainUpper=document.querySelector('.curtain-upper');
-const viewerAvatars=document.getElementById('viewerAvatars');
+
+const boardLeft  = document.getElementById('boardLeft');
+const boardRight = document.getElementById('boardRight');
+const foyer      = document.getElementById('foyer');
+const fbubble    = document.getElementById('foyerBubble');
+const.viewerAvatars = document.getElementById('viewerAvatars');
 
 if (typeof window.foyerOpen  !== 'function') window.foyerOpen  = function(){};
 if (typeof window.foyerClose !== 'function') window.foyerClose = function(){};
@@ -625,7 +628,7 @@ function updateRuler(){
     const xPx=centerX+mTick*pxPerMeter;
     const rel=xPx-baseLeft;
     const tDiv=document.createElement('div'); tDiv.className='tick'; tDiv.style.left=rel+'px'; rulerEl.appendChild(tDiv);
-    const lbl=document.createElement('div'); lbl.className='tick-label';
+    const.lbl=document.createElement('div'); lbl.className='tick-label';
     lbl.textContent=(mTick===0?'0':(mTick>0? '+'+mTick:''+mTick))+' m';
     lbl.style.left=rel+'px'; rulerEl.appendChild(lbl);
   }
@@ -795,6 +798,7 @@ class BubbleScheduler {
     this.labelEl.style.display='block';
   }
 
+  /* === Bubbles κουμπωμένα σε θεατή μέσα στο 64% === */
   placePanelNearViewer(viewer,lift=140,xShift=0){
     const W = stage.clientWidth;
     const H = stage.clientHeight;
@@ -853,7 +857,7 @@ class BubbleScheduler {
       const speed = Math.max(15, Math.min(80, Math.round(baseMs/totalChars)));
 
       let done=false;
-      let started=false;
+      let.started=false;
 
       this.showSpeaker(viewer);
 
@@ -938,7 +942,7 @@ function positionLawCharts(){
   lawCharts.style.left= '2%';
   lawCharts.style.width= '16%';
 }
-function ensureVelocityChart(){
+function.ensureVelocityChart(){
   if(!vCan){
     vCan = document.createElement('canvas');
     lawCharts.appendChild(vCan);
@@ -1119,6 +1123,8 @@ function resetShow(){
   xtChart.style.display='none';
   springEl.style.display='none';
 
+  if(viewerAvatars) viewerAvatars.style.display='none';
+
   window.foyerClose(true);
   setLang(LANG);
 
@@ -1162,7 +1168,7 @@ function animate(now){
   const realDt=(now-lastFrame)/1000; lastFrame=now;
   positionRightPanel(); updateRuler();
 
-  const tPhys=(now-t0)/1000;
+  const.tPhys=(now-t0)/1000;
   if(!obsStarted){ playbackTime=tPhys; }
   else{ playbackTime += (mode==='run'? realDt : (mode==='slow'? realDt*slowFactor : 0)); }
 
@@ -1203,11 +1209,7 @@ function animate(now){
 }
 requestAnimationFrame(animate);
 
-/* ====== ΦΟΥΑΓΙΕ ====== */
-const boardLeft  = document.getElementById('boardLeft');
-const boardRight = document.getElementById('boardRight');
-const foyer      = document.getElementById('foyer');
-const fbubble    = document.getElementById('foyerBubble');
+/* ====== ΦΟΥΑΓΙΕ – TYPEWRITER & AVATARS ====== */
 
 function typeWriter(el, text, opt=12, done){
   el.innerHTML=''; let i=0;
@@ -1283,7 +1285,7 @@ function isFormulaBlock(text){
 }
 
 function addRow(leftText, rightText, viewer, durLeftSec, durRightSec, pauseAfterSec, whenDone){
-  const baseViewer = Array.isArray(FOYER_VIEWERS) ? FOYER_VIEWERS : [];
+  const baseViewer = (Array.isArray(FOYER_VIEWERS) ? FOYER_VIEWERS : []);
   const viewerInfo = baseViewer.find(v=>v.id===viewer) || baseViewer[0] || {color:'#ffffff'};
 
   const bgLeft  = tint(viewerInfo.color, 0.22);
@@ -1330,6 +1332,35 @@ function addRow(leftText, rightText, viewer, durLeftSec, durRightSec, pauseAfter
       finalizeRow();
     }
   });
+}
+
+/* === AVATARS BUILD === */
+function buildViewerAvatars(){
+  if(!viewerAvatars) return;
+  viewerAvatars.innerHTML='';
+
+  const viewersArr = Array.isArray(FOYER_VIEWERS) && FOYER_VIEWERS.length
+    ? FOYER_VIEWERS
+    : new Array(5).fill(null);
+
+  viewersArr.forEach((v,idx)=>{
+    const img = document.createElement('img');
+    img.className = 'viewer-avatar';
+
+    let src = null;
+    if(v && typeof v==='object'){
+      src = v.avatar || v.img || v.src || null;
+    }
+    if(!src){
+      src = `viewer${idx+1}.png`;
+    }
+
+    img.src = src;
+    img.alt = v && (v.name_gr || v.name_en || v.name) ? (v.name_gr || v.name_en || v.name) : `θεατής ${idx+1}`;
+    viewerAvatars.appendChild(img);
+  });
+
+  viewerAvatars.style.display='none';
 }
 
 let foyerIdx=0, foyerAuto=true, foyerTimer=null;
@@ -1401,36 +1432,10 @@ function repositionFoyer(){
   foyer.style.top='0';
   foyer.style.height=getComputedStyle(document.documentElement).getPropertyValue('--foyer-h')||'445px';
 }
-
-/* avatars από viewers.json ή viewer1.png... */
-function buildViewerAvatars(){
-  if(!viewerAvatars) return;
-  viewerAvatars.innerHTML = '';
-
-  const arr = (Array.isArray(FOYER_VIEWERS) && FOYER_VIEWERS.length)
-    ? FOYER_VIEWERS
-    : new Array(5).fill(null);
-
-  arr.forEach((v, idx) => {
-    const img = document.createElement('img');
-    img.className = 'viewer-avatar';
-
-    const src = v && v.icon ? v.icon : `viewer${idx+1}.png`;
-    img.src = src;
-
-    const idx1 = idx + 1;
-    img.alt = (LANG === 'en'
-      ? (v && (v.name_en || v.name) || `Spectator ${idx1}`)
-      : (v && (v.name_gr || v.name) || `Θεατής ${idx1}`)
-    );
-
-    viewerAvatars.appendChild(img);
-  });
-}
-
 function foyerOpen(auto=true){
   foyer.style.display='block';
   if(viewerAvatars) viewerAvatars.style.display='flex';
+
   boardLeft.innerHTML=''; boardRight.innerHTML='';
   foyerIdx=0; foyerAuto= !!auto;
   if(foyerTimer){ clearTimeout(foyerTimer); foyerTimer=null; }
@@ -1601,8 +1606,7 @@ langSwitch.addEventListener('click', async (e)=>{
   const lang = btn.dataset.lang;
   await Promise.all([
     loadDialogOverrides(lang),
-    loadUI(lang),
-    loadViewers()
+    loadUI(lang)
   ]);
   setLang(lang);
 });
@@ -1619,6 +1623,7 @@ ro.observe(stage);
   await loadUI('gr');
   await loadUI('en');
   await loadViewers();
+  if(viewerAvatars) buildViewerAvatars();
   setLang('gr');
   resetShow();
 })();
