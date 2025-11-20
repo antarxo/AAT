@@ -38,9 +38,46 @@
   .actor img{width:100%;height:auto;display:block;filter:drop-shadow(0 4px 6px rgba(0,0,0,.6))}
   .floor{position:absolute;left:0;bottom:calc(32vh - 8px);width:100%;height:2px;background:#888;z-index:155;pointer-events:none}
 
-  .audience{position:absolute; left:18%; bottom:0; width:64%; height:auto; object-position:bottom center; z-index:158; pointer-events:none; filter:contrast(1.05) brightness(.95); display:block;}
-  .viewers{position:absolute;left:18%;width:64%;bottom:0;display:flex;justify-content:space-between;z-index:159;padding:0 4vw 12px}
-  .viewer{width:60px;height:100px;background:url('https://upload.wikimedia.org/wikipedia/commons/f/f9/Silhouette_icon.svg') no-repeat center/contain;filter:grayscale(1) brightness(.6);opacity:.75}
+  .audience{
+    position:absolute;
+    left:18%;
+    bottom:0;
+    width:64%;
+    height:auto;
+    object-position:bottom center;
+    z-index:158;
+    pointer-events:none;
+    filter:contrast(1.05) brightness(.95);
+    display:block;
+  }
+
+  /* Οι avatars θεατές: μόνο στο φουαγιέ, πίσω από το koino.png */
+  .viewers{
+    position:absolute;
+    left:18%;
+    width:64%;
+    bottom:300px; /* κάτω μέρος avatars 300px πάνω από το κάτω μέρος του koino.png */
+    display:none; /* κρυφοί στις Πράξεις 1 & 2, δείχνουν μόνο στο φουαγιέ */
+    justify-content:space-between;
+    z-index:157; /* πίσω από το .audience */
+    padding:0 4vw 0;
+    pointer-events:none;
+  }
+  .viewer{
+    width:60px;
+    height:100px;
+    background-position:center bottom;
+    background-repeat:no-repeat;
+    background-size:contain;
+    filter:grayscale(1) brightness(.6);
+    opacity:.75;
+    transition:transform 0.25s ease, filter 0.25s ease, opacity 0.25s ease;
+  }
+  .viewer-active{
+    transform:translateY(-22px) scale(1.08);
+    filter:grayscale(0.1) brightness(1.4);
+    opacity:1;
+  }
 
   .signboard{position:absolute;top:-6px;left:50%;transform:translateX(-50%);background:transparent;border:none;border-radius:10px;padding:12px 18px;color:#ddd;font-family:'Georgia',serif;text-align:center;z-index:165;line-height:1.25}
   .signboard h1{font-size:32px;margin:0;color:#fff}
@@ -340,6 +377,7 @@ let thoughtScript     = [];
 let FOYER_META        = [];
 let ACT2_TIMELINE     = [];
 let FOYER_VIEWERS     = [];
+let VIEWERS_VISIBLE   = false;
 
 /* ====== TIMELINE / DIALOG / UI LOADERS ====== */
 async function loadDialogOverrides(lang){
@@ -349,39 +387,26 @@ async function loadDialogOverrides(lang){
     const data = await resp.json();
     const dlg = DIALOGS[lang] || (DIALOGS[lang]={act1:{},act2:{},foyer:[]});
 
-    // ACT 1: υποστήριξη {id,text} ή {key,text} ή {left/right}
     if(Array.isArray(data.act1)){
-      data.act1.forEach((item, idx)=>{
-        if(!item) return;
-        const id = item.id || item.key || `a1_${idx}`;
-        let text = '';
-        if(typeof item.text === 'string') text = item.text;
-        else if(typeof item.left === 'string') text = item.left;
-        if(id && text) dlg.act1[id] = text;
+      data.act1.forEach(item=>{
+        if(item && item.id && typeof item.text==='string'){
+          dlg.act1[item.id] = item.text;
+        }
       });
     }
-
-    // ACT 2: ίδια λογική
     if(Array.isArray(data.act2)){
-      data.act2.forEach((item, idx)=>{
-        if(!item) return;
-        const id = item.id || item.key || `a2_${idx}`;
-        let text = '';
-        if(typeof item.text === 'string') text = item.text;
-        else if(typeof item.left === 'string') text = item.left;
-        if(id && text) dlg.act2[id] = text;
+      data.act2.forEach(item=>{
+        if(item && item.id && typeof item.text==='string'){
+          dlg.act2[item.id] = item.text;
+        }
       });
     }
-
-    // FOYER: left/right + viewer ή v
     if(Array.isArray(data.foyer)){
-      dlg.foyer = data.foyer.map((it, idx)=>({
-        id: it.id || it.key || `f_${idx}`,
-        left: it.left || it.text || '',
+      dlg.foyer = data.foyer.map(it=>({
+        id: it.id || undefined,
+        left: it.left || '',
         right: it.right || '',
-        viewer: (typeof it.viewer==='number'
-                  ? it.viewer
-                  : (typeof it.v==='number' ? it.v : undefined))
+        viewer: (typeof it.viewer==='number'? it.viewer : undefined)
       }));
     }
   }catch(e){}
@@ -423,12 +448,35 @@ async function loadUI(lang){
   }catch(e){}
 }
 
+function applyViewerIcons(){
+  try{
+    if(!Array.isArray(FOYER_VIEWERS)) return;
+    const wrap = document.querySelector('.viewers');
+    if(!wrap) return;
+    const els = wrap.querySelectorAll('.viewer');
+    els.forEach((el, idx)=>{
+      const v = FOYER_VIEWERS[idx];
+      if(v && v.icon){
+        el.style.backgroundImage = `url('${v.icon}')`;
+      }else{
+        el.style.backgroundImage = 'url("https://upload.wikimedia.org/wikipedia/commons/f/f9/Silhouette_icon.svg")';
+      }
+      el.style.backgroundRepeat   = 'no-repeat';
+      el.style.backgroundSize     = 'contain';
+      el.style.backgroundPosition = 'center bottom';
+    });
+  }catch(e){}
+}
+
 async function loadViewers(){
   try{
     const resp = await fetch('viewers.json', {cache:'no-store'});
     if(!resp.ok) return;
     const data = await resp.json();
-    if(Array.isArray(data)) FOYER_VIEWERS = data;
+    if(Array.isArray(data)){
+      FOYER_VIEWERS = data;
+      applyViewerIcons();
+    }
   }catch(e){}
 }
 
@@ -737,12 +785,35 @@ class BubbleScheduler {
     const viewersArr = Array.isArray(FOYER_VIEWERS) ? FOYER_VIEWERS : [];
     const fv = viewersArr[viewer] || viewersArr[0] || null;
 
-    const vEl=document.querySelector(`.viewer[data-idx="${viewer}"]`);
-    if(!vEl){ this.labelEl.style.display='none'; return; }
-    const sRect=stage.getBoundingClientRect();
-    const vRect=vEl.getBoundingClientRect();
-    const centerX=(vRect.left+vRect.width/2)-sRect.left;
-    const topPx=Math.max(10,(vRect.top-sRect.top)-110);
+    const W = stage.clientWidth;
+    const H = stage.clientHeight;
+    const xL = W * 0.18;
+    const xR = W * 0.82;
+
+    let centerX;
+    let topPx;
+
+    if(VIEWERS_VISIBLE){
+      const vEl = document.querySelector(`.viewer[data-idx="${viewer}"]`);
+      const sRect=stage.getBoundingClientRect();
+      if(vEl){
+        const vRect=vEl.getBoundingClientRect();
+        centerX=(vRect.left+vRect.width/2)-sRect.left;
+        topPx=Math.max(10,(vRect.top-sRect.top)-110);
+      }else{
+        const totalSlots = 5;
+        const idx = Math.max(0, Math.min(totalSlots-1, viewer|0));
+        const rel = (idx + 1) / (totalSlots + 1);
+        centerX = xL + rel*(xR-xL);
+        topPx   = H*0.18;
+      }
+    }else{
+      const totalSlots = 5;
+      const idx = Math.max(0, Math.min(totalSlots-1, viewer|0));
+      const rel = (idx + 1) / (totalSlots + 1);
+      centerX = xL + rel*(xR-xL);
+      topPx   = H*0.18;
+    }
 
     let labelText='';
     if(fv){
@@ -780,7 +851,7 @@ class BubbleScheduler {
 
     const bw = this.el.offsetWidth || 320;
 
-    const vEl = document.querySelector(`.viewer[data-idx="${viewer}"]`);
+    const vEl = VIEWERS_VISIBLE ? document.querySelector(`.viewer[data-idx="${viewer}"]`) : null;
     const sRect = stage.getBoundingClientRect();
 
     let baseCenterX;
@@ -806,6 +877,10 @@ class BubbleScheduler {
 
     this.el.style.left = leftPx + 'px';
     this.el.style.top  = topPx + 'px';
+  }
+
+  showSpeakerForBubble(viewer){
+    this.showSpeaker(viewer);
   }
 
   showOnce({viewer,text,lift,xShift,durSec,pauseAfterSec}){
@@ -1061,6 +1136,9 @@ btnSettings.addEventListener('click',()=>{
   settingsPanel.style.display = (settingsPanel.style.display==='block' ? 'none' : 'block');
 });
 
+const viewersWrap = document.querySelector('.viewers');
+const viewerEls   = viewersWrap ? viewersWrap.querySelectorAll('.viewer') : [];
+
 function resetShow(){
   if(bubbleAutoTimer){ clearTimeout(bubbleAutoTimer); bubbleAutoTimer=null; }
   thoughtScript = [...thoughtScriptBase];
@@ -1088,6 +1166,14 @@ function resetShow(){
   if(uXT){ try{ uXT.destroy(); }catch(e){}; uXT=null; }
   xtChart.style.display='none';
   springEl.style.display='none';
+
+  if(viewersWrap){
+    viewersWrap.style.display='none';
+  }
+  viewerEls.forEach(v => v.classList.remove('viewer-active'));
+  const fbubbleTmp = document.getElementById('foyerBubble');
+  if(fbubbleTmp) fbubbleTmp.style.display='none';
+  VIEWERS_VISIBLE=false;
 
   window.foyerClose(true);
   setLang(LANG);
@@ -1212,10 +1298,17 @@ function typeWriter(el, text, opt=12, done){
 
 function showSpeakerChip(viewerId){
   const arr = Array.isArray(FOYER_VIEWERS) ? FOYER_VIEWERS : [];
-  const idx = Math.max(0, viewerId-1);
+  let idx = arr.findIndex(x => x.id === viewerId);
+  if(idx < 0) idx = viewerId - 1;
+  if(idx < 0) idx = 0;
+
   const vInfo = arr[idx] || arr[0];
-  const anchor = document.querySelector(`.viewer[data-idx="${idx}"]`);
+  const anchor = viewerEls[idx];
   if(!vInfo || !anchor) return;
+
+  viewerEls.forEach(v => v.classList.remove('viewer-active'));
+  anchor.classList.add('viewer-active');
+
   const sRect = stage.getBoundingClientRect();
   const aRect = anchor.getBoundingClientRect();
   let labelText;
@@ -1255,9 +1348,8 @@ function isFormulaBlock(text){
 }
 
 function addRow(leftText, rightText, viewer, durLeftSec, durRightSec, pauseAfterSec, whenDone){
-  const arr = Array.isArray(FOYER_VIEWERS) ? FOYER_VIEWERS : [];
-  const idx = Math.max(0, viewer-1);
-  const viewerInfo = arr[idx] || arr[0] || {color:'#ffffff'};
+  const baseViewer = Array.isArray(FOYER_VIEWERS) ? FOYER_VIEWERS : [];
+  const viewerInfo = baseViewer.find(v=>v.id===viewer) || baseViewer[0] || {color:'#ffffff'};
 
   const bgLeft  = tint(viewerInfo.color, 0.22);
   const bgRight = tint(viewerInfo.color, 0.16);
@@ -1376,6 +1468,13 @@ function repositionFoyer(){
 }
 function foyerOpen(auto=true){
   foyer.style.display='block';
+  if(viewersWrap){
+    viewersWrap.style.display='flex';
+  }
+  VIEWERS_VISIBLE = true;
+  viewerEls.forEach(v => v.classList.remove('viewer-active'));
+  fbubble.style.display = 'none';
+
   boardLeft.innerHTML=''; boardRight.innerHTML='';
   foyerIdx=0; foyerAuto= !!auto;
   if(foyerTimer){ clearTimeout(foyerTimer); foyerTimer=null; }
@@ -1385,6 +1484,12 @@ function foyerOpen(auto=true){
 function foyerClose(silent=false){
   if(foyerTimer){ clearTimeout(foyerTimer); foyerTimer=null; }
   foyer.style.display='none';
+  if(viewersWrap){
+    viewersWrap.style.display='none';
+  }
+  viewerEls.forEach(v => v.classList.remove('viewer-active'));
+  fbubble.style.display='none';
+  VIEWERS_VISIBLE=false;
 }
 btnFoyer.addEventListener('click', ()=>foyerOpen(true));
 btnFoyerGo.addEventListener('click', ()=>{
