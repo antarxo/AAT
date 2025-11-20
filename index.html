@@ -104,11 +104,11 @@
   @keyframes popIn{0%{transform:scale(.9);opacity:0}60%{transform:scale(1.04);opacity:1}100%{transform:scale(1)}}
   .thought-bubble{
     position:absolute;max-width:420px;background:rgba(255,255,255,.92);color:#000;
-    font-size:15px;line-height:1.45;padding:10px 12px 12px;border:2px solid transparent;border-radius:10px;
+    font-size:15px;line-height:1.45;padding:10px 12px 12px;border:2px solid.transparent;border-radius:10px;
     border-image:repeating-linear-gradient(90deg, rgba(0,0,0,.6) 0 6px, transparent 6px 10px, rgba(0,0,0,.6) 10px 12px, transparent 12px 16px) 1;
-    box-shadow:0 6px 12px rgba(0,0,0,.4);z-index:750;pointer-events:none;opacity:0;display:none;transition:opacity .25s ease, transform .25s.ease
+    box-shadow:0 6px 12px rgba(0,0,0,.4);z-index:750;pointer-events:none;opacity:0;display:none;transition:opacity .25s ease, transform .25s ease
   }
-  .thought-bubble.active{opacity:1;transform:translateY(-2px);animation:popIn .25s.ease}
+  .thought-bubble.active{opacity:1;transform:translateY(-2px);animation:popIn .25s ease}
   .thought-bubble.closing{opacity:0}
   .thought-bubble .tail{display:none;}
   .thought-bubble .checkmark{position:absolute;top:-8px;right:-8px;background:#2ecc71;color:#fff;font-size:11px;line-height:1;border-radius:50%;border:1px solid rgba(0,0,0,.4);width:18px;height:18px;display:none;align-items:center;justify-content:center;font-family:system-ui,sans-serif;font-weight:600}
@@ -135,7 +135,7 @@
   }
 
   .controls{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.2);border-radius:8px;padding:6px 8px;display:flex;gap:8px;z-index:300}
-  .controls button{background:none;border:0;color:#fff;font-size:16px;line-height:1;cursor:pointer;min-width:32px;min-height:32px;border-radius:4px;padding:4px 6px;transition:transform .08s.ease}
+  .controls button{background:none;border:0;color:#fff;font-size:16px;line-height:1;cursor:pointer;min-width:32px;min-height:32px;border-radius:4px;padding:4px 6px;transition:transform .08s ease}
   .controls button:active{transform:translateY(1px)}
   .controls button.active{background:rgba(255,255,255,.2)}
   #btnSlow{display:none}
@@ -434,11 +434,18 @@ async function loadUI(lang){
 async function loadViewers(){
   try{
     const resp = await fetch('viewers.json', {cache:'no-store'});
-    if(!resp.ok) return;
+    if(!resp.ok) {
+      FOYER_VIEWERS = [];
+      buildViewerAvatars();
+      return;
+    }
     const data = await resp.json();
     if(Array.isArray(data)) FOYER_VIEWERS = data;
     buildViewerAvatars();
-  }catch(e){}
+  }catch(e){
+    FOYER_VIEWERS = [];
+    buildViewerAvatars();
+  }
 }
 
 /* ====== I18N / UI ====== */
@@ -1383,22 +1390,28 @@ function repositionFoyer(){
   foyer.style.height=getComputedStyle(document.documentElement).getPropertyValue('--foyer-h')||'445px';
 }
 
-/* avatars από viewers.json */
+/* avatars από viewers.json ή fallback viewer1.png... */
 function buildViewerAvatars(){
   if(!viewerAvatars) return;
   viewerAvatars.innerHTML='';
-  if(!Array.isArray(FOYER_VIEWERS) || !FOYER_VIEWERS.length) return;
 
-  FOYER_VIEWERS.forEach((v,idx)=>{
+  const arr = Array.isArray(FOYER_VIEWERS) ? FOYER_VIEWERS : [];
+  const count = arr.length || 5;
+
+  for(let i=0;i<count;i++){
+    const v = arr[i] || {};
     const img=document.createElement('img');
     img.className='viewer-avatar';
-    if(v.icon){ img.src=v.icon; }
+
+    const src = v.icon || `viewer${i+1}.png`;
+    img.src = src;
+
     img.alt = (LANG==='en'
-      ? (v.name_en || v.name || `Spectator ${idx+1}`)
-      : (v.name_gr || v.name || `Θεατής ${idx+1}`)
+      ? (v.name_en || v.name || `Spectator ${i+1}`)
+      : (v.name_gr || v.name || `Θεατής ${i+1}`)
     );
     viewerAvatars.appendChild(img);
-  });
+  }
 }
 
 function foyerOpen(auto=true){
