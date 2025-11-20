@@ -17,19 +17,19 @@
   .stage{position:relative;width:100vw;height:100vh;overflow:hidden}
 
   .curtain-top,.curtain-upper,.curtain-side{position:absolute;transition:transform 1.2s cubic-bezier(.2,.9,.2,1),opacity 1s}
-  .curtain-top{top:0;left:0;width:100%;height:calc(28% - 30px);background:linear-gradient(to bottom,#230000,#180000);box-shadow:0 5px 18px rgba(0,0,0,.8);z-index:160}
+  .curtain-top{top:0;left:0;width:100%;height:calc(28% - 30px);background:linear-gradient(to.bottom,#230000,#180000);box-shadow:0 5px 18px rgba(0,0,0,.8);z-index:160}
   .curtain-upper{
     top:calc(28% - 23px);
     left:0;width:100%;height:calc(40% + 30px);
-    background:url('courtin.png') center top/cover no-repeat, linear-gradient(to bottom,#8b0000,#400000);
+    background:url('courtin.png') center top/cover no-repeat, linear-gradient(to.bottom,#8b0000,#400000);
     transform-origin:top; z-index:160
   }
   .open .curtain-upper{ transform: translateY(calc(-100% + 10px)); }
   .curtain-upper.slow-close{ transition: transform 1.8s cubic-bezier(.2,.9,.2,1), opacity 1.2s; }
 
   .curtain-side{top:0;height:100%;width:18%;z-index:160}
-  .curtain-side.left{left:0;background:linear-gradient(to right,#300000,#1a0000);box-shadow:inset -6px 0 10px rgba(0,0,0,.6)}
-  .curtain-side.right{right:0;background:linear-gradient(to left,#300000,#1a0000);box-shadow:inset 6px 0 10px rgba(0,0,0,.6)}
+  .curtain-side.left{left:0;background:linear-gradient(to.right,#300000,#1a0000);box-shadow:inset -6px 0 10px rgba(0,0,0,.6)}
+  .curtain-side.right{right:0;background:linear-gradient(to.left,#300000,#1a0000);box-shadow:inset 6px 0 10px rgba(0,0,0,.6)}
 
   .spotlight{position:absolute;inset:0;pointer-events:none;z-index:150;opacity:.25;background:radial-gradient(200px 120px at 50% 50%, rgba(255,255,220,.65), rgba(255,255,220,0) 70%)}
 
@@ -40,17 +40,17 @@
 
   .audience{position:absolute; left:18%; bottom:0; width:64%; height:auto; object-position:bottom center; z-index:158; pointer-events:none; filter:contrast(1.05) brightness(.95); display:block;}
 
-  /* avatars του φουαγιέ (πίσω από koino.png, μόνο στο foyer) */
+  /* avatars του φουαγιέ — ΤΩΡΑ πάνω από το koino.png */
   .viewer-avatars{
     position:absolute;
     left:18%;
     width:64%;
-    bottom:300px;           /* ~300px πάνω από τη βάση του koino.png */
+    bottom:0;
     display:none;
     justify-content:space-between;
     align-items:flex-end;
     pointer-events:none;
-    z-index:157;            /* πίσω από koino.png που είναι 158 */
+    z-index:159;  /* πάνω από koino.png (158) */
   }
   .viewer-avatars img.viewer-avatar{
     width:80px;
@@ -91,7 +91,7 @@
   .measure-box thead th{position:sticky;top:0;background:rgba(0,0,0,.65);z-index:1}
   .measure-box th,.measure-box td{border-bottom:1px solid rgba(255,255,255,.2);padding:2px 4px;text-align:right}
   .measure-box th:first-child,.measure-box td:first-child{text-align:center}
-  .measure-box tr.new td{background:rgba(255,210,122,.15);transition:background .6s ease}
+  .measure-box tr.new td{background:rgba(255,210,122,.15);transition:background .6s.ease}
 
   .ruler{position:absolute;bottom:calc(32vh - 8px + 1px);height:24px;font-size:10px;font-family:"Courier New",monospace;color:#aaa;pointer-events:none;z-index:270}
   .ruler::before{content:'';position:absolute;left:0;right:0;bottom:0;height:1px;background:#aaa}
@@ -99,7 +99,7 @@
   .tick-label{position:absolute;bottom:12px;transform:translateX(-50%);font-size:10px;color:#aaa;white-space:nowrap}
   .marker{position:absolute;bottom:calc(32vh - 8px + 1px);width:0;height:80px;transform:translateX(-50%);pointer-events:none;z-index:275;opacity:0;transition:opacity .3s}
   .marker-line{position:absolute;left:50%;bottom:8px;width:2px;height:70px;background:#ffd27a;box-shadow:0 0 4px rgba(255,210,122,.8);transform:translateX(-50%)}
-  .marker-tip{position:absolute;left:50%;bottom:0;width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:8px solid #ffd27a;filter:drop-shadow(0 2px 2px rgba(255,210,122,.8));transform:translateX(-50%)}
+  .marker-tip{position:absolute;left:50%;bottom:0;width:0;height:0;border-left:6px solid transparent;border-right:6px solid.transparent;border-top:8px solid #ffd27a;filter:drop-shadow(0 2px 2px rgba(255,210,122,.8));transform:translateX(-50%)}
 
   @keyframes popIn{0%{transform:scale(.9);opacity:0}60%{transform:scale(1.04);opacity:1}100%{transform:scale(1)}}
   .thought-bubble{
@@ -135,7 +135,7 @@
   }
 
   .controls{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.2);border-radius:8px;padding:6px 8px;display:flex;gap:8px;z-index:300}
-  .controls button{background:none;border:0;color:#fff;font-size:16px;line-height:1;cursor:pointer;min-width:32px;min-height:32px;border-radius:4px;padding:4px 6px;transition:transform .08s ease}
+  .controls button{background:none;border:0;color:#fff;font-size:16px;line-height:1;cursor:pointer;min-width:32px;min-height:32px;border-radius:4px;padding:4px 6px;transition:transform .08s.ease}
   .controls button:active{transform:translateY(1px)}
   .controls button.active{background:rgba(255,255,255,.2)}
   #btnSlow{display:none}
@@ -199,7 +199,7 @@
     <div class="curtain-top"></div>
     <div class="curtain-upper"></div>
     <div class="curtain-side left"></div>
-    <div class="curtain-side right"></div>
+    <div class="curtain-side.right"></div>
 
     <div class="spotlight" id="spotlight"></div>
 
@@ -439,7 +439,7 @@ async function loadViewers(){
       buildViewerAvatars();
       return;
     }
-    const data = await resp.json();
+    const.data = await resp.json();
     if(Array.isArray(data)) FOYER_VIEWERS = data;
     buildViewerAvatars();
   }catch(e){
@@ -511,8 +511,8 @@ function setLang(lang){
   const settingsTitleEl = document.querySelector('[data-i18n="settingsTitle"]');
   if(settingsTitleEl && ui.settingsTitle) settingsTitleEl.textContent = ui.settingsTitle;
 
-  const lblStart = document.querySelector('label[for="slFirst"]');
-  const lblScale = document.querySelector('label[for="slScale"]');
+  const.lblStart = document.querySelector('label[for="slFirst"]');
+  const lblScale =.document.querySelector('label[for="slScale"]');
   const lblDur   = document.querySelector('label[for="slDur"]');
   const lblSlow  = document.querySelector('label[for="slSlow"]');
   if(lblStart && ui.startThoughts) lblStart.textContent = ui.startThoughts;
@@ -534,7 +534,7 @@ function getAct1BubbleText(id){
   if(dlg && dlg.act1 && dlg.act1[id]) return dlg.act1[id];
   return '';
 }
-function getAct2BubbleText(id){
+function.getAct2BubbleText(id){
   const dlg = DIALOGS[LANG];
   if(dlg && dlg.act2 && dlg.act2[id]) return dlg.act2[id];
   return '';
@@ -543,7 +543,7 @@ function getAct2BubbleText(id){
 /* ====== DOM ====== */
 const stage=document.getElementById('stage');
 const actor=document.getElementById('actor');
-const springEl=document.getElementById('spring');
+const.springEl=document.getElementById('spring');
 const spotlight=document.getElementById('spotlight');
 const startBtn=document.getElementById('startBtn');
 const clockEl=document.getElementById('clock');
@@ -554,7 +554,7 @@ const bubbleEl=document.getElementById('bubble0');
 const actBubble=document.getElementById('actBubble');
 const btnPause=document.getElementById('btnPause');
 const btnSlow=document.getElementById('btnSlow');
-const btnPlay=document.getElementById('btnPlay');
+const.btnPlay=document.getElementById('btnPlay');
 const btnSettings=document.getElementById('btnSettings');
 const btnReset=document.getElementById('btnReset');
 const btnEndShow=document.getElementById('btnEndShow');
@@ -841,7 +841,7 @@ class BubbleScheduler {
       const speed = Math.max(15, Math.min(80, Math.round(baseMs/totalChars)));
 
       let done=false;
-      let started=false;
+      let.started=false;
 
       this.showSpeaker(viewer);
 
@@ -926,21 +926,21 @@ function positionLawCharts(){
   lawCharts.style.left= '2%';
   lawCharts.style.width= '16%';
 }
-function ensureVelocityChart(){
+function.ensureVelocityChart(){
   if(!vCan){
     vCan = document.createElement('canvas');
     lawCharts.appendChild(vCan);
   }
   sizeLawCanvas(vCan);
 }
-function ensureAccelerationChart(){
+function.ensureAccelerationChart(){
   if(!aCan){
     aCan = document.createElement('canvas');
     lawCharts.appendChild(aCan);
   }
   sizeLawCanvas(aCan);
 }
-function ensureAxChart(){
+function.ensureAxChart(){
   if(!axCan){
     axCan = document.createElement('canvas');
     lawCharts.appendChild(axCan);
@@ -1087,7 +1087,7 @@ function resetShow(){
   firstLawShown=false; lawCount=0;
   obsStarted=false; obsStartPlaybackOffset=0;
   mode='run'; setMode('run');
-  stage.classList.remove('open');
+ .stage.classList.remove('open');
   countdownOverlay.style.display='none';
   startBtn.style.display='block';
   clockEl.style.display='none';
@@ -1173,7 +1173,7 @@ function animate(now){
   if(skRect.width>0){ skaterWidthPx=skRect.width; hookOffsetPx=skaterWidthPx/2; }
 
   const ax=anchorX();
-  const centerX=stage.clientWidth/2;
+  const.centerX=stage.clientWidth/2;
   const skaterHookX=centerX + A_px*Math.sin(omega*playbackTime);
   const distance=skaterHookX-ax;
   const scale=(L0_px && L0_px>0) ? (distance/L0_px) : 1;
@@ -1348,7 +1348,7 @@ function foyerStep(){
     viewerId = text.viewer;
   }else if(meta){
     if(typeof meta.viewer==='number') viewerId = meta.viewer;
-    else if(typeof meta.v==='number') viewerId = meta.v;
+    else if(typeof.meta.v==='number') viewerId = meta.v;
   }
   if(typeof viewerId!=='number') viewerId=1;
 
@@ -1465,7 +1465,7 @@ window.foyerClose = foyerClose;
     ghost.style.height=aRect.height+'px';
   }
   function startGhost(){
-    ensureGhost();
+   .ensureGhost();
     ghost.style.display='block';
     ghostSpring.style.display='block';
     cancelAnimationFrame(ghostRAF);
@@ -1519,7 +1519,7 @@ window.foyerClose = foyerClose;
       const actTitleEl = document.querySelector('[data-i18n="actTitle"]');
       const sbA = document.getElementById('sbLineA');
       const sbB = document.getElementById('sbLineB');
-      const sbC = document.getElementById('sbLineC');
+      const sbC =.document.getElementById('sbLineC');
       const sbD = document.getElementById('sbLineD');
 
       if(actTitleEl && ui.act2Title) actTitleEl.textContent = ui.act2Title;
