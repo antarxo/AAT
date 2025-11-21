@@ -789,8 +789,8 @@ class BubbleScheduler {
     this.labelEl.style.display = 'block';
   }
 
-  /* === Bubbles: σταθερές θέσεις ανά θεατή από viewers.json === */
-  placePanelNearViewer(viewer,liftIgnored,xShift=0){
+  /* === Βασικό: θέση bubbles/σκέψεων δεμένη στο koino.png === */
+  placePanelNearViewer(viewer, _liftIgnored, xShift){
     const W = stage.clientWidth;
     const xL = W*0.18;
     const xR = W*0.82;
@@ -808,8 +808,7 @@ class BubbleScheduler {
 
     const anchorX = getViewerAnchorXByIndex(viewer);
     const bubbleDx = vc && typeof vc.bubbleDx === 'number' ? vc.bubbleDx : 40;
-    const bubbleDy = vc && typeof vc.bubbleDy === 'number' ? vc.bubbleDy : 0;
-    const bubbleYFrac = vc && typeof vc.bubbleYFrac === 'number' ? vc.bubbleYFrac : 0.55;
+    const bubbleDy = vc && typeof vc.bubbleDy === 'number' ? vc.bubbleDy : -80;
 
     let leftPx = anchorX + bubbleDx + (xShift || 0);
     const maxLeft = xR - pad - bw;
@@ -817,7 +816,17 @@ class BubbleScheduler {
     if(leftPx < minLeft) leftPx = minLeft;
     if(leftPx > maxLeft) leftPx = maxLeft;
 
-    let topPx = stage.clientHeight * bubbleYFrac + bubbleDy;
+    let topPx;
+    const audRect  = audienceImg ? audienceImg.getBoundingClientRect() : null;
+    const stageRect= stage.getBoundingClientRect();
+
+    if(audRect && audRect.height>10){
+      const baseY = audRect.top - stageRect.top; // top του κοινού σε coords της σκηνής
+      topPx = baseY + bubbleDy;                  // bubbleDy < 0 → πάνω από το κοινό
+    }else{
+      const frac = vc && typeof vc.bubbleYFrac === 'number' ? vc.bubbleYFrac : 0.6;
+      topPx = stage.clientHeight * frac;
+    }
     if(topPx < 40) topPx = 40;
 
     this.el.style.left = leftPx + 'px';
@@ -826,7 +835,7 @@ class BubbleScheduler {
 
   showOnce({viewer,text,lift,xShift,durSec,pauseAfterSec}){
     return new Promise(resolve=>{
-      if(this._currentCancel){ try{ this._currentCancel(); }catch{} this._currentCancel=null; }
+      if(this._currentCancel){ try{ this._currentCancel(); }catch(e){} this._currentCancel=null; }
       const textEl=this.el.querySelector('.text');
       const sanitized = this.sanitize(text||'');
       const plain = sanitized.replace(/<[^>]+>/g,'');
@@ -891,7 +900,7 @@ class BubbleScheduler {
     return this._queue;
   }
   clear(){
-    if(this._currentCancel){ try{ this._currentCancel(); }catch{} this._currentCancel=null; }
+    if(this._currentCancel){ try{ this._currentCancel(); }catch(e){} this._currentCancel=null; }
     this._queue=Promise.resolve();
     this.el.style.display='none';
     if(this.labelEl) this.labelEl.style.display='none';
