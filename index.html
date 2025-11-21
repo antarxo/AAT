@@ -50,28 +50,26 @@
     z-index:120;
     padding:0 4vw 12px;
     pointer-events:none;
-    opacity:0; /* άγκυρες θέσης, αόρατες */
+    opacity:0; /* άγκυρες θέσης, αόρατες (backup) */
   }
   .viewer{
     width:60px;
     height:40px;
   }
 
-  /* AVATARS ΘΕΑΤΩΝ (πίσω από το κοινό, για φουαγιέ και άγκυρες για bubbles) */
+  /* AVATARS ΘΕΑΤΩΝ: μία και μοναδική άγκυρα θέσης (acts + φουαγιέ) */
   .foyer-avatars{
     position:absolute;
-    left:18%;
-    width:64%;
-    bottom:0;
-    display:flex;
-    justify-content:space-between;
-    align-items:flex-end;
-    padding:0 4vw 12px;
+    left:0;
+    top:0;
+    width:100%;
+    height:100%;
     z-index:157; /* πίσω από το koino.png (158) */
     pointer-events:none;
   }
   .foyer-avatar{
-    max-height:170px;
+    position:absolute;
+    transform:translateX(-50%);
     opacity:0;
     transition:opacity .25s ease;
     filter:drop-shadow(0 3px 5px rgba(0,0,0,.7));
@@ -455,6 +453,7 @@ async function loadViewers(){
     if(Array.isArray(data)){
       FOYER_VIEWERS = data;
       buildFoyerAvatars();
+      positionAvatars();
     }
   }catch(e){}
 }
@@ -595,7 +594,27 @@ const foyerAvatars=document.getElementById('foyerAvatars');
 if (typeof window.foyerOpen  !== 'function') window.foyerOpen  = function(){};
 if (typeof window.foyerClose !== 'function') window.foyerClose = function(){};
 
-/* ====== AVATARS HELPERS ====== */
+/* ====== AVATARS HELPERS (μοναδικό σημείο θέσεων) ====== */
+function positionAvatars(){
+  if(!foyerAvatars) return;
+  const arr = Array.isArray(FOYER_VIEWERS) ? FOYER_VIEWERS : [];
+  const centralLeft  = stage.clientWidth * 0.18;
+  const centralWidth = stage.clientWidth * 0.64;
+
+  for(let i=0;i<arr.length;i++){
+    const v = arr[i] || {};
+    const img = foyerAvatars.querySelector('.foyer-avatar[data-idx="'+i+'"]');
+    if(!img) continue;
+
+    const relX   = (typeof v.x === 'number') ? v.x : (i+0.5)/Math.max(1, arr.length);
+    const bottom = (typeof v.bottom === 'number') ? v.bottom : 0;
+
+    const centerX = centralLeft + relX * centralWidth;
+    img.style.left   = centerX + 'px';
+    img.style.bottom = bottom  + 'px';
+  }
+}
+
 function buildFoyerAvatars(){
   if(!foyerAvatars) return;
   foyerAvatars.innerHTML='';
@@ -610,6 +629,7 @@ function buildFoyerAvatars(){
     img.alt = v.name_gr || v.name_en || ('viewer '+(i+1));
     foyerAvatars.appendChild(img);
   }
+  positionAvatars();
 }
 
 function getAvatarByIndex(idx){
@@ -872,7 +892,6 @@ class BubbleScheduler {
       return;
     }
 
-    /* Fallback αν δεν βρεθεί anchor */
     const bw = this.el.offsetWidth || 320;
     let baseCenterX;
     const totalViewers = Math.max(1, (document.querySelectorAll('.viewer').length||5));
@@ -1671,6 +1690,7 @@ const ro=new ResizeObserver(()=>{
   positionLawCharts();
   positionParamsBox();
   repositionFoyer();
+  positionAvatars();
 });
 ro.observe(stage);
 
