@@ -38,53 +38,18 @@
   .actor img{width:100%;height:auto;display:block;filter:drop-shadow(0 4px 6px rgba(0,0,0,.6))}
   .floor{position:absolute;left:0;bottom:calc(32vh - 8px);width:100%;height:2px;background:#888;z-index:155;pointer-events:none}
 
-  .audience{
-    position:absolute;
-    left:18%;
-    bottom:0;
-    width:64%;
-    height:auto;
-    object-position:bottom center;
-    z-index:158;
-    pointer-events:none;
-    filter:contrast(1.05) brightness(.95);
-    display:block;
-  }
-
-  .viewers{
-    position:absolute;
-    left:18%;
-    width:64%;
-    bottom:0;
-    display:flex;
-    justify-content:space-between;
-    z-index:120;
-    padding:0 4vw 12px;
-    pointer-events:none;
-    opacity:0;
-  }
-  .viewer{
-    width:60px;
-    height:40px;
-  }
-
-  /* AVATARS ΘΕΑΤΩΝ: πίσω από koino.png, ίδια κλίμακα */
-  .foyer-avatars{
-    position:absolute;
-    left:0;
-    top:0;
-    width:100%;
-    height:100%;
-    z-index:157; /* πίσω από το koino.png (158) */
-    pointer-events:none;
-  }
+  .audience{position:absolute; left:18%; bottom:0; width:64%; height:auto; object-position:bottom center; z-index:1500; pointer-events:none; filter:contrast(1.05) brightness(.95); display:block;}
+  .viewers{position:absolute;left:18%;width:64%;bottom:0;display:none;justify-content:space-between;z-index:100;padding:0 4vw 12px}
   .foyer-avatar{
     position:absolute;
+    z-index:1400;
+    pointer-events:none;
+    height:160px;
+    width:auto;
     transform:translateX(-50%);
-    opacity:0;
-    transition:opacity .25s ease;
-    filter:drop-shadow(0 3px 5px rgba(0,0,0,.7));
+    display:none;
   }
+  .viewer{width:60px;height:100px;background:url('https://upload.wikimedia.org/wikipedia/commons/f/f9/Silhouette_icon.svg') no-repeat center/contain;filter:grayscale(1) brightness(.6);opacity:.75}
 
   .signboard{position:absolute;top:-6px;left:50%;transform:translateX(-50%);background:transparent;border:none;border-radius:10px;padding:12px 18px;color:#ddd;font-family:'Georgia',serif;text-align:center;z-index:165;line-height:1.25}
   .signboard h1{font-size:32px;margin:0;color:#fff}
@@ -115,7 +80,7 @@
   .measure-box thead th{position:sticky;top:0;background:rgba(0,0,0,.65);z-index:1}
   .measure-box th,.measure-box td{border-bottom:1px solid rgba(255,255,255,.2);padding:2px 4px;text-align:right}
   .measure-box th:first-child,.measure-box td:first-child{text-align:center}
-  .measure-box tr.new td{background:rgba(255,210,122,.15);transition:background .6s ease}
+  .measure-box tr.new td{background:rgba(255,210,122,.15);transition:background .6s.ease}
 
   .ruler{position:absolute;bottom:calc(32vh - 8px + 1px);height:24px;font-size:10px;font-family:"Courier New",monospace;color:#aaa;pointer-events:none;z-index:270}
   .ruler::before{content:'';position:absolute;left:0;right:0;bottom:0;height:1px;background:#aaa}
@@ -130,9 +95,9 @@
     position:absolute;max-width:420px;background:rgba(255,255,255,.92);color:#000;
     font-size:15px;line-height:1.45;padding:10px 12px 12px;border:2px solid transparent;border-radius:10px;
     border-image:repeating-linear-gradient(90deg, rgba(0,0,0,.6) 0 6px, transparent 6px 10px, rgba(0,0,0,.6) 10px 12px, transparent 12px 16px) 1;
-    box-shadow:0 6px 12px rgba(0,0,0,.4);z-index:250;pointer-events:none;opacity:0;display:none;transition:opacity .25s ease, transform .25s ease
+    box-shadow:0 6px 12px rgba(0,0,0,.4);z-index:1600;pointer-events:none;opacity:0;display:none;transition:opacity .25s.ease, transform .25s.ease
   }
-  .thought-bubble.active{opacity:1;transform:translateY(-2px);animation:popIn .25s ease}
+  .thought-bubble.active{opacity:1;transform:translateY(-2px);animation:popIn .25s.ease}
   .thought-bubble.closing{opacity:0}
   .thought-bubble .tail{display:none;}
   .thought-bubble .checkmark{position:absolute;top:-8px;right:-8px;background:#2ecc71;color:#fff;font-size:11px;line-height:1;border-radius:50%;border:1px solid rgba(0,0,0,.4);width:18px;height:18px;display:none;align-items:center;justify-content:center;font-family:system-ui,sans-serif;font-weight:600}
@@ -142,7 +107,7 @@
   .act-bubble,
   .foyer-bubble{
     position:absolute;
-    z-index:260;
+    z-index:1700;
     display:none;
     pointer-events:none;
     min-width:120px;
@@ -158,14 +123,14 @@
     text-shadow:0 1px 2px rgba(0,0,0,.7);
   }
 
-  .controls{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.2);border-radius:8px;padding:6px 8px;display:flex;gap:8px;z-index:300}
+  .controls{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.2);border-radius:8px;padding:6px 8px;display:flex;gap:8px;z-index:2000}
   .controls button{background:none;border:0;color:#fff;font-size:16px;line-height:1;cursor:pointer;min-width:32px;min-height:32px;border-radius:4px;padding:4px 6px;transition:transform .08s.ease}
   .controls button:active{transform:translateY(1px)}
   .controls button.active{background:rgba(255,255,255,.2)}
   #btnSlow{display:none}
-  .btn-end{position:absolute;bottom:12px;right:12px;z-index:300;background:#333;border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:8px;padding:8px 12px;cursor:pointer}
+  .btn-end{position:absolute;bottom:12px;right:12px;z-index:2000;background:#333;border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:8px;padding:8px 12px;cursor:pointer}
 
-  .settings{position:absolute;bottom:56px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.7);color:#fff;border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:10px 12px;z-index:310;display:none;min-width:320px}
+  .settings{position:absolute;bottom:56px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.7);color:#fff;border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:10px 12px;z-index:2000;display:none;min-width:320px}
   .settings h5{margin:0 0 6px 0;font-size:14px;color:#ffd27a;text-align:center;font-family:'Georgia',serif}
   .settings .row{display:flex;align-items:center;gap:10px;margin:6px 0}
   .settings label{flex:0 0 170px;font-size:12px;color:#ddd}
@@ -208,20 +173,13 @@
     position:absolute;
     bottom:12px;
     left:12px;
-    z-index:300;
+    z-index:2000;
     background:#333;
     border:1px solid rgba(255,255,255,.25);
     color:#fff;
     border-radius:8px;
     padding:8px 12px;
     cursor:pointer;
-  }
-
-  .lang{
-    position:absolute;
-    top:8px;
-    left:8px;
-    z-index:360;
   }
 </style>
 </head>
@@ -234,7 +192,7 @@
 
     <div class="spotlight" id="spotlight"></div>
 
-    <div class="lang" id="langSwitch" style="background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.25);border-radius:999px;padding:3px 6px;display:flex;gap:6px">
+    <div class="lang" id="langSwitch" style="position:absolute;top:8px;left:8px;z-index:360;background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.25);border-radius:999px;padding:3px 6px;display:flex;gap:6px">
       <button data-lang="gr" class="on" style="background:rgba(255,255,255,.2);border:0;color:#fff;font-size:12px;padding:4px 8px;border-radius:999px;cursor:pointer">GR</button>
       <button data-lang="en" style="background:none;border:0;color:#fff;font-size:12px;padding:4px 8px;border-radius:999px;cursor:pointer">EN</button>
     </div>
@@ -323,8 +281,6 @@
       <div class="viewer" data-idx="4"></div>
     </div>
 
-    <div class="foyer-avatars" id="foyerAvatars"></div>
-
     <button class="start-btn" id="startBtn" data-i18n="startBtn">Έναρξη</button>
 
     <div class="countdown-overlay" id="countdownOverlay">
@@ -393,6 +349,7 @@ let thoughtScript     = [];
 let FOYER_META        = [];
 let ACT2_TIMELINE     = [];
 let FOYER_VIEWERS     = [];
+let FOYER_AVATARS    = [];
 
 /* ====== TIMELINE / DIALOG / UI LOADERS ====== */
 async function loadDialogOverrides(lang){
@@ -468,12 +425,39 @@ async function loadViewers(){
     const resp = await fetch('viewers.json', {cache:'no-store'});
     if(!resp.ok) return;
     const data = await resp.json();
-    if(Array.isArray(data)){
-      FOYER_VIEWERS = data;
-      buildFoyerAvatars();
-      positionAvatars();
-    }
+    if(Array.isArray(data)) FOYER_VIEWERS = data;
   }catch(e){}
+}
+function getViewerConfigByIndex(idx){
+  const arr = Array.isArray(FOYER_VIEWERS) ? FOYER_VIEWERS : [];
+  if(!arr.length) return null;
+  const safeIdx = Math.max(0, Math.min(arr.length-1, idx|0));
+  return arr[safeIdx] || arr[0] || null;
+}
+function getViewerConfigById(id){
+  const arr = Array.isArray(FOYER_VIEWERS) ? FOYER_VIEWERS : [];
+  if(!arr.length) return null;
+  const numId = Number(id);
+  if(Number.isFinite(numId)){
+    const found = arr.find(v=>Number(v.id)===numId);
+    if(found) return found;
+  }
+  return arr[0] || null;
+}
+function getViewerAnchorXFromConfig(vc){
+  const W = stage.clientWidth || window.innerWidth || 0;
+  const xL = W * 0.18;
+  const xR = W * 0.82;
+  const frac = (vc && typeof vc.xFrac === 'number') ? vc.xFrac : 0.5;
+  return xL + frac * (xR - xL);
+}
+function getViewerAnchorXByIndex(idx){
+  const vc = getViewerConfigByIndex(idx);
+  return getViewerAnchorXFromConfig(vc);
+}
+function getViewerAnchorXById(id){
+  const vc = getViewerConfigById(id);
+  return getViewerAnchorXFromConfig(vc);
 }
 
 /* ====== I18N / UI ====== */
@@ -593,6 +577,7 @@ const slSlow=document.getElementById('slSlow'), valSlow=document.getElementById(
 const countdownOverlay=document.getElementById('countdownOverlay');
 const countdownTimerEl=document.getElementById('countdownTimer');
 const xtChart=document.getElementById('xtChart');
+const audienceImg=document.querySelector('.audience');
 const paramsBoxEl=document.getElementById('paramsBox');
 const paramAEl=document.getElementById('paramA');
 const paramWEl=document.getElementById('paramW');
@@ -607,92 +592,9 @@ const actBreak=document.getElementById('actBreak');
 const foyerBreak=document.getElementById('foyerBreak');
 const btnFoyerGo=document.getElementById('btnFoyerGo');
 const curtainUpper=document.querySelector('.curtain-upper');
-const foyerAvatars=document.getElementById('foyerAvatars');
-const audienceImg = document.querySelector('.audience');
 
 if (typeof window.foyerOpen  !== 'function') window.foyerOpen  = function(){};
 if (typeof window.foyerClose !== 'function') window.foyerClose = function(){};
-
-/* ====== AVATARS HELPERS (κλίμακα = κλίμακα κοινού) ====== */
-function syncAvatarScale(){
-  if(!foyerAvatars || !audienceImg) return;
-
-  const natW  = audienceImg.naturalWidth || 0;
-  const dispW = audienceImg.getBoundingClientRect().width || 0;
-  if(!natW || !dispW) return;
-
-  const scale = dispW / natW;
-  const imgs = foyerAvatars.querySelectorAll('.foyer-avatar');
-  imgs.forEach(img=>{
-    const baseW = img.naturalWidth || img.width;
-    if(baseW){
-      img.style.width  = (baseW * scale) + 'px';
-      img.style.height = 'auto';
-    }
-  });
-}
-
-function positionAvatars(){
-  if(!foyerAvatars) return;
-  syncAvatarScale();
-
-  const arr = Array.isArray(FOYER_VIEWERS) ? FOYER_VIEWERS : [];
-  const centralLeft  = stage.clientWidth * 0.18;
-  const centralWidth = stage.clientWidth * 0.64;
-
-  for(let i=0;i<arr.length;i++){
-    const v = arr[i] || {};
-    const img = foyerAvatars.querySelector('.foyer-avatar[data-idx="'+i+'"]');
-    if(!img) continue;
-
-    const relX   = (typeof v.x === 'number') ? v.x : (i+0.5)/Math.max(1, arr.length);
-    const bottom = (typeof v.bottom === 'number') ? v.bottom : 0;
-
-    const centerX = centralLeft + relX * centralWidth;
-    img.style.left   = centerX + 'px';
-    img.style.bottom = bottom  + 'px';
-  }
-}
-
-function buildFoyerAvatars(){
-  if(!foyerAvatars) return;
-  foyerAvatars.innerHTML='';
-  const arr = Array.isArray(FOYER_VIEWERS) ? FOYER_VIEWERS : [];
-  for(let i=0;i<arr.length;i++){
-    const v = arr[i] || {};
-    const img = document.createElement('img');
-    img.className='foyer-avatar';
-    img.dataset.idx=String(i);
-    if(typeof v.id==='number') img.dataset.id=String(v.id);
-    img.src = v.avatar || ('viewer'+(i+1)+'.png');
-    img.alt = v.name_gr || v.name_en || ('viewer '+(i+1));
-    img.addEventListener('load', syncAvatarScale);
-    foyerAvatars.appendChild(img);
-  }
-  positionAvatars();
-}
-
-function getAvatarByIndex(idx){
-  if(!foyerAvatars) return null;
-  return foyerAvatars.querySelector('.foyer-avatar[data-idx="'+idx+'"]');
-}
-function getAvatarById(id){
-  if(!foyerAvatars) return null;
-  return foyerAvatars.querySelector('.foyer-avatar[data-id="'+id+'"]');
-}
-function hideAllAvatars(){
-  if(!foyerAvatars) return;
-  const list = foyerAvatars.querySelectorAll('.foyer-avatar');
-  list.forEach(img=>{ img.style.opacity='0'; });
-}
-function highlightAvatarById(id){
-  if(!foyerAvatars) return;
-  const list = foyerAvatars.querySelectorAll('.foyer-avatar');
-  const sid = String(id);
-  list.forEach(img=>{
-    img.style.opacity = (img.dataset.id===sid ? '1' : '0');
-  });
-}
 
 /* ====== ΦΥΣΙΚΗ ====== */
 const m=70, T=6.0, A_m=3.0;
@@ -834,7 +736,7 @@ function typeWriterHTML(el, html, speed, done){
 function tint(hex, alpha){
   const c = (hex||'#ffffff').replace('#','');
   const r=parseInt(c.slice(0,2),16)||255, g=parseInt(c.slice(2,4),16)||255, b=parseInt(c.slice(4,6),16)||255;
-  return 'rgba('+r+','+g+','+b+','+alpha+')';
+  return `rgba(${r},${g},${b},${alpha})`;
 }
 
 /* ====== BUBBLE SCHEDULER (Πράξεις) ====== */
@@ -848,14 +750,10 @@ class BubbleScheduler {
   }
   sanitize(html){
     const wrap=document.createElement('div'); wrap.innerHTML=html||'';
-    const allowed=this._ALLOWED;
     wrap.querySelectorAll('*').forEach(n=>{
       const tag=n.tagName.toLowerCase();
-      if(!allowed.has(tag)) n.replaceWith(document.createTextNode(n.textContent));
-      else{
-        const attrs=n.attributes;
-        for(let i=attrs.length-1;i>=0;i--){ n.removeAttribute(attrs[i].name); }
-      }
+      if(!this._ALLOWED.has(tag)) n.replaceWith(document.createTextNode(n.textContent));
+      else [...n.attributes].forEach(a=>n.removeAttribute(a.name));
     });
     return wrap.innerHTML;
   }
@@ -866,41 +764,34 @@ class BubbleScheduler {
   showSpeaker(viewer){
     if(!this.labelEl) return;
     const viewersArr = Array.isArray(FOYER_VIEWERS) ? FOYER_VIEWERS : [];
-    const fv = viewersArr[viewer] || viewersArr[0] || null;
-
-    const anchor = getAvatarByIndex(viewer) || document.querySelector('.viewer[data-idx="'+viewer+'"]');
-    if(!anchor){
-      this.labelEl.style.display='none';
-      return;
-    }
-    const sRect=stage.getBoundingClientRect();
-    const aRect=anchor.getBoundingClientRect();
-    let centerX=(aRect.left+aRect.width/2)-sRect.left;
-    let topPx=Math.max(10,(aRect.top-sRect.top)-90);
+    const vc = viewersArr[viewer] || viewersArr[0] || null;
 
     let labelText='';
-    if(fv){
+    if(vc){
       if(LANG==='en'){
-        labelText = fv.name_en || fv.name || ('SPECTATOR '+(viewer+1));
+        labelText = vc.name_en || vc.name || (`SPECTATOR ${viewer+1}`);
       }else{
-        labelText = fv.name_gr || fv.name || ('ΘΕΑΤΗΣ '+(viewer+1));
+        labelText = vc.name_gr || vc.name || (`ΘΕΑΤΗΣ ${viewer+1}`);
       }
-      this.labelEl.style.backgroundColor=tint(fv.color,0.9);
+      this.labelEl.style.backgroundColor = tint(vc.color || '#000000', 0.9);
     }else{
-      labelText = (LANG==='en' ? ('SPECTATOR '+(viewer+1)) : ('ΘΕΑΤΗΣ '+(viewer+1)));
-      this.labelEl.style.backgroundColor='rgba(0,0,0,0.7)';
+      labelText = (LANG==='en' ? `SPECTATOR ${viewer+1}` : `ΘΕΑΤΗΣ ${viewer+1}`);
+      this.labelEl.style.backgroundColor = 'rgba(0,0,0,0.7)';
     }
 
+    const centerX = getViewerAnchorXByIndex(viewer);
+    const topPx   = stage.clientHeight * 0.24;
+
     this.labelEl.textContent = labelText;
-    this.labelEl.style.left=centerX+'px';
-    this.labelEl.style.top=topPx+'px';
-    this.labelEl.style.transform='translateX(-50%)';
-    this.labelEl.style.display='block';
+    this.labelEl.style.left  = centerX + 'px';
+    this.labelEl.style.top   = topPx + 'px';
+    this.labelEl.style.transform = 'translateX(-50%)';
+    this.labelEl.style.display = 'block';
   }
 
-  placePanelNearViewer(viewer,lift,xShift){
+  /* === Bubbles κουμπωμένα σε θεατή μέσα στο 64% === */
+  placePanelNearViewer(viewer,lift=140,xShift=0){
     const W = stage.clientWidth;
-    const H = stage.clientHeight;
     const xL = W * 0.18;
     const xR = W * 0.82;
     const pad = 12;
@@ -910,61 +801,34 @@ class BubbleScheduler {
     this.el.style.left='0px';
     this.el.style.top='0px';
 
-    const anchor = getAvatarByIndex(viewer) || document.querySelector('.viewer[data-idx="'+viewer+'"]');
-
-    if(anchor){
-      const sRect=stage.getBoundingClientRect();
-      const aRect=anchor.getBoundingClientRect();
-      const bw=this.el.offsetWidth || 320;
-
-      let leftPx=(aRect.right - sRect.left) + 16 + (xShift||0);
-      const minLeft = xL + pad;
-      const maxLeft = xR - pad - bw;
-      if(leftPx<minLeft) leftPx=minLeft;
-      if(leftPx>maxLeft) leftPx=maxLeft;
-
-      const baseTop=aRect.top - sRect.top;
-      const liftVal=(typeof lift==='number' ? lift : 80);
-      const topPx=Math.max(40, baseTop - liftVal);
-
-      this.el.style.left=leftPx+'px';
-      this.el.style.top=topPx+'px';
-      return;
-    }
-
     const bw = this.el.offsetWidth || 320;
-    let baseCenterX;
-    const totalViewers = Math.max(1, (document.querySelectorAll('.viewer').length||5));
-    const idx = Math.max(0, Math.min(totalViewers-1, viewer|0));
-    const rel = (idx + 1) / (totalViewers + 1);
-    baseCenterX = xL + rel * (xR - xL);
 
-    let centerX = baseCenterX + (xShift || 0);
-    centerX = Math.max(xL + pad + bw/2, Math.min(centerX, xR - pad - bw/2));
+    const viewersArr = Array.isArray(FOYER_VIEWERS) ? FOYER_VIEWERS : [];
+    const vc = viewersArr[viewer] || viewersArr[0] || null;
 
-    const leftPx = centerX - bw/2;
-    const baseTop = H * 0.23;
+    const anchorX = getViewerAnchorXByIndex(viewer);
+    const bubbleDx = vc && typeof vc.bubbleDx === 'number' ? vc.bubbleDx : 40;
+    const bubbleDy = vc && typeof vc.bubbleDy === 'number' ? vc.bubbleDy : 0;
+
+    let leftPx = anchorX + bubbleDx + (xShift || 0);
+    const maxLeft = xR - pad - bw;
+    const minLeft = xL + pad;
+    if(leftPx < minLeft) leftPx = minLeft;
+    if(leftPx > maxLeft) leftPx = maxLeft;
+
+    const baseTop = stage.clientHeight * 0.35;
     const liftVal = (typeof lift === 'number' ? lift : 135);
-    const deltaY = (135 - liftVal);
-    const topPx = Math.max(40, baseTop + deltaY);
+    const extraLift = 135 - liftVal;
+    let topPx = baseTop + bubbleDy + extraLift;
+    if(topPx < 40) topPx = 40;
 
     this.el.style.left = leftPx + 'px';
     this.el.style.top  = topPx + 'px';
   }
 
-  showOnce(o){
-    const viewer=o.viewer;
-    const text=o.text;
-    const lift=o.lift;
-    const xShift=o.xShift||0;
-    const durSec=o.durSec;
-    const pauseAfterSec=o.pauseAfterSec;
-
+  showOnce({viewer,text,lift,xShift,durSec,pauseAfterSec}){
     return new Promise(resolve=>{
-      if(this._currentCancel){
-        try{ this._currentCancel(); }catch(e){}
-        this._currentCancel=null;
-      }
+      if(this._currentCancel){ try{ this._currentCancel(); }catch{} this._currentCancel=null; }
       const textEl=this.el.querySelector('.text');
       const sanitized = this.sanitize(text||'');
       const plain = sanitized.replace(/<[^>]+>/g,'');
@@ -1024,20 +888,12 @@ class BubbleScheduler {
       this._currentCancel=cancel;
     });
   }
-
-  say(viewer,text,lift,xShift,durSec,pauseAfterSec){
-    this._queue=this._queue.then(()=>this.showOnce({
-      viewer:viewer,
-      text:text,
-      lift:lift,
-      xShift:xShift,
-      durSec:durSec,
-      pauseAfterSec:pauseAfterSec
-    }));
+  say(viewer,text,lift=140,xShift=0,durSec=null,pauseAfterSec=null){
+    this._queue=this._queue.then(()=>this.showOnce({viewer,text,lift,xShift,durSec,pauseAfterSec}));
     return this._queue;
   }
   clear(){
-    if(this._currentCancel){ try{ this._currentCancel(); }catch(e){} this._currentCancel=null; }
+    if(this._currentCancel){ try{ this._currentCancel(); }catch{} this._currentCancel=null; }
     this._queue=Promise.resolve();
     this.el.style.display='none';
     if(this.labelEl) this.labelEl.style.display='none';
@@ -1127,9 +983,9 @@ function drawXTChart(){ if(uXT){ uXT.setData(buildSeriesData()); } }
 /* ====== ΠΑΡΑΜΕΤΡΟΙ ====== */
 function showCurtainParams(){
   const phi0deg=((omega*obsStartPlaybackOffset)*180/Math.PI + 360)%360;
-  paramAEl.textContent  ='A = '+A_m.toFixed(2)+' m';
-  paramWEl.textContent  ='ω = '+omega.toFixed(3)+' rad/s';
-  paramPhiEl.textContent='φ₀ = '+phi0deg.toFixed(1)+'°';
+  paramAEl.textContent  =`A = ${A_m.toFixed(2)} m`;
+  paramWEl.textContent  =`ω = ${omega.toFixed(3)} rad/s`;
+  paramPhiEl.textContent=`φ₀ = ${phi0deg.toFixed(1)}°`;
   paramsBoxEl.style.display='block';
   positionParamsBox();
 }
@@ -1251,7 +1107,6 @@ function resetShow(){
   xtChart.style.display='none';
   springEl.style.display='none';
 
-  hideAllAvatars();
   window.foyerClose(true);
   setLang(LANG);
 
@@ -1294,7 +1149,6 @@ let L0_px; let skaterWidthPx; let hookOffsetPx;
 function animate(now){
   const realDt=(now-lastFrame)/1000; lastFrame=now;
   positionRightPanel(); updateRuler();
-  positionAvatars();
 
   const tPhys=(now-t0)/1000;
   if(!obsStarted){ playbackTime=tPhys; }
@@ -1306,7 +1160,7 @@ function animate(now){
   if(obsStarted && !isBubbleActive && nextThoughtIdx<thoughtScript.length){
     const th=thoughtScript[nextThoughtIdx];
     const shiftMul=(firstThoughtMul-DEFAULT_FIRST_MUL);
-    const baseMul=(th.atT||0);
+    const baseMul=(th.atT??0);
     const eventAtSec=(baseMul+shiftMul)*T*timelineScale;
     if(tObs>=eventAtSec){
       try{ handleTimelineEvent(th); }finally{ nextThoughtIdx+=1; }
@@ -1324,11 +1178,11 @@ function animate(now){
   const distance=skaterHookX-ax;
   const scale=(L0_px && L0_px>0) ? (distance/L0_px) : 1;
   springEl.style.left=ax+'px';
-  springEl.style.transform='scaleX('+scale+')';
+  springEl.style.transform=`scaleX(${scale})`;
   actor.style.transform='none';
   actor.style.left=(skaterHookX-hookOffsetPx)+'px';
   markerEl.style.left=skaterHookX+'px';
-  spotlight.style.background='radial-gradient(220px 140px at '+skaterHookX+'px '+(stage.clientHeight*0.62)+'px, rgba(255,255,220,.65), rgba(255,255,255,0) 70%)';
+  spotlight.style.background=`radial-gradient(220px 140px at ${skaterHookX}px ${stage.clientHeight*0.62}px, rgba(255,255,220,.65), rgba(255,255,255,0) 70%)`;
 
   const xMeters=(skaterHookX-centerX)/pxPerMeter;
   logMeasurement(tObs,xMeters);
@@ -1343,7 +1197,7 @@ const boardRight = document.getElementById('boardRight');
 const foyer      = document.getElementById('foyer');
 const fbubble    = document.getElementById('foyerBubble');
 
-function typeWriter(el, text, opt, done){
+function typeWriter(el, text, opt=12, done){
   el.innerHTML=''; let i=0;
   const src = String(text||'').replaceAll('sqrt(','√(');
   const total = src.length || 1;
@@ -1375,26 +1229,19 @@ function typeWriter(el, text, opt, done){
 }
 
 function showSpeakerChip(viewerId){
-  const baseViewers = Array.isArray(FOYER_VIEWERS) ? FOYER_VIEWERS : [];
-  const vInfo = baseViewers.find(x=>x.id===viewerId) || baseViewers[0];
-  const anchor = getAvatarById(viewerId) || document.querySelector('.viewer[data-idx="'+(viewerId-1)+'"]');
-  if(!vInfo || !anchor) return;
-
-  highlightAvatarById(viewerId);
-
-  const sRect = stage.getBoundingClientRect();
-  const aRect = anchor.getBoundingClientRect();
+  const vInfo = getViewerConfigById(viewerId);
+  if(!vInfo) return;
   let labelText;
   if(LANG==='en'){
-    labelText = vInfo.name_en || vInfo.name || ('SPECTATOR '+viewerId);
+    labelText = vInfo.name_en || vInfo.name || `SPECTATOR ${viewerId}`;
   }else{
-    labelText = vInfo.name_gr || vInfo.name || ('ΘΕΑΤΗΣ '+viewerId);
+    labelText = vInfo.name_gr || vInfo.name || `ΘΕΑΤΗΣ ${viewerId}`;
   }
   fbubble.textContent = labelText;
-  fbubble.style.backgroundColor = tint(vInfo.color,0.85);
+  fbubble.style.backgroundColor = tint(vInfo.color || '#000000',0.85);
   fbubble.style.borderColor     = 'rgba(255,255,255,.85)';
-  const centerX = (aRect.left + aRect.width/2) - sRect.left;
-  const topPx   = Math.max(10, (aRect.top - sRect.top) - 90);
+  const centerX = getViewerAnchorXById(viewerId);
+  const topPx   = foyer.offsetTop + 8;
   fbubble.style.left = centerX + 'px';
   fbubble.style.top  = topPx + 'px';
   fbubble.style.transform = 'translateX(-50%)';
@@ -1421,7 +1268,7 @@ function isFormulaBlock(text){
 }
 
 function addRow(leftText, rightText, viewer, durLeftSec, durRightSec, pauseAfterSec, whenDone){
-  const baseViewer = Array.isArray(FOYER_VIEWERS) ? FOYER_VIEWERS : [];
+  const baseViewer = (Array.isArray(FOYER_VIEWERS) ? FOYER_VIEWERS : []);
   const viewerInfo = baseViewer.find(v=>v.id===viewer) || baseViewer[0] || {color:'#ffffff'};
 
   const bgLeft  = tint(viewerInfo.color, 0.22);
@@ -1431,10 +1278,10 @@ function addRow(leftText, rightText, viewer, durLeftSec, durRightSec, pauseAfter
   const r = document.createElement('div'); r.className='cell right sync-row';
 
   l.style.background = bgLeft;
-  l.style.borderLeft = '4px solid '+tint(viewerInfo.color,0.85);
+  l.style.borderLeft = `4px solid ${tint(viewerInfo.color,0.85)}`;
 
   r.style.background = bgRight;
-  r.style.borderLeft = '4px solid '+tint(viewerInfo.color,0.55);
+  r.style.borderLeft = `4px solid ${tint(viewerInfo.color,0.55)}`;
 
   if (isFormulaBlock(rightText)){
     r.classList.add('formula');
@@ -1533,27 +1380,57 @@ function foyerStep(){
 }
 
 function repositionFoyer(){
-  const sRect=stage.getBoundingClientRect();
-  foyer.style.left = (sRect.width*0.18)+'px';
-  foyer.style.width= (sRect.width*0.64)+'px';
-  foyer.style.top='0';
-  foyer.style.height=getComputedStyle(document.documentElement).getPropertyValue('--foyer-h')||'445px';
+  const sRect = stage.getBoundingClientRect();
+  foyer.style.left   = (sRect.width*0.18) + 'px';
+  foyer.style.width  = (sRect.width*0.64) + 'px';
+  foyer.style.top    = '0';
+  foyer.style.height = getComputedStyle(document.documentElement).getPropertyValue('--foyer-h') || '445px';
+  repositionAvatars();
 }
-function foyerOpen(auto){
+function buildFoyerAvatars(){
+  if(!audienceImg) return;
+  FOYER_AVATARS.forEach(el=>{ try{ el.remove(); }catch(e){} });
+  FOYER_AVATARS = [];
+  const arr = Array.isArray(FOYER_VIEWERS) ? FOYER_VIEWERS : [];
+  if(!arr.length) return;
+  arr.forEach(v=>{
+    const img = document.createElement('img');
+    img.className = 'foyer-avatar';
+    img.dataset.viewerId = String(v.id);
+    if(v.img){ img.src = v.img; }
+    else if(v.image){ img.src = v.image; }
+    stage.appendChild(img);
+    FOYER_AVATARS.push(img);
+  });
+  repositionAvatars();
+  FOYER_AVATARS.forEach(el=>{ el.style.display='block'; });
+}
+function repositionAvatars(){
+  if(!FOYER_AVATARS.length || !audienceImg) return;
+  const audienceBottom = parseFloat(getComputedStyle(audienceImg).bottom||'0') || 0;
+  FOYER_AVATARS.forEach(el=>{
+    const id = Number(el.dataset.viewerId);
+    const vc = getViewerConfigById(id);
+    if(!vc) return;
+    const anchorX = getViewerAnchorXFromConfig(vc);
+    const avatarDy = (typeof vc.avatarDy === 'number') ? vc.avatarDy : 100;
+    el.style.left   = anchorX + 'px';
+    el.style.bottom = (audienceBottom + avatarDy) + 'px';
+  });
+}
+function foyerOpen(auto=true){
   foyer.style.display='block';
   boardLeft.innerHTML=''; boardRight.innerHTML='';
   foyerIdx=0; foyerAuto= !!auto;
   if(foyerTimer){ clearTimeout(foyerTimer); foyerTimer=null; }
-  hideAllAvatars();
-  fbubble.style.display='none';
-  setTimeout(foyerStep, 400);
   repositionFoyer();
+  buildFoyerAvatars();
+  setTimeout(foyerStep, 400);
 }
-function foyerClose(silent){
+function foyerClose(silent=false){
   if(foyerTimer){ clearTimeout(foyerTimer); foyerTimer=null; }
   foyer.style.display='none';
-  hideAllAvatars();
-  fbubble.style.display='none';
+  FOYER_AVATARS.forEach(el=>{ el.style.display='none'; });
 }
 btnFoyer.addEventListener('click', ()=>foyerOpen(true));
 btnFoyerGo.addEventListener('click', ()=>{
@@ -1616,7 +1493,7 @@ window.foyerClose = foyerClose;
       const dist  = Math.max(0, hookX_ghost - ax);
       const scale = dist / base;
       ghostSpring.style.left = ax + 'px';
-      ghostSpring.style.transform = 'scaleX('+scale+')';
+      ghostSpring.style.transform = `scaleX(${scale})`;
 
       ghostRAF = requestAnimationFrame(loop);
     };
@@ -1655,8 +1532,7 @@ window.foyerClose = foyerClose;
       if(sbC && ui.sbC2) sbC.textContent = ui.sbC2;
       if(sbD && ui.sbD2) sbD.textContent = ui.sbD2;
 
-      for(let i=0;i<seq.length;i++){
-        const step = seq[i];
+      for(const step of seq){
         if(step.lawText || step.law){
           const lawTxt = step.lawText || step.law;
           addLaw(lawTxt);
@@ -1711,11 +1587,7 @@ window.foyerClose = foyerClose;
 /* ====== LANG SWITCH HANDLER ====== */
 langSwitch.addEventListener('click', async (e)=>{
   const btn=e.target.closest('button[data-lang]'); if(!btn) return;
-  const all=langSwitch.querySelectorAll('button');
-  for(let i=0;i<all.length;i++){
-    const b=all[i];
-    b.classList.toggle('on', b===btn);
-  }
+  [...langSwitch.querySelectorAll('button')].forEach(b=>b.classList.toggle('on', b===btn));
   const lang = btn.dataset.lang;
   await Promise.all([
     loadDialogOverrides(lang),
@@ -1725,14 +1597,7 @@ langSwitch.addEventListener('click', async (e)=>{
 });
 
 /* ====== RESIZE OBSERVER ====== */
-const ro=new ResizeObserver(()=>{
-  positionRightPanel();
-  if(uXT){ drawXTChart(); }
-  positionLawCharts();
-  positionParamsBox();
-  repositionFoyer();
-  positionAvatars();
-});
+const ro=new ResizeObserver(()=>{ positionRightPanel(); if(uXT){ drawXTChart(); } positionLawCharts(); positionParamsBox(); repositionFoyer(); });
 ro.observe(stage);
 
 /* ====== BOOTSTRAP ====== */
@@ -1743,19 +1608,6 @@ ro.observe(stage);
   await loadUI('gr');
   await loadUI('en');
   await loadViewers();
-
-  if(audienceImg){
-    if(audienceImg.complete){
-      syncAvatarScale();
-      positionAvatars();
-    }else{
-      audienceImg.addEventListener('load', function(){
-        syncAvatarScale();
-        positionAvatars();
-      });
-    }
-  }
-
   setLang('gr');
   resetShow();
 })();
