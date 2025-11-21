@@ -2,36 +2,36 @@
   {
     "id": 1,
     "name_gr": "Θεατής 1",
-    "name_en": "Spectator 1",
+    "name_en": "Viewer 1",
     "color": "#ffb347",
-    "icon": "viewer1.png"
+    "avatar": "viewer1.png"
   },
   {
     "id": 2,
     "name_gr": "Θεατής 2",
-    "name_en": "Spectator 2",
-    "color": "#6bc5ff",
-    "icon": "viewer2.png"
+    "name_en": "Viewer 2",
+    "color": "#7fd1b9",
+    "avatar": "viewer2.png"
   },
   {
     "id": 3,
     "name_gr": "Θεατής 3",
-    "name_en": "Spectator 3",
-    "color": "#b28dff",
-    "icon": "viewer3.png"
+    "name_en": "Viewer 3",
+    "color": "#8ab6ff",
+    "avatar": "viewer3.png"
   },
   {
     "id": 4,
     "name_gr": "Θεατής 4",
-    "name_en": "Spectator 4",
-    "color": "#7ed957",
-    "icon": "viewer4.png"
+    "name_en": "Viewer 4",
+    "color": "#e59aff",
+    "avatar": "viewer4.png"
   },
   {
     "id": 5,
     "name_gr": "Θεατής 5",
-    "name_en": "Spectator 5",
-    "color": "#ff6f91",
-    "icon": "viewer5.png"
+    "name_en": "Viewer 5",
+    "color": "#ffd27a",
+    "avatar": "viewer5.png"
   }
 ]
