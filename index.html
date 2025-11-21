@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Θεatrική Σκηνή — Ενιαία Έκδοση (Act I + Act II + Φουαγιέ)</title>
+<title>Θεατρική Σκηνή — Ενιαία Έκδοση (Act I + Act II + Φουαγιέ)</title>
 
 <link rel="stylesheet" href="https://unpkg.com/uplot@1.6.30/dist/uPlot.min.css">
 <script src="https://unpkg.com/uplot@1.6.30/dist/uPlot.iife.min.js"></script>
@@ -17,19 +17,19 @@
   .stage{position:relative;width:100vw;height:100vh;overflow:hidden}
 
   .curtain-top,.curtain-upper,.curtain-side{position:absolute;transition:transform 1.2s cubic-bezier(.2,.9,.2,1),opacity 1s}
-  .curtain-top{top:0;left:0;width:100%;height:calc(28% - 30px);background:linear-gradient(to.bottom,#230000,#180000);box-shadow:0 5px 18px rgba(0,0,0,.8);z-index:160}
+  .curtain-top{top:0;left:0;width:100%;height:calc(28% - 30px);background:linear-gradient(to bottom,#230000,#180000);box-shadow:0 5px 18px rgba(0,0,0,.8);z-index:160}
   .curtain-upper{
     top:calc(28% - 23px);
     left:0;width:100%;height:calc(40% + 30px);
-    background:url('courtin.png') center top/cover no-repeat, linear-gradient(to.bottom,#8b0000,#400000);
+    background:url('courtin.png') center top/cover no-repeat, linear-gradient(to bottom,#8b0000,#400000);
     transform-origin:top; z-index:160
   }
   .open .curtain-upper{ transform: translateY(calc(-100% + 10px)); }
   .curtain-upper.slow-close{ transition: transform 1.8s cubic-bezier(.2,.9,.2,1), opacity 1.2s; }
 
   .curtain-side{top:0;height:100%;width:18%;z-index:160}
-  .curtain-side.left{left:0;background:linear-gradient(to.right,#300000,#1a0000);box-shadow:inset -6px 0 10px rgba(0,0,0,.6)}
-  .curtain-side.right{right:0;background:linear-gradient(to.left,#300000,#1a0000);box-shadow:inset 6px 0 10px rgba(0,0,0,.6)}
+  .curtain-side.left{left:0;background:linear-gradient(to right,#300000,#1a0000);box-shadow:inset -6px 0 10px rgba(0,0,0,.6)}
+  .curtain-side.right{right:0;background:linear-gradient(to left,#300000,#1a0000);box-shadow:inset 6px 0 10px rgba(0,0,0,.6)}
 
   .spotlight{position:absolute;inset:0;pointer-events:none;z-index:150;opacity:.25;background:radial-gradient(200px 120px at 50% 50%, rgba(255,255,220,.65), rgba(255,255,220,0) 70%)}
 
@@ -42,20 +42,21 @@
   .viewers{position:absolute;left:18%;width:64%;bottom:0;display:flex;justify-content:space-between;z-index:159;padding:0 4vw 12px}
   .viewer{width:60px;height:100px;background:url('https://upload.wikimedia.org/wikipedia/commons/f/f9/Silhouette_icon.svg') no-repeat center/contain;filter:grayscale(1) brightness(.6);opacity:.75}
 
+  /* avatars μόνο στο φουαγιέ, πίσω από το koino.png */
   .foyer-avatars{
     position:absolute;
     left:18%;
     width:64%;
     bottom:0;
     height:40vh;
-    z-index:157; /* πίσω από το koino.png (158) */
+    z-index:157; /* < 158 του koino.png */
     pointer-events:none;
     display:none;
   }
   .foyer-avatar{
     position:absolute;
     transform:translateX(-50%);
-    max-height:220px;
+    max-height:260px;
     object-fit:contain;
   }
 
@@ -96,7 +97,7 @@
   .tick-label{position:absolute;bottom:12px;transform:translateX(-50%);font-size:10px;color:#aaa;white-space:nowrap}
   .marker{position:absolute;bottom:calc(32vh - 8px + 1px);width:0;height:80px;transform:translateX(-50%);pointer-events:none;z-index:275;opacity:0;transition:opacity .3s}
   .marker-line{position:absolute;left:50%;bottom:8px;width:2px;height:70px;background:#ffd27a;box-shadow:0 0 4px rgba(255,210,122,.8);transform:translateX(-50%)}
-  .marker-tip{position:absolute;left:50%;bottom:0;width:0;height:0;border-left:6px solid transparent;border-right:6px solid.transparent;border-top:8px solid #ffd27a;filter:drop-shadow(0 2px 2px rgba(255,210,122,.8));transform:translateX(-50%)}
+  .marker-tip{position:absolute;left:50%;bottom:0;width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:8px solid #ffd27a;filter:drop-shadow(0 2px 2px rgba(255,210,122,.8));transform:translateX(-50%)}
 
   @keyframes popIn{0%{transform:scale(.9);opacity:0}60%{transform:scale(1.04);opacity:1}100%{transform:scale(1)}}
   .thought-bubble{
@@ -280,6 +281,7 @@
     <div class="actor" id="actor"><img src="skater.png" alt="Skater"></div>
     <div class="floor"></div>
 
+    <!-- avatars φουαγιέ, πίσω από το koino.png -->
     <div class="foyer-avatars" id="foyerAvatars"></div>
     <img class="audience" src="koino.png" alt="κοινό">
 
@@ -433,10 +435,9 @@ async function loadViewers(){
   try{
     const resp = await fetch('viewers.json', {cache:'no-store'});
     if(!resp.ok) return;
-    const.data = await resp.json();
+    const data = await resp.json();
     if(Array.isArray(data)) FOYER_VIEWERS = data;
   }catch(e){}
-  requestAnimationFrame(buildFoyerAvatars);
 }
 
 /* ====== I18N / UI ====== */
@@ -475,156 +476,156 @@ function setLang(lang){
   if(mbTitleEl && ui.measurementsTitle) mbTitleEl.textContent = ui.measurementsTitle;
 
   if(firstLawShown){
-    const.uiLT = ui.lawsTitle;
+    const uiLT = ui.lawsTitle;
     if(uiLT) document.getElementById('lawsTitle').textContent = uiLT;
   }
 
   const actBreakTitle = document.getElementById('actBreakTitle');
-  const.actBreakMsg   = document.getElementById('actBreakMsg');
-  const.btnAct2       = document.getElementById('btnAct2');
+  const actBreakMsg   = document.getElementById('actBreakMsg');
+  const btnAct2       = document.getElementById('btnAct2');
   if(actBreakTitle && ui.actBreakTitle) actBreakTitle.textContent = ui.actBreakTitle;
   if(actBreakMsg   && ui.actBreakMsg)   actBreakMsg.textContent   = ui.actBreakMsg;
   if(btnAct2       && ui.act2Btn)       btnAct2.textContent       = ui.act2Btn;
 
-  const.foyerBreakTitle = document.getElementById('foyerBreakTitle');
-  const.foyerBreakMsg   = document.getElementById('foyerBreakMsg');
-  const.btnFoyerGoEl    = document.getElementById('btnFoyerGo');
+  const foyerBreakTitle = document.getElementById('foyerBreakTitle');
+  const foyerBreakMsg   = document.getElementById('foyerBreakMsg');
+  const btnFoyerGoEl    = document.getElementById('btnFoyerGo');
   if(foyerBreakTitle && ui.foyerBreakTitle) foyerBreakTitle.textContent = ui.foyerBreakTitle;
   if(foyerBreakMsg   && ui.foyerBreakMsg)   foyerBreakMsg.textContent   = ui.foyerBreakMsg;
   if(btnFoyerGoEl    && ui.foyerBreakBtn)   btnFoyerGoEl.textContent    = ui.foyerBreakBtn;
 
-  const.foyerBtn = document.getElementById('btnFoyer');
+  const foyerBtn = document.getElementById('btnFoyer');
   if(foyerBtn && ui.foyerBtnLabel) foyerBtn.textContent = ui.foyerBtnLabel;
 
-  const.endShowBtn = document.getElementById('btnEndShow');
+  const endShowBtn = document.getElementById('btnEndShow');
   if(endShowBtn && ui.endShowBtn) endShowBtn.textContent = ui.endShowBtn;
 
-  const.settingsTitleEl = document.querySelector('[data-i18n="settingsTitle"]');
+  const settingsTitleEl = document.querySelector('[data-i18n="settingsTitle"]');
   if(settingsTitleEl && ui.settingsTitle) settingsTitleEl.textContent = ui.settingsTitle;
 
-  const.lblStart = document.querySelector('label[for="slFirst"]');
-  const.lblScale = document.querySelector('label[for="slScale"]');
-  const.lblDur   = document.querySelector('label[for="slDur"]');
-  const.lblSlow  = document.querySelector('label[for="slSlow"]');
+  const lblStart = document.querySelector('label[for="slFirst"]');
+  const lblScale = document.querySelector('label[for="slScale"]');
+  const lblDur   = document.querySelector('label[for="slDur"]');
+  const lblSlow  = document.querySelector('label[for="slSlow"]');
   if(lblStart && ui.startThoughts) lblStart.textContent = ui.startThoughts;
   if(lblScale && ui.flowScale)     lblScale.textContent = ui.flowScale;
   if(lblDur   && ui.bubbleDur)     lblDur.textContent   = ui.bubbleDur;
   if(lblSlow  && ui.slowFactor)    lblSlow.textContent  = ui.slowFactor;
 }
 
-function.localizeTrig(txt){
+function localizeTrig(txt){
   if(!txt) return txt;
   return (LANG==='gr') ? txt.replaceAll('sin','ημ').replaceAll('cos','συν')
                        : txt.replaceAll('ημ','sin').replaceAll('συν','cos');
 }
 
-function.getAct1BubbleText(id){
-  const.dlg = DIALOGS[LANG];
+function getAct1BubbleText(id){
+  const dlg = DIALOGS[LANG];
   if(dlg && dlg.act1 && dlg.act1[id]) return dlg.act1[id];
   return '';
 }
-function.getAct2BubbleText(id){
-  const.dlg = DIALOGS[LANG];
+function getAct2BubbleText(id){
+  const dlg = DIALOGS[LANG];
   if(dlg && dlg.act2 && dlg.act2[id]) return dlg.act2[id];
   return '';
 }
 
 /* ====== DOM ====== */
-const.stage=document.getElementById('stage');
-const.actor=document.getElementById('actor');
-const.springEl=document.getElementById('spring');
-const.spotlight=document.getElementById('spotlight');
-const.startBtn=document.getElementById('startBtn');
-const.clockEl=document.getElementById('clock');
-const.slowHint=document.getElementById('slowHint');
-const.rulerEl=document.getElementById('ruler');
-const.markerEl=document.getElementById('marker');
-const.bubbleEl=document.getElementById('bubble0');
-const.actBubble=document.getElementById('actBubble');
-const.btnPause=document.getElementById('btnPause');
-const.btnSlow=document.getElementById('btnSlow');
-const.btnPlay=document.getElementById('btnPlay');
-const.btnSettings=document.getElementById('btnSettings');
-const.btnReset=document.getElementById('btnReset');
-const.btnEndShow=document.getElementById('btnEndShow');
-const.btnFoyer=document.getElementById('btnFoyer');
-const.settingsPanel=document.getElementById('settingsPanel');
-const.slFirst=document.getElementById('slFirst'), valFirst=document.getElementById('valFirst');
-const.slScale=document.getElementById('slScale'), valScale=document.getElementById('valScale');
-const.slDur=document.getElementById('slDur'),   valDur=document.getElementById('valDur');
-const.slSlow=document.getElementById('slSlow'), valSlow=document.getElementById('valSlow');
-const.countdownOverlay=document.getElementById('countdownOverlay');
-const.countdownTimerEl=document.getElementById('countdownTimer');
-const.xtChart=document.getElementById('xtChart');
-const.paramsBoxEl=document.getElementById('paramsBox');
-const.paramAEl=document.getElementById('paramA');
-const.paramWEl=document.getElementById('paramW');
-const.paramPhiEl=document.getElementById('paramPhi');
-const.lawsPane=document.getElementById('laws');
-const.lawsTitle=document.getElementById('lawsTitle');
-const.lawsBody=document.getElementById('lawsBody');
-const.lawCharts=document.getElementById('lawCharts');
-const.measureBox=document.getElementById('measureBox');
-const.measureTBody=document.getElementById('measureTBody');
-const.actBreak=document.getElementById('actBreak');
-const.foyerBreak=document.getElementById('foyerBreak');
-const.btnFoyerGo=document.getElementById('btnFoyerGo');
-const.curtainUpper=document.querySelector('.curtain-upper');
-const.foyerAvatars=document.getElementById('foyerAvatars');
+const stage=document.getElementById('stage');
+const actor=document.getElementById('actor');
+const springEl=document.getElementById('spring');
+const spotlight=document.getElementById('spotlight');
+const startBtn=document.getElementById('startBtn');
+const clockEl=document.getElementById('clock');
+const slowHint=document.getElementById('slowHint');
+const rulerEl=document.getElementById('ruler');
+const markerEl=document.getElementById('marker');
+const bubbleEl=document.getElementById('bubble0');
+const actBubble=document.getElementById('actBubble');
+const btnPause=document.getElementById('btnPause');
+const btnSlow=document.getElementById('btnSlow');
+const btnPlay=document.getElementById('btnPlay');
+const btnSettings=document.getElementById('btnSettings');
+const btnReset=document.getElementById('btnReset');
+const btnEndShow=document.getElementById('btnEndShow');
+const btnFoyer=document.getElementById('btnFoyer');
+const settingsPanel=document.getElementById('settingsPanel');
+const slFirst=document.getElementById('slFirst'), valFirst=document.getElementById('valFirst');
+const slScale=document.getElementById('slScale'), valScale=document.getElementById('valScale');
+const slDur=document.getElementById('slDur'),   valDur=document.getElementById('valDur');
+const slSlow=document.getElementById('slSlow'), valSlow=document.getElementById('valSlow');
+const countdownOverlay=document.getElementById('countdownOverlay');
+const countdownTimerEl=document.getElementById('countdownTimer');
+const xtChart=document.getElementById('xtChart');
+const paramsBoxEl=document.getElementById('paramsBox');
+const paramAEl=document.getElementById('paramA');
+const paramWEl=document.getElementById('paramW');
+const paramPhiEl=document.getElementById('paramPhi');
+const lawsPane=document.getElementById('laws');
+const lawsTitle=document.getElementById('lawsTitle');
+const lawsBody=document.getElementById('lawsBody');
+const lawCharts=document.getElementById('lawCharts');
+const measureBox=document.getElementById('measureBox');
+const measureTBody=document.getElementById('measureTBody');
+const actBreak=document.getElementById('actBreak');
+const foyerBreak=document.getElementById('foyerBreak');
+const btnFoyerGo=document.getElementById('btnFoyerGo');
+const curtainUpper=document.querySelector('.curtain-upper');
+const foyerAvatars=document.getElementById('foyerAvatars');
 
 if (typeof window.foyerOpen  !== 'function') window.foyerOpen  = function(){};
 if (typeof window.foyerClose !== 'function') window.foyerClose = function(){};
 
 /* ====== ΦΥΣΙΚΗ ====== */
-const.m=70, T=6.0, A_m=3.0;
-const.omega=2*Math.PI/T;
-const.D=Math.round(m*omega*omega);
-const.E_mech=0.5*D*A_m*A_m;
-const.pxPerMeter=50; let A_px=pxPerMeter*A_m;
+const m=70, T=6.0, A_m=3.0;
+const omega=2*Math.PI/T;
+const D=Math.round(m*omega*omega);
+const E_mech=0.5*D*A_m*A_m;
+const pxPerMeter=50; let A_px=pxPerMeter*A_m;
 
-function.positionParamsBox(){
-  const.rightEdge = stage.clientWidth*0.82;
-  const.w = paramsBoxEl.offsetWidth || 180;
+function positionParamsBox(){
+  const rightEdge = stage.clientWidth*0.82;
+  const w = paramsBoxEl.offsetWidth || 180;
   paramsBoxEl.style.left = (rightEdge - w - 6) + 'px';
   paramsBoxEl.style.top  = '33px';
 }
-let.lastRulerW=0;
-function.updateRuler(){
-  const.baseLeft=stage.clientWidth*0.18;
-  const.usableW =stage.clientWidth*0.64;
+let lastRulerW=0;
+function updateRuler(){
+  const baseLeft=stage.clientWidth*0.18;
+  const usableW =stage.clientWidth*0.64;
   if(Math.abs(usableW-lastRulerW)<1) return;
   lastRulerW=usableW;
   rulerEl.style.left=baseLeft+'px';
   rulerEl.style.width=usableW+'px';
   rulerEl.innerHTML='';
-  const.centerX=stage.clientWidth/2;
+  const centerX=stage.clientWidth/2;
   for(let mTick=-7;mTick<=7;mTick++){
-    const.xPx=centerX+mTick*pxPerMeter;
-    const.rel=xPx-baseLeft;
-    const.tDiv=document.createElement('div'); tDiv.className='tick'; tDiv.style.left=rel+'px'; rulerEl.appendChild(tDiv);
-    const.lbl=document.createElement('div'); lbl.className='tick-label';
+    const xPx=centerX+mTick*pxPerMeter;
+    const rel=xPx-baseLeft;
+    const tDiv=document.createElement('div'); tDiv.className='tick'; tDiv.style.left=rel+'px'; rulerEl.appendChild(tDiv);
+    const lbl=document.createElement('div'); lbl.className='tick-label';
     lbl.textContent=(mTick===0?'0':(mTick>0? '+'+mTick:''+mTick))+' m';
     lbl.style.left=rel+'px'; rulerEl.appendChild(lbl);
   }
 }
-function.positionRightPanel(){
-  const.W=stage.clientWidth, H=stage.clientHeight;
-  const.curtainLeft=W*0.82, curtainW=W*0.18, centerX=curtainLeft+curtainW/2;
+function positionRightPanel(){
+  const W=stage.clientWidth, H=stage.clientHeight;
+  const curtainLeft=W*0.82, curtainW=W*0.18, centerX=curtainLeft+curtainW/2;
   if(clockEl){ clockEl.style.left=centerX+'px'; }
   if(measureBox){
     measureBox.style.left=centerX+'px';
-    const.mTop=54; measureBox.style.top=mTop+'px';
-    const.halfH=Math.floor(H*0.5); measureBox.style.height=halfH+'px';
+    const mTop=54; measureBox.style.top=mTop+'px';
+    const halfH=Math.floor(H*0.5); measureBox.style.height=halfH+'px';
     measureBox.style.overflowY='auto';
     measureBox.style.width=Math.max(160,curtainW-16)+'px';
   }
   if(xtChart){
-    const.mTop=measureBox.offsetTop||54;
-    const.mHeight=measureBox.offsetHeight||Math.floor(H*0.5);
-    const.xTop=mTop+mHeight+8;
-    const.availH=Math.max(120,H-xTop-8);
+    const mTop=measureBox.offsetTop||54;
+    const mHeight=measureBox.offsetHeight||Math.floor(H*0.5);
+    const xTop=mTop+mHeight+8;
+    const availH=Math.max(120,H-xTop-8);
     xtChart.style.left=centerX+'px'; xtChart.style.top=xTop+'px';
-    const.w=Math.max(160,(measureBox?measureBox.offsetWidth:(curtainW-16)));
+    const w=Math.max(160,(measureBox?measureBox.offsetWidth:(curtainW-16)));
     xtChart.style.width=w+'px'; xtChart.style.height=availH+'px';
     xtChart.style.transform='translateX(-50%)';
     if(uXT){ uXT.setSize({width:Math.floor(w), height:Math.floor(availH)}); drawXTChart(); }
@@ -633,33 +634,33 @@ function.positionRightPanel(){
   positionParamsBox();
 }
 window.addEventListener('resize', positionRightPanel);
-function.anchorX(){ return stage.clientWidth*0.18; }
+function anchorX(){ return stage.clientWidth*0.18; }
 
 /* ====== ΡΥΘΜΙΣΕΙΣ ΡΟΗΣ ====== */
-const.DEFAULT_FIRST_MUL=1.1;
-let.firstThoughtMul=parseFloat(slFirst.value);
-let.timelineScale=parseFloat(slScale.value);
-let.bubbleDurationSec=parseFloat(slDur.value);
-let.slowFactor=parseFloat(slSlow.value);
+const DEFAULT_FIRST_MUL=1.1;
+let firstThoughtMul=parseFloat(slFirst.value);
+let timelineScale=parseFloat(slScale.value);
+let bubbleDurationSec=parseFloat(slDur.value);
+let slowFactor=parseFloat(slSlow.value);
 slFirst.addEventListener('input',()=>{ firstThoughtMul=parseFloat(slFirst.value); valFirst.textContent=`${firstThoughtMul.toFixed(1)}·T`; });
 slScale.addEventListener('input',()=>{ timelineScale=parseFloat(slScale.value); valScale.textContent=`${timelineScale.toFixed(1)}×`; });
 slDur.addEventListener('input',()=>{ bubbleDurationSec=parseFloat(slDur.value); valDur.textContent=`${bubbleDurationSec.toFixed(1)}s`; });
 slSlow.addEventListener('input',()=>{ slowFactor=parseFloat(slSlow.value); valSlow.textContent=`${slowFactor.toFixed(2)}×`; });
 
 /* ====== TIMELINE STATE ====== */
-let.nextThoughtIdx=0;
-let.isBubbleActive=false;
-let.bubbleAutoTimer=null;
-let.measureRowIdx=0;
+let nextThoughtIdx=0;
+let isBubbleActive=false;
+let bubbleAutoTimer=null;
+let measureRowIdx=0;
 
-let.t0=performance.now(), lastFrame=performance.now();
-let.playbackTime=0, mode='run', obsStarted=false, obsStartPlaybackOffset=0;
-let.lastSampleObsTime=-Infinity;
-const.sampleInterval=0.25;
-function.logMeasurement(tObs,xMeters){
+let t0=performance.now(), lastFrame=performance.now();
+let playbackTime=0, mode='run', obsStarted=false, obsStartPlaybackOffset=0;
+let lastSampleObsTime=-Infinity;
+const sampleInterval=0.25;
+function logMeasurement(tObs,xMeters){
   if(!obsStarted || mode==='pause') return;
   if(tObs-lastSampleObsTime<sampleInterval) return; lastSampleObsTime=tObs;
-  const.tr=document.createElement('tr');
+  const tr=document.createElement('tr');
   tr.className='new';
   tr.innerHTML=`<td>${(++measureRowIdx)}</td><td>${tObs.toFixed(2)}</td><td>${xMeters.toFixed(2)}</td>`;
   measureTBody.appendChild(tr);
@@ -669,7 +670,7 @@ function.logMeasurement(tObs,xMeters){
 }
 
 /* ====== MODE ====== */
-function.setMode(newMode){
+function setMode(newMode){
   mode=newMode;
   btnSlow.classList.toggle('active', mode==='slow');
   btnPlay.classList.toggle('active', mode==='run');
@@ -677,23 +678,23 @@ function.setMode(newMode){
 }
 
 /* ====== TYPEWRITER HTML (Πράξεις) ====== */
-function.typeWriterHTML(el, html, speed, done){
+function typeWriterHTML(el, html, speed, done){
   el.innerHTML = html || '';
-  const.textNodes=[];
-  function.collect(node){
+  const textNodes=[];
+  function collect(node){
     if(node.nodeType===3){
       textNodes.push({node, text:node.textContent});
       node.textContent='';
     }else if(node.nodeType===1){
-      for(const.child of node.childNodes) collect(child);
+      for(const child of node.childNodes) collect(child);
     }
   }
   collect(el);
-  const.totalChars = textNodes.reduce((s,o)=>s+o.text.length,0);
-  let.i=0;
-  (function.tick(){
-    let.remaining = i;
-    for(const.obj of textNodes){
+  const totalChars = textNodes.reduce((s,o)=>s+o.text.length,0);
+  let i=0;
+  (function tick(){
+    let remaining = i;
+    for(const obj of textNodes){
       if(remaining>obj.text.length){
         obj.node.textContent=obj.text;
         remaining-=obj.text.length;
@@ -712,14 +713,14 @@ function.typeWriterHTML(el, html, speed, done){
 }
 
 /* ====== ΧΡΩΜΑΤΑ ====== */
-function.tint(hex, alpha){
-  const.c = (hex||'#ffffff').replace('#','');
-  const.r=parseInt(c.slice(0,2),16)||255, g=parseInt(c.slice(2,4),16)||255, b=parseInt(c.slice(4,6),16)||255;
+function tint(hex, alpha){
+  const c = (hex||'#ffffff').replace('#','');
+  const r=parseInt(c.slice(0,2),16)||255, g=parseInt(c.slice(2,4),16)||255, b=parseInt(c.slice(4,6),16)||255;
   return `rgba(${r},${g},${b},${alpha})`;
 }
 
 /* ====== BUBBLE SCHEDULER (Πράξεις) ====== */
-class.BubbleScheduler {
+class BubbleScheduler {
   constructor(panelEl, labelEl){
     this.el=panelEl;
     this.labelEl=labelEl;
@@ -728,31 +729,31 @@ class.BubbleScheduler {
     this._ALLOWED=new Set(['b','strong','i','em','sub','sup','br','span']);
   }
   sanitize(html){
-    const.wrap=document.createElement('div'); wrap.innerHTML=html||'';
+    const wrap=document.createElement('div'); wrap.innerHTML=html||'';
     wrap.querySelectorAll('*').forEach(n=>{
-      const.tag=n.tagName.toLowerCase();
+      const tag=n.tagName.toLowerCase();
       if(!this._ALLOWED.has(tag)) n.replaceWith(document.createTextNode(n.textContent));
       else [...n.attributes].forEach(a=>n.removeAttribute(a.name));
     });
-    return.wrap.innerHTML;
+    return wrap.innerHTML;
   }
   computeDur(text){
-    const.s=String(text||''); const.len=s.length; const.BASE=0.8, PER=0.055, MIN=2.0, MAX=10.0;
+    const s=String(text||''); const len=s.length; const BASE=0.8, PER=0.055, MIN=2.0, MAX=10.0;
     return Math.max(MIN, Math.min(MAX, BASE+PER*len)) * (bubbleDurationSec/3.0);
   }
   showSpeaker(viewer){
     if(!this.labelEl) return;
-    const.viewersArr = Array.isArray(FOYER_VIEWERS) ? FOYER_VIEWERS : [];
-    const.fv = viewersArr[viewer] || viewersArr[0] || null;
+    const viewersArr = Array.isArray(FOYER_VIEWERS) ? FOYER_VIEWERS : [];
+    const fv = viewersArr[viewer] || viewersArr[0] || null;
 
-    const.vEl=document.querySelector(`.viewer[data-idx="${viewer}"]`);
+    const vEl=document.querySelector(`.viewer[data-idx="${viewer}"]`);
     if(!vEl){ this.labelEl.style.display='none'; return; }
-    const.sRect=stage.getBoundingClientRect();
-    const.vRect=vEl.getBoundingClientRect();
-    const.centerX=(vRect.left+vRect.width/2)-sRect.left;
-    const.topPx=Math.max(10,(vRect.top-sRect.top)-110);
+    const sRect=stage.getBoundingClientRect();
+    const vRect=vEl.getBoundingClientRect();
+    const centerX=(vRect.left+vRect.width/2)-sRect.left;
+    const topPx=Math.max(10,(vRect.top-sRect.top)-110);
 
-    let.labelText='';
+    let labelText='';
     if(fv){
       if(LANG==='en'){
         labelText = fv.name_en || fv.name || (`SPECTATOR ${viewer+1}`);
@@ -773,70 +774,70 @@ class.BubbleScheduler {
   }
 
   placePanelNearViewer(viewer,lift=140,xShift=0){
-    const.W = stage.clientWidth;
-    const.H = stage.clientHeight;
+    const W = stage.clientWidth;
+    const H = stage.clientHeight;
 
-    const.xL = W * 0.18;
-    const.xR = W * 0.82;
-    const.pad = 12;
+    const xL = W * 0.18;
+    const xR = W * 0.82;
+    const pad = 12;
 
     this.el.style.display='block';
     this.el.style.opacity='0';
     this.el.style.left='0px';
     this.el.style.top='0px';
 
-    const.bw = this.el.offsetWidth || 320;
+    const bw = this.el.offsetWidth || 320;
 
-    const.vEl = document.querySelector(`.viewer[data-idx="${viewer}"]`);
-    const.sRect = stage.getBoundingClientRect();
+    const vEl = document.querySelector(`.viewer[data-idx="${viewer}"]`);
+    const sRect = stage.getBoundingClientRect();
 
-    let.baseCenterX;
+    let baseCenterX;
     if(vEl){
-      const.vRect = vEl.getBoundingClientRect();
+      const vRect = vEl.getBoundingClientRect();
       baseCenterX = (vRect.left + vRect.width/2) - sRect.left;
     }else{
-      const.totalViewers = Math.max(1, (document.querySelectorAll('.viewer').length || 5));
-      const.idx = Math.max(0, Math.min(totalViewers-1, viewer|0));
-      const.rel = (idx + 1) / (totalViewers + 1);
+      const totalViewers = Math.max(1, (document.querySelectorAll('.viewer').length || 5));
+      const idx = Math.max(0, Math.min(totalViewers-1, viewer|0));
+      const rel = (idx + 1) / (totalViewers + 1);
       baseCenterX = xL + rel * (xR - xL);
     }
 
-    let.centerX = baseCenterX + (xShift || 0);
+    let centerX = baseCenterX + (xShift || 0);
     centerX = Math.max(xL + pad + bw/2, Math.min(centerX, xR - pad - bw/2));
 
-    const.leftPx = centerX - bw/2;
+    const leftPx = centerX - bw/2;
 
-    const.baseTop = H * 0.23;
-    const.liftVal = (typeof lift === 'number' ? lift : 135);
-    const.deltaY = (135 - liftVal);
-    const.topPx = Math.max(40, baseTop + deltaY);
+    const baseTop = H * 0.23;
+    const liftVal = (typeof lift === 'number' ? lift : 135);
+    const deltaY = (135 - liftVal);
+    const topPx = Math.max(40, baseTop + deltaY);
 
     this.el.style.left = leftPx + 'px';
     this.el.style.top  = topPx + 'px';
   }
 
   showOnce({viewer,text,lift,xShift,durSec,pauseAfterSec}){
-    return new.Promise(resolve=>{
+    return new Promise(resolve=>{
       if(this._currentCancel){ try{ this._currentCancel(); }catch(e){} this._currentCancel=null; }
-      const.textEl=this.el.querySelector('.text');
-      const.sanitized = this.sanitize(text||'');
-      const.plain = sanitized.replace(/<[^>]+>/g,'');
-      const.totalChars = Math.max(plain.length,10);
+      const textEl=this.el.querySelector('.text');
+      const sanitized = this.sanitize(text||'');
+      const plain = sanitized.replace(/<[^>]+>/g,'');
+      const totalChars = Math.max(plain.length,10);
 
-      const.effectiveDurSec = (typeof durSec==='number' && durSec>0)
+      const effectiveDurSec = (typeof durSec==='number' && durSec>0)
         ? durSec
         : (bubbleDurationSec || 3.0);
-      const.baseMs = effectiveDurSec*1000;
-      const.speed = Math.max(15, Math.min(80, Math.round(baseMs/totalChars)));
+      const baseMs = effectiveDurSec*1000;
+      const speed = Math.max(15, Math.min(80, Math.round(baseMs/totalChars)));
 
-      let.done=false;
-      let.started=false;
+      let done=false;
+      let started=false;
 
       this.showSpeaker(viewer);
 
-      const.timerId = setTimeout(()=>{
+      const timerId = setTimeout(()=>{
         if(done) return;
-       .started=true;
+        started=true;
 
         this.placePanelNearViewer(viewer,lift,xShift);
 
@@ -846,14 +847,14 @@ class.BubbleScheduler {
         setMode('slow');
 
         typeWriterHTML(textEl, sanitized, speed, ()=>{
-          const.extraPause = (typeof pauseAfterSec==='number' && pauseAfterSec>=0)
+          const extraPause = (typeof pauseAfterSec==='number' && pauseAfterSec>=0)
             ? pauseAfterSec*1000
             : 500;
           setTimeout(()=>cancel(), extraPause);
         });
       }, 220);
 
-      const.cancel=()=>{
+      const cancel=()=>{
         if(done) return;
         done=true;
         clearTimeout(timerId);
@@ -888,48 +889,48 @@ class.BubbleScheduler {
     if(this.labelEl) this.labelEl.style.display='none';
   }
 }
-const.BUBBLE = new BubbleScheduler(bubbleEl, actBubble);
+const BUBBLE = new BubbleScheduler(bubbleEl, actBubble);
 
 /* ====== ΝΟΜΟΙ & ΜΙΝΙ ΓΡΑΦΗΜΑΤΑ ====== */
-let.lawCount=0;
-function.addLaw(txt){
-  const.t = localizeTrig(txt);
+let lawCount=0;
+function addLaw(txt){
+  const t = localizeTrig(txt);
   if(!firstLawShown){
     firstLawShown=true;
-    const.ui = UI[LANG] || {};
+    const ui = UI[LANG] || {};
     if(ui.lawsTitle) lawsTitle.textContent = ui.lawsTitle;
     lawsPane.style.display='block';
   }
-  const.div=document.createElement('div');
+  const div=document.createElement('div');
   div.className='law-line';
   div.textContent=t;
   lawsBody.appendChild(div);
   lawCount++; positionLawCharts();
 }
-let.vCan=null,aCan=null,axCan=null;
-function.sizeLawCanvas(c){ const.w=Math.floor(stage.clientWidth*0.16); const.h=140; c.width=w; c.height=h; c.style.width=w+'px'; c.style.height=h+'px'; }
-function.positionLawCharts(){
-  const.r = lawsPane.getBoundingClientRect();
-  const.s = stage.getBoundingClientRect();
+let vCan=null,aCan=null,axCan=null;
+function sizeLawCanvas(c){ const w=Math.floor(stage.clientWidth*0.16); const h=140; c.width=w; c.height=h; c.style.width=w+'px'; c.style.height=h+'px'; }
+function positionLawCharts(){
+  const r = lawsPane.getBoundingClientRect();
+  const s = stage.getBoundingClientRect();
   lawCharts.style.top = (r.bottom - s.top + 8) + 'px';
   lawCharts.style.left= '2%';
   lawCharts.style.width= '16%';
 }
-function.ensureVelocityChart(){
+function ensureVelocityChart(){
   if(!vCan){
     vCan = document.createElement('canvas');
     lawCharts.appendChild(vCan);
   }
   sizeLawCanvas(vCan);
 }
-function.ensureAccelerationChart(){
+function ensureAccelerationChart(){
   if(!aCan){
     aCan = document.createElement('canvas');
     lawCharts.appendChild(aCan);
   }
   sizeLawCanvas(aCan);
 }
-function.ensureAxChart(){
+function ensureAxChart(){
   if(!axCan){
     axCan = document.createElement('canvas');
     lawCharts.appendChild(axCan);
@@ -938,23 +939,23 @@ function.ensureAxChart(){
 }
 
 /* ====== uPlot x(t) ====== */
-let.uXT=null;
-function.buildSeriesData(){
-  const.N=240, tArr=new Array(N+1), xArr=new.Array(N+1);
+let uXT=null;
+function buildSeriesData(){
+  const N=240, tArr=new Array(N+1), xArr=new Array(N+1);
   for(let i=0;i<=N;i++){
-    const.tloc=(i/N)*T;
+    const tloc=(i/N)*T;
     tArr[i]=tloc; xArr[i]=A_m*Math.sin(omega*(tloc+obsStartPlaybackOffset));
   }
-  return[tArr,xArr];
+  return [tArr,xArr];
 }
-function.x0Val(){ return A_m*Math.sin(omega*(0+obsStartPlaybackOffset)); }
-function.initXTChart(){
+function x0Val(){ return A_m*Math.sin(omega*(0+obsStartPlaybackOffset)); }
+function initXTChart(){
   if(uXT) return;
   xtChart.style.display='block';
-  const.w = Math.floor(xtChart.clientWidth || (Math.max(160, (stage.clientWidth*0.18) - 16)));
-  const.h = Math.floor(xtChart.clientHeight || Math.max(120, stage.clientHeight*0.35));
-  const.xData=buildSeriesData();
-  const.opts={
+  const w = Math.floor(xtChart.clientWidth || (Math.max(160, (stage.clientWidth*0.18) - 16)));
+  const h = Math.floor(xtChart.clientHeight || Math.max(120, stage.clientHeight*0.35));
+  const xData=buildSeriesData();
+  const opts={
     width:w, height:h,
     scales:{ x:{time:false, range:[0,T]}, y:{range:[-A_m*1.1, A_m*1.1]} },
     axes:[
@@ -967,11 +968,11 @@ function.initXTChart(){
   };
   uXT=new uPlot(opts, xData, xtChart);
 }
-function.drawXTChart(){ if(uXT){ uXT.setData(buildSeriesData()); } }
+function drawXTChart(){ if(uXT){ uXT.setData(buildSeriesData()); } }
 
 /* ====== ΠΑΡΑΜΕΤΡΟΙ ====== */
-function.showCurtainParams(){
-  const.phi0deg=((omega*obsStartPlaybackOffset)*180/Math.PI + 360)%360;
+function showCurtainParams(){
+  const phi0deg=((omega*obsStartPlaybackOffset)*180/Math.PI + 360)%360;
   paramAEl.textContent  =`A = ${A_m.toFixed(2)} m`;
   paramWEl.textContent  =`ω = ${omega.toFixed(3)} rad/s`;
   paramPhiEl.textContent=`φ₀ = ${phi0deg.toFixed(1)}°`;
@@ -980,16 +981,16 @@ function.showCurtainParams(){
 }
 
 /* ====== ΚΛΕΙΣΙΜΟ ΑΥΛΑΙΑΣ ΠΡΑΞΗΣ 1 ====== */
-function.closeCurtainsSequence(){
+function closeCurtainsSequence(){
   curtainUpper.classList.add('slow-close');
   stage.classList.remove('open');
   markerEl.style.opacity='0';
   setMode('run');
   setTimeout(()=>{
-    const.cuRect = curtainUpper.getBoundingClientRect();
-    const.sRect = stage.getBoundingClientRect();
-    const.centralLeftPx = sRect.left + stage.clientWidth*0.18;
-    const.centralWidthPx= stage.clientWidth*0.64;
+    const cuRect = curtainUpper.getBoundingClientRect();
+    const sRect = stage.getBoundingClientRect();
+    const centralLeftPx = sRect.left + stage.clientWidth*0.18;
+    const centralWidthPx= stage.clientWidth*0.64;
     actBreak.style.left   = (centralLeftPx - sRect.left) + 'px';
     actBreak.style.top    = (cuRect.top  - sRect.top ) + 'px';
     actBreak.style.width  = centralWidthPx + 'px';
@@ -1000,9 +1001,9 @@ function.closeCurtainsSequence(){
 }
 
 /* ====== HANDLER TIMELINE ΠΡΑΞΗΣ 1 ====== */
-function.handleTimelineEvent(th){
+function handleTimelineEvent(th){
   if(th.kind==='bubble'){
-    const.txt = getAct1BubbleText(th.key);
+    const txt = getAct1BubbleText(th.key);
     BUBBLE.say(
       th.viewer,
       txt,
@@ -1012,9 +1013,9 @@ function.handleTimelineEvent(th){
       typeof th.pauseAfter==='number' ? th.pauseAfter : null
     );
   }else if(th.kind==='bubbleDyn'){
-    const.dyn = (i18nDyn[LANG] && i18nDyn[LANG].thoughts) || {};
-    const.dur = (typeof th.dur==='number' ? th.dur : null);
-    const.pa  = (typeof th.pauseAfter==='number' ? th.pauseAfter : null);
+    const dyn = (i18nDyn[LANG] && i18nDyn[LANG].thoughts) || {};
+    const dur = (typeof th.dur==='number' ? th.dur : null);
+    const pa  = (typeof th.pauseAfter==='number' ? th.pauseAfter : null);
     if(th.what==='A'){
       BUBBLE.say(
         th.viewer,
@@ -1034,8 +1035,8 @@ function.handleTimelineEvent(th){
         pa
       );
     }else if(th.what==='phi'){
-      const.x0 = x0Val().toFixed(2);
-      const.phi0deg=((omega*obsStartPlaybackOffset)*180/Math.PI + 360)%360;
+      const x0 = x0Val().toFixed(2);
+      const phi0deg=((omega*obsStartPlaybackOffset)*180/Math.PI + 360)%360;
       BUBBLE.say(
         th.viewer,
         dyn.t9phi ? dyn.t9phi(x0, phi0deg.toFixed(1)) : '',
@@ -1065,42 +1066,44 @@ btnSlow .addEventListener('click', ()=>{ setMode('slow');  });
 btnPlay .addEventListener('click', ()=>{ setMode('run');  });
 
 btnSettings.addEventListener('click',()=>{
- .settingsPanel.style.display = (settingsPanel.style.display==='block' ? 'none' : 'block');
+  settingsPanel.style.display = (settingsPanel.style.display==='block' ? 'none' : 'block');
 });
 
-function.resetShow(){
+function resetShow(){
   if(bubbleAutoTimer){ clearTimeout(bubbleAutoTimer); bubbleAutoTimer=null; }
   thoughtScript = [...thoughtScriptBase];
- .nextThoughtIdx=0; isBubbleActive=false;
- .measureRowIdx=0; lastSampleObsTime=-Infinity;
- .firstLawShown=false; lawCount=0;
- .obsStarted=false; obsStartPlaybackOffset=0;
- .mode='run'; setMode('run');
- .stage.classList.remove('open');
- .countdownOverlay.style.display='none';
- .startBtn.style.display='block';
- .clockEl.style.display='none';
- .measureBox.style.display='none';
- .paramsBoxEl.style.display='none';
- .markerEl.style.opacity='0';
- .bubbleEl.classList.remove('active','checked','closing'); bubbleEl.style.display='none'; bubbleEl.style.opacity='0';
- .actBubble.style.display='none';
- .actBreak.style.display='none';
- .foyerBreak.style.display='none';
- .settingsPanel.style.display='none';
- .measureTBody.innerHTML='';
- .lawsBody.innerHTML=''; lawsPane.style.display='none';
- .lawCharts.innerHTML='';
- .vCan=null; aCan=null; axCan=null;
+  nextThoughtIdx=0; isBubbleActive=false;
+  measureRowIdx=0; lastSampleObsTime=-Infinity;
+  firstLawShown=false; lawCount=0;
+  obsStarted=false; obsStartPlaybackOffset=0;
+  mode='run'; setMode('run');
+  stage.classList.remove('open');
+  countdownOverlay.style.display='none';
+  startBtn.style.display='block';
+  clockEl.style.display='none';
+  measureBox.style.display='none';
+  paramsBoxEl.style.display='none';
+  markerEl.style.opacity='0';
+  bubbleEl.classList.remove('active','checked','closing'); bubbleEl.style.display='none'; bubbleEl.style.opacity='0';
+  actBubble.style.display='none';
+  actBreak.style.display='none';
+  foyerBreak.style.display='none';
+  settingsPanel.style.display='none';
+  measureTBody.innerHTML='';
+  lawsBody.innerHTML=''; lawsPane.style.display='none';
+  lawCharts.innerHTML='';
+  vCan=null; aCan=null; axCan=null;
   if(uXT){ try{ uXT.destroy(); }catch(e){}; uXT=null; }
- .xtChart.style.display='none';
- .springEl.style.display='none';
+  xtChart.style.display='none';
+  springEl.style.display='none';
 
   window.foyerClose(true);
+
   if(foyerAvatars){
     foyerAvatars.innerHTML='';
     foyerAvatars.style.display='none';
   }
+
   setLang(LANG);
 
   t0=performance.now(); lastFrame=t0; playbackTime=0;
@@ -1109,22 +1112,22 @@ btnReset.addEventListener('click', resetShow);
 btnEndShow.addEventListener('click', resetShow);
 
 /* ====== ΕΝΑΡΞΗ ΜΕ COUNTDOWN ====== */
-function.beginObservationAfterCountdown(){
- .stage.classList.add('open');
+function beginObservationAfterCountdown(){
+  stage.classList.add('open');
   if(!obsStarted){ obsStarted=true; obsStartPlaybackOffset=playbackTime; }
- .clockEl.style.display='block';
- .measureBox.style.display='block';
- .markerEl.style.opacity='1';
- .positionRightPanel();
+  clockEl.style.display='block';
+  measureBox.style.display='block';
+  markerEl.style.opacity='1';
+  positionRightPanel();
 }
-function.startShowCountdown(){
- .startBtn.style.display='none';
- .countdownOverlay.style.display='flex';
-  const.seconds=5;
-  let.end=performance.now()+seconds*1000;
-  function.tick(){
-    const.now=performance.now();
-    const.remain=Math.max(0, Math.ceil((end-now)/1000));
+function startShowCountdown(){
+  startBtn.style.display='none';
+  countdownOverlay.style.display='flex';
+  const seconds=5;
+  let end=performance.now()+seconds*1000;
+  function tick(){
+    const now=performance.now();
+    const remain=Math.max(0, Math.ceil((end-now)/1000));
     countdownTimerEl.textContent=remain;
     if(now>=end){
       countdownOverlay.style.display='none';
@@ -1138,46 +1141,46 @@ function.startShowCountdown(){
 startBtn.addEventListener('click', startShowCountdown);
 
 /* ====== ANIMATION LOOP ====== */
-let.L0_px; let.skaterWidthPx; let.hookOffsetPx;
-function.animate(now){
-  const.realDt=(now-lastFrame)/1000; lastFrame=now;
- .positionRightPanel(); updateRuler();
+let L0_px; let skaterWidthPx; let hookOffsetPx;
+function animate(now){
+  const realDt=(now-lastFrame)/1000; lastFrame=now;
+  positionRightPanel(); updateRuler();
 
-  const.tPhys=(now-t0)/1000;
+  const tPhys=(now-t0)/1000;
   if(!obsStarted){ playbackTime=tPhys; }
   else{ playbackTime += (mode==='run'? realDt : (mode==='slow'? realDt*slowFactor : 0)); }
 
-  const.tObs= obsStarted ? (playbackTime-obsStartPlaybackOffset) : 0;
- .clockEl.textContent='t = '+tObs.toFixed(2)+' s';
+  const tObs= obsStarted ? (playbackTime-obsStartPlaybackOffset) : 0;
+  clockEl.textContent='t = '+tObs.toFixed(2)+' s';
 
   if(obsStarted && !isBubbleActive && nextThoughtIdx<thoughtScript.length){
-    const.th=thoughtScript[nextThoughtIdx];
-    const.shiftMul=(firstThoughtMul-DEFAULT_FIRST_MUL);
-    const.baseMul=(th.atT??0);
-    const.eventAtSec=(baseMul+shiftMul)*T*timelineScale;
+    const th=thoughtScript[nextThoughtIdx];
+    const shiftMul=(firstThoughtMul-DEFAULT_FIRST_MUL);
+    const baseMul=(th.atT??0);
+    const eventAtSec=(baseMul+shiftMul)*T*timelineScale;
     if(tObs>=eventAtSec){
       try{ handleTimelineEvent(th); }finally{ nextThoughtIdx+=1; }
     }
   }
 
-  const.springRect=springEl.getBoundingClientRect();
-  const.skRect=actor.getBoundingClientRect();
+  const springRect=springEl.getBoundingClientRect();
+  const skRect=actor.getBoundingClientRect();
   if(!L0_px && springRect.width>0){ L0_px=springRect.width; }
-  if(skRect.width>0){ skaterWidthPx=skRect.width; hookOffsetPx=skaterWidthPx/2; }
+  if(skRect.width>0){ skaterWidthPx=skRect.width; hookOffsetPx=skRect.width/2; }
 
-  const.ax=anchorX();
-  const.centerX=stage.clientWidth/2;
-  const.skaterHookX=centerX + A_px*Math.sin(omega*playbackTime);
-  const.distance=skaterHookX-ax;
-  const.scale=(L0_px && L0_px>0) ? (distance/L0_px) : 1;
- .springEl.style.left=ax+'px';
- .springEl.style.transform=`scaleX(${scale})`;
- .actor.style.transform='none';
- .actor.style.left=(skaterHookX-hookOffsetPx)+'px';
- .markerEl.style.left=skaterHookX+'px';
- .spotlight.style.background=`radial-gradient(220px 140px at ${skaterHookX}px ${stage.clientHeight*0.62}px, rgba(255,255,220,.65), rgba(255,255,255,0) 70%)`;
+  const ax=anchorX();
+  const centerX=stage.clientWidth/2;
+  const skaterHookX=centerX + A_px*Math.sin(omega*playbackTime);
+  const distance=skaterHookX-ax;
+  const scale=(L0_px && L0_px>0) ? (distance/L0_px) : 1;
+  springEl.style.left=ax+'px';
+  springEl.style.transform=`scaleX(${scale})`;
+  actor.style.transform='none';
+  actor.style.left=(skaterHookX-hookOffsetPx)+'px';
+  markerEl.style.left=skaterHookX+'px';
+  spotlight.style.background=`radial-gradient(220px 140px at ${skaterHookX}px ${stage.clientHeight*0.62}px, rgba(255,255,220,.65), rgba(255,255,255,0) 70%)`;
 
-  const.xMeters=(skaterHookX-centerX)/pxPerMeter;
+  const xMeters=(skaterHookX-centerX)/pxPerMeter;
   logMeasurement(tObs,xMeters);
 
   requestAnimationFrame(animate);
@@ -1185,28 +1188,28 @@ function.animate(now){
 requestAnimationFrame(animate);
 
 /* ====== ΦΟΥΑΓΙΕ ====== */
-const.boardLeft  = document.getElementById('boardLeft');
-const.boardRight = document.getElementById('boardRight');
-const.foyer      = document.getElementById('foyer');
-const.fbubble    = document.getElementById('foyerBubble');
+const boardLeft  = document.getElementById('boardLeft');
+const boardRight = document.getElementById('boardRight');
+const foyer      = document.getElementById('foyer');
+const fbubble    = document.getElementById('foyerBubble');
 
-function.typeWriter(el, text, opt=12, done){
-  el.innerHTML=''; let.i=0;
-  const.src = String(text||'').replaceAll('sqrt(','√(');
-  const.total = src.length || 1;
+function typeWriter(el, text, opt=12, done){
+  el.innerHTML=''; let i=0;
+  const src = String(text||'').replaceAll('sqrt(','√(');
+  const total = src.length || 1;
 
-  let.speed;
+  let speed;
   if(typeof opt === 'number'){
     speed = opt;
   }else if(opt && typeof opt === 'object'){
-    const.durSec = (typeof opt.durationSec==='number' && opt.durationSec>0) ? opt.durationSec : 2.0;
-    const.durMs  = durSec*1000;
+    const durSec = (typeof opt.durationSec==='number' && opt.durationSec>0) ? opt.durationSec : 2.0;
+    const durMs  = durSec*1000;
     speed = Math.max(10, Math.round(durMs/total));
   }else{
     speed = 12;
   }
 
-  (function.tick(){
+  (function tick(){
     el.innerHTML = src.slice(0,i).replaceAll('\n','<br>');
     try{
       boardLeft.scrollTop  = boardLeft.scrollHeight;
@@ -1221,45 +1224,45 @@ function.typeWriter(el, text, opt=12, done){
   })();
 }
 
-function.buildFoyerAvatars(){
+/* avatars για φουαγιέ */
+function buildFoyerAvatars(){
   if(!foyerAvatars) return;
   foyerAvatars.innerHTML = '';
 
-  const.viewerEls = Array.from(document.querySelectorAll('.viewer'));
-  if(!viewerEls.length || !Array.isArray(FOYER_VIEWERS) || !FOYER_VIEWERS.length) return;
+  if(foyerAvatars.offsetWidth === 0) return; // αν είναι κρυφό, δεν έχει γεωμετρία
 
-  const.bandRect = foyerAvatars.getBoundingClientRect();
+  if(!Array.isArray(FOYER_VIEWERS) || !FOYER_VIEWERS.length) return;
+  const viewerEls = Array.from(document.querySelectorAll('.viewer'));
+  if(!viewerEls.length) return;
 
-  FOYER_VIEWERS.forEach((v, idx)=>{
-    if(!v || !v.avatar) return;
+  const bandRect = foyerAvatars.getBoundingClientRect();
 
-    const.baseViewerEl = viewerEls[idx];
-    if(!baseViewerEl) return;
+  viewerEls.forEach((vEl, idx)=>{
+    const info = FOYER_VIEWERS[idx];
+    if(!info || !info.avatar) return;
 
-    const.vr = baseViewerEl.getBoundingClientRect();
+    const vr = vEl.getBoundingClientRect();
+    const centerX = (vr.left + vr.width/2) - bandRect.left;
 
-    const.img = document.createElement('img');
+    const img = document.createElement('img');
     img.className = 'foyer-avatar';
-    img.src = v.avatar;
-    img.alt = v.name_gr || v.name_en || ('viewer ' + (idx+1));
-
-    const.centerX = (vr.left + vr.width/2) - bandRect.left;
-
+    img.src = info.avatar;
+    img.alt = info.name_gr || info.name_en || ('viewer ' + (idx+1));
     img.style.left   = centerX + 'px';
-    img.style.bottom = '80px'; // ύψος μέσα στο foyerAvatars
+    img.style.bottom = '200px'; // ~200px πάνω από βάση koino-band
 
     foyerAvatars.appendChild(img);
   });
 }
 
-function.showSpeakerChip(viewerId){
-  const.baseViewer = (Array.isArray(FOYER_VIEWERS) ? FOYER_VIEWERS : []);
-  const.viewerInfo = baseViewer.find(x=>x.id===viewerId) || baseViewer[0];
-  const.anchor = document.querySelector(`.viewer[data-idx="${viewerId-1}"]`);
+function showSpeakerChip(viewerId){
+  const baseViewer = (Array.isArray(FOYER_VIEWERS) ? FOYER_VIEWERS : []);
+  const viewerInfo = baseViewer.find(x=>x.id===viewerId) || baseViewer[0];
+  const anchor = document.querySelector(`.viewer[data-idx="${viewerId-1}"]`);
   if(!viewerInfo || !anchor) return;
-  const.sRect = stage.getBoundingClientRect();
-  const.aRect = anchor.getBoundingClientRect();
-  let.labelText;
+  const sRect = stage.getBoundingClientRect();
+  const aRect = anchor.getBoundingClientRect();
+  let labelText;
   if(LANG==='en'){
     labelText = viewerInfo.name_en || viewerInfo.name || `SPECTATOR ${viewerId}`;
   }else{
@@ -1268,24 +1271,24 @@ function.showSpeakerChip(viewerId){
   fbubble.textContent = labelText;
   fbubble.style.backgroundColor = tint(viewerInfo.color,0.85);
   fbubble.style.borderColor     = 'rgba(255,255,255,.85)';
-  const.centerX = (aRect.left + aRect.width/2) - sRect.left;
-  const.topPx   = Math.max(10, (aRect.top - sRect.top) - 110);
+  const centerX = (aRect.left + aRect.width/2) - sRect.left;
+  const topPx   = Math.max(10, (aRect.top - sRect.top) - 110);
   fbubble.style.left = centerX + 'px';
   fbubble.style.top  = topPx + 'px';
   fbubble.style.transform = 'translateX(-50%)';
   fbubble.style.display = 'block';
 }
 
-let._syncing=false;
-function.syncScroll(from,to){
+let _syncing=false;
+function syncScroll(from,to){
   if(_syncing) return;
   _syncing=true; to.scrollTop=from.scrollTop; _syncing=false;
 }
 boardLeft.addEventListener('scroll', ()=>syncScroll(boardLeft,boardRight));
 boardRight.addEventListener('scroll',()=>syncScroll(boardRight,boardLeft));
 
-function.isFormulaBlock(text){
-  const.s = String(text||'').trim();
+function isFormulaBlock(text){
+  const s = String(text||'').trim();
   if(!s) return false;
   if(/^\(\d+\)/.test(s)) return true;
   if(/[ΑA]\.[ΔD]\.[ΜM]\.[ΕE]\.[ΤT]/.test(s)) return true;
@@ -1295,15 +1298,15 @@ function.isFormulaBlock(text){
   return false;
 }
 
-function.addRow(leftText, rightText, viewer, durLeftSec, durRightSec, pauseAfterSec, whenDone){
-  const.baseViewer = (Array.isArray(FOYER_VIEWERS) ? FOYER_VIEWERS : []);
-  const.viewerInfo = baseViewer.find(v=>v.id===viewer) || baseViewer[0] || {color:'#ffffff'};
+function addRow(leftText, rightText, viewer, durLeftSec, durRightSec, pauseAfterSec, whenDone){
+  const baseViewer = (Array.isArray(FOYER_VIEWERS) ? FOYER_VIEWERS : []);
+  const viewerInfo = baseViewer.find(v=>v.id===viewer) || baseViewer[0] || {color:'#ffffff'};
 
-  const.bgLeft  = tint(viewerInfo.color, 0.22);
-  const.bgRight = tint(viewerInfo.color, 0.16);
+  const bgLeft  = tint(viewerInfo.color, 0.22);
+  const bgRight = tint(viewerInfo.color, 0.16);
 
-  const.l = document.createElement('div'); l.className='cell left sync-row';
-  const.r = document.createElement('div'); r.className='cell right sync-row';
+  const l = document.createElement('div'); l.className='cell left sync-row';
+  const r = document.createElement('div'); r.className='cell right sync-row';
 
   l.style.background = bgLeft;
   l.style.borderLeft = `4px solid ${tint(viewerInfo.color,0.85)}`;
@@ -1320,9 +1323,9 @@ function.addRow(leftText, rightText, viewer, durLeftSec, durRightSec, pauseAfter
 
   showSpeakerChip(viewer);
 
-  function.finalizeRow(){
+  function finalizeRow(){
     requestAnimationFrame(()=>{
-      const.h = Math.max(l.offsetHeight, r.offsetHeight);
+      const h = Math.max(l.offsetHeight, r.offsetHeight);
       l.style.minHeight = h+'px';
       r.style.minHeight = h+'px';
       boardLeft.scrollTop  = boardLeft.scrollHeight;
@@ -1331,10 +1334,10 @@ function.addRow(leftText, rightText, viewer, durLeftSec, durRightSec, pauseAfter
     });
   }
 
-  const.rt = (rightText||'').trim();
+  const rt = (rightText||'').trim();
 
-  const.leftOpt  = (typeof durLeftSec  === 'number' && durLeftSec>0)  ? {durationSec:durLeftSec}  : 10;
-  const.rightOpt = (typeof durRightSec === 'number' && durRightSec>0) ? {durationSec:durRightSec} : 10;
+  const leftOpt  = (typeof durLeftSec  === 'number' && durLeftSec>0)  ? {durationSec:durLeftSec}  : 10;
+  const rightOpt = (typeof durRightSec === 'number' && durRightSec>0) ? {durationSec:durRightSec} : 10;
 
   typeWriter(l, leftText, leftOpt, ()=>{
     if(rt.length>0){
@@ -1345,15 +1348,15 @@ function.addRow(leftText, rightText, viewer, durLeftSec, durRightSec, pauseAfter
   });
 }
 
-let.foyerIdx=0, foyerAuto=true, foyerTimer=null;
-function.foyerStep(){
-  const.dlgLang = DIALOGS[LANG];
+let foyerIdx=0, foyerAuto=true, foyerTimer=null;
+function foyerStep(){
+  const dlgLang = DIALOGS[LANG];
   if(!dlgLang || !Array.isArray(dlgLang.foyer)) return;
 
-  const.metaArr = Array.isArray(FOYER_META) ? FOYER_META : [];
+  const metaArr = Array.isArray(FOYER_META) ? FOYER_META : [];
 
-  const.meta = metaArr[foyerIdx] || null;
-  let.text = null;
+  const meta = metaArr[foyerIdx] || null;
+  let text = null;
 
   if(meta && meta.id){
     text = (dlgLang.foyer || []).find(e => e && e.id === meta.id) || null;
@@ -1368,7 +1371,7 @@ function.foyerStep(){
     return;
   }
 
-  let.viewerId;
+  let viewerId;
   if(typeof text.viewer==='number'){
     viewerId = text.viewer;
   }else if(meta){
@@ -1377,9 +1380,9 @@ function.foyerStep(){
   }
   if(typeof viewerId!=='number') viewerId=1;
 
-  const.durLeft  = meta && typeof meta.durLeft  === 'number' ? meta.durLeft  : undefined;
-  const.durRight = meta && typeof meta.durRight === 'number' ? meta.durRight : undefined;
-  const.pauseAfterSec = meta && typeof meta.pauseAfter === 'number' ? meta.pauseAfter : undefined;
+  const durLeft  = meta && typeof meta.durLeft  === 'number' ? meta.durLeft  : undefined;
+  const durRight = meta && typeof meta.durRight === 'number' ? meta.durRight : undefined;
+  const pauseAfterSec = meta && typeof meta.pauseAfter === 'number' ? meta.pauseAfter : undefined;
 
   foyerIdx++;
 
@@ -1391,13 +1394,13 @@ function.foyerStep(){
     durRight,
     pauseAfterSec,
     (pause)=>{
-      const.len = (String(text.left||'').length + String(text.right||'').length);
-      let.delay;
+      const len = (String(text.left||'').length + String(text.right||'').length);
+      let delay;
       if(typeof pause === 'number'){
         delay = Math.max(0, pause*1000);
       }else{
-        const.baseDelay = 600;
-        const.extra     = Math.min(2000, Math.max(400, 15*len/4));
+        const baseDelay = 600;
+        const extra     = Math.min(2000, Math.max(400, 15*len/4));
         delay = baseDelay + extra;
       }
       if(foyerAuto){
@@ -1407,26 +1410,27 @@ function.foyerStep(){
   );
 }
 
-function.repositionFoyer(){
-  const.sRect=stage.getBoundingClientRect();
+function repositionFoyer(){
+  const sRect=stage.getBoundingClientRect();
   foyer.style.left = (sRect.width*0.18)+'px';
   foyer.style.width= (sRect.width*0.64)+'px';
   foyer.style.top='0';
   foyer.style.height=getComputedStyle(document.documentElement).getPropertyValue('--foyer-h')||'445px';
 }
-function.foyerOpen(auto=true){
+function foyerOpen(auto=true){
   foyer.style.display='block';
   boardLeft.innerHTML=''; boardRight.innerHTML='';
   foyerIdx=0; foyerAuto= !!auto;
   if(foyerTimer){ clearTimeout(foyerTimer); foyerTimer=null; }
   setTimeout(foyerStep, 400);
   repositionFoyer();
+
   if(foyerAvatars){
     foyerAvatars.style.display='block';
     buildFoyerAvatars();
   }
 }
-function.foyerClose(silent=false){
+function foyerClose(silent=false){
   if(foyerTimer){ clearTimeout(foyerTimer); foyerTimer=null; }
   foyer.style.display='none';
   if(foyerAvatars){
@@ -1443,14 +1447,14 @@ window.foyerClose = foyerClose;
 
 /* ====== ΠΡΑΞΗ 2 (GHOST) ====== */
 (function(){
-  let.ghost=null, ghostSpring=null, ghostRAF=0;
-  const.Aghost_m=5.0;
-  function.getBottom(el){ return parseFloat(getComputedStyle(el).bottom||'0')||0; }
-  function.ensureGhost(){
+  let ghost=null, ghostSpring=null, ghostRAF=0;
+  const Aghost_m=5.0;
+  function getBottom(el){ return parseFloat(getComputedStyle(el).bottom||'0')||0; }
+  function ensureGhost(){
     if(!ghost){
       ghost=document.createElement('div'); ghost.id='actorGhost';
       Object.assign(ghost.style,{position:'absolute', transform:'translate(-50%,0)', zIndex:121, pointerEvents:'none', opacity:0.85, filter:'grayscale(1) brightness(1.2)', display:'none'});
-      const.src=actor.querySelector('img'); const.img=document.createElement('img'); img.src=src?src.src:''; img.style.width='100%'; img.style.height='auto';
+      const src=actor.querySelector('img'); const img=document.createElement('img'); img.src=src?src.src:''; img.style.width='100%'; img.style.height='auto';
       ghost.appendChild(img); stage.appendChild(ghost);
     }
     if(!ghostSpring){
@@ -1459,40 +1463,40 @@ window.foyerClose = foyerClose;
       Object.assign(ghostSpring.style,{position:'absolute', transformOrigin:'left center', zIndex:120, pointerEvents:'none', opacity:0.9, filter:'grayscale(1) brightness(1.15)', display:'none'});
       stage.appendChild(ghostSpring);
     }
-    const.sRect=springEl.getBoundingClientRect();
+    const sRect=springEl.getBoundingClientRect();
     ghostSpring.style.bottom=getBottom(springEl)+'px';
     ghostSpring.style.height=sRect.height+'px';
     ghostSpring.style.left=anchorX()+'px';
     ghostSpring.style.transform='scaleX(1)';
-    const.aRect=actor.getBoundingClientRect();
+    const aRect=actor.getBoundingClientRect();
     ghost.style.bottom=getBottom(actor)+'px';
     ghost.style.width=aRect.width+'px';
     ghost.style.height=aRect.height+'px';
   }
-  function.startGhost(){
+  function startGhost(){
     ensureGhost();
     ghost.style.display='block';
     ghostSpring.style.display='block';
     cancelAnimationFrame(ghostRAF);
 
-    const.A_real_px  = pxPerMeter * A_m;
-    const.A_ghost_px = pxPerMeter * Aghost_m;
+    const A_real_px  = pxPerMeter * A_m;
+    const A_ghost_px = pxPerMeter * Aghost_m;
 
-    const.loop=()=>{
-      const.sRect = stage.getBoundingClientRect();
-      const.aRect = actor.getBoundingClientRect();
-      const.cx    = stage.clientWidth/2;
-      const.ax    = anchorX();
+    const loop=()=>{
+      const sRect = stage.getBoundingClientRect();
+      const aRect = actor.getBoundingClientRect();
+      const cx    = stage.clientWidth/2;
+      const ax    = anchorX();
 
-      const.hookX_real = (aRect.left - sRect.left) + aRect.width/2;
-      const.sinTh = Math.max(-1, Math.min(1, (hookX_real - cx) / Math.max(1, A_real_px)));
-      const.hookX_ghost = cx + A_ghost_px * sinTh;
+      const hookX_real = (aRect.left - sRect.left) + aRect.width/2;
+      const sinTh = Math.max(-1, Math.min(1, (hookX_real - cx) / Math.max(1, A_real_px)));
+      const hookX_ghost = cx + A_ghost_px * sinTh;
 
       ghost.style.left = hookX_ghost + 'px';
 
-      const.base = L0_px || ghostSpring.getBoundingClientRect().width || 1;
-      const.dist  = Math.max(0, hookX_ghost - ax);
-      const.scale = dist / base;
+      const base = L0_px || ghostSpring.getBoundingClientRect().width || 1;
+      const dist  = Math.max(0, hookX_ghost - ax);
+      const scale = dist / base;
       ghostSpring.style.left = ax + 'px';
       ghostSpring.style.transform = `scaleX(${scale})`;
 
@@ -1500,17 +1504,17 @@ window.foyerClose = foyerClose;
     };
     ghostRAF = requestAnimationFrame(loop);
   }
-  function.stopGhost(){
+  function stopGhost(){
     cancelAnimationFrame(ghostRAF); ghostRAF=0;
     if(ghost){ ghost.style.display='none'; }
     if(ghostSpring){ ghostSpring.style.display='none'; ghostSpring.style.transform='scaleX(1)'; }
   }
 
-  let.running=false, finished=false;
+  let running=false, finished=false;
 
-  async function.playAct2(){
+  async function playAct2(){
     if(running || finished) return;
-    const.seq = Array.isArray(ACT2_TIMELINE) ? ACT2_TIMELINE : [];
+    const seq = Array.isArray(ACT2_TIMELINE) ? ACT2_TIMELINE : [];
     if(!seq.length){ finished=true; return; }
 
     running=true;
@@ -1520,12 +1524,12 @@ window.foyerClose = foyerClose;
       stage.classList.add('open');
       springEl.style.display='block';
 
-      const.ui = UI[LANG] || {};
-      const.actTitleEl = document.querySelector('[data-i18n="actTitle"]');
-      const.sbA = document.getElementById('sbLineA');
-      const.sbB = document.getElementById('sbLineB');
-      const.sbC = document.getElementById('sbLineC');
-      const.sbD = document.getElementById('sbLineD');
+      const ui = UI[LANG] || {};
+      const actTitleEl = document.querySelector('[data-i18n="actTitle"]');
+      const sbA = document.getElementById('sbLineA');
+      const sbB = document.getElementById('sbLineB');
+      const sbC = document.getElementById('sbLineC');
+      const sbD = document.getElementById('sbLineD');
 
       if(actTitleEl && ui.act2Title) actTitleEl.textContent = ui.act2Title;
       if(sbA && ui.sbA2) sbA.textContent = ui.sbA2;
@@ -1533,18 +1537,18 @@ window.foyerClose = foyerClose;
       if(sbC && ui.sbC2) sbC.textContent = ui.sbC2;
       if(sbD && ui.sbD2) sbD.textContent = ui.sbD2;
 
-      for(const.step of seq){
+      for(const step of seq){
         if(step.lawText || step.law){
-          const.lawTxt = step.lawText || step.law;
+          const lawTxt = step.lawText || step.law;
           addLaw(lawTxt);
           await new Promise(r=>setTimeout(r,220));
           continue;
         }
-        const.viewerIdx = (typeof step.v==='number' ? step.v :
+        const viewerIdx = (typeof step.v==='number' ? step.v :
                            (typeof step.viewer==='number' ? step.viewer : 0));
-        const.yOff = (typeof step.y==='number' ? step.y :
+        const yOff = (typeof step.y==='number' ? step.y :
                       (typeof step.yOffset==='number' ? step.yOffset : 135));
-        const.xShift = (typeof step.x==='number' ? step.x :
+        const xShift = (typeof step.x==='number' ? step.x :
                         (typeof step.xShift==='number' ? step.xShift : 0));
 
         if(step.gStart) startGhost();
@@ -1565,10 +1569,10 @@ window.foyerClose = foyerClose;
       await new Promise(r=>setTimeout(r,1600));
       curtainUpper.classList.remove('slow-close');
 
-      const.cuRect = curtainUpper.getBoundingClientRect();
-      const.sRect = stage.getBoundingClientRect();
-      const.centralLeftPx = sRect.left + stage.clientWidth*0.18;
-      const.centralWidthPx = stage.clientWidth*0.64;
+      const cuRect = curtainUpper.getBoundingClientRect();
+      const sRect = stage.getBoundingClientRect();
+      const centralLeftPx = sRect.left + stage.clientWidth*0.18;
+      const centralWidthPx = stage.clientWidth*0.64;
       foyerBreak.style.left   = (centralLeftPx - sRect.left) + 'px';
       foyerBreak.style.top    = (cuRect.top  - sRect.top ) + 'px';
       foyerBreak.style.width  = centralWidthPx + 'px';
@@ -1587,9 +1591,9 @@ window.foyerClose = foyerClose;
 
 /* ====== LANG SWITCH HANDLER ====== */
 langSwitch.addEventListener('click', async (e)=>{
-  const.btn=e.target.closest('button[data-lang]'); if(!btn) return;
+  const btn=e.target.closest('button[data-lang]'); if(!btn) return;
   [...langSwitch.querySelectorAll('button')].forEach(b=>b.classList.toggle('on', b===btn));
-  const.lang = btn.dataset.lang;
+  const lang = btn.dataset.lang;
   await Promise.all([
     loadDialogOverrides(lang),
     loadUI(lang)
@@ -1598,13 +1602,15 @@ langSwitch.addEventListener('click', async (e)=>{
 });
 
 /* ====== RESIZE OBSERVER ====== */
-const.ro=new ResizeObserver(()=>{
+const ro=new ResizeObserver(()=>{
   positionRightPanel();
   if(uXT){ drawXTChart(); }
   positionLawCharts();
   positionParamsBox();
   repositionFoyer();
-  buildFoyerAvatars();
+  if(foyerAvatars && foyerAvatars.style.display==='block'){
+    buildFoyerAvatars();
+  }
 });
 ro.observe(stage);
 
