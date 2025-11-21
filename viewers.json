@@ -3,45 +3,55 @@
     "id": 1,
     "name_gr": "Θεατής 1",
     "name_en": "Viewer 1",
-    "color": "#ffb300",
-    "avatar": "viewer1.png",
-    "x": 0.10,
-    "bottom": 110
+    "color": "#ffcc00",
+    "xFrac": 0.16,
+    "bubbleDx": 40,
+    "bubbleDy": 0,
+    "avatarDy": 100,
+    "img": "viewer1.png"
   },
   {
     "id": 2,
     "name_gr": "Θεατής 2",
     "name_en": "Viewer 2",
-    "color": "#42a5f5",
-    "avatar": "viewer2.png",
-    "x": 0.30,
-    "bottom": 110
+    "color": "#66ccff",
+    "xFrac": 0.32,
+    "bubbleDx": 40,
+    "bubbleDy": 0,
+    "avatarDy": 100,
+    "img": "viewer2.png"
   },
   {
     "id": 3,
     "name_gr": "Θεατής 3",
     "name_en": "Viewer 3",
-    "color": "#66bb6a",
-    "avatar": "viewer3.png",
-    "x": 0.50,
-    "bottom": 110
+    "color": "#ff99cc",
+    "xFrac": 0.5,
+    "bubbleDx": 40,
+    "bubbleDy": 0,
+    "avatarDy": 100,
+    "img": "viewer3.png"
   },
   {
     "id": 4,
     "name_gr": "Θεατής 4",
     "name_en": "Viewer 4",
-    "color": "#ab47bc",
-    "avatar": "viewer4.png",
-    "x": 0.70,
-    "bottom": 110
+    "color": "#99ff99",
+    "xFrac": 0.68,
+    "bubbleDx": 40,
+    "bubbleDy": 0,
+    "avatarDy": 100,
+    "img": "viewer4.png"
   },
   {
     "id": 5,
     "name_gr": "Θεατής 5",
     "name_en": "Viewer 5",
-    "color": "#ef5350",
-    "avatar": "viewer5.png",
-    "x": 0.90,
-    "bottom": 110
+    "color": "#ff9966",
+    "xFrac": 0.84,
+    "bubbleDx": 40,
+    "bubbleDy": 0,
+    "avatarDy": 100,
+    "img": "viewer5.png"
   }
 ]
