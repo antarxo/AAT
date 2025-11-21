@@ -71,7 +71,7 @@
   .measure-box thead th{position:sticky;top:0;background:rgba(0,0,0,.65);z-index:1}
   .measure-box th,.measure-box td{border-bottom:1px solid rgba(255,255,255,.2);padding:2px 4px;text-align:right}
   .measure-box th:first-child,.measure-box td:first-child{text-align:center}
-  .measure-box tr.new td{background:rgba(255,210,122,.15);transition:background .6s ease}
+  .measure-box tr.new td{background:rgba(255,210,122,.15);transition:background .6s.ease}
 
   .ruler{position:absolute;bottom:calc(32vh - 8px + 1px);height:24px;font-size:10px;font-family:"Courier New",monospace;color:#aaa;pointer-events:none;z-index:270}
   .ruler::before{content:'';position:absolute;left:0;right:0;bottom:0;height:1px;background:#aaa}
@@ -84,11 +84,11 @@
   @keyframes popIn{0%{transform:scale(.9);opacity:0}60%{transform:scale(1.04);opacity:1}100%{transform:scale(1)}}
   .thought-bubble{
     position:absolute;max-width:420px;background:rgba(255,255,255,.92);color:#000;
-    font-size:15px;line-height:1.45;padding:10px 12px 12px;border:2px solid transparent;border-radius:10px;
+    font-size:15px;line-height:1.45;padding:10px 12px 12px;border:2px solid.transparent;border-radius:10px;
     border-image:repeating-linear-gradient(90deg, rgba(0,0,0,.6) 0 6px, transparent 6px 10px, rgba(0,0,0,.6) 10px 12px, transparent 12px 16px) 1;
-    box-shadow:0 6px 12px rgba(0,0,0,.4);z-index:750;pointer-events:none;opacity:0;display:none;transition:opacity .25s ease, transform .25s.ease
+    box-shadow:0 6px 12px rgba(0,0,0,.4);z-index:750;pointer-events:none;opacity:0;display:none;transition:opacity .25s ease, transform .25s ease
   }
-  .thought-bubble.active{opacity:1;transform:translateY(-2px);animation:popIn .25s ease}
+  .thought-bubble.active{opacity:1;transform:translateY(-2px);animation:popIn .25s.ease}
   .thought-bubble.closing{opacity:0}
   .thought-bubble .tail{display:none;}
   .thought-bubble .checkmark{position:absolute;top:-8px;right:-8px;background:#2ecc71;color:#fff;font-size:11px;line-height:1;border-radius:50%;border:1px solid rgba(0,0,0,.4);width:18px;height:18px;display:none;align-items:center;justify-content:center;font-family:system-ui,sans-serif;font-weight:600}
@@ -112,6 +112,9 @@
     box-shadow:0 6px 14px rgba(0,0,0,.5);
     letter-spacing:0.03em;
     text-shadow:0 1px 2px rgba(0,0,0,.7);
+  }
+  .foyer-bubble{
+    white-space:nowrap;
   }
 
   .controls{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.2);border-radius:8px;padding:6px 8px;display:flex;gap:8px;z-index:300}
@@ -187,7 +190,7 @@
   .foyer-avatar{
     position:absolute;
     transform:translateX(-50%);
-    bottom:100px;  /* +100px πιο πάνω από πριν */
+    bottom:100px;  /* +100px πιο πάνω */
     width:80px;
     height:auto;
     opacity:0;
@@ -207,7 +210,7 @@
   <div class="stage" id="stage">
     <div class="curtain-top"></div>
     <div class="curtain-upper"></div>
-    <div class="curtain-side left"></div>
+    <div class="curtain-side.left"></div>
     <div class="curtain-side right"></div>
 
     <div class="spotlight" id="spotlight"></div>
@@ -1264,11 +1267,14 @@ function buildFoyerAvatars(){
 function showSpeakerChip(viewerId){
   const vArr = Array.isArray(FOYER_VIEWERS) ? FOYER_VIEWERS : [];
   const vInfo = vArr.find(x=>x.id===viewerId) || vArr[viewerId-1] || vArr[0];
-  const anchor = document.querySelector(`.viewer[data-idx="${viewerId-1}"]`);
-  if(!vInfo || !anchor) return;
+  if(!vInfo || !foyerAvatars) return;
+
+  const avImgs = foyerAvatars.querySelectorAll('.foyer-avatar');
+  const avatar = avImgs[viewerId-1] || null;
+  if(!avatar) return;
 
   const sRect = stage.getBoundingClientRect();
-  const aRect = anchor.getBoundingClientRect();
+  const aRect = avatar.getBoundingClientRect();
 
   let labelText;
   if(LANG==='en'){
@@ -1281,25 +1287,24 @@ function showSpeakerChip(viewerId){
   fbubble.style.backgroundColor = tint(vInfo.color,0.85);
   fbubble.style.borderColor     = 'rgba(255,255,255,.85)';
 
-  const centerX = (aRect.left + aRect.width/2) - sRect.left;
-  const topPx   = Math.max(10, (aRect.top - sRect.top) - 110);
+  const centerX = (aRect.right - sRect.left) + 12;
+  const centerY = (aRect.top + aRect.height/2) - sRect.top;
+
   fbubble.style.left = centerX + 'px';
-  fbubble.style.top  = topPx + 'px';
-  fbubble.style.transform = 'translateX(-50%)';
+  fbubble.style.top  = centerY + 'px';
+  fbubble.style.transform = 'translateY(-50%)';
   fbubble.style.display = 'block';
 
-  if(foyerAvatars){
-    foyerAvatars.style.display = 'block';
-    const avImgs = foyerAvatars.querySelectorAll('.foyer-avatar');
-    avImgs.forEach((img, idx)=>{
-      img.classList.remove('active','dim');
-      if(idx === viewerId-1){
-        img.classList.add('active');
-      }else{
-        img.classList.add('dim');
-      }
-    });
-  }
+  foyerAvatars.style.display = 'block';
+  avImgs.forEach((img, idx)=>{
+    img.classList.remove('active','dim');
+    if(idx === viewerId-1){
+      img.classList.add('active');
+      img.style.display = 'block';
+    }else{
+      img.style.display = 'none';
+    }
+  });
 }
 
 let _syncing=false;
@@ -1419,7 +1424,7 @@ function foyerStep(){
     (pause)=>{
       const len = (String(text.left||'').length + String(text.right||'').length);
       let delay;
-      if(typeof pause === 'number'){
+      if(typeof.pause === 'number'){
         delay = Math.max(0, pause*1000);
       }else{
         const baseDelay = 600;
@@ -1640,7 +1645,7 @@ ro.observe(stage);
   await loadTimeline();
   await loadDialogOverrides('gr');
   await loadDialogOverrides('en');
-  await loadUI('gr');
+  await.loadUI('gr');
   await loadUI('en');
   await loadViewers();
   setLang('gr');
