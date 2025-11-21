@@ -38,9 +38,44 @@
   .actor img{width:100%;height:auto;display:block;filter:drop-shadow(0 4px 6px rgba(0,0,0,.6))}
   .floor{position:absolute;left:0;bottom:calc(32vh - 8px);width:100%;height:2px;background:#888;z-index:155;pointer-events:none}
 
-  .audience{position:absolute; left:18%; bottom:0; width:64%; height:auto; object-position:bottom center; z-index:600; pointer-events:none; filter:contrast(1.05) brightness(.95); display:block;}
-  .viewers{position:absolute;left:18%;width:64%;bottom:0;display:flex;justify-content:space-between;z-index:570;padding:0 4vw 12px}
-  .viewer{width:60px;height:100px;background:url('https://upload.wikimedia.org/wikipedia/commons/f/f9/Silhouette_icon.svg') no-repeat center/contain;filter:grayscale(1) brightness(.6);opacity:.75}
+  .audience{position:absolute; left:18%; bottom:0; width:64%; height:auto; object-position:bottom center; z-index:158; pointer-events:none; filter:contrast(1.05) brightness(.95); display:block;}
+
+  .viewers{
+    position:absolute;
+    left:18%;
+    width:64%;
+    bottom:0;
+    display:flex;
+    justify-content:space-between;
+    z-index:120;
+    padding:0 4vw 12px;
+    pointer-events:none;
+    opacity:0; /* άγκυρες θέσης, αόρατες */
+  }
+  .viewer{
+    width:60px;
+    height:40px;
+  }
+
+  /* AVATARS ΘΕΑΤΩΝ (πίσω από το κοινό, για φουαγιέ και άγκυρες για bubbles) */
+  .foyer-avatars{
+    position:absolute;
+    left:18%;
+    width:64%;
+    bottom:0;
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    padding:0 4vw 12px;
+    z-index:157; /* πίσω από το koino.png (158) */
+    pointer-events:none;
+  }
+  .foyer-avatar{
+    max-height:170px;
+    opacity:0;
+    transition:opacity .25s ease;
+    filter:drop-shadow(0 3px 5px rgba(0,0,0,.7));
+  }
 
   .signboard{position:absolute;top:-6px;left:50%;transform:translateX(-50%);background:transparent;border:none;border-radius:10px;padding:12px 18px;color:#ddd;font-family:'Georgia',serif;text-align:center;z-index:165;line-height:1.25}
   .signboard h1{font-size:32px;margin:0;color:#fff}
@@ -71,7 +106,7 @@
   .measure-box thead th{position:sticky;top:0;background:rgba(0,0,0,.65);z-index:1}
   .measure-box th,.measure-box td{border-bottom:1px solid rgba(255,255,255,.2);padding:2px 4px;text-align:right}
   .measure-box th:first-child,.measure-box td:first-child{text-align:center}
-  .measure-box tr.new td{background:rgba(255,210,122,.15);transition:background .6s.ease}
+  .measure-box tr.new td{background:rgba(255,210,122,.15);transition:background .6s ease}
 
   .ruler{position:absolute;bottom:calc(32vh - 8px + 1px);height:24px;font-size:10px;font-family:"Courier New",monospace;color:#aaa;pointer-events:none;z-index:270}
   .ruler::before{content:'';position:absolute;left:0;right:0;bottom:0;height:1px;background:#aaa}
@@ -84,11 +119,11 @@
   @keyframes popIn{0%{transform:scale(.9);opacity:0}60%{transform:scale(1.04);opacity:1}100%{transform:scale(1)}}
   .thought-bubble{
     position:absolute;max-width:420px;background:rgba(255,255,255,.92);color:#000;
-    font-size:15px;line-height:1.45;padding:10px 12px 12px;border:2px solid.transparent;border-radius:10px;
+    font-size:15px;line-height:1.45;padding:10px 12px 12px;border:2px solid transparent;border-radius:10px;
     border-image:repeating-linear-gradient(90deg, rgba(0,0,0,.6) 0 6px, transparent 6px 10px, rgba(0,0,0,.6) 10px 12px, transparent 12px 16px) 1;
-    box-shadow:0 6px 12px rgba(0,0,0,.4);z-index:575;pointer-events:none;opacity:0;display:none;transition:opacity .25s ease, transform .25s.ease
+    box-shadow:0 6px 12px rgba(0,0,0,.4);z-index:750;pointer-events:none;opacity:0;display:none;transition:opacity .25s ease, transform .25s ease
   }
-  .thought-bubble.active{opacity:1;transform:translateY(-2px);animation:popIn .25s.ease}
+  .thought-bubble.active{opacity:1;transform:translateY(-2px);animation:popIn .25s ease}
   .thought-bubble.closing{opacity:0}
   .thought-bubble .tail{display:none;}
   .thought-bubble .checkmark{position:absolute;top:-8px;right:-8px;background:#2ecc71;color:#fff;font-size:11px;line-height:1;border-radius:50%;border:1px solid rgba(0,0,0,.4);width:18px;height:18px;display:none;align-items:center;justify-content:center;font-family:system-ui,sans-serif;font-weight:600}
@@ -98,7 +133,7 @@
   .act-bubble,
   .foyer-bubble{
     position:absolute;
-    z-index:580;
+    z-index:760;
     display:none;
     pointer-events:none;
     min-width:120px;
@@ -113,18 +148,15 @@
     letter-spacing:0.03em;
     text-shadow:0 1px 2px rgba(0,0,0,.7);
   }
-  .foyer-bubble{
-    white-space:nowrap;
-  }
 
-  .controls{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.2);border-radius:8px;padding:6px 8px;display:flex;gap:8px;z-index:1000}
+  .controls{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.2);border-radius:8px;padding:6px 8px;display:flex;gap:8px;z-index:300}
   .controls button{background:none;border:0;color:#fff;font-size:16px;line-height:1;cursor:pointer;min-width:32px;min-height:32px;border-radius:4px;padding:4px 6px;transition:transform .08s.ease}
   .controls button:active{transform:translateY(1px)}
   .controls button.active{background:rgba(255,255,255,.2)}
   #btnSlow{display:none}
-  .btn-end{position:absolute;bottom:12px;right:12px;z-index:1000;background:#333;border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:8px;padding:8px 12px;cursor:pointer}
+  .btn-end{position:absolute;bottom:12px;right:12px;z-index:300;background:#333;border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:8px;padding:8px 12px;cursor:pointer}
 
-  .settings{position:absolute;bottom:56px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.7);color:#fff;border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:10px 12px;z-index:900;display:none;min-width:320px}
+  .settings{position:absolute;bottom:56px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.7);color:#fff;border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:10px 12px;z-index:310;display:none;min-width:320px}
   .settings h5{margin:0 0 6px 0;font-size:14px;color:#ffd27a;text-align:center;font-family:'Georgia',serif}
   .settings .row{display:flex;align-items:center;gap:10px;margin:6px 0}
   .settings label{flex:0 0 170px;font-size:12px;color:#ddd}
@@ -167,42 +199,13 @@
     position:absolute;
     bottom:12px;
     left:12px;
-    z-index:1000;
+    z-index:300;
     background:#333;
     border:1px solid rgba(255,255,255,.25);
     color:#fff;
     border-radius:8px;
     padding:8px 12px;
     cursor:pointer;
-  }
-
-  /* Ζώνη avatars φουαγιέ */
-  .foyer-avatars{
-    position:absolute;
-    left:18%;
-    width:64%;
-    bottom:0;
-    height:30vh;
-    z-index:570;
-    pointer-events:none;
-    display:none;
-  }
-  .foyer-avatar{
-    position:absolute;
-    transform:translateX(-50%);
-    bottom:100px;  /* +100px πιο πάνω */
-    width:80px;
-    height:auto;
-    opacity:0;
-    transition:opacity .25s.ease, transform .25s.ease;
-    filter:drop-shadow(0 6px 8px rgba(0,0,0,.7));
-  }
-  .foyer-avatar.active{
-    opacity:1;
-    transform:translateX(-50%) translateY(-6px);
-  }
-  .foyer-avatar.dim{
-    opacity:0.25;
   }
 </style>
 </head>
@@ -304,6 +307,8 @@
       <div class="viewer" data-idx="4"></div>
     </div>
 
+    <div class="foyer-avatars" id="foyerAvatars"></div>
+
     <button class="start-btn" id="startBtn" data-i18n="startBtn">Έναρξη</button>
 
     <div class="countdown-overlay" id="countdownOverlay">
@@ -329,9 +334,6 @@
         <button id="btnFoyerGo" style="background:#2c7a7b;color:#fff;border:none;border-radius:8px;padding:10px 16px;font-size:16px;cursor:pointer">Μετάβαση στο Φουαγιέ</button>
       </div>
     </div>
-
-    <!-- Ζώνη avatars φουαγιέ -->
-    <div class="foyer-avatars" id="foyerAvatars"></div>
 
     <div class="foyer" id="foyer">
       <div class="wrap">
@@ -450,7 +452,10 @@ async function loadViewers(){
     const resp = await fetch('viewers.json', {cache:'no-store'});
     if(!resp.ok) return;
     const data = await resp.json();
-    if(Array.isArray(data)) FOYER_VIEWERS = data;
+    if(Array.isArray(data)){
+      FOYER_VIEWERS = data;
+      buildFoyerAvatars();
+    }
   }catch(e){}
 }
 
@@ -585,9 +590,49 @@ const actBreak=document.getElementById('actBreak');
 const foyerBreak=document.getElementById('foyerBreak');
 const btnFoyerGo=document.getElementById('btnFoyerGo');
 const curtainUpper=document.querySelector('.curtain-upper');
+const foyerAvatars=document.getElementById('foyerAvatars');
 
 if (typeof window.foyerOpen  !== 'function') window.foyerOpen  = function(){};
 if (typeof window.foyerClose !== 'function') window.foyerClose = function(){};
+
+/* ====== AVATARS HELPERS ====== */
+function buildFoyerAvatars(){
+  if(!foyerAvatars) return;
+  foyerAvatars.innerHTML='';
+  const arr = Array.isArray(FOYER_VIEWERS) ? FOYER_VIEWERS : [];
+  for(let i=0;i<arr.length;i++){
+    const v = arr[i] || {};
+    const img = document.createElement('img');
+    img.className='foyer-avatar';
+    img.dataset.idx=String(i);
+    if(typeof v.id==='number') img.dataset.id=String(v.id);
+    img.src = v.avatar || ('viewer'+(i+1)+'.png');
+    img.alt = v.name_gr || v.name_en || ('viewer '+(i+1));
+    foyerAvatars.appendChild(img);
+  }
+}
+
+function getAvatarByIndex(idx){
+  if(!foyerAvatars) return null;
+  return foyerAvatars.querySelector('.foyer-avatar[data-idx="'+idx+'"]');
+}
+function getAvatarById(id){
+  if(!foyerAvatars) return null;
+  return foyerAvatars.querySelector('.foyer-avatar[data-id="'+id+'"]');
+}
+function hideAllAvatars(){
+  if(!foyerAvatars) return;
+  const list = foyerAvatars.querySelectorAll('.foyer-avatar');
+  list.forEach(img=>{ img.style.opacity='0'; });
+}
+function highlightAvatarById(id){
+  if(!foyerAvatars) return;
+  const list = foyerAvatars.querySelectorAll('.foyer-avatar');
+  const sid = String(id);
+  list.forEach(img=>{
+    img.style.opacity = (img.dataset.id===sid ? '1' : '0');
+  });
+}
 
 /* ====== ΦΥΣΙΚΗ ====== */
 const m=70, T=6.0, A_m=3.0;
@@ -729,7 +774,7 @@ function typeWriterHTML(el, html, speed, done){
 function tint(hex, alpha){
   const c = (hex||'#ffffff').replace('#','');
   const r=parseInt(c.slice(0,2),16)||255, g=parseInt(c.slice(2,4),16)||255, b=parseInt(c.slice(4,6),16)||255;
-  return `rgba(${r},${g},${b},${alpha})`;
+  return 'rgba('+r+','+g+','+b+','+alpha+')';
 }
 
 /* ====== BUBBLE SCHEDULER (Πράξεις) ====== */
@@ -743,10 +788,14 @@ class BubbleScheduler {
   }
   sanitize(html){
     const wrap=document.createElement('div'); wrap.innerHTML=html||'';
+    const allowed=this._ALLOWED;
     wrap.querySelectorAll('*').forEach(n=>{
       const tag=n.tagName.toLowerCase();
-      if(!this._ALLOWED.has(tag)) n.replaceWith(document.createTextNode(n.textContent));
-      else [...n.attributes].forEach(a=>n.removeAttribute(a.name));
+      if(!allowed.has(tag)) n.replaceWith(document.createTextNode(n.textContent));
+      else{
+        const attrs=n.attributes;
+        for(let i=attrs.length-1;i>=0;i--){ n.removeAttribute(attrs[i].name); }
+      }
     });
     return wrap.innerHTML;
   }
@@ -759,23 +808,26 @@ class BubbleScheduler {
     const viewersArr = Array.isArray(FOYER_VIEWERS) ? FOYER_VIEWERS : [];
     const fv = viewersArr[viewer] || viewersArr[0] || null;
 
-    const vEl=document.querySelector(`.viewer[data-idx="${viewer}"]`);
-    if(!vEl){ this.labelEl.style.display='none'; return; }
+    const anchor = getAvatarByIndex(viewer) || document.querySelector('.viewer[data-idx="'+viewer+'"]');
+    if(!anchor){
+      this.labelEl.style.display='none';
+      return;
+    }
     const sRect=stage.getBoundingClientRect();
-    const vRect=vEl.getBoundingClientRect();
-    const centerX=(vRect.left+vRect.width/2)-sRect.left;
-    const topPx=Math.max(10,(vRect.top-sRect.top)-110);
+    const aRect=anchor.getBoundingClientRect();
+    let centerX=(aRect.left+aRect.width/2)-sRect.left;
+    let topPx=Math.max(10,(aRect.top-sRect.top)-90);
 
     let labelText='';
     if(fv){
       if(LANG==='en'){
-        labelText = fv.name_en || fv.name || (`SPECTATOR ${viewer+1}`);
+        labelText = fv.name_en || fv.name || ('SPECTATOR '+(viewer+1));
       }else{
-        labelText = fv.name_gr || fv.name || (`ΘΕΑΤΗΣ ${viewer+1}`);
+        labelText = fv.name_gr || fv.name || ('ΘΕΑΤΗΣ '+(viewer+1));
       }
       this.labelEl.style.backgroundColor=tint(fv.color,0.9);
     }else{
-      labelText = (LANG==='en' ? `SPECTATOR ${viewer+1}` : `ΘΕΑΤΗΣ ${viewer+1}`);
+      labelText = (LANG==='en' ? ('SPECTATOR '+(viewer+1)) : ('ΘΕΑΤΗΣ '+(viewer+1)));
       this.labelEl.style.backgroundColor='rgba(0,0,0,0.7)';
     }
 
@@ -786,9 +838,9 @@ class BubbleScheduler {
     this.labelEl.style.display='block';
   }
 
-  // ΝΕΑ τοποθέτηση: ίδια κατακόρυφη στάθμη με τον ομιλητή, δεξιά από την εικόνα του
-  placePanelNearViewer(viewer,lift=0,xShift=0){
+  placePanelNearViewer(viewer,lift,xShift){
     const W = stage.clientWidth;
+    const H = stage.clientHeight;
     const xL = W * 0.18;
     const xR = W * 0.82;
     const pad = 12;
@@ -798,40 +850,62 @@ class BubbleScheduler {
     this.el.style.left='0px';
     this.el.style.top='0px';
 
-    const bw = this.el.offsetWidth  || 320;
-    const bh = this.el.offsetHeight || 80;
+    const anchor = getAvatarByIndex(viewer) || document.querySelector('.viewer[data-idx="'+viewer+'"]');
 
-    const vEl   = document.querySelector(`.viewer[data-idx="${viewer}"]`);
-    const sRect = stage.getBoundingClientRect();
+    if(anchor){
+      const sRect=stage.getBoundingClientRect();
+      const aRect=anchor.getBoundingClientRect();
+      const bw=this.el.offsetWidth || 320;
 
-    let rightX, centerY;
-    if(vEl){
-      const vRect = vEl.getBoundingClientRect();
-      rightX  = vRect.right - sRect.left;
-      centerY = (vRect.top + vRect.height/2) - sRect.top;
-    }else{
-      const totalViewers = Math.max(1,(document.querySelectorAll('.viewer').length || 5));
-      const idx = Math.max(0, Math.min(totalViewers-1, viewer|0));
-      const rel = (idx+1)/(totalViewers+1);
-      const midX = xL + rel*(xR-xL);
-      rightX  = midX;
-      const H = stage.clientHeight;
-      centerY = H*0.70;
+      let leftPx=(aRect.right - sRect.left) + 16 + (xShift||0);
+      const minLeft = xL + pad;
+      const maxLeft = xR - pad - bw;
+      if(leftPx<minLeft) leftPx=minLeft;
+      if(leftPx>maxLeft) leftPx=maxLeft;
+
+      const baseTop=aRect.top - sRect.top;
+      const liftVal=(typeof lift==='number' ? lift : 80);
+      const topPx=Math.max(40, baseTop - liftVal);
+
+      this.el.style.left=leftPx+'px';
+      this.el.style.top=topPx+'px';
+      return;
     }
 
-    let cx = rightX + pad + (bw/2) + (xShift||0);
-    cx = Math.min(cx, xR - pad - bw/2);
-    cx = Math.max(cx, xL + pad + bw/2);
+    /* Fallback αν δεν βρεθεί anchor */
+    const bw = this.el.offsetWidth || 320;
+    let baseCenterX;
+    const totalViewers = Math.max(1, (document.querySelectorAll('.viewer').length||5));
+    const idx = Math.max(0, Math.min(totalViewers-1, viewer|0));
+    const rel = (idx + 1) / (totalViewers + 1);
+    baseCenterX = xL + rel * (xR - xL);
 
-    const topPx = Math.max(20, centerY - bh/2 + (typeof lift==='number' ? lift : 0));
+    let centerX = baseCenterX + (xShift || 0);
+    centerX = Math.max(xL + pad + bw/2, Math.min(centerX, xR - pad - bw/2));
 
-    this.el.style.left = (cx - bw/2)+'px';
-    this.el.style.top  = topPx+'px';
+    const leftPx = centerX - bw/2;
+    const baseTop = H * 0.23;
+    const liftVal = (typeof lift === 'number' ? lift : 135);
+    const deltaY = (135 - liftVal);
+    const topPx = Math.max(40, baseTop + deltaY);
+
+    this.el.style.left = leftPx + 'px';
+    this.el.style.top  = topPx + 'px';
   }
 
-  showOnce({viewer,text,lift,xShift,durSec,pauseAfterSec}){
+  showOnce(o){
+    const viewer=o.viewer;
+    const text=o.text;
+    const lift=o.lift;
+    const xShift=o.xShift||0;
+    const durSec=o.durSec;
+    const pauseAfterSec=o.pauseAfterSec;
+
     return new Promise(resolve=>{
-      if(this._currentCancel){ try{ this._currentCancel(); }catch(e){} this._currentCancel=null; }
+      if(this._currentCancel){
+        try{ this._currentCancel(); }catch(e){}
+        this._currentCancel=null;
+      }
       const textEl=this.el.querySelector('.text');
       const sanitized = this.sanitize(text||'');
       const plain = sanitized.replace(/<[^>]+>/g,'');
@@ -891,8 +965,16 @@ class BubbleScheduler {
       this._currentCancel=cancel;
     });
   }
-  say(viewer,text,lift=0,xShift=0,durSec=null,pauseAfterSec=null){
-    this._queue=this._queue.then(()=>this.showOnce({viewer,text,lift,xShift,durSec,pauseAfterSec}));
+
+  say(viewer,text,lift,xShift,durSec,pauseAfterSec){
+    this._queue=this._queue.then(()=>this.showOnce({
+      viewer:viewer,
+      text:text,
+      lift:lift,
+      xShift:xShift,
+      durSec:durSec,
+      pauseAfterSec:pauseAfterSec
+    }));
     return this._queue;
   }
   clear(){
@@ -986,9 +1068,9 @@ function drawXTChart(){ if(uXT){ uXT.setData(buildSeriesData()); } }
 /* ====== ΠΑΡΑΜΕΤΡΟΙ ====== */
 function showCurtainParams(){
   const phi0deg=((omega*obsStartPlaybackOffset)*180/Math.PI + 360)%360;
-  paramAEl.textContent  =`A = ${A_m.toFixed(2)} m`;
-  paramWEl.textContent  =`ω = ${omega.toFixed(3)} rad/s`;
-  paramPhiEl.textContent=`φ₀ = ${phi0deg.toFixed(1)}°`;
+  paramAEl.textContent  ='A = '+A_m.toFixed(2)+' m';
+  paramWEl.textContent  ='ω = '+omega.toFixed(3)+' rad/s';
+  paramPhiEl.textContent='φ₀ = '+phi0deg.toFixed(1)+'°';
   paramsBoxEl.style.display='block';
   positionParamsBox();
 }
@@ -1110,6 +1192,7 @@ function resetShow(){
   xtChart.style.display='none';
   springEl.style.display='none';
 
+  hideAllAvatars();
   window.foyerClose(true);
   setLang(LANG);
 
@@ -1163,7 +1246,7 @@ function animate(now){
   if(obsStarted && !isBubbleActive && nextThoughtIdx<thoughtScript.length){
     const th=thoughtScript[nextThoughtIdx];
     const shiftMul=(firstThoughtMul-DEFAULT_FIRST_MUL);
-    const baseMul=(th.atT??0);
+    const baseMul=(th.atT||0);
     const eventAtSec=(baseMul+shiftMul)*T*timelineScale;
     if(tObs>=eventAtSec){
       try{ handleTimelineEvent(th); }finally{ nextThoughtIdx+=1; }
@@ -1181,11 +1264,11 @@ function animate(now){
   const distance=skaterHookX-ax;
   const scale=(L0_px && L0_px>0) ? (distance/L0_px) : 1;
   springEl.style.left=ax+'px';
-  springEl.style.transform=`scaleX(${scale})`;
+  springEl.style.transform='scaleX('+scale+')';
   actor.style.transform='none';
   actor.style.left=(skaterHookX-hookOffsetPx)+'px';
   markerEl.style.left=skaterHookX+'px';
-  spotlight.style.background=`radial-gradient(220px 140px at ${skaterHookX}px ${stage.clientHeight*0.62}px, rgba(255,255,220,.65), rgba(255,255,255,0) 70%)`;
+  spotlight.style.background='radial-gradient(220px 140px at '+skaterHookX+'px '+(stage.clientHeight*0.62)+'px, rgba(255,255,220,.65), rgba(255,255,255,0) 70%)';
 
   const xMeters=(skaterHookX-centerX)/pxPerMeter;
   logMeasurement(tObs,xMeters);
@@ -1199,9 +1282,8 @@ const boardLeft  = document.getElementById('boardLeft');
 const boardRight = document.getElementById('boardRight');
 const foyer      = document.getElementById('foyer');
 const fbubble    = document.getElementById('foyerBubble');
-const foyerAvatars = document.getElementById('foyerAvatars');
 
-function typeWriter(el, text, opt=12, done){
+function typeWriter(el, text, opt, done){
   el.innerHTML=''; let i=0;
   const src = String(text||'').replaceAll('sqrt(','√(');
   const total = src.length || 1;
@@ -1232,79 +1314,31 @@ function typeWriter(el, text, opt=12, done){
   })();
 }
 
-/* Στήσιμο avatars φουαγιέ */
-function buildFoyerAvatars(){
-  if(!foyerAvatars) return;
-
-  foyerAvatars.innerHTML = '';
-
-  if(!Array.isArray(FOYER_VIEWERS) || !FOYER_VIEWERS.length) return;
-
-  const viewerSlots = document.querySelectorAll('.viewer');
-  const slotsCount  = viewerSlots.length || FOYER_VIEWERS.length;
-  const count       = Math.min(FOYER_VIEWERS.length, slotsCount);
-
-  const containerWidth = stage.clientWidth * 0.64;
-  const spacing        = slotsCount + 1;
-
-  for(let i=0;i<count;i++){
-    const info = FOYER_VIEWERS[i];
-    if(!info || !info.avatar) continue;
-
-    const frac    = (i+1)/spacing;
-    const centerX = frac * containerWidth;
-
-    const img = document.createElement('img');
-    img.className = 'foyer-avatar';
-    img.src = info.avatar;
-    img.alt = info.name_gr || info.name_en || ('viewer ' + (i+1));
-    img.style.left = centerX + 'px';
-
-    foyerAvatars.appendChild(img);
-  }
-}
-
 function showSpeakerChip(viewerId){
-  const vArr = Array.isArray(FOYER_VIEWERS) ? FOYER_VIEWERS : [];
-  const vInfo = vArr.find(x=>x.id===viewerId) || vArr[viewerId-1] || vArr[0];
-  if(!vInfo || !foyerAvatars) return;
+  const baseViewers = Array.isArray(FOYER_VIEWERS) ? FOYER_VIEWERS : [];
+  const vInfo = baseViewers.find(x=>x.id===viewerId) || baseViewers[0];
+  const anchor = getAvatarById(viewerId) || document.querySelector('.viewer[data-idx="'+(viewerId-1)+'"]');
+  if(!vInfo || !anchor) return;
 
-  const avImgs = foyerAvatars.querySelectorAll('.foyer-avatar');
-  const avatar = avImgs[viewerId-1] || null;
-  if(!avatar) return;
+  highlightAvatarById(viewerId);
 
   const sRect = stage.getBoundingClientRect();
-  const aRect = avatar.getBoundingClientRect();
-
+  const aRect = anchor.getBoundingClientRect();
   let labelText;
   if(LANG==='en'){
-    labelText = vInfo.name_en || vInfo.name || (`SPECTATOR ${viewerId}`);
+    labelText = vInfo.name_en || vInfo.name || ('SPECTATOR '+viewerId);
   }else{
-    labelText = vInfo.name_gr || vInfo.name || (`ΘΕΑΤΗΣ ${viewerId}`);
+    labelText = vInfo.name_gr || vInfo.name || ('ΘΕΑΤΗΣ '+viewerId);
   }
-
   fbubble.textContent = labelText;
   fbubble.style.backgroundColor = tint(vInfo.color,0.85);
   fbubble.style.borderColor     = 'rgba(255,255,255,.85)';
-
-  const centerX = (aRect.right - sRect.left) + 12;
-  const centerY = (aRect.top + aRect.height/2) - sRect.top;
-
+  const centerX = (aRect.left + aRect.width/2) - sRect.left;
+  const topPx   = Math.max(10, (aRect.top - sRect.top) - 90);
   fbubble.style.left = centerX + 'px';
-  fbubble.style.top  = centerY + 'px';
-  fbubble.style.transform = 'translateY(-50%)';
+  fbubble.style.top  = topPx + 'px';
+  fbubble.style.transform = 'translateX(-50%)';
   fbubble.style.display = 'block';
-
-  foyerAvatars.style.display = 'block';
-  avImgs.forEach((img, idx)=>{
-    img.classList.remove('active','dim');
-    if(idx === viewerId-1){
-      img.classList.add('active');
-      img.style.display = 'block';
-    }else{
-      img.style.display = 'none';
-    }
-  });
 }
 
 let _syncing=false;
@@ -1337,10 +1371,10 @@ function addRow(leftText, rightText, viewer, durLeftSec, durRightSec, pauseAfter
   const r = document.createElement('div'); r.className='cell right sync-row';
 
   l.style.background = bgLeft;
-  l.style.borderLeft = `4px solid ${tint(viewerInfo.color,0.85)}`;
+  l.style.borderLeft = '4px solid '+tint(viewerInfo.color,0.85);
 
   r.style.background = bgRight;
-  r.style.borderLeft = `4px solid ${tint(viewerInfo.color,0.55)}`;
+  r.style.borderLeft = '4px solid '+tint(viewerInfo.color,0.55);
 
   if (isFormulaBlock(rightText)){
     r.classList.add('formula');
@@ -1445,21 +1479,20 @@ function repositionFoyer(){
   foyer.style.top='0';
   foyer.style.height=getComputedStyle(document.documentElement).getPropertyValue('--foyer-h')||'445px';
 }
-function foyerOpen(auto=true){
+function foyerOpen(auto){
   foyer.style.display='block';
   boardLeft.innerHTML=''; boardRight.innerHTML='';
   foyerIdx=0; foyerAuto= !!auto;
   if(foyerTimer){ clearTimeout(foyerTimer); foyerTimer=null; }
-
-  buildFoyerAvatars();
-
+  hideAllAvatars();
+  fbubble.style.display='none';
   setTimeout(foyerStep, 400);
   repositionFoyer();
 }
-function foyerClose(silent=false){
+function foyerClose(silent){
   if(foyerTimer){ clearTimeout(foyerTimer); foyerTimer=null; }
   foyer.style.display='none';
-  if(foyerAvatars){ foyerAvatars.style.display='none'; }
+  hideAllAvatars();
   fbubble.style.display='none';
 }
 btnFoyer.addEventListener('click', ()=>foyerOpen(true));
@@ -1523,7 +1556,7 @@ window.foyerClose = foyerClose;
       const dist  = Math.max(0, hookX_ghost - ax);
       const scale = dist / base;
       ghostSpring.style.left = ax + 'px';
-      ghostSpring.style.transform = `scaleX(${scale})`;
+      ghostSpring.style.transform = 'scaleX('+scale+')';
 
       ghostRAF = requestAnimationFrame(loop);
     };
@@ -1562,7 +1595,8 @@ window.foyerClose = foyerClose;
       if(sbC && ui.sbC2) sbC.textContent = ui.sbC2;
       if(sbD && ui.sbD2) sbD.textContent = ui.sbD2;
 
-      for(const step of seq){
+      for(let i=0;i<seq.length;i++){
+        const step = seq[i];
         if(step.lawText || step.law){
           const lawTxt = step.lawText || step.law;
           addLaw(lawTxt);
@@ -1572,7 +1606,7 @@ window.foyerClose = foyerClose;
         const viewerIdx = (typeof step.v==='number' ? step.v :
                            (typeof step.viewer==='number' ? step.viewer : 0));
         const yOff = (typeof step.y==='number' ? step.y :
-                      (typeof step.yOffset==='number' ? step.yOffset : 0));
+                      (typeof step.yOffset==='number' ? step.yOffset : 135));
         const xShift = (typeof step.x==='number' ? step.x :
                         (typeof step.xShift==='number' ? step.xShift : 0));
 
@@ -1617,9 +1651,9 @@ window.foyerClose = foyerClose;
 /* ====== LANG SWITCH HANDLER ====== */
 langSwitch.addEventListener('click', async (e)=>{
   const btn=e.target.closest('button[data-lang]'); if(!btn) return;
-  const allBtns = langSwitch.querySelectorAll('button');
-  for(let i=0;i<allBtns.length;i++){
-    const b = allBtns[i];
+  const all=langSwitch.querySelectorAll('button');
+  for(let i=0;i<all.length;i++){
+    const b=all[i];
     b.classList.toggle('on', b===btn);
   }
   const lang = btn.dataset.lang;
