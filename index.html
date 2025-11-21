@@ -86,7 +86,7 @@
     position:absolute;max-width:420px;background:rgba(255,255,255,.92);color:#000;
     font-size:15px;line-height:1.45;padding:10px 12px 12px;border:2px solid transparent;border-radius:10px;
     border-image:repeating-linear-gradient(90deg, rgba(0,0,0,.6) 0 6px, transparent 6px 10px, rgba(0,0,0,.6) 10px 12px, transparent 12px 16px) 1;
-    box-shadow:0 6px 12px rgba(0,0,0,.4);z-index:750;pointer-events:none;opacity:0;display:none;transition:opacity .25s ease, transform .25s ease
+    box-shadow:0 6px 12px rgba(0,0,0,.4);z-index:750;pointer-events:none;opacity:0;display:none;transition:opacity .25s ease, transform .25s.ease
   }
   .thought-bubble.active{opacity:1;transform:translateY(-2px);animation:popIn .25s ease}
   .thought-bubble.closing{opacity:0}
@@ -180,14 +180,14 @@
     width:64%;
     bottom:0;
     height:30vh;
-    z-index:2000; /* μπορούμε να το χαμηλώσουμε μετά, όταν ικανοποιεί η σειρά */
+    z-index:2000;
     pointer-events:none;
     display:none;
   }
   .foyer-avatar{
     position:absolute;
     transform:translateX(-50%);
-    bottom:0;
+    bottom:100px;  /* +100px πιο πάνω από πριν */
     width:80px;
     height:auto;
     opacity:0;
@@ -1237,28 +1237,28 @@ function buildFoyerAvatars(){
 
   if(!Array.isArray(FOYER_VIEWERS) || !FOYER_VIEWERS.length) return;
 
-  const viewerEls = Array.from(document.querySelectorAll('.viewer'));
-  if(!viewerEls.length) return;
+  const viewerSlots = document.querySelectorAll('.viewer');
+  const slotsCount  = viewerSlots.length || FOYER_VIEWERS.length;
+  const count       = Math.min(FOYER_VIEWERS.length, slotsCount);
 
-  const bandRect = foyerAvatars.getBoundingClientRect();
-  const bandLeft = bandRect.left;
+  const containerWidth = stage.clientWidth * 0.64;
+  const spacing        = slotsCount + 1;
 
-  viewerEls.forEach((vEl, idx)=>{
-    const info = FOYER_VIEWERS[idx];
-    if(!info || !info.avatar) return;
+  for(let i=0;i<count;i++){
+    const info = FOYER_VIEWERS[i];
+    if(!info || !info.avatar) continue;
 
-    const vr = vEl.getBoundingClientRect();
-    const centerX = (vr.left + vr.width/2) - bandLeft;
+    const frac    = (i+1)/spacing;
+    const centerX = frac * containerWidth;
 
     const img = document.createElement('img');
     img.className = 'foyer-avatar';
     img.src = info.avatar;
-    img.alt = info.name_gr || info.name_en || ('viewer ' + (idx+1));
-    img.style.left   = centerX + 'px';
-    img.style.bottom = '0px';
+    img.alt = info.name_gr || info.name_en || ('viewer ' + (i+1));
+    img.style.left = centerX + 'px';
 
     foyerAvatars.appendChild(img);
-  });
+  }
 }
 
 function showSpeakerChip(viewerId){
@@ -1288,8 +1288,8 @@ function showSpeakerChip(viewerId){
   fbubble.style.transform = 'translateX(-50%)';
   fbubble.style.display = 'block';
 
-  // avatars: μόνο ο συγκεκριμένος θεατής "σηκώνεται"
   if(foyerAvatars){
+    foyerAvatars.style.display = 'block';
     const avImgs = foyerAvatars.querySelectorAll('.foyer-avatar');
     avImgs.forEach((img, idx)=>{
       img.classList.remove('active','dim');
@@ -1299,7 +1299,6 @@ function showSpeakerChip(viewerId){
         img.classList.add('dim');
       }
     });
-    foyerAvatars.style.display = 'block';
   }
 }
 
