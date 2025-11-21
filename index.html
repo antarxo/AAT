@@ -79,14 +79,14 @@
   .tick-label{position:absolute;bottom:12px;transform:translateX(-50%);font-size:10px;color:#aaa;white-space:nowrap}
   .marker{position:absolute;bottom:calc(32vh - 8px + 1px);width:0;height:80px;transform:translateX(-50%);pointer-events:none;z-index:275;opacity:0;transition:opacity .3s}
   .marker-line{position:absolute;left:50%;bottom:8px;width:2px;height:70px;background:#ffd27a;box-shadow:0 0 4px rgba(255,210,122,.8);transform:translateX(-50%)}
-  .marker-tip{position:absolute;left:50%;bottom:0;width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:8px solid #ffd27a;filter:drop-shadow(0 2px 2px rgba(255,210,122,.8));transform:translateX(-50%)}
+  .marker-tip{position:absolute;left:50%;bottom:0;width:0;height:0;border-left:6px solid.transparent;border-right:6px solid.transparent;border-top:8px solid #ffd27a;filter:drop-shadow(0 2px 2px rgba(255,210,122,.8));transform:translateX(-50%)}
 
   @keyframes popIn{0%{transform:scale(.9);opacity:0}60%{transform:scale(1.04);opacity:1}100%{transform:scale(1)}}
   .thought-bubble{
     position:absolute;max-width:420px;background:rgba(255,255,255,.92);color:#000;
     font-size:15px;line-height:1.45;padding:10px 12px 12px;border:2px solid.transparent;border-radius:10px;
     border-image:repeating-linear-gradient(90deg, rgba(0,0,0,.6) 0 6px, transparent 6px 10px, rgba(0,0,0,.6) 10px 12px, transparent 12px 16px) 1;
-    box-shadow:0 6px 12px rgba(0,0,0,.4);z-index:750;pointer-events:none;opacity:0;display:none;transition:opacity .25s ease, transform .25s ease
+    box-shadow:0 6px 12px rgba(0,0,0,.4);z-index:750;pointer-events:none;opacity:0;display:none;transition:opacity .25s ease, transform .25s.ease
   }
   .thought-bubble.active{opacity:1;transform:translateY(-2px);animation:popIn .25s.ease}
   .thought-bubble.closing{opacity:0}
@@ -194,7 +194,7 @@
     width:80px;
     height:auto;
     opacity:0;
-    transition:opacity .25s ease, transform .25s ease;
+    transition:opacity .25s.ease, transform .25s.ease;
     filter:drop-shadow(0 6px 8px rgba(0,0,0,.7));
   }
   .foyer-avatar.active{
@@ -210,7 +210,7 @@
   <div class="stage" id="stage">
     <div class="curtain-top"></div>
     <div class="curtain-upper"></div>
-    <div class="curtain-side.left"></div>
+    <div class="curtain-side left"></div>
     <div class="curtain-side right"></div>
 
     <div class="spotlight" id="spotlight"></div>
@@ -1424,7 +1424,7 @@ function foyerStep(){
     (pause)=>{
       const len = (String(text.left||'').length + String(text.right||'').length);
       let delay;
-      if(typeof.pause === 'number'){
+      if(typeof pause === 'number'){
         delay = Math.max(0, pause*1000);
       }else{
         const baseDelay = 600;
@@ -1645,7 +1645,7 @@ ro.observe(stage);
   await loadTimeline();
   await loadDialogOverrides('gr');
   await loadDialogOverrides('en');
-  await.loadUI('gr');
+  await loadUI('gr');
   await loadUI('en');
   await loadViewers();
   setLang('gr');
