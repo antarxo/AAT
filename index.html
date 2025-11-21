@@ -44,7 +44,7 @@
     position:absolute;
     z-index:1400;
     pointer-events:none;
-    height:160px;
+    height:auto;
     width:auto;
     transform:translateX(-50%);
     display:none;
@@ -789,11 +789,11 @@ class BubbleScheduler {
     this.labelEl.style.display = 'block';
   }
 
-  /* === Bubbles κουμπωμένα σε θεατή μέσα στο 64% === */
-  placePanelNearViewer(viewer,lift=140,xShift=0){
+  /* === Bubbles: σταθερές θέσεις ανά θεατή από viewers.json === */
+  placePanelNearViewer(viewer,liftIgnored,xShift=0){
     const W = stage.clientWidth;
-    const xL = W * 0.18;
-    const xR = W * 0.82;
+    const xL = W*0.18;
+    const xR = W*0.82;
     const pad = 12;
 
     this.el.style.display='block';
@@ -803,12 +803,13 @@ class BubbleScheduler {
 
     const bw = this.el.offsetWidth || 320;
 
-    const viewersArr = Array.isArray(FOYER_VIEWERS) ? FOYER_VIEWERS : [];
+    const viewersArr = Array.isArray(FOYER_VIEWERS)?FOYER_VIEWERS:[];
     const vc = viewersArr[viewer] || viewersArr[0] || null;
 
     const anchorX = getViewerAnchorXByIndex(viewer);
     const bubbleDx = vc && typeof vc.bubbleDx === 'number' ? vc.bubbleDx : 40;
     const bubbleDy = vc && typeof vc.bubbleDy === 'number' ? vc.bubbleDy : 0;
+    const bubbleYFrac = vc && typeof vc.bubbleYFrac === 'number' ? vc.bubbleYFrac : 0.55;
 
     let leftPx = anchorX + bubbleDx + (xShift || 0);
     const maxLeft = xR - pad - bw;
@@ -816,10 +817,7 @@ class BubbleScheduler {
     if(leftPx < minLeft) leftPx = minLeft;
     if(leftPx > maxLeft) leftPx = maxLeft;
 
-    const baseTop = stage.clientHeight * 0.35;
-    const liftVal = (typeof lift === 'number' ? lift : 135);
-    const extraLift = 135 - liftVal;
-    let topPx = baseTop + bubbleDy + extraLift;
+    let topPx = stage.clientHeight * bubbleYFrac + bubbleDy;
     if(topPx < 40) topPx = 40;
 
     this.el.style.left = leftPx + 'px';
@@ -888,7 +886,7 @@ class BubbleScheduler {
       this._currentCancel=cancel;
     });
   }
-  say(viewer,text,lift=140,xShift=0,durSec=null,pauseAfterSec=null){
+  say(viewer,text,lift=0,xShift=0,durSec=null,pauseAfterSec=null){
     this._queue=this._queue.then(()=>this.showOnce({viewer,text,lift,xShift,durSec,pauseAfterSec}));
     return this._queue;
   }
@@ -1246,6 +1244,13 @@ function showSpeakerChip(viewerId){
   fbubble.style.top  = topPx + 'px';
   fbubble.style.transform = 'translateX(-50%)';
   fbubble.style.display = 'block';
+
+  if(FOYER_AVATARS && FOYER_AVATARS.length){
+    FOYER_AVATARS.forEach(el=>{
+      const id = Number(el.dataset.viewerId);
+      el.style.display = (id === Number(vInfo.id) ? 'block' : 'none');
+    });
+  }
 }
 
 let _syncing=false;
@@ -1268,7 +1273,7 @@ function isFormulaBlock(text){
 }
 
 function addRow(leftText, rightText, viewer, durLeftSec, durRightSec, pauseAfterSec, whenDone){
-  const baseViewer = (Array.isArray(FOYER_VIEWERS) ? FOYER_VIEWERS : []);
+  const baseViewer = Array.isArray(FOYER_VIEWERS) ? FOYER_VIEWERS : [];
   const viewerInfo = baseViewer.find(v=>v.id===viewer) || baseViewer[0] || {color:'#ffffff'};
 
   const bgLeft  = tint(viewerInfo.color, 0.22);
@@ -1403,19 +1408,23 @@ function buildFoyerAvatars(){
     FOYER_AVATARS.push(img);
   });
   repositionAvatars();
-  FOYER_AVATARS.forEach(el=>{ el.style.display='block'; });
+  FOYER_AVATARS.forEach(el=>{ el.style.display='none'; });
 }
 function repositionAvatars(){
   if(!FOYER_AVATARS.length || !audienceImg) return;
   const audienceBottom = parseFloat(getComputedStyle(audienceImg).bottom||'0') || 0;
+  const audRect = audienceImg.getBoundingClientRect();
   FOYER_AVATARS.forEach(el=>{
     const id = Number(el.dataset.viewerId);
     const vc = getViewerConfigById(id);
     if(!vc) return;
     const anchorX = getViewerAnchorXFromConfig(vc);
     const avatarDy = (typeof vc.avatarDy === 'number') ? vc.avatarDy : 100;
+    const avatarScale = (typeof vc.avatarScale === 'number') ? vc.avatarScale : 0.35;
     el.style.left   = anchorX + 'px';
     el.style.bottom = (audienceBottom + avatarDy) + 'px';
+    el.style.height = (audRect.height * avatarScale) + 'px';
+    el.style.width  = 'auto';
   });
 }
 function foyerOpen(auto=true){
@@ -1542,7 +1551,7 @@ window.foyerClose = foyerClose;
         const viewerIdx = (typeof step.v==='number' ? step.v :
                            (typeof step.viewer==='number' ? step.viewer : 0));
         const yOff = (typeof step.y==='number' ? step.y :
-                      (typeof step.yOffset==='number' ? step.yOffset : 135));
+                      (typeof step.yOffset==='number' ? step.yOffset : 0));
         const xShift = (typeof step.x==='number' ? step.x :
                         (typeof step.xShift==='number' ? step.xShift : 0));
 
