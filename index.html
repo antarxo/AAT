@@ -46,15 +46,29 @@
     width:64%;
     height:auto;
     object-position:bottom center;
-    z-index:157;
+    z-index:1500;
     pointer-events:none;
     filter:contrast(1.0) brightness(1.0);
     display:block;
   }
 
-  .audience{position:absolute; left:18%; bottom:0; width:64%; height:auto; object-position:bottom center; z-index:158; pointer-events:none; filter:contrast(1.05) brightness(.95); display:block;}
+  .audience{
+    position:absolute; left:18%; bottom:0; width:64%; height:auto;
+    object-position:bottom center; z-index:1501; pointer-events:none;
+    filter:contrast(1.05) brightness(.95); display:block;
+  }
+
+  /* παλιοί "θεατές" σιλουέτες – μπορούν να μείνουν, είναι χαμηλού z-index */
   .viewers{position:absolute;left:18%;width:64%;bottom:0;display:flex;justify-content:space-between;z-index:159;padding:0 4vw 12px}
   .viewer{width:60px;height:100px;background:url('https://upload.wikimedia.org/wikipedia/commons/f/f9/Silhouette_icon.svg') no-repeat center/contain;filter:grayscale(1) brightness(.6);opacity:.75}
+
+  /* avatars φουαγιέ (viewerX.png) */
+  .foyer-avatar{
+    position:absolute;
+    transform:translateX(-50%);
+    pointer-events:none;
+    z-index:1400;
+  }
 
   .signboard{position:absolute;top:-6px;left:50%;transform:translateX(-50%);background:transparent;border:none;border-radius:10px;padding:12px 18px;color:#ddd;font-family:'Georgia',serif;text-align:center;z-index:165;line-height:1.25}
   .signboard h1{font-size:32px;margin:0;color:#fff}
@@ -64,17 +78,17 @@
   .signboard .sb-lineC{font-size:16px;margin-top:2px;font-weight:700;color:#fff}
   .signboard .sb-lineD{font-size:14px;margin-top:2px;font-style:italic;opacity:.9}
 
-  .clock{position:absolute;top:10px;left:calc(82vw + 9vw);transform:translateX(-50%);background:rgba(0,0,0,.5);color:#fff;padding:6px 10px;font-size:16px;font-family:"Courier New",monospace;border-radius:6px;border:1px solid rgba(255,255,255,.3);z-index:265;pointer-events:none;display:none}
+  .clock{position:absolute;top:10px;left:calc(82vw + 9vw);transform:translateX(-50%);background:rgba(0,0,0,.5);color:#fff;padding:6px 10px;font-size:16px;font-family:"Courier New",monospace;border-radius:6px;border:1px solid rgba(255,255,255,.3);z-index:2000;pointer-events:none;display:none}
   .clock .hint{font-size:10px;color:#ffd27a;opacity:.9;margin-left:6px}
-  .measure-box{position:absolute;left:calc(82vw + 9vw);transform:translateX(-50%);top:54px;width:calc(18vw - 16px);z-index:262;background:rgba(0,0,0,.45);color:#fff;border:1px solid rgba(255,255,255,.25);border-radius:8px;padding:6px 8px;display:none;height:50vh;overflow-y:auto}
+  .measure-box{position:absolute;left:calc(82vw + 9vw);transform:translateX(-50%);top:54px;width:calc(18vw - 16px);z-index:2000;background:rgba(0,0,0,.45);color:#fff;border:1px solid rgba(255,255,255,.25);border-radius:8px;padding:6px 8px;display:none;height:50vh;overflow-y:auto}
 
   .laws{position:absolute;left:2%;top:44px;width:16%;background:rgba(20,0,0,.6);color:#fff;border:1px solid rgba(255,200,200,.3);border-radius:8px;padding:6px 8px;font-size:16px;line-height:1.45;z-index:260;display:none;overflow:visible}
   .laws h4{margin:0 0 6px 0}
   .laws-body .law-line{padding:4px 6px;margin:2px 0;border-left:3px solid rgba(255,210,122,.6);background:rgba(255,210,122,.08)}
 
-  .params-box{position:absolute;top:33px; z-index:268;background:rgba(0,0,0,.5);color:#fff;border:1px solid rgba(255,255,255,.25);border-radius:8px;padding:6px 10px;font-size:16px;line-height:1.45;display:none}
+  .params-box{position:absolute;top:33px; z-index:2000;background:rgba(0,0,0,.5);color:#fff;border:1px solid rgba(255,255,255,.25);border-radius:8px;padding:6px 10px;font-size:16px;line-height:1.45;display:none}
 
-  #xtChart{position:absolute;display:none;z-index:266;pointer-events:none;border:1px dashed rgba(255,255,255,.25)}
+  #xtChart{position:absolute;display:none;z-index:2000;pointer-events:none;border:1px dashed rgba(255,255,255,.25)}
   .uplot{background:rgba(0,0,0,.2);border:1px solid rgba(255,255,255,.2);border-radius:6px}
   .u-legend{display:none!important}
   .u-axis text{fill:#fff}
@@ -100,7 +114,7 @@
     position:absolute;max-width:420px;background:rgba(255,255,255,.92);color:#000;
     font-size:15px;line-height:1.45;padding:10px 12px 12px;border:2px solid transparent;border-radius:10px;
     border-image:repeating-linear-gradient(90deg, rgba(0,0,0,.6) 0 6px, transparent 6px 10px, rgba(0,0,0,.6) 10px 12px, transparent 12px 16px) 1;
-    box-shadow:0 6px 12px rgba(0,0,0,.4);z-index:750;pointer-events:none;opacity:0;display:none;transition:opacity .25s ease, transform .25s ease
+    box-shadow:0 6px 12px rgba(0,0,0,.4);z-index:1600;pointer-events:none;opacity:0;display:none;transition:opacity .25s ease, transform .25s ease
   }
   .thought-bubble.active{opacity:1;transform:translateY(-2px);animation:popIn .25s ease}
   .thought-bubble.closing{opacity:0}
@@ -112,7 +126,7 @@
   .act-bubble,
   .foyer-bubble{
     position:absolute;
-    z-index:760;
+    z-index:1600;
     display:none;
     pointer-events:none;
     min-width:120px;
@@ -128,14 +142,14 @@
     text-shadow:0 1px 2px rgba(0,0,0,.7);
   }
 
-  .controls{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.2);border-radius:8px;padding:6px 8px;display:flex;gap:8px;z-index:300}
+  .controls{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.2);border-radius:8px;padding:6px 8px;display:flex;gap:8px;z-index:2000}
   .controls button{background:none;border:0;color:#fff;font-size:16px;line-height:1;cursor:pointer;min-width:32px;min-height:32px;border-radius:4px;padding:4px 6px;transition:transform .08s ease}
   .controls button:active{transform:translateY(1px)}
   .controls button.active{background:rgba(255,255,255,.2)}
   #btnSlow{display:none}
-  .btn-end{position:absolute;bottom:12px;right:12px;z-index:300;background:#333;border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:8px;padding:8px 12px;cursor:pointer}
+  .btn-end{position:absolute;bottom:12px;right:12px;z-index:2000;background:#333;border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:8px;padding:8px 12px;cursor:pointer}
 
-  .settings{position:absolute;bottom:56px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.7);color:#fff;border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:10px 12px;z-index:310;display:none;min-width:320px}
+  .settings{position:absolute;bottom:56px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.7);color:#fff;border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:10px 12px;z-index:2000;display:none;min-width:320px}
   .settings h5{margin:0 0 6px 0;font-size:14px;color:#ffd27a;text-align:center;font-family:'Georgia',serif}
   .settings .row{display:flex;align-items:center;gap:10px;margin:6px 0}
   .settings label{flex:0 0 170px;font-size:12px;color:#ddd}
@@ -178,13 +192,26 @@
     position:absolute;
     bottom:12px;
     left:12px;
-    z-index:300;
+    z-index:2000;
     background:#333;
     border:1px solid rgba(255,255,255,.25);
     color:#fff;
     border-radius:8px;
     padding:8px 12px;
     cursor:pointer;
+  }
+
+  #langSwitch{
+    position:absolute;
+    top:8px;
+    left:8px;
+    z-index:2000;
+    background:rgba(0,0,0,.5);
+    border:1px solid rgba(255,255,255,.25);
+    border-radius:999px;
+    padding:3px 6px;
+    display:flex;
+    gap:6px;
   }
 </style>
 </head>
@@ -197,7 +224,7 @@
 
     <div class="spotlight" id="spotlight"></div>
 
-    <div class="lang" id="langSwitch" style="position:absolute;top:8px;left:8px;z-index:360;background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.25);border-radius:999px;padding:3px 6px;display:flex;gap:6px">
+    <div class="lang" id="langSwitch">
       <button data-lang="gr" class="on" style="background:rgba(255,255,255,.2);border:0;color:#fff;font-size:12px;padding:4px 8px;border-radius:999px;cursor:pointer">GR</button>
       <button data-lang="en" style="background:none;border:0;color:#fff;font-size:12px;padding:4px 8px;border-radius:999px;cursor:pointer">EN</button>
     </div>
@@ -529,6 +556,8 @@ function getAct2BubbleText(id){
 
 /* ====== VIEWER / AUDIENCE HELPERS (ΓΕΩΜΕΤΡΙΑ) ====== */
 const audienceImg = document.querySelector('.audience');
+let foyerAvatarsContainer = null;
+let foyerAvatarEls = [];
 
 function getViewerConfigByIndex(idx){
   if(!Array.isArray(FOYER_VIEWERS) || FOYER_VIEWERS.length===0) return {};
@@ -567,6 +596,60 @@ function computeViewerAnchorX(viewerIdx){
   if(frac < 0) frac = 0;
   if(frac > 1) frac = 1;
   return xL + frac * (xR - xL);
+}
+
+/* layout / εμφάνιση avatars στο φουαγιέ */
+function layoutFoyerAvatars(show){
+  if(!Array.isArray(FOYER_VIEWERS) || FOYER_VIEWERS.length===0) return;
+  if(!foyerAvatarsContainer){
+    foyerAvatarsContainer = document.createElement('div');
+    foyerAvatarsContainer.id = 'foyerAvatars';
+    foyerAvatarsContainer.style.position = 'absolute';
+    foyerAvatarsContainer.style.left = '0';
+    foyerAvatarsContainer.style.top = '0';
+    foyerAvatarsContainer.style.width = '100%';
+    foyerAvatarsContainer.style.height = '100%';
+    foyerAvatarsContainer.style.pointerEvents = 'none';
+    foyerAvatarsContainer.style.zIndex = '1400';
+    stage.appendChild(foyerAvatarsContainer);
+  }
+  foyerAvatarsContainer.style.display = show ? 'block' : 'none';
+
+  const audGeo = getAudienceGeometry();
+  const H = stage.clientHeight;
+
+  while(foyerAvatarEls.length < FOYER_VIEWERS.length){
+    const img = document.createElement('img');
+    img.className = 'foyer-avatar';
+    foyerAvatarsContainer.appendChild(img);
+    foyerAvatarEls.push(img);
+  }
+
+  for(let i=0;i<foyerAvatarEls.length;i++){
+    const imgEl = foyerAvatarEls[i];
+    const cfg = FOYER_VIEWERS[i] || {};
+    const src = cfg.img || `viewer${i+1}.png`;
+    imgEl.src = src;
+
+    if(!show){
+      imgEl.style.display = 'none';
+      continue;
+    }
+    imgEl.style.display = 'block';
+
+    const anchorX = computeViewerAnchorX(i);
+    const avatarScale = (typeof cfg.avatarScale==='number' ? cfg.avatarScale : 0.4);
+    const avatarDy = (typeof cfg.avatarDy==='number' ? cfg.avatarDy : 0);
+
+    const avatarH = audGeo.height * avatarScale;
+    const yKoinoBottom = audGeo.bottom;
+    const yAvatarBottom = yKoinoBottom - avatarDy;
+    const bottomCSS = H - yAvatarBottom;
+
+    imgEl.style.left = anchorX + 'px';
+    imgEl.style.bottom = bottomCSS + 'px';
+    imgEl.style.height = avatarH + 'px';
+  }
 }
 
 /* ====== DOM ====== */
@@ -1124,6 +1207,8 @@ function resetShow(){
   springEl.style.display='none';
 
   window.foyerClose(true);
+  layoutFoyerAvatars(false);
+
   setLang(LANG);
 
   t0=performance.now(); lastFrame=t0; playbackTime=0;
@@ -1415,12 +1500,14 @@ function foyerOpen(auto=true){
   boardLeft.innerHTML=''; boardRight.innerHTML='';
   foyerIdx=0; foyerAuto= !!auto;
   if(foyerTimer){ clearTimeout(foyerTimer); foyerTimer=null; }
+  layoutFoyerAvatars(true);
   setTimeout(foyerStep, 400);
   repositionFoyer();
 }
 function foyerClose(silent=false){
   if(foyerTimer){ clearTimeout(foyerTimer); foyerTimer=null; }
   foyer.style.display='none';
+  layoutFoyerAvatars(false);
 }
 btnFoyer.addEventListener('click', ()=>foyerOpen(true));
 btnFoyerGo.addEventListener('click', ()=>{
@@ -1587,7 +1674,14 @@ langSwitch.addEventListener('click', async (e)=>{
 });
 
 /* ====== RESIZE OBSERVER ====== */
-const ro=new ResizeObserver(()=>{ positionRightPanel(); if(uXT){ drawXTChart(); } positionLawCharts(); positionParamsBox(); repositionFoyer(); });
+const ro=new ResizeObserver(()=>{
+  positionRightPanel();
+  if(uXT){ drawXTChart(); }
+  positionLawCharts();
+  positionParamsBox();
+  repositionFoyer();
+  layoutFoyerAvatars(foyer.style.display==='block');
+});
 ro.observe(stage);
 
 /* ====== BOOTSTRAP ====== */
