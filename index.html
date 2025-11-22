@@ -38,7 +38,7 @@
   .actor img{width:100%;height:auto;display:block;filter:drop-shadow(0 4px 6px rgba(0,0,0,.6))}
   .floor{position:absolute;left:0;bottom:calc(32vh - 8px);width:100%;height:2px;background:#888;z-index:155;pointer-events:none}
 
-  /* extra εικόνα κοινού ΠΙΣΩ από ομιλητές */
+  /* extra εικόνα κοινού ΠΙΣΩ από avatars */
   .audience-back{
     position:absolute;
     left:18%;
@@ -58,8 +58,16 @@
     filter:contrast(1.05) brightness(.95); display:block;
   }
 
-  /* generic silhouettes (πράξεις 1–2) */
-  .viewers{position:absolute;left:18%;width:64%;bottom:0;display:flex;justify-content:space-between;z-index:159;padding:0 4vw 12px}
+  .viewers{
+    position:absolute;
+    left:18%;
+    width:64%;
+    bottom:0;
+    display:flex;
+    justify-content:space-between;
+    z-index:159;
+    padding:0 4vw 12px;
+  }
   .viewer{width:60px;height:100px;background:url('https://upload.wikimedia.org/wikipedia/commons/f/f9/Silhouette_icon.svg') no-repeat center/contain;filter:grayscale(1) brightness(.6);opacity:.75}
 
   /* avatars φουαγιέ (viewerX.png) */
@@ -558,7 +566,7 @@ function getAct2BubbleText(id){
 const audienceImg = document.querySelector('.audience');
 let foyerAvatarsContainer = null;
 let foyerAvatarEls = [];
-let currentFoyerSpeaker = null; // ποιος ομιλητής φαίνεται οπτικά στο φουαγιέ
+let currentFoyerSpeaker = null; // οπτικός ομιλητής στο φουαγιέ
 
 function getViewerConfigByIndex(idx){
   if(!Array.isArray(FOYER_VIEWERS) || FOYER_VIEWERS.length===0) return {};
@@ -589,14 +597,42 @@ function getAudienceGeometry(){
 
 function computeViewerAnchorX(viewerIdx){
   const cfg = getViewerConfigByIndex(viewerIdx);
-  const W = stage.clientWidth;
-  const xL = W * 0.18;
-  const xR = W * 0.82;
+  const aud = getAudienceGeometry();
   const total = (Array.isArray(FOYER_VIEWERS) && FOYER_VIEWERS.length) ? FOYER_VIEWERS.length : 5;
   let frac = (typeof cfg.xFrac === 'number') ? cfg.xFrac : ((viewerIdx+1)/(total+1));
   if(frac < 0) frac = 0;
   if(frac > 1) frac = 1;
-  return xL + frac * (xR - xL);
+  return aud.left + frac * aud.width;
+}
+
+/* ΕΝΙΑΙΟ layout θεατή: όλα από εδώ */
+function getViewerLayout(viewerIdx){
+  const cfg = getViewerConfigByIndex(viewerIdx);
+  const aud = getAudienceGeometry();
+  const anchorX = computeViewerAnchorX(viewerIdx);
+
+  const avatarScale = (typeof cfg.avatarScale === 'number') ? cfg.avatarScale : 0.4;
+  const avatarHeight = aud.height * avatarScale;
+
+  const avatarDy = (typeof cfg.avatarDy === 'number') ? cfg.avatarDy : 0;
+  // avatarDy: πόσο ΠΑΝΩ από το κάτω μέρος του κοινού είναι η ΒΑΣΗ της εικόνας
+  const avatarBottomY = aud.bottom - avatarDy;
+  const avatarTopY    = avatarBottomY - avatarHeight;
+
+  const bubbleDx = (typeof cfg.bubbleDx === 'number') ? cfg.bubbleDx : 40;
+  const bubbleDy = (typeof cfg.bubbleDy === 'number') ? cfg.bubbleDy : 0;
+  // bubbleDy: απόσταση ΠΑΝΩ από την κορυφή του avatar μέχρι την κορυφή του bubble
+  const bubbleTopY = avatarTopY - bubbleDy;
+
+  return {
+    cfg,
+    anchorX,
+    avatarHeight,
+    avatarBottomY,
+    avatarTopY,
+    bubbleTopY,
+    bubbleCenterX: anchorX + bubbleDx
+  };
 }
 
 /* layout / εμφάνιση avatars στο φουαγιέ */
@@ -616,7 +652,6 @@ function layoutFoyerAvatars(show){
   }
   foyerAvatarsContainer.style.display = show ? 'block' : 'none';
 
-  const audGeo = getAudienceGeometry();
   const H = stage.clientHeight;
 
   while(foyerAvatarEls.length < FOYER_VIEWERS.length){
@@ -632,18 +667,12 @@ function layoutFoyerAvatars(show){
     const src = cfg.img || `viewer${i+1}.png`;
     imgEl.src = src;
 
-    const anchorX = computeViewerAnchorX(i);
-    const avatarScale = (typeof cfg.avatarScale==='number' ? cfg.avatarScale : 0.4);
-    const avatarDy = (typeof cfg.avatarDy==='number' ? cfg.avatarDy : 0);
+    const layout = getViewerLayout(i);
+    const bottomCSS = H - layout.avatarBottomY;
 
-    const avatarH = audGeo.height * avatarScale;
-    const yKoinoBottom = audGeo.bottom;
-    const yAvatarBottom = yKoinoBottom - avatarDy;
-    const bottomCSS = H - yAvatarBottom;
-
-    imgEl.style.left = anchorX + 'px';
+    imgEl.style.left   = layout.anchorX + 'px';
     imgEl.style.bottom = bottomCSS + 'px';
-    imgEl.style.height = avatarH + 'px';
+    imgEl.style.height = layout.avatarHeight + 'px';
 
     const vid = (typeof cfg.id === 'number') ? String(cfg.id) : String(i+1);
     imgEl.dataset.viewerId = vid;
@@ -880,8 +909,7 @@ class BubbleScheduler {
     const viewersArr = Array.isArray(FOYER_VIEWERS) ? FOYER_VIEWERS : [];
     const fv = (cfg && (typeof cfg.id!=='undefined')) ? cfg : (viewersArr[viewer] || viewersArr[0] || null);
 
-    const anchorX = computeViewerAnchorX(viewer);
-    const audGeo = getAudienceGeometry();
+    const layout = getViewerLayout(viewer);
 
     let labelText='';
     if(fv){
@@ -896,25 +924,18 @@ class BubbleScheduler {
       this.labelEl.style.backgroundColor='rgba(0,0,0,0.7)';
     }
 
-    const baseAvatarDy = (typeof cfg.avatarDy === 'number') ? cfg.avatarDy : 0;
-    const avatarHeight = audGeo.height * (typeof cfg.avatarScale === 'number' ? cfg.avatarScale : 0.4);
-    const topPx = audGeo.bottom - baseAvatarDy - avatarHeight - 24;
+    const topPx = Math.max(10, layout.avatarTopY - 24);
 
     this.labelEl.textContent = labelText;
-    this.labelEl.style.left = anchorX+'px';
-    this.labelEl.style.top  = Math.max(10, topPx)+'px';
+    this.labelEl.style.left = layout.anchorX+'px';
+    this.labelEl.style.top  = topPx+'px';
     this.labelEl.style.transform='translateX(-50%)';
     this.labelEl.style.display='block';
   }
 
   placePanelNearViewer(viewer,lift=140,xShift=0){
-    const W = stage.clientWidth;
-    const xL = W * 0.18;
-    const xR = W * 0.82;
-    const pad = 12;
-
-    const cfg = getViewerConfigByIndex(viewer);
     const audGeo = getAudienceGeometry();
+    const layout = getViewerLayout(viewer);
 
     this.el.style.display='block';
     this.el.style.opacity='0';
@@ -922,19 +943,18 @@ class BubbleScheduler {
     this.el.style.top='0px';
 
     const bw = this.el.offsetWidth || 320;
+    const xL = audGeo.left;
+    const xR = audGeo.left + audGeo.width;
+    const pad = 12;
 
-    const anchorX = computeViewerAnchorX(viewer);
-    const baseDx  = (typeof cfg.bubbleDx === 'number' ? cfg.bubbleDx : 0);
-    let centerX   = anchorX + baseDx + (xShift || 0);
-
-    centerX = Math.max(xL + pad + bw/2, Math.min(centerX, xR - pad - bw/2));
+    let centerX = layout.bubbleCenterX + (xShift || 0);
+    centerX = Math.max(xL+pad + bw/2, Math.min(centerX, xR-pad - bw/2));
     const leftPx = centerX - bw/2;
 
-    const baseDy = (typeof cfg.bubbleDy === 'number' ? cfg.bubbleDy : 0);
-    const topPx  = audGeo.bottom - baseDy;
+    const topPx = Math.max(40, layout.bubbleTopY);
 
     this.el.style.left = leftPx + 'px';
-    this.el.style.top  = Math.max(40, topPx)+'px';
+    this.el.style.top  = topPx + 'px';
   }
 
   showOnce({viewer,text,lift,xShift,durSec,pauseAfterSec}){
@@ -1347,8 +1367,7 @@ function showSpeakerChip(viewerId){
   const vInfo = arr.find(x=>x.id===viewerId) || arr[0];
   if(!vInfo) return;
 
-  const audGeo = getAudienceGeometry();
-  const anchorX = computeViewerAnchorX((viewerId-1)|0);
+  const layout = getViewerLayout((viewerId-1)|0);
 
   let labelText;
   if(LANG==='en'){
@@ -1360,16 +1379,13 @@ function showSpeakerChip(viewerId){
   fbubble.style.backgroundColor = tint(vInfo.color || '#000000',0.85);
   fbubble.style.borderColor     = 'rgba(255,255,255,.85)';
 
-  const baseAvatarDy = (typeof vInfo.avatarDy==='number' ? vInfo.avatarDy : 0);
-  const avatarHeight = audGeo.height * (typeof vInfo.avatarScale==='number' ? vInfo.avatarScale : 0.4);
-  const topPx = audGeo.bottom - baseAvatarDy - avatarHeight - 24;
+  const topPx = Math.max(10, layout.avatarTopY - 24);
 
-  fbubble.style.left = anchorX + 'px';
-  fbubble.style.top  = Math.max(10, topPx) + 'px';
+  fbubble.style.left = layout.anchorX + 'px';
+  fbubble.style.top  = topPx + 'px';
   fbubble.style.transform = 'translateX(-50%)';
   fbubble.style.display = 'block';
 
-  // δείξε ΜΟΝΟ τον avatar του τρέχοντος ομιλητή
   showFoyerAvatar(viewerId);
 }
 
@@ -1393,7 +1409,7 @@ function isFormulaBlock(text){
 }
 
 function addRow(leftText, rightText, viewer, durLeftSec, durRightSec, pauseAfterSec, whenDone){
-  const baseViewer = (Array.isArray(FOYER_VIEWERS) ? FOYER_VIEWERS : []);
+  const baseViewer = Array.isArray(FOYER_VIEWERS) ? FOYER_VIEWERS : [];
   const viewerInfo = baseViewer.find(v=>v.id===viewer) || baseViewer[0] || {color:'#ffffff'};
 
   const bgLeft  = tint(viewerInfo.color, 0.22);
