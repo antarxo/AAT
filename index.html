@@ -38,7 +38,7 @@
   .actor img{width:100%;height:auto;display:block;filter:drop-shadow(0 4px 6px rgba(0,0,0,.6))}
   .floor{position:absolute;left:0;bottom:calc(32vh - 8px);width:100%;height:2px;background:#888;z-index:155;pointer-events:none}
 
-  /* extra εικόνα κοινού πίσω από το koino.png */
+  /* extra εικόνα κοινού ΠΙΣΩ από ομιλητές */
   .audience-back{
     position:absolute;
     left:18%;
@@ -46,7 +46,7 @@
     width:64%;
     height:auto;
     object-position:bottom center;
-    z-index:1500;
+    z-index:1390; /* πίσω από avatars */
     pointer-events:none;
     filter:contrast(1.0) brightness(1.0);
     display:block;
@@ -54,11 +54,11 @@
 
   .audience{
     position:absolute; left:18%; bottom:0; width:64%; height:auto;
-    object-position:bottom center; z-index:1501; pointer-events:none;
+    object-position:bottom center; z-index:1500; pointer-events:none;
     filter:contrast(1.05) brightness(.95); display:block;
   }
 
-  /* παλιοί "θεατές" σιλουέτες – μπορούν να μείνουν, είναι χαμηλού z-index */
+  /* generic silhouettes (πράξεις 1–2) */
   .viewers{position:absolute;left:18%;width:64%;bottom:0;display:flex;justify-content:space-between;z-index:159;padding:0 4vw 12px}
   .viewer{width:60px;height:100px;background:url('https://upload.wikimedia.org/wikipedia/commons/f/f9/Silhouette_icon.svg') no-repeat center/contain;filter:grayscale(1) brightness(.6);opacity:.75}
 
@@ -67,7 +67,7 @@
     position:absolute;
     transform:translateX(-50%);
     pointer-events:none;
-    z-index:1400;
+    z-index:1400; /* μπροστά από extra κοινό, πίσω από koino.png */
   }
 
   .signboard{position:absolute;top:-6px;left:50%;transform:translateX(-50%);background:transparent;border:none;border-radius:10px;padding:12px 18px;color:#ddd;font-family:'Georgia',serif;text-align:center;z-index:165;line-height:1.25}
@@ -304,7 +304,7 @@
     <div class="actor" id="actor"><img src="skater.png" alt="Skater"></div>
     <div class="floor"></div>
 
-    <!-- extra εικόνα κοινού -->
+    <!-- extra εικόνα κοινού, ΠΙΣΩ από avatars -->
     <img class="audience-back" src="koino_extra.png" alt="δεύτερη ζώνη κοινού">
     <img class="audience" src="koino.png" alt="κοινό">
 
@@ -558,6 +558,7 @@ function getAct2BubbleText(id){
 const audienceImg = document.querySelector('.audience');
 let foyerAvatarsContainer = null;
 let foyerAvatarEls = [];
+let currentFoyerSpeaker = null; // ποιος ομιλητής φαίνεται οπτικά στο φουαγιέ
 
 function getViewerConfigByIndex(idx){
   if(!Array.isArray(FOYER_VIEWERS) || FOYER_VIEWERS.length===0) return {};
@@ -631,12 +632,6 @@ function layoutFoyerAvatars(show){
     const src = cfg.img || `viewer${i+1}.png`;
     imgEl.src = src;
 
-    if(!show){
-      imgEl.style.display = 'none';
-      continue;
-    }
-    imgEl.style.display = 'block';
-
     const anchorX = computeViewerAnchorX(i);
     const avatarScale = (typeof cfg.avatarScale==='number' ? cfg.avatarScale : 0.4);
     const avatarDy = (typeof cfg.avatarDy==='number' ? cfg.avatarDy : 0);
@@ -649,6 +644,23 @@ function layoutFoyerAvatars(show){
     imgEl.style.left = anchorX + 'px';
     imgEl.style.bottom = bottomCSS + 'px';
     imgEl.style.height = avatarH + 'px';
+
+    const vid = (typeof cfg.id === 'number') ? String(cfg.id) : String(i+1);
+    imgEl.dataset.viewerId = vid;
+
+    if(!show || (currentFoyerSpeaker !== vid)){
+      imgEl.style.display = 'none';
+    }
+  }
+}
+
+function showFoyerAvatar(viewerId){
+  currentFoyerSpeaker = String(viewerId);
+  if(!foyerAvatarsContainer || !Array.isArray(foyerAvatarEls)) return;
+  foyerAvatarsContainer.style.display = 'block';
+  for(const imgEl of foyerAvatarEls){
+    const vid = imgEl.dataset.viewerId || '';
+    imgEl.style.display = (vid === currentFoyerSpeaker) ? 'block' : 'none';
   }
 }
 
@@ -1207,6 +1219,7 @@ function resetShow(){
   springEl.style.display='none';
 
   window.foyerClose(true);
+  currentFoyerSpeaker = null;
   layoutFoyerAvatars(false);
 
   setLang(LANG);
@@ -1355,6 +1368,9 @@ function showSpeakerChip(viewerId){
   fbubble.style.top  = Math.max(10, topPx) + 'px';
   fbubble.style.transform = 'translateX(-50%)';
   fbubble.style.display = 'block';
+
+  // δείξε ΜΟΝΟ τον avatar του τρέχοντος ομιλητή
+  showFoyerAvatar(viewerId);
 }
 
 let _syncing=false;
@@ -1500,6 +1516,7 @@ function foyerOpen(auto=true){
   boardLeft.innerHTML=''; boardRight.innerHTML='';
   foyerIdx=0; foyerAuto= !!auto;
   if(foyerTimer){ clearTimeout(foyerTimer); foyerTimer=null; }
+  currentFoyerSpeaker = null;
   layoutFoyerAvatars(true);
   setTimeout(foyerStep, 400);
   repositionFoyer();
@@ -1507,6 +1524,7 @@ function foyerOpen(auto=true){
 function foyerClose(silent=false){
   if(foyerTimer){ clearTimeout(foyerTimer); foyerTimer=null; }
   foyer.style.display='none';
+  currentFoyerSpeaker = null;
   layoutFoyerAvatars(false);
 }
 btnFoyer.addEventListener('click', ()=>foyerOpen(true));
