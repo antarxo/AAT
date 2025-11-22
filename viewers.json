@@ -5,8 +5,8 @@
     "name_en": "Viewer 1",
     "color": "#ffcc00",
     "xFrac": 0.16,
-    "bubbleDx": 40,
-    "bubbleDy": 80,
+    "bubbleDx": 140,
+    "bubbleDy": 180,
     "avatarDy": 120,
     "avatarScale": 0.4,
     "img": "viewer1.png"
@@ -17,8 +17,8 @@
     "name_en": "Viewer 2",
     "color": "#66ccff",
     "xFrac": 0.32,
-    "bubbleDx": 40,
-    "bubbleDy": 80,
+    "bubbleDx": 140,
+    "bubbleDy": 180,
     "avatarDy": 120,
     "avatarScale": 0.4,
     "img": "viewer2.png"
