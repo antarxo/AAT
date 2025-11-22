@@ -6,7 +6,7 @@
     "color": "#ffcc00",
     "xFrac": 0.16,
     "bubbleDx": 40,
-    "bubbleDy": -80,
+    "bubbleDy": -180,
     "avatarDy": 100,
     "avatarScale": 0.35,
     "img": "viewer1.png"
