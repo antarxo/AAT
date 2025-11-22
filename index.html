@@ -33,12 +33,54 @@
 
   .spotlight{position:absolute;inset:0;pointer-events:none;z-index:150;opacity:.25;background:radial-gradient(200px 120px at 50% 50%, rgba(255,255,220,.65), rgba(255,255,220,0) 70%)}
 
-  .spring{position:absolute;bottom:calc(32vh + 82px);left:10%;height:96px;width:auto;z-index:90;pointer-events:none;filter:drop-shadow(0 4px 6px rgba(0,0,0,.55));transform-origin:left.center;opacity:1;display:none}
+  .spring{position:absolute;bottom:calc(32vh + 82px);left:10%;height:96px;width:auto;z-index:90;pointer-events:none;filter:drop-shadow(0 4px 6px rgba(0,0,0,.55));transform-origin:left center;opacity:1;display:none}
   .actor{position:absolute;bottom:calc(32vh + 133px);left:50%;width:144px;height:96px;transform:translate(-50%,0);z-index:110;pointer-events:none;opacity:1}
   .actor img{width:100%;height:auto;display:block;filter:drop-shadow(0 4px 6px rgba(0,0,0,.6))}
   .floor{position:absolute;left:0;bottom:calc(32vh - 8px);width:100%;height:2px;background:#888;z-index:155;pointer-events:none}
 
-  .audience{position:absolute; left:18%; bottom:0; width:64%; height:auto; object-position:bottom center; z-index:158; pointer-events:none; filter:contrast(1.05) brightness(.95); display:block;}
+  /* EXTRA ΚΟΙΝΟ + ΚΥΡΙΟ ΚΟΙΝΟ + AVATARS */
+  .audience-extra{
+    position:absolute;
+    left:18%;
+    bottom:0;
+    width:64%;
+    height:auto;
+    object-position:bottom center;
+    z-index:1400;
+    pointer-events:none;
+    filter:contrast(1) brightness(.95);
+    display:block;
+  }
+  .audience{
+    position:absolute;
+    left:18%;
+    bottom:0;
+    width:64%;
+    height:auto;
+    object-position:bottom center;
+    z-index:1500;
+    pointer-events:none;
+    filter:contrast(1.05) brightness(.95);
+    display:block;
+  }
+
+  .avatar-layer{
+    position:absolute;
+    left:0;
+    bottom:0;
+    width:100%;
+    height:100%;
+    pointer-events:none;
+    z-index:1450;
+  }
+  .foyer-avatar{
+    position:absolute;
+    transform:translateX(-50%);
+    bottom:0;
+    display:none;
+    filter:drop-shadow(0 4px 6px rgba(0,0,0,.6));
+  }
+
   .viewers{position:absolute;left:18%;width:64%;bottom:0;display:flex;justify-content:space-between;z-index:159;padding:0 4vw 12px}
   .viewer{width:60px;height:100px;background:url('https://upload.wikimedia.org/wikipedia/commons/f/f9/Silhouette_icon.svg') no-repeat center/contain;filter:grayscale(1) brightness(.6);opacity:.75}
 
@@ -71,7 +113,7 @@
   .measure-box thead th{position:sticky;top:0;background:rgba(0,0,0,.65);z-index:1}
   .measure-box th,.measure-box td{border-bottom:1px solid rgba(255,255,255,.2);padding:2px 4px;text-align:right}
   .measure-box th:first-child,.measure-box td:first-child{text-align:center}
-  .measure-box tr.new td{background:rgba(255,210,122,.15);transition:background .6s.ease}
+  .measure-box tr.new td{background:rgba(255,210,122,.15);transition:background .6s ease}
 
   .ruler{position:absolute;bottom:calc(32vh - 8px + 1px);height:24px;font-size:10px;font-family:"Courier New",monospace;color:#aaa;pointer-events:none;z-index:270}
   .ruler::before{content:'';position:absolute;left:0;right:0;bottom:0;height:1px;background:#aaa}
@@ -84,11 +126,11 @@
   @keyframes popIn{0%{transform:scale(.9);opacity:0}60%{transform:scale(1.04);opacity:1}100%{transform:scale(1)}}
   .thought-bubble{
     position:absolute;max-width:420px;background:rgba(255,255,255,.92);color:#000;
-    font-size:15px;line-height:1.45;padding:10px 12px 12px;border:2px solid.transparent;border-radius:10px;
+    font-size:15px;line-height:1.45;padding:10px 12px 12px;border:2px solid transparent;border-radius:10px;
     border-image:repeating-linear-gradient(90deg, rgba(0,0,0,.6) 0 6px, transparent 6px 10px, rgba(0,0,0,.6) 10px 12px, transparent 12px 16px) 1;
-    box-shadow:0 6px 12px rgba(0,0,0,.4);z-index:750;pointer-events:none;opacity:0;display:none;transition:opacity .25s ease, transform .25s.ease
+    box-shadow:0 6px 12px rgba(0,0,0,.4);z-index:750;pointer-events:none;opacity:0;display:none;transition:opacity .25s ease, transform .25s ease
   }
-  .thought-bubble.active{opacity:1;transform:translateY(-2px);animation:popIn .25s.ease}
+  .thought-bubble.active{opacity:1;transform:translateY(-2px);animation:popIn .25s ease}
   .thought-bubble.closing{opacity:0}
   .thought-bubble .tail{display:none;}
   .thought-bubble .checkmark{position:absolute;top:-8px;right:-8px;background:#2ecc71;color:#fff;font-size:11px;line-height:1;border-radius:50%;border:1px solid rgba(0,0,0,.4);width:18px;height:18px;display:none;align-items:center;justify-content:center;font-family:system-ui,sans-serif;font-weight:600}
@@ -114,12 +156,12 @@
     text-shadow:0 1px 2px rgba(0,0,0,.7);
   }
 
-  .controls{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.2);border-radius:8px;padding:6px 8px;display:flex;gap:8px;z-index:300}
-  .controls button{background:none;border:0;color:#fff;font-size:16px;line-height:1;cursor:pointer;min-width:32px;min-height:32px;border-radius:4px;padding:4px 6px;transition:transform .08s.ease}
+  .controls{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.2);border-radius:8px;padding:6px 8px;display:flex;gap:8px;z-index:2000}
+  .controls button{background:none;border:0;color:#fff;font-size:16px;line-height:1;cursor:pointer;min-width:32px;min-height:32px;border-radius:4px;padding:4px 6px;transition:transform .08s ease}
   .controls button:active{transform:translateY(1px)}
   .controls button.active{background:rgba(255,255,255,.2)}
   #btnSlow{display:none}
-  .btn-end{position:absolute;bottom:12px;right:12px;z-index:300;background:#333;border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:8px;padding:8px 12px;cursor:pointer}
+  .btn-end{position:absolute;bottom:12px;right:12px;z-index:2000;background:#333;border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:8px;padding:8px 12px;cursor:pointer}
 
   .settings{position:absolute;bottom:56px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.7);color:#fff;border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:10px 12px;z-index:310;display:none;min-width:320px}
   .settings h5{margin:0 0 6px 0;font-size:14px;color:#ffd27a;text-align:center;font-family:'Georgia',serif}
@@ -164,7 +206,7 @@
     position:absolute;
     bottom:12px;
     left:12px;
-    z-index:300;
+    z-index:2000;
     background:#333;
     border:1px solid rgba(255,255,255,.25);
     color:#fff;
@@ -262,7 +304,11 @@
     <img id="spring" class="spring" src="spring.png" alt="ελατήριο">
     <div class="actor" id="actor"><img src="skater.png" alt="Skater"></div>
     <div class="floor"></div>
+
+    <!-- ΕΠΙΠΛΕΟΝ ΣΤΡΩΣΕΙΣ ΚΟΙΝΟΥ + AVATARS -->
+    <img id="koinoExtra" class="audience-extra" src="koino_extra.png" alt="έξτρα κοινό">
     <img class="audience" src="koino.png" alt="κοινό">
+    <div id="avatarLayer" class="avatar-layer"></div>
 
     <div class="viewers">
       <div class="viewer" data-idx="0"></div>
@@ -340,6 +386,7 @@ let thoughtScript     = [];
 let FOYER_META        = [];
 let ACT2_TIMELINE     = [];
 let FOYER_VIEWERS     = [];
+let AVATARS           = [];
 
 /* ====== TIMELINE / DIALOG / UI LOADERS ====== */
 async function loadDialogOverrides(lang){
@@ -356,7 +403,6 @@ async function loadDialogOverrides(lang){
         }
       });
     }
-
     if(Array.isArray(data.act2)){
       data.act2.forEach(item=>{
         if(item && item.id && typeof item.text==='string'){
@@ -364,9 +410,13 @@ async function loadDialogOverrides(lang){
         }
       });
     }
-
     if(Array.isArray(data.foyer)){
-      dlg.foyer = data.foyer.map(it => ({ ...it }));
+      dlg.foyer = data.foyer.map(it=>({
+        id: it.id || undefined,
+        left: it.left || '',
+        right: it.right || '',
+        viewer: (typeof it.viewer==='number'? it.viewer : undefined)
+      }));
     }
   }catch(e){}
 }
@@ -412,8 +462,70 @@ async function loadViewers(){
     const resp = await fetch('viewers.json', {cache:'no-store'});
     if(!resp.ok) return;
     const data = await resp.json();
-    if(Array.isArray(data)) FOYER_VIEWERS = data;
+    if(Array.isArray(data)){
+      FOYER_VIEWERS = data;
+      createAvatars();
+    }
   }catch(e){}
+}
+
+/* ====== AVATARS (ΟΜΙΛΗΤΕΣ) ====== */
+function createAvatars(){
+  const layer = document.getElementById('avatarLayer');
+  if(!layer || !Array.isArray(FOYER_VIEWERS) || !FOYER_VIEWERS.length) return;
+
+  layer.innerHTML = '';
+  AVATARS = [];
+
+  FOYER_VIEWERS.forEach(v=>{
+    const img = document.createElement('img');
+    img.className = 'foyer-avatar';
+    img.dataset.viewerId = String(v.id);
+    if(v.img) img.src = v.img;
+    img.style.display = 'none';
+    layer.appendChild(img);
+    AVATARS.push(img);
+  });
+
+  positionAvatars();
+}
+
+function positionAvatars(){
+  if(!AVATARS.length || !Array.isArray(FOYER_VIEWERS) || !FOYER_VIEWERS.length) return;
+  const sRect = stage.getBoundingClientRect();
+  const stageW = sRect.width;
+  const leftFrac = 0.18;
+  const widthFrac = 0.64;
+  const xLeft = stageW * leftFrac;
+  const xWidth = stageW * widthFrac;
+
+  FOYER_VIEWERS.forEach((v,idx)=>{
+    const img = AVATARS[idx];
+    if(!img) return;
+    const frac = (typeof v.xFrac === 'number') ? v.xFrac : ((idx+1)/(FOYER_VIEWERS.length+1));
+    const cx = xLeft + frac * xWidth;
+    const scale = (typeof v.avatarScale === 'number') ? v.avatarScale : 0.4;
+    const baseW = 220;
+    img.style.width = (baseW*scale) + 'px';
+    const dy = (typeof v.avatarDy === 'number') ? v.avatarDy : 120;
+    img.style.left = cx + 'px';
+    img.style.bottom = dy + 'px';
+  });
+}
+
+function hideAllAvatars(){
+  AVATARS.forEach(img=>{
+    img.style.display = 'none';
+  });
+}
+
+function setActiveAvatar(viewerId){
+  const vid = Number(viewerId) || 0;
+  AVATARS.forEach((img,idx)=>{
+    const v = FOYER_VIEWERS[idx];
+    const id = v && v.id;
+    img.style.display = (id === vid && foyer.style.display === 'block') ? 'block' : 'none';
+  });
 }
 
 /* ====== I18N / UI ====== */
@@ -607,6 +719,7 @@ function positionRightPanel(){
   }
   positionLawCharts();
   positionParamsBox();
+  positionAvatars();
 }
 window.addEventListener('resize', positionRightPanel);
 function anchorX(){ return stage.clientWidth*0.18; }
@@ -701,13 +814,13 @@ class BubbleScheduler {
     this.labelEl=labelEl;
     this._queue=Promise.resolve();
     this._currentCancel=null;
-    this._ALLOWED=new Set(['b','strong','i','em','sub','sup','br','span']);
+    this._ALLOWED={'b':1,'strong':1,'i':1,'em':1,'sub':1,'sup':1,'br':1,'span':1};
   }
   sanitize(html){
     const wrap=document.createElement('div'); wrap.innerHTML=html||'';
     wrap.querySelectorAll('*').forEach(n=>{
       const tag=n.tagName.toLowerCase();
-      if(!this._ALLOWED.has(tag)) n.replaceWith(document.createTextNode(n.textContent));
+      if(!this._ALLOWED[tag]) n.replaceWith(document.createTextNode(n.textContent));
       else [...n.attributes].forEach(a=>n.removeAttribute(a.name));
     });
     return wrap.innerHTML;
@@ -718,11 +831,19 @@ class BubbleScheduler {
   }
   showSpeaker(viewer){
     if(!this.labelEl) return;
-    const viewersArr = Array.isArray(FOYER_VIEWERS) ? FOYER_VIEWERS : [];
-    const fv = viewersArr[viewer] || viewersArr[0] || null;
+    const viewersArr = Array.isArray(FOYER_VIEWERS) && FOYER_VIEWERS.length ? FOYER_VIEWERS : null;
+
+    let fv = null;
+    if(viewersArr){
+      const id = viewer+1;
+      fv = viewersArr.find(v=>v.id===id) || viewersArr[viewer] || viewersArr[0];
+    }
 
     const vEl=document.querySelector(`.viewer[data-idx="${viewer}"]`);
-    if(!vEl){ this.labelEl.style.display='none'; return; }
+    if(!vEl){
+      this.labelEl.style.display='none';
+      return;
+    }
     const sRect=stage.getBoundingClientRect();
     const vRect=vEl.getBoundingClientRect();
     const centerX=(vRect.left+vRect.width/2)-sRect.left;
@@ -731,13 +852,13 @@ class BubbleScheduler {
     let labelText='';
     if(fv){
       if(LANG==='en'){
-        labelText = fv.name_en || fv.name || (`SPECTATOR ${viewer+1}`);
+        labelText = fv.name_en || fv.name_gr || (`Viewer ${viewer+1}`);
       }else{
-        labelText = fv.name_gr || fv.name || (`ΘΕΑΤΗΣ ${viewer+1}`);
+        labelText = fv.name_gr || fv.name_en || (`Θεατής ${viewer+1}`);
       }
       this.labelEl.style.backgroundColor=tint(fv.color,0.9);
     }else{
-      labelText = (LANG==='en' ? `SPECTATOR ${viewer+1}` : `ΘΕΑΤΗΣ ${viewer+1}`);
+      labelText = (LANG==='en' ? `Viewer ${viewer+1}` : `Θεατής ${viewer+1}`);
       this.labelEl.style.backgroundColor='rgba(0,0,0,0.7)';
     }
 
@@ -748,6 +869,7 @@ class BubbleScheduler {
     this.labelEl.style.display='block';
   }
 
+  /* === Bubbles κουμπωμένα σε θεατή μέσα στο 64% === */
   placePanelNearViewer(viewer,lift=140,xShift=0){
     const W = stage.clientWidth;
     const H = stage.clientHeight;
@@ -1026,8 +1148,6 @@ function handleTimelineEvent(th){
   }else if(th.kind==='law'){
     if(th.lawText) addLaw(th.lawText);
     if(th.alsoParams){ showCurtainParams(); }
-  }else if(th.kind==='law'){
-    if(th.lawText) addLaw(th.lawText);
   }else if(th.kind==='lawPlot'){
     if(th.plot==='v') ensureVelocityChart();
     else if(th.plot==='a') ensureAccelerationChart();
@@ -1075,6 +1195,7 @@ function resetShow(){
   springEl.style.display='none';
 
   window.foyerClose(true);
+  hideAllAvatars();
   setLang(LANG);
 
   t0=performance.now(); lastFrame=t0; playbackTime=0;
@@ -1196,16 +1317,18 @@ function typeWriter(el, text, opt=12, done){
 }
 
 function showSpeakerChip(viewerId){
-  const vInfo = (Array.isArray(FOYER_VIEWERS) ? FOYER_VIEWERS : []).find(x=>x.id===viewerId) || FOYER_VIEWERS[0];
+  const vArr = Array.isArray(FOYER_VIEWERS) ? FOYER_VIEWERS : [];
+  const vInfo = vArr.find(x=>x.id===viewerId) || vArr[viewerId-1] || vArr[0];
+
   const anchor = document.querySelector(`.viewer[data-idx="${viewerId-1}"]`);
   if(!vInfo || !anchor) return;
   const sRect = stage.getBoundingClientRect();
   const aRect = anchor.getBoundingClientRect();
   let labelText;
   if(LANG==='en'){
-    labelText = vInfo.name_en || vInfo.name || `SPECTATOR ${viewerId}`;
+    labelText = vInfo.name_en || vInfo.name_gr || `Viewer ${viewerId}`;
   }else{
-    labelText = vInfo.name_gr || vInfo.name || `ΘΕΑΤΗΣ ${viewerId}`;
+    labelText = vInfo.name_gr || vInfo.name_en || `Θεατής ${viewerId}`;
   }
   fbubble.textContent = labelText;
   fbubble.style.backgroundColor = tint(vInfo.color,0.85);
@@ -1239,7 +1362,7 @@ function isFormulaBlock(text){
 
 function addRow(leftText, rightText, viewer, durLeftSec, durRightSec, pauseAfterSec, whenDone){
   const baseViewer = Array.isArray(FOYER_VIEWERS) ? FOYER_VIEWERS : [];
-  const viewerInfo = baseViewer.find(v=>v.id===viewer) || baseViewer[0] || {color:'#ffffff'};
+  const viewerInfo = baseViewer.find(v=>v.id===viewer) || baseViewer[viewer-1] || baseViewer[0] || {color:'#ffffff'};
 
   const bgLeft  = tint(viewerInfo.color, 0.22);
   const bgRight = tint(viewerInfo.color, 0.16);
@@ -1261,6 +1384,7 @@ function addRow(leftText, rightText, viewer, durLeftSec, durRightSec, pauseAfter
   boardLeft.appendChild(l);
 
   showSpeakerChip(viewer);
+  setActiveAvatar(viewer);
 
   function finalizeRow(){
     requestAnimationFrame(()=>{
@@ -1288,62 +1412,62 @@ function addRow(leftText, rightText, viewer, durLeftSec, durRightSec, pauseAfter
 }
 
 let foyerIdx=0, foyerAuto=true, foyerTimer=null;
-
 function foyerStep(){
   const dlgLang = DIALOGS[LANG];
-  const lines   = dlgLang && Array.isArray(dlgLang.foyer) ? dlgLang.foyer : null;
-  if (!lines) return;
+  if(!dlgLang || !Array.isArray(dlgLang.foyer)) return;
 
-  const text = lines[foyerIdx] || null;
+  const metaArr = Array.isArray(FOYER_META) ? FOYER_META : [];
 
-  if (!text){
-    if (foyerIdx >= (lines.length || 0)){
-      foyerAuto = false;
+  const meta = metaArr[foyerIdx] || null;
+  let text = null;
+
+  if(meta && meta.id){
+    text = (dlgLang.foyer || []).find(e => e && e.id === meta.id) || null;
+  }else{
+    text = dlgLang.foyer[foyerIdx] || null;
+  }
+
+  if(!text){
+    if(foyerIdx >= (dlgLang.foyer||[]).length){
+      foyerAuto=false;
     }
     return;
   }
 
-  let viewerId = (typeof text.viewer === 'number') ? text.viewer : 1;
-
-  let durLeftSec  = undefined;
-  let durRightSec = undefined;
-  if (typeof text.typeMs === 'number' && text.typeMs > 0){
-    const sec = text.typeMs / 1000;
-    durLeftSec  = sec;
-    durRightSec = sec;
+  let viewerId;
+  if(typeof text.viewer==='number'){
+    viewerId = text.viewer;
+  }else if(meta){
+    if(typeof meta.viewer==='number') viewerId = meta.viewer;
+    else if(typeof meta.v==='number') viewerId = meta.v;
   }
+  if(typeof viewerId!=='number') viewerId=1;
 
-  let pauseAfterSec = undefined;
-  if (typeof text.pauseMs === 'number' && text.pauseMs >= 0){
-    pauseAfterSec = text.pauseMs / 1000;
-  }
+  const durLeft  = meta && typeof meta.durLeft  === 'number' ? meta.durLeft  : undefined;
+  const durRight = meta && typeof meta.durRight === 'number' ? meta.durRight : undefined;
+  const pauseAfterSec = meta && typeof meta.pauseAfter === 'number' ? meta.pauseAfter : undefined;
 
   foyerIdx++;
 
   addRow(
-    text.left  || '',
+    text.left || '',
     text.right || '',
     viewerId,
-    durLeftSec,
-    durRightSec,
+    durLeft,
+    durRight,
     pauseAfterSec,
     (pause)=>{
-      const effectivePause =
-        (typeof pause === 'number') ? pause :
-        (typeof pauseAfterSec === 'number') ? pauseAfterSec : undefined;
-
-      let delayMs;
-      if (typeof effectivePause === 'number'){
-        delayMs = Math.max(0, effectivePause * 1000);
-      } else {
-        const len = (String(text.left||'').length + String(text.right||'').length);
+      const len = (String(text.left||'').length + String(text.right||'').length);
+      let delay;
+      if(typeof pause === 'number'){
+        delay = Math.max(0, pause*1000);
+      }else{
         const baseDelay = 600;
         const extra     = Math.min(2000, Math.max(400, 15*len/4));
-        delayMs = baseDelay + extra;
+        delay = baseDelay + extra;
       }
-
       if(foyerAuto){
-        foyerTimer = setTimeout(foyerStep, delayMs);
+        foyerTimer = setTimeout(foyerStep, delay);
       }
     }
   );
@@ -1361,12 +1485,15 @@ function foyerOpen(auto=true){
   boardLeft.innerHTML=''; boardRight.innerHTML='';
   foyerIdx=0; foyerAuto= !!auto;
   if(foyerTimer){ clearTimeout(foyerTimer); foyerTimer=null; }
+  hideAllAvatars();
   setTimeout(foyerStep, 400);
   repositionFoyer();
 }
 function foyerClose(silent=false){
   if(foyerTimer){ clearTimeout(foyerTimer); foyerTimer=null; }
   foyer.style.display='none';
+  fbubble.style.display='none';
+  hideAllAvatars();
 }
 btnFoyer.addEventListener('click', ()=>foyerOpen(true));
 btnFoyerGo.addEventListener('click', ()=>{
@@ -1533,7 +1660,14 @@ langSwitch.addEventListener('click', async (e)=>{
 });
 
 /* ====== RESIZE OBSERVER ====== */
-const ro=new ResizeObserver(()=>{ positionRightPanel(); if(uXT){ drawXTChart(); } positionLawCharts(); positionParamsBox(); repositionFoyer(); });
+const ro=new ResizeObserver(()=>{
+  positionRightPanel();
+  if(uXT){ drawXTChart(); }
+  positionLawCharts();
+  positionParamsBox();
+  repositionFoyer();
+  positionAvatars();
+});
 ro.observe(stage);
 
 /* ====== BOOTSTRAP ====== */
