@@ -52,8 +52,37 @@
   }
 
   .audience{position:absolute; left:18%; bottom:0; width:64%; height:auto; object-position:bottom center; z-index:150; pointer-events:none; filter:contrast(1.05) brightness(.95); display:block;}
-  .viewers{position:absolute;left:18%;width:64%;bottom:0;display:flex;justify-content:space-between;z-index:140;pointer-events:none;padding:0 4vw 12px}
-  .viewer{width:60px;height:100px;background:url('https://upload.wikimedia.org/wikipedia/commons/f/f9/Silhouette_icon.svg') no-repeat center/contain;filter:grayscale(1) brightness(.6);opacity:.75}
+
+  .viewers{
+    position:absolute;
+    left:18%;
+    width:64%;
+    bottom:0;
+    display:flex;
+    justify-content:space-between;
+    z-index:140; /* πίσω από koino/koino_extra */
+    pointer-events:none;
+    padding:0 4vw 12px;
+  }
+  .viewer{
+    width:60px;
+    height:100px;
+    background-position:bottom center;
+    background-repeat:no-repeat;
+    background-size:contain;
+    opacity:0;                 /* default κρυφό */
+    filter:drop-shadow(0 -2px 4px rgba(0,0,0,.7));
+    transition:opacity .25s ease;
+  }
+  /* mapping σε viewerX.png */
+  .viewer[data-idx="0"]{ background-image:url('viewer1.png'); }
+  .viewer[data-idx="1"]{ background-image:url('viewer2.png'); }
+  .viewer[data-idx="2"]{ background-image:url('viewer3.png'); }
+  .viewer[data-idx="3"]{ background-image:url('viewer4.png'); }
+  .viewer[data-idx="4"]{ background-image:url('viewer5.png'); }
+
+  /* Ομιλητές να φαίνονται ΜΟΝΟ στο φουαγιέ και μόνο ο ενεργός */
+  .foyer-open .viewer.active{ opacity:1; }
 
   .signboard{position:absolute;top:-6px;left:50%;transform:translateX(-50%);background:transparent;border:none;border-radius:10px;padding:12px 18px;color:#ddd;font-family:'Georgia',serif;text-align:center;z-index:165;line-height:1.25}
   .signboard h1{font-size:32px;margin:0;color:#fff}
@@ -676,6 +705,12 @@ function tint(hex, alpha){
   return `rgba(${r},${g},${b},${alpha})`;
 }
 
+/* ====== ΒΟΗΘΗΤΙΚΟ: highlight θεατή (για πράξεις + φουαγιέ) ====== */
+function highlightViewerByIndex(idx0){
+  const nodes = document.querySelectorAll('.viewer');
+  nodes.forEach((el,i)=>el.classList.toggle('active', i===idx0));
+}
+
 /* ====== BUBBLE SCHEDULER (Πράξεις) ====== */
 class BubbleScheduler {
   constructor(panelEl, labelEl){
@@ -701,6 +736,10 @@ class BubbleScheduler {
   showSpeaker(viewer){
     if(!this.labelEl) return;
     const vIndex = (typeof viewer==='number' && viewer>=0) ? viewer : 0;
+
+    /* ενεργός θεατής (πράξεις). Στο φουαγιέ ελέγχεται με foyer-open + showSpeakerChip */
+    highlightViewerByIndex(vIndex);
+
     const vEl=document.querySelector(`.viewer[data-idx="${vIndex}"]`);
     if(!vEl){
       this.labelEl.style.display='none';
@@ -954,7 +993,8 @@ function closeCurtainsSequence(){
 
 /* ====== HANDLER TIMELINE ΠΡΑΞΗΣ 1 ====== */
 function handleAct1Event(ev){
-  const kind = ev.kind || 'bubble';
+  /* <-- εδώ η διόρθωση: αν έχει lawText αλλά όχι kind, το θεωρούμε νόμο */
+  const kind = ev.kind || (ev.lawText ? 'law' : 'bubble');
 
   if(kind==='bubble'){
     const viewerIdx = (typeof ev.viewer==='number' ? ev.viewer : 0);
@@ -1015,6 +1055,7 @@ function resetShow(){
   obsStarted=false; obsStartPlaybackOffset=0;
   mode='run'; setMode('run');
   stage.classList.remove('open');
+  stage.classList.remove('foyer-open');
   countdownOverlay.style.display='none';
   startBtn.style.display='block';
   clockEl.style.display='none';
@@ -1167,7 +1208,12 @@ function typeWriter(el, text, opt=12, done){
 
 function showSpeakerChip(viewerId){
   const vIndex = (typeof viewerId==='number' && viewerId>0) ? viewerId : 1;
-  const anchor = document.querySelector(`.viewer[data-idx="${vIndex-1}"]`);
+  const index0 = vIndex - 1;
+
+  /* highlight μόνο αυτόν τον θεατή στο φουαγιέ */
+  highlightViewerByIndex(index0);
+
+  const anchor = document.querySelector(`.viewer[data-idx="${index0}"]`);
   if(!anchor) return;
   const sRect = stage.getBoundingClientRect();
   const aRect = anchor.getBoundingClientRect();
@@ -1291,6 +1337,7 @@ function repositionFoyer(){
 }
 function foyerOpen(auto=true){
   foyer.style.display='block';
+  stage.classList.add('foyer-open');   /* ενεργοποιεί ομιλητές */
   boardLeft.innerHTML=''; boardRight.innerHTML='';
   foyerIdx=0; foyerAuto= !!auto;
   if(foyerTimer){ clearTimeout(foyerTimer); foyerTimer=null; }
@@ -1301,6 +1348,9 @@ function foyerClose(silent=false){
   if(foyerTimer){ clearTimeout(foyerTimer); foyerTimer=null; }
   foyer.style.display='none';
   fbubble.style.display='none';
+  stage.classList.remove('foyer-open');
+  /* καθάρισμα ενεργού θεατή */
+  highlightViewerByIndex(-1);
 }
 btnFoyer.addEventListener('click', ()=>foyerOpen(true));
 btnFoyerGo.addEventListener('click', ()=>{
