@@ -71,7 +71,7 @@
   .measure-box thead th{position:sticky;top:0;background:rgba(0,0,0,.65);z-index:1}
   .measure-box th,.measure-box td{border-bottom:1px solid rgba(255,255,255,.2);padding:2px 4px;text-align:right}
   .measure-box th:first-child,.measure-box td:first-child{text-align:center}
-  .measure-box tr.new td{background:rgba(255,210,122,.15);transition:background .6s ease}
+  .measure-box tr.new td{background:rgba(255,210,122,.15);transition:background .6s.ease}
 
   .ruler{position:absolute;bottom:calc(32vh - 8px + 1px);height:24px;font-size:10px;font-family:"Courier New",monospace;color:#aaa;pointer-events:none;z-index:270}
   .ruler::before{content:'';position:absolute;left:0;right:0;bottom:0;height:1px;background:#aaa}
@@ -79,7 +79,7 @@
   .tick-label{position:absolute;bottom:12px;transform:translateX(-50%);font-size:10px;color:#aaa;white-space:nowrap}
   .marker{position:absolute;bottom:calc(32vh - 8px + 1px);width:0;height:80px;transform:translateX(-50%);pointer-events:none;z-index:275;opacity:0;transition:opacity .3s}
   .marker-line{position:absolute;left:50%;bottom:8px;width:2px;height:70px;background:#ffd27a;box-shadow:0 0 4px rgba(255,210,122,.8);transform:translateX(-50%)}
-  .marker-tip{position:absolute;left:50%;bottom:0;width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:8px solid #ffd27a;filter:drop-shadow(0 2px 2px rgba(255,210,122,.8));transform:translateX(-50%)}
+  .marker-tip{position:absolute;left:50%;bottom:0;width:0;height:0;border-left:6px solid transparent;border-right:6px solid.transparent;border-top:8px solid #ffd27a;filter:drop-shadow(0 2px 2px rgba(255,210,122,.8));transform:translateX(-50%)}
 
   @keyframes popIn{0%{transform:scale(.9);opacity:0}60%{transform:scale(1.04);opacity:1}100%{transform:scale(1)}}
   .thought-bubble{
@@ -88,7 +88,7 @@
     border-image:repeating-linear-gradient(90deg, rgba(0,0,0,.6) 0 6px, transparent 6px 10px, rgba(0,0,0,.6) 10px 12px, transparent 12px 16px) 1;
     box-shadow:0 6px 12px rgba(0,0,0,.4);z-index:750;pointer-events:none;opacity:0;display:none;transition:opacity .25s ease, transform .25s ease
   }
-  .thought-bubble.active{opacity:1;transform:translateY(-2px);animation:popIn .25s ease}
+  .thought-bubble.active{opacity:1;transform:translateY(-2px);animation:popIn .25s.ease}
   .thought-bubble.closing{opacity:0}
   .thought-bubble .tail{display:none;}
   .thought-bubble .checkmark{position:absolute;top:-8px;right:-8px;background:#2ecc71;color:#fff;font-size:11px;line-height:1;border-radius:50%;border:1px solid rgba(0,0,0,.4);width:18px;height:18px;display:none;align-items:center;justify-content:center;font-family:system-ui,sans-serif;font-weight:600}
@@ -344,11 +344,12 @@ let FOYER_VIEWERS     = [];
 /* ====== TIMELINE / DIALOG / UI LOADERS ====== */
 async function loadDialogOverrides(lang){
   try{
-    const resp = await fetch(`dialogs-${lang}.json`, {cache:'no-store'});
+    const resp = await.fetch(`dialogs-${lang}.json`, {cache:'no-store'});
     if(!resp.ok) return;
     const data = await resp.json();
     const dlg = DIALOGS[lang] || (DIALOGS[lang]={act1:{},act2:{},foyer:[]});
 
+    // Act 1: map id -> text (κρατάμε μόνο το κείμενο για την ώρα)
     if(Array.isArray(data.act1)){
       data.act1.forEach(item=>{
         if(item && item.id && typeof item.text==='string'){
@@ -356,6 +357,8 @@ async function loadDialogOverrides(lang){
         }
       });
     }
+
+    // Act 2: map id -> text
     if(Array.isArray(data.act2)){
       data.act2.forEach(item=>{
         if(item && item.id && typeof item.text==='string'){
@@ -363,22 +366,17 @@ async function loadDialogOverrides(lang){
         }
       });
     }
+
+    // Foyer: ΚΡΑΤΑΜΕ ΟΛΟ ΤΟ OBJECT όπως είναι (viewer, typeMs, pauseMs, left, right, κ.λπ.)
     if(Array.isArray(data.foyer)){
-      dlg.foyer = data.foyer.map(it=>({
-        id: it.id || undefined,
-        left: it.left || '',
-        right: it.right || '',
-        viewer: (typeof it.viewer==='number'? it.viewer : undefined),
-        typeMs: (typeof it.typeMs==='number'? it.typeMs : undefined),
-        pauseMs:(typeof it.pauseMs==='number'? it.pauseMs: undefined)
-      }));
+      dlg.foyer = data.foyer.map(it => ({ ...it }));
     }
   }catch(e){}
 }
 
 async function loadTimeline(){
   try{
-    const resp = await fetch('timeline.json', {cache:'no-store'});
+    const resp = await.fetch('timeline.json', {cache:'no-store'});
     if(!resp.ok) return;
     const data = await resp.json() || {};
 
@@ -396,6 +394,7 @@ async function loadTimeline(){
       ACT2_TIMELINE = [];
     }
 
+    // Το FOYER_META πλέον δεν χρησιμοποιείται για τη ροή του φουαγιέ.
     if(Array.isArray(data.foyer)){
       FOYER_META = data.foyer.map(ev=>({...ev}));
     }else{
@@ -406,7 +405,7 @@ async function loadTimeline(){
 
 async function loadUI(lang){
   try{
-    const resp = await fetch(`ui-${lang}.json`, {cache:'no-store'});
+    const resp = await.fetch(`ui-${lang}.json`, {cache:'no-store'});
     if(!resp.ok) return;
     UI[lang] = await resp.json();
   }catch(e){}
@@ -414,7 +413,7 @@ async function loadUI(lang){
 
 async function loadViewers(){
   try{
-    const resp = await fetch('viewers.json', {cache:'no-store'});
+    const resp = await.fetch('viewers.json', {cache:'no-store'});
     if(!resp.ok) return;
     const data = await resp.json();
     if(Array.isArray(data)) FOYER_VIEWERS = data;
@@ -753,7 +752,6 @@ class BubbleScheduler {
     this.labelEl.style.display='block';
   }
 
-  /* === Bubbles κουμπωμένα σε θεατή μέσα στο 64% === */
   placePanelNearViewer(viewer,lift=140,xShift=0){
     const W = stage.clientWidth;
     const H = stage.clientHeight;
@@ -922,7 +920,7 @@ function ensureAxChart(){
 /* ====== uPlot x(t) ====== */
 let uXT=null;
 function buildSeriesData(){
-  const N=240, tArr=new Array(N+1), xArr=new Array(N+1);
+  const N=240, tArr=new.Array(N+1), xArr=new.Array(N+1);
   for(let i=0;i<=N;i++){
     const tloc=(i/N)*T;
     tArr[i]=tloc; xArr[i]=A_m*Math.sin(omega*(tloc+obsStartPlaybackOffset));
@@ -1242,7 +1240,7 @@ function isFormulaBlock(text){
 }
 
 function addRow(leftText, rightText, viewer, durLeftSec, durRightSec, pauseAfterSec, whenDone){
-  const baseViewer = (Array.isArray(FOYER_VIEWERS) ? FOYER_VIEWERS : []);
+  const baseViewer = Array.isArray(FOYER_VIEWERS) ? FOYER_VIEWERS : [];
   const viewerInfo = baseViewer.find(v=>v.id===viewer) || baseViewer[0] || {color:'#ffffff'};
 
   const bgLeft  = tint(viewerInfo.color, 0.22);
@@ -1293,73 +1291,65 @@ function addRow(leftText, rightText, viewer, durLeftSec, durRightSec, pauseAfter
 
 let foyerIdx=0, foyerAuto=true, foyerTimer=null;
 
-/* === ΕΝΗΜΕΡΩΜΕΝΗ foyerStep ΓΙΑ ΤΗ ΝΕΑ ΔΟΜΗ (typeMs / pauseMs) === */
+/* === ΝΕΟ foyerStep: ΜΟΝΟ από DIALOGS[LANG].foyer === */
 function foyerStep(){
   const dlgLang = DIALOGS[LANG];
-  if(!dlgLang || !Array.isArray(dlgLang.foyer)) return;
-
-  const metaArr = Array.isArray(FOYER_META) ? FOYER_META : [];
-  const lines   = dlgLang.foyer || [];
+  const lines   = dlgLang && Array.isArray(dlgLang.foyer) ? dlgLang.foyer : null;
+  if (!lines) return;
 
   const text = lines[foyerIdx] || null;
-  const meta = metaArr[foyerIdx] || null;
 
-  if(!text){
-    if(foyerIdx >= lines.length){
-      foyerAuto=false;
+  if (!text){
+    if (foyerIdx >= (lines.length || 0)){
+      foyerAuto = false;
     }
     return;
   }
 
-  // viewer: προτεραιότητα στο dialogs-*.json, fallback στο timeline.json
-  let viewerId;
-  if(typeof text.viewer==='number'){
-    viewerId = text.viewer;
-  }else if(meta){
-    if(typeof meta.viewer==='number') viewerId = meta.viewer;
-    else if(typeof meta.v==='number') viewerId = meta.v;
-  }
-  if(typeof viewerId!=='number') viewerId=1;
+  // viewer: υποχρεωτικά από dialogs-*.json
+  let viewerId = (typeof text.viewer === 'number') ? text.viewer : 1;
 
-  // διάρκεια "γραφομηχανής" ανά στήλη (σε sec)
-  let durLeftSec, durRightSec;
-  if(typeof text.typeMs==='number'){
-    durLeftSec  = text.typeMs / 1000;
-    durRightSec = text.typeMs / 1000;
-  }else if(meta){
-    if(typeof meta.durLeft==='number')  durLeftSec  = meta.durLeft;
-    if(typeof meta.durRight==='number') durRightSec = meta.durRight;
+  // durations από typeMs
+  let durLeftSec  = undefined;
+  let durRightSec = undefined;
+  if (typeof text.typeMs === 'number' && text.typeMs > 0){
+    const sec = text.typeMs / 1000;
+    durLeftSec  = sec;
+    durRightSec = sec;
   }
 
-  // pause μετά το τέλος (σε sec)
-  let pauseAfterSec;
-  if(typeof text.pauseMs==='number'){
+  // pause μετά τη γραμμή
+  let pauseAfterSec = undefined;
+  if (typeof text.pauseMs === 'number' && text.pauseMs >= 0){
     pauseAfterSec = text.pauseMs / 1000;
-  }else if(meta && typeof meta.pauseAfter==='number'){
-    pauseAfterSec = meta.pauseAfter;
   }
 
   foyerIdx++;
 
   addRow(
-    text.left || '',
+    text.left  || '',
     text.right || '',
     viewerId,
     durLeftSec,
     durRightSec,
     pauseAfterSec,
     (pause)=>{
-      const len = (String(text.left||'').length + String(text.right||'').length);
-      let delay;
-      if(typeof pause === 'number'){
-        delay = Math.max(0, pause*1000);
-      }else{
+      const effectivePause = (typeof pause === 'number')
+        ? pause
+        : (typeof pauseAfterSec === 'number' ? pauseAfterSec : undefined);
+
+      let delayMs;
+      if (typeof effectivePause === 'number'){
+        delayMs = Math.max(0, effectivePause * 1000);
+      } else {
+        const len = (String(text.left||'').length + String(text.right||'').length);
         const baseDelay = 600;
         const extra     = Math.min(2000, Math.max(400, 15*len/4));
-        delay = baseDelay + extra;
+        delayMs = baseDelay + extra;
       }
+
       if(foyerAuto){
-        foyerTimer = setTimeout(foyerStep, delay);
+        foyerTimer = setTimeout(foyerStep, delayMs);
       }
     }
   );
@@ -1396,7 +1386,7 @@ window.foyerClose = foyerClose;
 (function(){
   let ghost=null, ghostSpring=null, ghostRAF=0;
   const Aghost_m=5.0;
-  function getBottom(el){ return parseFloat(getComputedStyle(el).bottom||'0')||0; }
+  function.getBottom(el){ return parseFloat(getComputedStyle(el).bottom||'0')||0; }
   function ensureGhost(){
     if(!ghost){
       ghost=document.createElement('div'); ghost.id='actorGhost';
