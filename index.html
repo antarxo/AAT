@@ -13,72 +13,145 @@
     --foyer-h: 445px;
   }
 
-  body{margin:0;background:radial-gradient(circle at center,#222 0%,#000 100%);overflow:hidden;font-family:Inter,system-ui,sans-serif}
+  body{
+    margin:0;
+    background:radial-gradient(circle at center,#222 0%,#000 100%);
+    overflow:hidden;
+    font-family:Inter,system-ui,sans-serif
+  }
   .stage{position:relative;width:100vw;height:100vh;overflow:hidden}
 
-  .curtain-top,.curtain-upper,.curtain-side{position:absolute;transition:transform 1.2s cubic-bezier(.2,.9,.2,1),opacity 1s}
-  .curtain-top{top:0;left:0;width:100%;height:calc(28% - 30px);background:linear-gradient(to bottom,#230000,#180000);box-shadow:0 5px 18px rgba(0,0,0,.8);z-index:160}
+  .curtain-top,.curtain-upper,.curtain-side{
+    position:absolute;
+    transition:transform 1.2s cubic-bezier(.2,.9,.2,1),opacity 1s
+  }
+  .curtain-top{
+    top:0;left:0;width:100%;height:calc(28% - 30px);
+    background:linear-gradient(to bottom,#230000,#180000);
+    box-shadow:0 5px 18px rgba(0,0,0,.8);
+    z-index:160
+  }
   .curtain-upper{
     top:calc(28% - 23px);
     left:0;width:100%;height:calc(40% + 30px);
     background:url('courtin.png') center top/cover no-repeat, linear-gradient(to bottom,#8b0000,#400000);
-    transform-origin:top; z-index:160
+    transform-origin:top;
+    z-index:160
   }
   .open .curtain-upper{ transform: translateY(calc(-100% + 10px)); }
-  .curtain-upper.slow-close{ transition: transform 1.8s cubic-bezier(.2,.9,.2,1), opacity 1.2s; }
+  .curtain-upper.slow-close{
+    transition: transform 1.8s cubic-bezier(.2,.9,.2,1), opacity 1.2s;
+  }
 
-  .curtain-side{top:0;height:100%;width:18%;z-index:160}
-  .curtain-side.left{left:0;background:linear-gradient(to right,#300000,#1a0000);box-shadow:inset -6px 0 10px rgba(0,0,0,.6)}
-  .curtain-side.right{right:0;background:linear-gradient(to left,#300000,#1a0000);box-shadow:inset 6px 0 10px rgba(0,0,0,.6)}
+  .curtain-side{
+    top:0;height:100%;width:18%;z-index:160
+  }
+  .curtain-side.left{
+    left:0;
+    background:linear-gradient(to right,#300000,#1a0000);
+    box-shadow:inset -6px 0 10px rgba(0,0,0,.6)
+  }
+  .curtain-side.right{
+    right:0;
+    background:linear-gradient(to left,#300000,#1a0000);
+    box-shadow:inset 6px 0 10px rgba(0,0,0,.6)
+  }
 
-  .spotlight{position:absolute;inset:0;pointer-events:none;z-index:150;opacity:.25;background:radial-gradient(200px 120px at 50% 50%, rgba(255,255,220,.65), rgba(255,255,220,0) 70%)}
+  .spotlight{
+    position:absolute;inset:0;pointer-events:none;z-index:150;
+    opacity:.25;
+    background:radial-gradient(200px 120px at 50% 50%, rgba(255,255,220,.65), rgba(255,255,220,0) 70%)
+  }
 
-  .spring{position:absolute;bottom:calc(32vh + 82px);left:10%;height:96px;width:auto;z-index:90;pointer-events:none;filter:drop-shadow(0 4px 6px rgba(0,0,0,.55));transform-origin:left center;opacity:1;display:none}
-  .actor{position:absolute;bottom:calc(32vh + 133px);left:50%;width:144px;height:96px;transform:translate(-50%,0);z-index:110;pointer-events:none;opacity:1}
-  .actor img{width:100%;height:auto;display:block;filter:drop-shadow(0 4px 6px rgba(0,0,0,.6))}
-  .floor{position:absolute;left:0;bottom:calc(32vh - 8px);width:100%;height:2px;background:#888;z-index:155;pointer-events:none}
-
-  /* extra εικόνα κοινού ΠΙΣΩ από avatars */
-  .audience-back{
+  .spring{
     position:absolute;
-    left:18%;
-    bottom:0;
-    width:64%;
-    height:auto;
-    object-position:bottom center;
-    z-index:1390; /* πίσω από avatars */
+    bottom:calc(32vh + 82px);
+    left:10%;
+    height:96px;width:auto;
+    z-index:90;
     pointer-events:none;
-    filter:contrast(1.0) brightness(1.0);
+    filter:drop-shadow(0 4px 6px rgba(0,0,0,.55));
+    transform-origin:left center;
+    opacity:1;
+    display:none
+  }
+  .actor{
+    position:absolute;
+    bottom:calc(32vh + 133px);
+    left:50%;
+    width:144px;height:96px;
+    transform:translate(-50%,0);
+    z-index:110;
+    pointer-events:none;opacity:1
+  }
+  .actor img{
+    width:100%;height:auto;display:block;
+    filter:drop-shadow(0 4px 6px rgba(0,0,0,.6))
+  }
+  .floor{
+    position:absolute;left:0;bottom:calc(32vh - 8px);
+    width:100%;height:2px;background:#888;
+    z-index:155;pointer-events:none
+  }
+
+  /* extra κοινό πίσω από όλα */
+  .audience-extra{
+    position:absolute;
+    left:18%;bottom:0;
+    width:64%;height:auto;
+    object-position:bottom center;
+    z-index:1300;
+    pointer-events:none;
+    filter:contrast(1.03) brightness(.96);
     display:block;
   }
 
   .audience{
-    position:absolute; left:18%; bottom:0; width:64%; height:auto;
-    object-position:bottom center; z-index:1500; pointer-events:none;
-    filter:contrast(1.05) brightness(.95); display:block;
+    position:absolute;
+    left:18%;bottom:0;
+    width:64%;height:auto;
+    object-position:bottom center;
+    z-index:1500;
+    pointer-events:none;
+    filter:contrast(1.05) brightness(.95);
+    display:block;
   }
 
   .viewers{
     position:absolute;
-    left:18%;
-    width:64%;
-    bottom:0;
-    display:flex;
-    justify-content:space-between;
-    z-index:159;
-    padding:0 4vw 12px;
+    left:18%;width:64%;bottom:0;
+    display:flex;justify-content:space-between;
+    z-index:1490;
+    padding:0 4vw 12px
   }
-  .viewer{width:60px;height:100px;background:url('https://upload.wikimedia.org/wikipedia/commons/f/f9/Silhouette_icon.svg') no-repeat center/contain;filter:grayscale(1) brightness(.6);opacity:.75}
+  .viewer{
+    width:60px;height:100px;
+    background:url('https://upload.wikimedia.org/wikipedia/commons/f/f9/Silhouette_icon.svg') no-repeat center/contain;
+    filter:grayscale(1) brightness(.6);
+    opacity:.75
+  }
 
-  /* avatars φουαγιέ (viewerX.png) */
+  /* avatars ομιλητών (φαίνονται μόνο στο φουαγιέ) */
   .foyer-avatar{
     position:absolute;
-    transform:translateX(-50%);
+    z-index:1400;
     pointer-events:none;
-    z-index:1400; /* μπροστά από extra κοινό, πίσω από koino.png */
+    filter:drop-shadow(0 4px 6px rgba(0,0,0,.6));
+    display:none;
   }
 
-  .signboard{position:absolute;top:-6px;left:50%;transform:translateX(-50%);background:transparent;border:none;border-radius:10px;padding:12px 18px;color:#ddd;font-family:'Georgia',serif;text-align:center;z-index:165;line-height:1.25}
+  .signboard{
+    position:absolute;
+    top:-6px;left:50%;
+    transform:translateX(-50%);
+    background:transparent;border:none;
+    border-radius:10px;
+    padding:12px 18px;
+    color:#ddd;
+    font-family:'Georgia',serif;
+    text-align:center;
+    z-index:165;line-height:1.25
+  }
   .signboard h1{font-size:32px;margin:0;color:#fff}
   .signboard .sb-lineA{font-size:18px;font-style:italic;margin-top:2px;color:#ddd}
   .signboard .sb-lineB{font-size:18px;margin-top:2px}
@@ -86,55 +159,186 @@
   .signboard .sb-lineC{font-size:16px;margin-top:2px;font-weight:700;color:#fff}
   .signboard .sb-lineD{font-size:14px;margin-top:2px;font-style:italic;opacity:.9}
 
-  .clock{position:absolute;top:10px;left:calc(82vw + 9vw);transform:translateX(-50%);background:rgba(0,0,0,.5);color:#fff;padding:6px 10px;font-size:16px;font-family:"Courier New",monospace;border-radius:6px;border:1px solid rgba(255,255,255,.3);z-index:2000;pointer-events:none;display:none}
+  .clock{
+    position:absolute;top:10px;
+    left:calc(82vw + 9vw);
+    transform:translateX(-50%);
+    background:rgba(0,0,0,.5);color:#fff;
+    padding:6px 10px;font-size:16px;
+    font-family:"Courier New",monospace;
+    border-radius:6px;
+    border:1px solid rgba(255,255,255,.3);
+    z-index:265;pointer-events:none;display:none
+  }
   .clock .hint{font-size:10px;color:#ffd27a;opacity:.9;margin-left:6px}
-  .measure-box{position:absolute;left:calc(82vw + 9vw);transform:translateX(-50%);top:54px;width:calc(18vw - 16px);z-index:2000;background:rgba(0,0,0,.45);color:#fff;border:1px solid rgba(255,255,255,.25);border-radius:8px;padding:6px 8px;display:none;height:50vh;overflow-y:auto}
 
-  .laws{position:absolute;left:2%;top:44px;width:16%;background:rgba(20,0,0,.6);color:#fff;border:1px solid rgba(255,200,200,.3);border-radius:8px;padding:6px 8px;font-size:16px;line-height:1.45;z-index:260;display:none;overflow:visible}
+  .measure-box{
+    position:absolute;
+    left:calc(82vw + 9vw);
+    transform:translateX(-50%);
+    top:54px;
+    width:calc(18vw - 16px);
+    z-index:262;
+    background:rgba(0,0,0,.45);
+    color:#fff;
+    border:1px solid rgba(255,255,255,.25);
+    border-radius:8px;
+    padding:6px 8px;
+    display:none;
+    height:50vh;
+    overflow-y:auto
+  }
+
+  .laws{
+    position:absolute;
+    left:2%;top:44px;width:16%;
+    background:rgba(20,0,0,.6);
+    color:#fff;
+    border:1px solid rgba(255,200,200,.3);
+    border-radius:8px;
+    padding:6px 8px;
+    font-size:16px;line-height:1.45;
+    z-index:260;display:none;overflow:visible
+  }
   .laws h4{margin:0 0 6px 0}
-  .laws-body .law-line{padding:4px 6px;margin:2px 0;border-left:3px solid rgba(255,210,122,.6);background:rgba(255,210,122,.08)}
+  .laws-body .law-line{
+    padding:4px 6px;margin:2px 0;
+    border-left:3px solid rgba(255,210,122,.6);
+    background:rgba(255,210,122,.08)
+  }
 
-  .params-box{position:absolute;top:33px; z-index:2000;background:rgba(0,0,0,.5);color:#fff;border:1px solid rgba(255,255,255,.25);border-radius:8px;padding:6px 10px;font-size:16px;line-height:1.45;display:none}
+  .params-box{
+    position:absolute;top:33px;
+    z-index:268;
+    background:rgba(0,0,0,.5);color:#fff;
+    border:1px solid rgba(255,255,255,.25);
+    border-radius:8px;
+    padding:6px 10px;
+    font-size:16px;line-height:1.45;
+    display:none
+  }
 
-  #xtChart{position:absolute;display:none;z-index:2000;pointer-events:none;border:1px dashed rgba(255,255,255,.25)}
-  .uplot{background:rgba(0,0,0,.2);border:1px solid rgba(255,255,255,.2);border-radius:6px}
+  #xtChart{
+    position:absolute;
+    display:none;
+    z-index:266;
+    pointer-events:none;
+    border:1px dashed rgba(255,255,255,.25)
+  }
+  .uplot{
+    background:rgba(0,0,0,.2);
+    border:1px solid rgba(255,255,255,.2);
+    border-radius:6px
+  }
   .u-legend{display:none!important}
   .u-axis text{fill:#fff}
   .u-grid line{stroke:rgba(255,255,255,.25)}
 
   .measure-box .mb-title{font-weight:700;margin:0 0 6px 0}
-  .measure-box table{width:100%;border-collapse:separate;border-spacing:0;font-size:12px}
-  .measure-box thead.th{position:sticky;top:0;background:rgba(0,0,0,.65);z-index:1}
-  .measure-box th,.measure-box td{border-bottom:1px solid rgba(255,255,255,.2);padding:2px 4px;text-align:right}
-  .measure-box th:first-child,.measure-box td:first-child{text-align:center}
-  .measure-box tr.new td{background:rgba(255,210,122,.15);transition:background .6s ease}
-
-  .ruler{position:absolute;bottom:calc(32vh - 8px + 1px);height:24px;font-size:10px;font-family:"Courier New",monospace;color:#aaa;pointer-events:none;z-index:270}
-  .ruler::before{content:'';position:absolute;left:0;right:0;bottom:0;height:1px;background:#aaa}
-  .tick{position:absolute;bottom:0;width:1px;height:10px;background:#aaa}
-  .tick-label{position:absolute;bottom:12px;transform:translateX(-50%);font-size:10px;color:#aaa;white-space:nowrap}
-  .marker{position:absolute;bottom:calc(32vh - 8px + 1px);width:0;height:80px;transform:translateX(-50%);pointer-events:none;z-index:275;opacity:0;transition:opacity .3s}
-  .marker-line{position:absolute;left:50%;bottom:8px;width:2px;height:70px;background:#ffd27a;box-shadow:0 0 4px rgba(255,210,122,.8);transform:translateX(-50%)}
-  .marker-tip{position:absolute;left:50%;bottom:0;width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:8px solid #ffd27a;filter:drop-shadow(0 2px 2px rgba(255,210,122,.8));transform:translateX(-50%)}
-
-  @keyframes popIn{0%{transform:scale(.9);opacity:0}60%{transform:scale(1.04);opacity:1}100%{transform:scale(1)}}
-  .thought-bubble{
-    position:absolute;max-width:420px;background:rgba(255,255,255,.92);color:#000;
-    font-size:15px;line-height:1.45;padding:10px 12px 12px;border:2px solid transparent;border-radius:10px;
-    border-image:repeating-linear-gradient(90deg, rgba(0,0,0,.6) 0 6px, transparent 6px 10px, rgba(0,0,0,.6) 10px 12px, transparent 12px 16px) 1;
-    box-shadow:0 6px 12px rgba(0,0,0,.4);z-index:1600;pointer-events:none;opacity:0;display:none;transition:opacity .25s ease, transform .25s ease
+  .measure-box table{
+    width:100%;border-collapse:separate;
+    border-spacing:0;font-size:12px
   }
-  .thought-bubble.active{opacity:1;transform:translateY(-2px);animation:popIn .25s ease}
+  .measure-box thead th{
+    position:sticky;top:0;
+    background:rgba(0,0,0,.65);z-index:1
+  }
+  .measure-box th,.measure-box td{
+    border-bottom:1px solid rgba(255,255,255,.2);
+    padding:2px 4px;text-align:right
+  }
+  .measure-box th:first-child,.measure-box td:first-child{text-align:center}
+  .measure-box tr.new td{
+    background:rgba(255,210,122,.15);
+    transition:background .6s ease
+  }
+
+  .ruler{
+    position:absolute;
+    bottom:calc(32vh - 8px + 1px);
+    height:24px;font-size:10px;
+    font-family:"Courier New",monospace;
+    color:#aaa;pointer-events:none;
+    z-index:270
+  }
+  .ruler::before{
+    content:'';position:absolute;left:0;right:0;bottom:0;
+    height:1px;background:#aaa
+  }
+  .tick{
+    position:absolute;bottom:0;width:1px;height:10px;background:#aaa
+  }
+  .tick-label{
+    position:absolute;bottom:12px;
+    transform:translateX(-50%);
+    font-size:10px;color:#aaa;white-space:nowrap
+  }
+  .marker{
+    position:absolute;
+    bottom:calc(32vh - 8px + 1px);
+    width:0;height:80px;
+    transform:translateX(-50%);
+    pointer-events:none;
+    z-index:275;opacity:0;
+    transition:opacity .3s
+  }
+  .marker-line{
+    position:absolute;left:50%;bottom:8px;
+    width:2px;height:70px;background:#ffd27a;
+    box-shadow:0 0 4px rgba(255,210,122,.8);
+    transform:translateX(-50%)
+  }
+  .marker-tip{
+    position:absolute;left:50%;bottom:0;
+    width:0;height:0;
+    border-left:6px solid transparent;
+    border-right:6px solid transparent;
+    border-top:8px solid #ffd27a;
+    filter:drop-shadow(0 2px 2px rgba(255,210,122,.8));
+    transform:translateX(-50%)
+  }
+
+  @keyframes popIn{
+    0%{transform:scale(.9);opacity:0}
+    60%{transform:scale(1.04);opacity:1}
+    100%{transform:scale(1)}
+  }
+  .thought-bubble{
+    position:absolute;max-width:420px;
+    background:rgba(255,255,255,.92);color:#000;
+    font-size:15px;line-height:1.45;
+    padding:10px 12px 12px;
+    border:2px solid transparent;border-radius:10px;
+    border-image:repeating-linear-gradient(90deg, rgba(0,0,0,.6) 0 6px, transparent 6px 10px, rgba(0,0,0,.6) 10px 12px, transparent 12px 16px) 1;
+    box-shadow:0 6px 12px rgba(0,0,0,.4);
+    z-index:1700;
+    pointer-events:none;
+    opacity:0;display:none;
+    transition:opacity .25s ease, transform .25s ease
+  }
+  .thought-bubble.active{
+    opacity:1;transform:translateY(-2px);
+    animation:popIn .25s ease
+  }
   .thought-bubble.closing{opacity:0}
   .thought-bubble .tail{display:none;}
-  .thought-bubble .checkmark{position:absolute;top:-8px;right:-8px;background:#2ecc71;color:#fff;font-size:11px;line-height:1;border-radius:50%;border:1px solid rgba(0,0,0,.4);width:18px;height:18px;display:none;align-items:center;justify-content:center;font-family:system-ui,sans-serif;font-weight:600}
+  .thought-bubble .checkmark{
+    position:absolute;top:-8px;right:-8px;
+    background:#2ecc71;color:#fff;
+    font-size:11px;line-height:1;
+    border-radius:50%;
+    border:1px solid rgba(0,0,0,.4);
+    width:18px;height:18px;
+    display:none;align-items:center;justify-content:center;
+    font-family:system-ui,sans-serif;font-weight:600
+  }
   .thought-bubble.checked .checkmark{display:flex}
   .thought-bubble .text{word-wrap:break-word}
 
   .act-bubble,
   .foyer-bubble{
     position:absolute;
-    z-index:1600;
+    z-index:1760;
     display:none;
     pointer-events:none;
     min-width:120px;
@@ -150,36 +354,118 @@
     text-shadow:0 1px 2px rgba(0,0,0,.7);
   }
 
-  .controls{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.2);border-radius:8px;padding:6px 8px;display:flex;gap:8px;z-index:2000}
-  .controls button{background:none;border:0;color:#fff;font-size:16px;line-height:1;cursor:pointer;min-width:32px;min-height:32px;border-radius:4px;padding:4px 6px;transition:transform .08s ease}
+  .controls{
+    position:absolute;bottom:12px;left:50%;
+    transform:translateX(-50%);
+    background:rgba(0,0,0,.6);
+    border:1px solid rgba(255,255,255,.2);
+    border-radius:8px;padding:6px 8px;
+    display:flex;gap:8px;
+    z-index:2000
+  }
+  .controls button{
+    background:none;border:0;color:#fff;
+    font-size:16px;line-height:1;
+    cursor:pointer;min-width:32px;min-height:32px;
+    border-radius:4px;padding:4px 6px;
+    transition:transform .08s ease
+  }
   .controls button:active{transform:translateY(1px)}
   .controls button.active{background:rgba(255,255,255,.2)}
   #btnSlow{display:none}
-  .btn-end{position:absolute;bottom:12px;right:12px;z-index:2000;background:#333;border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:8px;padding:8px 12px;cursor:pointer}
+  .btn-end{
+    position:absolute;bottom:12px;right:12px;
+    z-index:2000;
+    background:#333;
+    border:1px solid rgba(255,255,255,.25);
+    color:#fff;border-radius:8px;
+    padding:8px 12px;cursor:pointer
+  }
 
-  .settings{position:absolute;bottom:56px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.7);color:#fff;border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:10px 12px;z-index:2000;display:none;min-width:320px}
-  .settings h5{margin:0 0 6px 0;font-size:14px;color:#ffd27a;text-align:center;font-family:'Georgia',serif}
+  .settings{
+    position:absolute;bottom:56px;left:50%;
+    transform:translateX(-50%);
+    background:rgba(0,0,0,.7);color:#fff;
+    border:1px solid rgba(255,255,255,.2);
+    border-radius:10px;padding:10px 12px;
+    z-index:2000;display:none;min-width:320px
+  }
+  .settings h5{
+    margin:0 0 6px 0;font-size:14px;
+    color:#ffd27a;text-align:center;
+    font-family:'Georgia',serif
+  }
   .settings .row{display:flex;align-items:center;gap:10px;margin:6px 0}
   .settings label{flex:0 0 170px;font-size:12px;color:#ddd}
   .settings input[type=range]{flex:1}
   .settings .val{width:60px;text-align:right;font-family:"Courier New",monospace}
 
-  .countdown-overlay{position:absolute;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,.6);color:#fff;display:none;align-items:center;justify-content:center;text-align:center;z-index:400;pointer-events:none;font-family:Inter,system-ui,sans-serif}
+  .countdown-overlay{
+    position:absolute;left:0;top:0;
+    width:100%;height:100%;
+    background:rgba(0,0,0,.6);color:#fff;
+    display:none;align-items:center;justify-content:center;
+    text-align:center;z-index:2000;
+    pointer-events:none;
+    font-family:Inter,system-ui,sans-serif
+  }
   .countdown-box{max-width:80%}
-  .countdown-main{font-size:24px;font-weight:600;margin-bottom:8px;color:#fff}
-  .countdown-sub{font-size:14px;color:#ffd27a;margin-bottom:16px}
-  .countdown-timer{font-family:"Courier New",monospace;font-size:40px;font-weight:700;color:#fff}
+  .countdown-main{
+    font-size:24px;font-weight:600;
+    margin-bottom:8px;color:#fff
+  }
+  .countdown-sub{
+    font-size:14px;color:#ffd27a;
+    margin-bottom:16px
+  }
+  .countdown-timer{
+    font-family:"Courier New",monospace;
+    font-size:40px;font-weight:700;color:#fff
+  }
 
-  .start-btn{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1000;background:#700;color:#fff;border:none;border-radius:8px;padding:12px 24px;font-size:18px;cursor:pointer;box-shadow:0 0 10px #300;pointer-events:auto}
+  .start-btn{
+    position:absolute;top:50%;left:50%;
+    transform:translate(-50%,-50%);
+    z-index:2000;
+    background:#700;color:#fff;
+    border:none;border-radius:8px;
+    padding:12px 24px;font-size:18px;
+    cursor:pointer;box-shadow:0 0 10px #300;
+    pointer-events:auto
+  }
 
-  .actbreak{position:absolute;background:rgba(0,0,0,.55);color:#fff;z-index:410;display:none;align-items:center;justify-content:center;text-align:center}
-  .foyerbreak{position:absolute;background:rgba(0,0,0,.55);color:#fff;z-index:410;display:none;align-items:center;justify-content:center;text-align:center}
+  .actbreak{
+    position:absolute;
+    background:rgba(0,0,0,.55);color:#fff;
+    z-index:2000;
+    display:none;align-items:center;justify-content:center;
+    text-align:center
+  }
+  .foyerbreak{
+    position:absolute;
+    background:rgba(0,0,0,.55);color:#fff;
+    z-index:2000;
+    display:none;align-items:center;justify-content:center;
+    text-align:center
+  }
 
-  .foyer{position:absolute;left:18%;width:64%;top:0;height:var(--foyer-h);z-index:500;display:none}
-  .foyer .wrap{position:absolute;inset:0;display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid rgba(255,255,255,.25);border-radius:10px;overflow:hidden}
+  .foyer{
+    position:absolute;
+    left:18%;width:64%;top:0;
+    height:var(--foyer-h);
+    z-index:500;display:none
+  }
+  .foyer .wrap{
+    position:absolute;inset:0;
+    display:grid;grid-template-columns:1fr 1fr;gap:0;
+    border:1px solid rgba(255,255,255,.25);
+    border-radius:10px;overflow:hidden
+  }
   .board-left,.board-right{
     background:#0d2a1e url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%228%22 height=%228%22><circle cx=%224%22 cy=%224%22 r=%221%22 fill=%22rgba(255,255,255,0.03)%22/></svg>') repeat;
-    color:#fff; padding:8px 10px; overflow:auto; scroll-behavior:smooth; font-size:14px; line-height:1.35;
+    color:#fff; padding:8px 10px;
+    overflow:auto; scroll-behavior:smooth;
+    font-size:14px; line-height:1.35;
   }
   .board-left{border-right:1px solid rgba(255,255,255,.25)}
   .cell{padding:6px 10px;border-bottom:1px dashed rgba(255,255,255,.12)}
@@ -198,29 +484,30 @@
 
   .btn-foyer{
     position:absolute;
-    bottom:12px;
-    left:12px;
+    bottom:12px;left:12px;
     z-index:2000;
     background:#333;
     border:1px solid rgba(255,255,255,.25);
-    color:#fff;
-    border-radius:8px;
+    color:#fff;border-radius:8px;
     padding:8px 12px;
     cursor:pointer;
   }
 
-  #langSwitch{
-    position:absolute;
-    top:8px;
-    left:8px;
+  .lang{
+    position:absolute;top:8px;left:8px;
     z-index:2000;
     background:rgba(0,0,0,.5);
     border:1px solid rgba(255,255,255,.25);
     border-radius:999px;
     padding:3px 6px;
-    display:flex;
-    gap:6px;
+    display:flex;gap:6px
   }
+  .lang button{
+    background:none;border:0;color:#fff;
+    font-size:12px;padding:4px 8px;
+    border-radius:999px;cursor:pointer
+  }
+  .lang button.on{background:rgba(255,255,255,.2)}
 </style>
 </head>
 <body>
@@ -233,8 +520,8 @@
     <div class="spotlight" id="spotlight"></div>
 
     <div class="lang" id="langSwitch">
-      <button data-lang="gr" class="on" style="background:rgba(255,255,255,.2);border:0;color:#fff;font-size:12px;padding:4px 8px;border-radius:999px;cursor:pointer">GR</button>
-      <button data-lang="en" style="background:none;border:0;color:#fff;font-size:12px;padding:4px 8px;border-radius:999px;cursor:pointer">EN</button>
+      <button data-lang="gr" class="on">GR</button>
+      <button data-lang="en">EN</button>
     </div>
 
     <div class="signboard">
@@ -312,9 +599,12 @@
     <div class="actor" id="actor"><img src="skater.png" alt="Skater"></div>
     <div class="floor"></div>
 
-    <!-- extra εικόνα κοινού, ΠΙΣΩ από avatars -->
-    <img class="audience-back" src="koino_extra.png" alt="δεύτερη ζώνη κοινού">
+    <!-- extra κοινό + βασικό κοινό -->
+    <img class="audience-extra" src="koino_extra.png" alt="επιπλέον κοινό">
     <img class="audience" src="koino.png" alt="κοινό">
+
+    <!-- avatar container για φουαγιέ -->
+    <div id="foyerAvatars"></div>
 
     <div class="viewers">
       <div class="viewer" data-idx="0"></div>
@@ -392,6 +682,7 @@ let thoughtScript     = [];
 let FOYER_META        = [];
 let ACT2_TIMELINE     = [];
 let FOYER_VIEWERS     = [];
+let foyerAvatars      = [];
 
 /* ====== TIMELINE / DIALOG / UI LOADERS ====== */
 async function loadDialogOverrides(lang){
@@ -468,11 +759,12 @@ async function loadViewers(){
     if(!resp.ok) return;
     const data = await resp.json();
     if(Array.isArray(data)) FOYER_VIEWERS = data;
+    ensureFoyerAvatars();
+    layoutFoyerAvatars();
   }catch(e){}
 }
 
 /* ====== I18N / UI ====== */
-const stage=document.getElementById('stage');
 const langSwitch = document.getElementById('langSwitch');
 let firstLawShown = false;
 
@@ -562,138 +854,8 @@ function getAct2BubbleText(id){
   return '';
 }
 
-/* ====== VIEWER / AUDIENCE HELPERS (ΓΕΩΜΕΤΡΙΑ) ====== */
-const audienceImg = document.querySelector('.audience');
-let foyerAvatarsContainer = null;
-let foyerAvatarEls = [];
-let currentFoyerSpeaker = null; // οπτικός ομιλητής στο φουαγιέ
-
-function getViewerConfigByIndex(idx){
-  if(!Array.isArray(FOYER_VIEWERS) || FOYER_VIEWERS.length===0) return {};
-  const i = Math.max(0, Math.min((idx|0), FOYER_VIEWERS.length-1));
-  return FOYER_VIEWERS[i] || {};
-}
-
-function getAudienceGeometry(){
-  if(!audienceImg){
-    return {
-      bottom: stage.clientHeight,
-      top: stage.clientHeight*0.5,
-      height: stage.clientHeight*0.5,
-      left: stage.clientWidth*0.18,
-      width: stage.clientWidth*0.64
-    };
-  }
-  const sRect = stage.getBoundingClientRect();
-  const aRect = audienceImg.getBoundingClientRect();
-  return {
-    bottom: aRect.bottom - sRect.top,
-    top:    aRect.top    - sRect.top,
-    height: aRect.height,
-    left:   aRect.left   - sRect.left,
-    width:  aRect.width
-  };
-}
-
-function computeViewerAnchorX(viewerIdx){
-  const cfg = getViewerConfigByIndex(viewerIdx);
-  const aud = getAudienceGeometry();
-  const total = (Array.isArray(FOYER_VIEWERS) && FOYER_VIEWERS.length) ? FOYER_VIEWERS.length : 5;
-  let frac = (typeof cfg.xFrac === 'number') ? cfg.xFrac : ((viewerIdx+1)/(total+1));
-  if(frac < 0) frac = 0;
-  if(frac > 1) frac = 1;
-  return aud.left + frac * aud.width;
-}
-
-/* ΕΝΙΑΙΟ layout θεατή: όλα από εδώ */
-function getViewerLayout(viewerIdx){
-  const cfg = getViewerConfigByIndex(viewerIdx);
-  const aud = getAudienceGeometry();
-  const anchorX = computeViewerAnchorX(viewerIdx);
-
-  const avatarScale = (typeof cfg.avatarScale === 'number') ? cfg.avatarScale : 0.4;
-  const avatarHeight = aud.height * avatarScale;
-
-  const avatarDy = (typeof cfg.avatarDy === 'number') ? cfg.avatarDy : 0;
-  // avatarDy: πόσο ΠΑΝΩ από το κάτω μέρος του κοινού είναι η ΒΑΣΗ της εικόνας
-  const avatarBottomY = aud.bottom - avatarDy;
-  const avatarTopY    = avatarBottomY - avatarHeight;
-
-  const bubbleDx = (typeof cfg.bubbleDx === 'number') ? cfg.bubbleDx : 40;
-  const bubbleDy = (typeof cfg.bubbleDy === 'number') ? cfg.bubbleDy : 0;
-  // bubbleDy: απόσταση ΠΑΝΩ από την κορυφή του avatar μέχρι την κορυφή του bubble
-  const bubbleTopY = avatarTopY - bubbleDy;
-
-  return {
-    cfg,
-    anchorX,
-    avatarHeight,
-    avatarBottomY,
-    avatarTopY,
-    bubbleTopY,
-    bubbleCenterX: anchorX + bubbleDx
-  };
-}
-
-/* layout / εμφάνιση avatars στο φουαγιέ */
-function layoutFoyerAvatars(show){
-  if(!Array.isArray(FOYER_VIEWERS) || FOYER_VIEWERS.length===0) return;
-  if(!foyerAvatarsContainer){
-    foyerAvatarsContainer = document.createElement('div');
-    foyerAvatarsContainer.id = 'foyerAvatars';
-    foyerAvatarsContainer.style.position = 'absolute';
-    foyerAvatarsContainer.style.left = '0';
-    foyerAvatarsContainer.style.top = '0';
-    foyerAvatarsContainer.style.width = '100%';
-    foyerAvatarsContainer.style.height = '100%';
-    foyerAvatarsContainer.style.pointerEvents = 'none';
-    foyerAvatarsContainer.style.zIndex = '1400';
-    stage.appendChild(foyerAvatarsContainer);
-  }
-  foyerAvatarsContainer.style.display = show ? 'block' : 'none';
-
-  const H = stage.clientHeight;
-
-  while(foyerAvatarEls.length < FOYER_VIEWERS.length){
-    const img = document.createElement('img');
-    img.className = 'foyer-avatar';
-    foyerAvatarsContainer.appendChild(img);
-    foyerAvatarEls.push(img);
-  }
-
-  for(let i=0;i<foyerAvatarEls.length;i++){
-    const imgEl = foyerAvatarEls[i];
-    const cfg = FOYER_VIEWERS[i] || {};
-    const src = cfg.img || `viewer${i+1}.png`;
-    imgEl.src = src;
-
-    const layout = getViewerLayout(i);
-    const bottomCSS = H - layout.avatarBottomY;
-
-    imgEl.style.left   = layout.anchorX + 'px';
-    imgEl.style.bottom = bottomCSS + 'px';
-    imgEl.style.height = layout.avatarHeight + 'px';
-
-    const vid = (typeof cfg.id === 'number') ? String(cfg.id) : String(i+1);
-    imgEl.dataset.viewerId = vid;
-
-    if(!show || (currentFoyerSpeaker !== vid)){
-      imgEl.style.display = 'none';
-    }
-  }
-}
-
-function showFoyerAvatar(viewerId){
-  currentFoyerSpeaker = String(viewerId);
-  if(!foyerAvatarsContainer || !Array.isArray(foyerAvatarEls)) return;
-  foyerAvatarsContainer.style.display = 'block';
-  for(const imgEl of foyerAvatarEls){
-    const vid = imgEl.dataset.viewerId || '';
-    imgEl.style.display = (vid === currentFoyerSpeaker) ? 'block' : 'none';
-  }
-}
-
 /* ====== DOM ====== */
+const stage=document.getElementById('stage');
 const actor=document.getElementById('actor');
 const springEl=document.getElementById('spring');
 const spotlight=document.getElementById('spotlight');
@@ -733,6 +895,8 @@ const actBreak=document.getElementById('actBreak');
 const foyerBreak=document.getElementById('foyerBreak');
 const btnFoyerGo=document.getElementById('btnFoyerGo');
 const curtainUpper=document.querySelector('.curtain-upper');
+const audienceImg=document.querySelector('.audience');
+const foyerAvatarsContainer=document.getElementById('foyerAvatars');
 
 if (typeof window.foyerOpen  !== 'function') window.foyerOpen  = function(){};
 if (typeof window.foyerClose !== 'function') window.foyerClose = function(){};
@@ -793,6 +957,7 @@ function positionRightPanel(){
   }
   positionLawCharts();
   positionParamsBox();
+  layoutFoyerAvatars();
 }
 window.addEventListener('resize', positionRightPanel);
 function anchorX(){ return stage.clientWidth*0.18; }
@@ -880,6 +1045,84 @@ function tint(hex, alpha){
   return `rgba(${r},${g},${b},${alpha})`;
 }
 
+/* ====== GEOMETRY από viewers.json ====== */
+function getViewerLayout(idx){
+  const arr = Array.isArray(FOYER_VIEWERS) ? FOYER_VIEWERS : [];
+  const v = arr[idx] || null;
+  if(!v || !audienceImg) return null;
+
+  const sRect = stage.getBoundingClientRect();
+  const kRect = audienceImg.getBoundingClientRect();
+  const kLeft   = kRect.left   - sRect.left;
+  const kBottom = kRect.bottom - sRect.top;
+  const kWidth  = kRect.width;
+  const kHeight = kRect.height;
+
+  const xFrac = (typeof v.xFrac==='number')
+    ? v.xFrac
+    : (idx+1)/((arr.length||5)+1);
+
+  const anchorX = kLeft + xFrac * kWidth;
+
+  const avatarScale = (typeof v.avatarScale==='number') ? v.avatarScale : 0.4;
+  const avatarHeight = kHeight * avatarScale;
+
+  const avatarDy = (typeof v.avatarDy==='number') ? v.avatarDy : 120;
+  const avatarBottom = kBottom - avatarDy;
+  const avatarTop    = avatarBottom - avatarHeight;
+
+  const bubbleDx = (typeof v.bubbleDx==='number') ? v.bubbleDx : 40;
+  const bubbleDy = (typeof v.bubbleDy==='number') ? v.bubbleDy : -40;
+
+  const bubbleX        = anchorX + bubbleDx;
+  const bubbleAnchorY  = avatarTop + bubbleDy; // σημείο επαφής bubble με avatar
+
+  return {
+    anchorX,
+    avatarBottom,
+    avatarTop,
+    avatarHeight,
+    bubbleX,
+    bubbleAnchorY
+  };
+}
+
+function getViewerIndexById(viewerId){
+  const arr = Array.isArray(FOYER_VIEWERS) ? FOYER_VIEWERS : [];
+  const idx = arr.findIndex(v=>v.id===viewerId);
+  return idx>=0 ? idx : 0;
+}
+
+/* ====== Foyer Avatars ====== */
+function ensureFoyerAvatars(){
+  foyerAvatarsContainer.innerHTML='';
+  foyerAvatars = [];
+  const arr = Array.isArray(FOYER_VIEWERS) ? FOYER_VIEWERS : [];
+  arr.forEach((v, idx)=>{
+    if(!v.img) return;
+    const img=document.createElement('img');
+    img.src=v.img;
+    img.className='foyer-avatar';
+    img.dataset.viewerIdx=String(idx);
+    foyerAvatarsContainer.appendChild(img);
+    foyerAvatars.push(img);
+  });
+  layoutFoyerAvatars();
+}
+
+function layoutFoyerAvatars(){
+  const arr = foyerAvatars || [];
+  arr.forEach(img=>{
+    const idx = parseInt(img.dataset.viewerIdx||'0',10) || 0;
+    const g = getViewerLayout(idx);
+    if(!g) return;
+    img.style.left   = g.anchorX + 'px';
+    img.style.bottom = g.avatarBottom + 'px';
+    img.style.height = g.avatarHeight + 'px';
+    img.style.transform = 'translateX(-50%)';
+  });
+}
+
 /* ====== BUBBLE SCHEDULER (Πράξεις) ====== */
 class BubbleScheduler {
   constructor(panelEl, labelEl){
@@ -904,38 +1147,47 @@ class BubbleScheduler {
   }
   showSpeaker(viewer){
     if(!this.labelEl) return;
-
-    const cfg = getViewerConfigByIndex(viewer);
     const viewersArr = Array.isArray(FOYER_VIEWERS) ? FOYER_VIEWERS : [];
-    const fv = (cfg && (typeof cfg.id!=='undefined')) ? cfg : (viewersArr[viewer] || viewersArr[0] || null);
+    const fv = viewersArr[viewer] || viewersArr[0] || null;
 
-    const layout = getViewerLayout(viewer);
+    const g = getViewerLayout(viewer);
+    if(!g){
+      this.labelEl.style.display='none';
+      return;
+    }
 
     let labelText='';
     if(fv){
       if(LANG==='en'){
-        labelText = fv.name_en || fv.name || ('Viewer '+(viewer+1));
+        labelText = fv.name_en || fv.name || (`VIEWER ${viewer+1}`);
       }else{
-        labelText = fv.name_gr || fv.name || ('Θεατής '+(viewer+1));
+        labelText = fv.name_gr || fv.name || (`ΘΕΑΤΗΣ ${viewer+1}`);
       }
-      this.labelEl.style.backgroundColor=tint(fv.color || '#000000',0.9);
+      this.labelEl.style.backgroundColor=tint(fv.color,0.9);
     }else{
-      labelText = (LANG==='en' ? ('Viewer '+(viewer+1)) : ('Θεατής '+(viewer+1)));
+      labelText = (LANG==='en' ? `VIEWER ${viewer+1}` : `ΘΕΑΤΗΣ ${viewer+1}`);
       this.labelEl.style.backgroundColor='rgba(0,0,0,0.7)';
     }
 
-    const topPx = Math.max(10, layout.avatarTopY - 24);
-
     this.labelEl.textContent = labelText;
-    this.labelEl.style.left = layout.anchorX+'px';
-    this.labelEl.style.top  = topPx+'px';
+    this.labelEl.style.left  = g.anchorX + 'px';
+    this.labelEl.style.top   = Math.max(10, g.avatarTop - 10) + 'px';
     this.labelEl.style.transform='translateX(-50%)';
     this.labelEl.style.display='block';
   }
 
-  placePanelNearViewer(viewer,lift=140,xShift=0){
-    const audGeo = getAudienceGeometry();
-    const layout = getViewerLayout(viewer);
+  /* Bubbles πάντα στις θέσεις από viewers.json */
+  placePanelNearViewer(viewer){
+    const g = getViewerLayout(viewer);
+    if(!g){
+      this.el.style.display='none';
+      return;
+    }
+
+    const sRect = stage.getBoundingClientRect();
+    const kRect = audienceImg.getBoundingClientRect();
+    const kLeft = kRect.left - sRect.left;
+    const kRight= kLeft + kRect.width;
 
     this.el.style.display='block';
     this.el.style.opacity='0';
@@ -943,23 +1195,23 @@ class BubbleScheduler {
     this.el.style.top='0px';
 
     const bw = this.el.offsetWidth || 320;
-    const xL = audGeo.left;
-    const xR = audGeo.left + audGeo.width;
-    const pad = 12;
+    const bh = this.el.offsetHeight || 80;
 
-    let centerX = layout.bubbleCenterX + (xShift || 0);
-    centerX = Math.max(xL+pad + bw/2, Math.min(centerX, xR-pad - bw/2));
-    const leftPx = centerX - bw/2;
+    const cx   = g.bubbleX;
+    const topY = g.bubbleAnchorY - bh;
 
-    const topPx = Math.max(40, layout.bubbleTopY);
+    const minLeft = kLeft + 12;
+    const maxLeft = kRight - 12 - bw;
+    const leftPx  = Math.max(minLeft, Math.min(cx - bw/2, maxLeft));
+    const topPx   = Math.max(40, topY);
 
     this.el.style.left = leftPx + 'px';
     this.el.style.top  = topPx + 'px';
   }
 
-  showOnce({viewer,text,lift,xShift,durSec,pauseAfterSec}){
+  showOnce({viewer,text,durSec,pauseAfterSec}){
     return new Promise(resolve=>{
-      if(this._currentCancel){ try{ this._currentCancel(); }catch(e){} this._currentCancel=null; }
+      if(this._currentCancel){ try{ this._currentCancel(); }catch{} this._currentCancel=null; }
       const textEl=this.el.querySelector('.text');
       const sanitized = this.sanitize(text||'');
       const plain = sanitized.replace(/<[^>]+>/g,'');
@@ -980,7 +1232,7 @@ class BubbleScheduler {
         if(done) return;
         started=true;
 
-        this.placePanelNearViewer(viewer,lift,xShift);
+        this.placePanelNearViewer(viewer);
 
         this.el.classList.add('active');
         this.el.style.opacity='1';
@@ -1019,12 +1271,12 @@ class BubbleScheduler {
       this._currentCancel=cancel;
     });
   }
-  say(viewer,text,lift=140,xShift=0,durSec=null,pauseAfterSec=null){
-    this._queue=this._queue.then(()=>this.showOnce({viewer,text,lift,xShift,durSec,pauseAfterSec}));
+  say(viewer,text,durSec=null,pauseAfterSec=null){
+    this._queue=this._queue.then(()=>this.showOnce({viewer,text,durSec,pauseAfterSec}));
     return this._queue;
   }
   clear(){
-    if(this._currentCancel){ try{ this._currentCancel(); }catch(e){} this._currentCancel=null; }
+    if(this._currentCancel){ try{ this._currentCancel(); }catch{} this._currentCancel=null; }
     this._queue=Promise.resolve();
     this.el.style.display='none';
     if(this.labelEl) this.labelEl.style.display='none';
@@ -1148,8 +1400,6 @@ function handleTimelineEvent(th){
     BUBBLE.say(
       th.viewer,
       txt,
-      th.yOffset,
-      th.xShift||0,
       typeof th.dur==='number' ? th.dur : null,
       typeof th.pauseAfter==='number' ? th.pauseAfter : null
     );
@@ -1161,8 +1411,6 @@ function handleTimelineEvent(th){
       BUBBLE.say(
         th.viewer,
         dyn.t7A ? dyn.t7A(A_m.toFixed(2)) : '',
-        th.yOffset,
-        th.xShift||0,
         dur,
         pa
       );
@@ -1170,8 +1418,6 @@ function handleTimelineEvent(th){
       BUBBLE.say(
         th.viewer,
         dyn.t8Tw ? dyn.t8Tw(T.toFixed(2), omega.toFixed(3)) : '',
-        th.yOffset,
-        th.xShift||0,
         dur,
         pa
       );
@@ -1181,8 +1427,6 @@ function handleTimelineEvent(th){
       BUBBLE.say(
         th.viewer,
         dyn.t9phi ? dyn.t9phi(x0, phi0deg.toFixed(1)) : '',
-        th.yOffset,
-        th.xShift||0,
         dur,
         pa
       );
@@ -1239,9 +1483,6 @@ function resetShow(){
   springEl.style.display='none';
 
   window.foyerClose(true);
-  currentFoyerSpeaker = null;
-  layoutFoyerAvatars(false);
-
   setLang(LANG);
 
   t0=performance.now(); lastFrame=t0; playbackTime=0;
@@ -1367,28 +1608,23 @@ function showSpeakerChip(viewerId){
   const vInfo = arr.find(x=>x.id===viewerId) || arr[0];
   if(!vInfo) return;
 
-  const layout = getViewerLayout((viewerId-1)|0);
+  const idx = getViewerIndexById(viewerId);
+  const g = getViewerLayout(idx);
+  if(!g) return;
 
   let labelText;
   if(LANG==='en'){
-    labelText = vInfo.name_en || vInfo.name || ('Viewer '+viewerId);
+    labelText = vInfo.name_en || vInfo.name || `VIEWER ${viewerId}`;
   }else{
-    labelText = vInfo.name_gr || vInfo.name || ('Θεατής '+viewerId);
+    labelText = vInfo.name_gr || vInfo.name || `ΘΕΑΤΗΣ ${viewerId}`;
   }
   fbubble.textContent = labelText;
-  fbubble.style.backgroundColor = tint(vInfo.color || '#000000',0.85);
+  fbubble.style.backgroundColor = tint(vInfo.color,0.85);
   fbubble.style.borderColor     = 'rgba(255,255,255,.85)';
-
-  /* Χρήση των ΙΔΙΩΝ συντεταγμένων με τα thought bubbles */
-  const topPx    = Math.max(10, layout.bubbleTopY);
-  const centerX  = layout.bubbleCenterX;
-
-  fbubble.style.left = centerX + 'px';
-  fbubble.style.top  = topPx + 'px';
+  fbubble.style.left = g.anchorX + 'px';
+  fbubble.style.top  = Math.max(10, g.avatarTop - 10) + 'px';
   fbubble.style.transform = 'translateX(-50%)';
   fbubble.style.display = 'block';
-
-  showFoyerAvatar(viewerId);
 }
 
 let _syncing=false;
@@ -1411,7 +1647,7 @@ function isFormulaBlock(text){
 }
 
 function addRow(leftText, rightText, viewer, durLeftSec, durRightSec, pauseAfterSec, whenDone){
-  const baseViewer = Array.isArray(FOYER_VIEWERS) ? FOYER_VIEWERS : [];
+  const baseViewer = (Array.isArray(FOYER_VIEWERS) ? FOYER_VIEWERS : []);
   const viewerInfo = baseViewer.find(v=>v.id===viewer) || baseViewer[0] || {color:'#ffffff'};
 
   const bgLeft  = tint(viewerInfo.color, 0.22);
@@ -1534,16 +1770,18 @@ function foyerOpen(auto=true){
   boardLeft.innerHTML=''; boardRight.innerHTML='';
   foyerIdx=0; foyerAuto= !!auto;
   if(foyerTimer){ clearTimeout(foyerTimer); foyerTimer=null; }
-  currentFoyerSpeaker = null;
-  layoutFoyerAvatars(true);
   setTimeout(foyerStep, 400);
   repositionFoyer();
+  // δείξε avatars
+  foyerAvatars.forEach(img=>{ img.style.display='block'; });
+  layoutFoyerAvatars();
 }
 function foyerClose(silent=false){
   if(foyerTimer){ clearTimeout(foyerTimer); foyerTimer=null; }
   foyer.style.display='none';
-  currentFoyerSpeaker = null;
-  layoutFoyerAvatars(false);
+  fbubble.style.display='none';
+  // κρύψε avatars
+  foyerAvatars.forEach(img=>{ img.style.display='none'; });
 }
 btnFoyer.addEventListener('click', ()=>foyerOpen(true));
 btnFoyerGo.addEventListener('click', ()=>{
@@ -1654,17 +1892,11 @@ window.foyerClose = foyerClose;
         }
         const viewerIdx = (typeof step.v==='number' ? step.v :
                            (typeof step.viewer==='number' ? step.viewer : 0));
-        const yOff = (typeof step.y==='number' ? step.y :
-                      (typeof step.yOffset==='number' ? step.yOffset : 135));
-        const xShift = (typeof step.x==='number' ? step.x :
-                        (typeof step.xShift==='number' ? step.xShift : 0));
 
         if(step.gStart) startGhost();
         await BUBBLE.say(
           viewerIdx,
           getAct2BubbleText(step.key),
-          yOff,
-          xShift,
           typeof step.dur==='number' ? step.dur : null,
           typeof step.pauseAfter==='number' ? step.pauseAfter : null
         );
@@ -1716,9 +1948,16 @@ const ro=new ResizeObserver(()=>{
   positionLawCharts();
   positionParamsBox();
   repositionFoyer();
-  layoutFoyerAvatars(foyer.style.display==='block');
+  layoutFoyerAvatars();
 });
 ro.observe(stage);
+
+/* audience load -> avatars layout */
+if(audienceImg){
+  audienceImg.addEventListener('load', ()=>{
+    layoutFoyerAvatars();
+  });
+}
 
 /* ====== BOOTSTRAP ====== */
 (async ()=>{
