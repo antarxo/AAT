@@ -17,19 +17,19 @@
   .stage{position:relative;width:100vw;height:100vh;overflow:hidden}
 
   .curtain-top,.curtain-upper,.curtain-side{position:absolute;transition:transform 1.2s cubic-bezier(.2,.9,.2,1),opacity 1s}
-  .curtain-top{top:0;left:0;width:100%;height:calc(28% - 30px);background:linear-gradient(to bottom,#230000,#180000);box-shadow:0 5px 18px rgba(0,0,0,.8);z-index:160}
+  .curtain-top{top:0;left:0;width:100%;height:calc(28% - 30px);background:linear-gradient(to.bottom,#230000,#180000);box-shadow:0 5px 18px rgba(0,0,0,.8);z-index:160}
   .curtain-upper{
     top:calc(28% - 23px);
     left:0;width:100%;height:calc(40% + 30px);
-    background:url('courtin.png') center top/cover no-repeat, linear-gradient(to bottom,#8b0000,#400000);
+    background:url('courtin.png') center top/cover no-repeat, linear-gradient(to.bottom,#8b0000,#400000);
     transform-origin:top; z-index:160
   }
   .open .curtain-upper{ transform: translateY(calc(-100% + 10px)); }
   .curtain-upper.slow-close{ transition: transform 1.8s cubic-bezier(.2,.9,.2,1), opacity 1.2s; }
 
   .curtain-side{top:0;height:100%;width:18%;z-index:160}
-  .curtain-side.left{left:0;background:linear-gradient(to right,#300000,#1a0000);box-shadow:inset -6px 0 10px rgba(0,0,0,.6)}
-  .curtain-side.right{right:0;background:linear-gradient(to left,#300000,#1a0000);box-shadow:inset 6px 0 10px rgba(0,0,0,.6)}
+  .curtain-side.left{left:0;background:linear-gradient(to.right,#300000,#1a0000);box-shadow:inset -6px 0 10px rgba(0,0,0,.6)}
+  .curtain-side.right{right:0;background:linear-gradient(to.left,#300000,#1a0000);box-shadow:inset 6px 0 10px rgba(0,0,0,.6)}
 
   .spotlight{position:absolute;inset:0;pointer-events:none;z-index:150;opacity:.25;background:radial-gradient(200px 120px at 50% 50%, rgba(255,255,220,.65), rgba(255,255,220,0) 70%)}
 
@@ -79,7 +79,7 @@
   .tick-label{position:absolute;bottom:12px;transform:translateX(-50%);font-size:10px;color:#aaa;white-space:nowrap}
   .marker{position:absolute;bottom:calc(32vh - 8px + 1px);width:0;height:80px;transform:translateX(-50%);pointer-events:none;z-index:275;opacity:0;transition:opacity .3s}
   .marker-line{position:absolute;left:50%;bottom:8px;width:2px;height:70px;background:#ffd27a;box-shadow:0 0 4px rgba(255,210,122,.8);transform:translateX(-50%)}
-  .marker-tip{position:absolute;left:50%;bottom:0;width:0;height:0;border-left:6px solid transparent;border-right:6px solid.transparent;border-top:8px solid #ffd27a;filter:drop-shadow(0 2px 2px rgba(255,210,122,.8));transform:translateX(-50%)}
+  .marker-tip{position:absolute;left:50%;bottom:0;width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:8px solid #ffd27a;filter:drop-shadow(0 2px 2px rgba(255,210,122,.8));transform:translateX(-50%)}
 
   @keyframes popIn{0%{transform:scale(.9);opacity:0}60%{transform:scale(1.04);opacity:1}100%{transform:scale(1)}}
   .thought-bubble{
@@ -344,12 +344,11 @@ let FOYER_VIEWERS     = [];
 /* ====== TIMELINE / DIALOG / UI LOADERS ====== */
 async function loadDialogOverrides(lang){
   try{
-    const resp = await.fetch(`dialogs-${lang}.json`, {cache:'no-store'});
+    const resp = await fetch(`dialogs-${lang}.json`, {cache:'no-store'});
     if(!resp.ok) return;
     const data = await resp.json();
     const dlg = DIALOGS[lang] || (DIALOGS[lang]={act1:{},act2:{},foyer:[]});
 
-    // Act 1: map id -> text (κρατάμε μόνο το κείμενο για την ώρα)
     if(Array.isArray(data.act1)){
       data.act1.forEach(item=>{
         if(item && item.id && typeof item.text==='string'){
@@ -358,7 +357,6 @@ async function loadDialogOverrides(lang){
       });
     }
 
-    // Act 2: map id -> text
     if(Array.isArray(data.act2)){
       data.act2.forEach(item=>{
         if(item && item.id && typeof item.text==='string'){
@@ -367,7 +365,6 @@ async function loadDialogOverrides(lang){
       });
     }
 
-    // Foyer: ΚΡΑΤΑΜΕ ΟΛΟ ΤΟ OBJECT όπως είναι (viewer, typeMs, pauseMs, left, right, κ.λπ.)
     if(Array.isArray(data.foyer)){
       dlg.foyer = data.foyer.map(it => ({ ...it }));
     }
@@ -376,7 +373,7 @@ async function loadDialogOverrides(lang){
 
 async function loadTimeline(){
   try{
-    const resp = await.fetch('timeline.json', {cache:'no-store'});
+    const resp = await fetch('timeline.json', {cache:'no-store'});
     if(!resp.ok) return;
     const data = await resp.json() || {};
 
@@ -394,7 +391,6 @@ async function loadTimeline(){
       ACT2_TIMELINE = [];
     }
 
-    // Το FOYER_META πλέον δεν χρησιμοποιείται για τη ροή του φουαγιέ.
     if(Array.isArray(data.foyer)){
       FOYER_META = data.foyer.map(ev=>({...ev}));
     }else{
@@ -405,7 +401,7 @@ async function loadTimeline(){
 
 async function loadUI(lang){
   try{
-    const resp = await.fetch(`ui-${lang}.json`, {cache:'no-store'});
+    const resp = await fetch(`ui-${lang}.json`, {cache:'no-store'});
     if(!resp.ok) return;
     UI[lang] = await resp.json();
   }catch(e){}
@@ -413,7 +409,7 @@ async function loadUI(lang){
 
 async function loadViewers(){
   try{
-    const resp = await.fetch('viewers.json', {cache:'no-store'});
+    const resp = await fetch('viewers.json', {cache:'no-store'});
     if(!resp.ok) return;
     const data = await resp.json();
     if(Array.isArray(data)) FOYER_VIEWERS = data;
@@ -705,7 +701,7 @@ class BubbleScheduler {
     this.labelEl=labelEl;
     this._queue=Promise.resolve();
     this._currentCancel=null;
-    this._ALLOWED=new Set(['b','strong','i','em','sub','sup','br','span']);
+    this._ALLOWED=new.Set(['b','strong','i','em','sub','sup','br','span']);
   }
   sanitize(html){
     const wrap=document.createElement('div'); wrap.innerHTML=html||'';
@@ -810,7 +806,7 @@ class BubbleScheduler {
       const speed = Math.max(15, Math.min(80, Math.round(baseMs/totalChars)));
 
       let done=false;
-      let started=false;
+      let.started=false;
 
       this.showSpeaker(viewer);
 
@@ -920,7 +916,7 @@ function ensureAxChart(){
 /* ====== uPlot x(t) ====== */
 let uXT=null;
 function buildSeriesData(){
-  const N=240, tArr=new.Array(N+1), xArr=new.Array(N+1);
+  const N=240, tArr=new Array(N+1), xArr=new Array(N+1);
   for(let i=0;i<=N;i++){
     const tloc=(i/N)*T;
     tArr[i]=tloc; xArr[i]=A_m*Math.sin(omega*(tloc+obsStartPlaybackOffset));
@@ -1291,7 +1287,6 @@ function addRow(leftText, rightText, viewer, durLeftSec, durRightSec, pauseAfter
 
 let foyerIdx=0, foyerAuto=true, foyerTimer=null;
 
-/* === ΝΕΟ foyerStep: ΜΟΝΟ από DIALOGS[LANG].foyer === */
 function foyerStep(){
   const dlgLang = DIALOGS[LANG];
   const lines   = dlgLang && Array.isArray(dlgLang.foyer) ? dlgLang.foyer : null;
@@ -1306,10 +1301,8 @@ function foyerStep(){
     return;
   }
 
-  // viewer: υποχρεωτικά από dialogs-*.json
   let viewerId = (typeof text.viewer === 'number') ? text.viewer : 1;
 
-  // durations από typeMs
   let durLeftSec  = undefined;
   let durRightSec = undefined;
   if (typeof text.typeMs === 'number' && text.typeMs > 0){
@@ -1318,7 +1311,6 @@ function foyerStep(){
     durRightSec = sec;
   }
 
-  // pause μετά τη γραμμή
   let pauseAfterSec = undefined;
   if (typeof text.pauseMs === 'number' && text.pauseMs >= 0){
     pauseAfterSec = text.pauseMs / 1000;
@@ -1386,7 +1378,7 @@ window.foyerClose = foyerClose;
 (function(){
   let ghost=null, ghostSpring=null, ghostRAF=0;
   const Aghost_m=5.0;
-  function.getBottom(el){ return parseFloat(getComputedStyle(el).bottom||'0')||0; }
+  function getBottom(el){ return parseFloat(getComputedStyle(el).bottom||'0')||0; }
   function ensureGhost(){
     if(!ghost){
       ghost=document.createElement('div'); ghost.id='actorGhost';
@@ -1503,7 +1495,7 @@ window.foyerClose = foyerClose;
       markerEl.style.opacity='0';
       curtainUpper.classList.add('slow-close');
       stage.classList.remove('open');
-      await new Promise(r=>setTimeout(r,1600));
+      await.new Promise(r=>setTimeout(r,1600));
       curtainUpper.classList.remove('slow-close');
 
       const cuRect = curtainUpper.getBoundingClientRect();
@@ -1548,7 +1540,7 @@ ro.observe(stage);
   await loadDialogOverrides('gr');
   await loadDialogOverrides('en');
   await loadUI('gr');
-  await loadUI('en');
+  await.loadUI('en');
   await loadViewers();
   setLang('gr');
   resetShow();
