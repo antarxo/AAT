@@ -38,31 +38,8 @@
   .actor img{width:100%;height:auto;display:block;filter:drop-shadow(0 4px 6px rgba(0,0,0,.6))}
   .floor{position:absolute;left:0;bottom:calc(32vh - 8px);width:100%;height:2px;background:#888;z-index:155;pointer-events:none}
 
-  /* extra εικόνα κοινού, ίδια θέση/κλίμακα με koino.png, z-index κάτω από avatars */
-  .audience-extra{
-    position:absolute;
-    left:18%;
-    bottom:0;
-    width:64%;
-    height:auto;
-    object-position:bottom center;
-    z-index:1390;
-    pointer-events:none;
-    filter:contrast(1.0) brightness(1.0);
-    display:block;
-  }
-
-  .audience{position:absolute; left:18%; bottom:0; width:64%; height:auto; object-position:bottom center; z-index:1500; pointer-events:none; filter:contrast(1.05) brightness(.95); display:block;}
-  .viewers{position:absolute;left:18%;width:64%;bottom:0;display:none;justify-content:space-between;z-index:100;padding:0 4vw 12px}
-  .foyer-avatar{
-    position:absolute;
-    z-index:1400;
-    pointer-events:none;
-    height:auto;
-    width:auto;
-    transform:translateX(-50%);
-    display:none;
-  }
+  .audience{position:absolute; left:18%; bottom:0; width:64%; height:auto; object-position:bottom center; z-index:158; pointer-events:none; filter:contrast(1.05) brightness(.95); display:block;}
+  .viewers{position:absolute;left:18%;width:64%;bottom:0;display:flex;justify-content:space-between;z-index:159;padding:0 4vw 12px}
   .viewer{width:60px;height:100px;background:url('https://upload.wikimedia.org/wikipedia/commons/f/f9/Silhouette_icon.svg') no-repeat center/contain;filter:grayscale(1) brightness(.6);opacity:.75}
 
   .signboard{position:absolute;top:-6px;left:50%;transform:translateX(-50%);background:transparent;border:none;border-radius:10px;padding:12px 18px;color:#ddd;font-family:'Georgia',serif;text-align:center;z-index:165;line-height:1.25}
@@ -102,14 +79,14 @@
   .tick-label{position:absolute;bottom:12px;transform:translateX(-50%);font-size:10px;color:#aaa;white-space:nowrap}
   .marker{position:absolute;bottom:calc(32vh - 8px + 1px);width:0;height:80px;transform:translateX(-50%);pointer-events:none;z-index:275;opacity:0;transition:opacity .3s}
   .marker-line{position:absolute;left:50%;bottom:8px;width:2px;height:70px;background:#ffd27a;box-shadow:0 0 4px rgba(255,210,122,.8);transform:translateX(-50%)}
-  .marker-tip{position:absolute;left:50%;bottom:0;width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:8px solid #ffd27a;filter:drop-shadow(0 2px 2px rgba(255,210,122,.8));transform:translateX(-50%)}
+  .marker-tip{position:absolute;left:50%;bottom:0;width:0;height:0;border-left:6px solid transparent;border-right:6px solid.transparent;border-top:8px solid #ffd27a;filter:drop-shadow(0 2px 2px rgba(255,210,122,.8));transform:translateX(-50%)}
 
   @keyframes popIn{0%{transform:scale(.9);opacity:0}60%{transform:scale(1.04);opacity:1}100%{transform:scale(1)}}
   .thought-bubble{
     position:absolute;max-width:420px;background:rgba(255,255,255,.92);color:#000;
-    font-size:15px;line-height:1.45;padding:10px 12px 12px;border:2px solid transparent;border-radius:10px;
+    font-size:15px;line-height:1.45;padding:10px 12px 12px;border:2px solid.transparent;border-radius:10px;
     border-image:repeating-linear-gradient(90deg, rgba(0,0,0,.6) 0 6px, transparent 6px 10px, rgba(0,0,0,.6) 10px 12px, transparent 12px 16px) 1;
-    box-shadow:0 6px 12px rgba(0,0,0,.4);z-index:1600;pointer-events:none;opacity:0;display:none;transition:opacity .25s.ease, transform .25s.ease
+    box-shadow:0 6px 12px rgba(0,0,0,.4);z-index:750;pointer-events:none;opacity:0;display:none;transition:opacity .25s ease, transform .25s.ease
   }
   .thought-bubble.active{opacity:1;transform:translateY(-2px);animation:popIn .25s.ease}
   .thought-bubble.closing{opacity:0}
@@ -121,7 +98,7 @@
   .act-bubble,
   .foyer-bubble{
     position:absolute;
-    z-index:1700;
+    z-index:760;
     display:none;
     pointer-events:none;
     min-width:120px;
@@ -137,14 +114,14 @@
     text-shadow:0 1px 2px rgba(0,0,0,.7);
   }
 
-  .controls{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.2);border-radius:8px;padding:6px 8px;display:flex;gap:8px;z-index:2000}
+  .controls{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.2);border-radius:8px;padding:6px 8px;display:flex;gap:8px;z-index:300}
   .controls button{background:none;border:0;color:#fff;font-size:16px;line-height:1;cursor:pointer;min-width:32px;min-height:32px;border-radius:4px;padding:4px 6px;transition:transform .08s.ease}
   .controls button:active{transform:translateY(1px)}
   .controls button.active{background:rgba(255,255,255,.2)}
   #btnSlow{display:none}
-  .btn-end{position:absolute;bottom:12px;right:12px;z-index:2000;background:#333;border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:8px;padding:8px 12px;cursor:pointer}
+  .btn-end{position:absolute;bottom:12px;right:12px;z-index:300;background:#333;border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:8px;padding:8px 12px;cursor:pointer}
 
-  .settings{position:absolute;bottom:56px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.7);color:#fff;border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:10px 12px;z-index:2000;display:none;min-width:320px}
+  .settings{position:absolute;bottom:56px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.7);color:#fff;border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:10px 12px;z-index:310;display:none;min-width:320px}
   .settings h5{margin:0 0 6px 0;font-size:14px;color:#ffd27a;text-align:center;font-family:'Georgia',serif}
   .settings .row{display:flex;align-items:center;gap:10px;margin:6px 0}
   .settings label{flex:0 0 170px;font-size:12px;color:#ddd}
@@ -187,7 +164,7 @@
     position:absolute;
     bottom:12px;
     left:12px;
-    z-index:2000;
+    z-index:300;
     background:#333;
     border:1px solid rgba(255,255,255,.25);
     color:#fff;
@@ -285,10 +262,6 @@
     <img id="spring" class="spring" src="spring.png" alt="ελατήριο">
     <div class="actor" id="actor"><img src="skater.png" alt="Skater"></div>
     <div class="floor"></div>
-
-    <!-- extra εικόνα κοινού, πίσω από avatars -->
-    <img class="audience-extra" src="koino_extra.png" alt="συμπληρωματικό κοινό">
-
     <img class="audience" src="koino.png" alt="κοινό">
 
     <div class="viewers">
@@ -367,7 +340,6 @@ let thoughtScript     = [];
 let FOYER_META        = [];
 let ACT2_TIMELINE     = [];
 let FOYER_VIEWERS     = [];
-let FOYER_AVATARS    = [];
 
 /* ====== TIMELINE / DIALOG / UI LOADERS ====== */
 async function loadDialogOverrides(lang){
@@ -378,28 +350,26 @@ async function loadDialogOverrides(lang){
     const dlg = DIALOGS[lang] || (DIALOGS[lang]={act1:{},act2:{},foyer:[]});
 
     if(Array.isArray(data.act1)){
-      data.act1.forEach(function(item){
+      data.act1.forEach(item=>{
         if(item && item.id && typeof item.text==='string'){
           dlg.act1[item.id] = item.text;
         }
       });
     }
     if(Array.isArray(data.act2)){
-      data.act2.forEach(function(item){
+      data.act2.forEach(item=>{
         if(item && item.id && typeof item.text==='string'){
           dlg.act2[item.id] = item.text;
         }
       });
     }
     if(Array.isArray(data.foyer)){
-      dlg.foyer = data.foyer.map(function(it){
-        return {
-          id: it.id || undefined,
-          left: it.left || '',
-          right: it.right || '',
-          viewer: (typeof it.viewer==='number'? it.viewer : undefined)
-        };
-      });
+      dlg.foyer = data.foyer.map(it=>({
+        id: it.id || undefined,
+        left: it.left || '',
+        right: it.right || '',
+        viewer: (typeof it.viewer==='number'? it.viewer : undefined)
+      }));
     }
   }catch(e){}
 }
@@ -411,27 +381,21 @@ async function loadTimeline(){
     const data = await resp.json() || {};
 
     if(Array.isArray(data.act1)){
-      thoughtScriptBase = data.act1.map(function(ev){
-        return Object.assign({}, ev);
-      });
-      thoughtScript     = thoughtScriptBase.slice();
+      thoughtScriptBase = data.act1.map(ev=>({...ev}));
+      thoughtScript     = [...thoughtScriptBase];
     }else{
       thoughtScriptBase = [];
       thoughtScript     = [];
     }
 
     if(Array.isArray(data.act2)){
-      ACT2_TIMELINE = data.act2.map(function(ev){
-        return Object.assign({}, ev);
-      });
+      ACT2_TIMELINE = data.act2.map(ev=>({...ev}));
     }else{
       ACT2_TIMELINE = [];
     }
 
     if(Array.isArray(data.foyer)){
-      FOYER_META = data.foyer.map(function(ev){
-        return Object.assign({}, ev);
-      });
+      FOYER_META = data.foyer.map(ev=>({...ev}));
     }else{
       FOYER_META = [];
     }
@@ -454,39 +418,9 @@ async function loadViewers(){
     if(Array.isArray(data)) FOYER_VIEWERS = data;
   }catch(e){}
 }
-function getViewerConfigByIndex(idx){
-  const arr = Array.isArray(FOYER_VIEWERS) ? FOYER_VIEWERS : [];
-  if(!arr.length) return null;
-  const safeIdx = Math.max(0, Math.min(arr.length-1, idx|0));
-  return arr[safeIdx] || arr[0] || null;
-}
-function getViewerConfigById(id){
-  const arr = Array.isArray(FOYER_VIEWERS) ? FOYER_VIEWERS : [];
-  if(!arr.length) return null;
-  const numId = Number(id);
-  if(Number.isFinite(numId)){
-    const found = arr.find(function(v){ return Number(v.id)===numId; });
-    if(found) return found;
-  }
-  return arr[0] || null;
-}
-function getViewerAnchorXFromConfig(vc){
-  const W = stage.clientWidth || window.innerWidth || 0;
-  const xL = W * 0.18;
-  const xR = W * 0.82;
-  const frac = (vc && typeof vc.xFrac === 'number') ? vc.xFrac : 0.5;
-  return xL + frac * (xR - xL);
-}
-function getViewerAnchorXByIndex(idx){
-  const vc = getViewerConfigByIndex(idx);
-  return getViewerAnchorXFromConfig(vc);
-}
-function getViewerAnchorXById(id){
-  const vc = getViewerConfigById(id);
-  return getViewerAnchorXFromConfig(vc);
-}
 
 /* ====== I18N / UI ====== */
+const stage=document.getElementById('stage');
 const langSwitch = document.getElementById('langSwitch');
 let firstLawShown = false;
 
@@ -576,8 +510,49 @@ function getAct2BubbleText(id){
   return '';
 }
 
+/* ====== VIEWER / AUDIENCE HELPERS (ΓΕΩΜΕΤΡΙΑ) ====== */
+const audienceImg = document.querySelector('.audience');
+
+function getViewerConfigByIndex(idx){
+  if(!Array.isArray(FOYER_VIEWERS) || FOYER_VIEWERS.length===0) return {};
+  const i = Math.max(0, Math.min((idx|0), FOYER_VIEWERS.length-1));
+  return FOYER_VIEWERS[i] || {};
+}
+
+function getAudienceGeometry(){
+  if(!audienceImg){
+    return {
+      bottom: stage.clientHeight,
+      top: stage.clientHeight*0.5,
+      height: stage.clientHeight*0.5,
+      left: stage.clientWidth*0.18,
+      width: stage.clientWidth*0.64
+    };
+  }
+  const sRect = stage.getBoundingClientRect();
+  const aRect = audienceImg.getBoundingClientRect();
+  return {
+    bottom: aRect.bottom - sRect.top,
+    top:    aRect.top    - sRect.top,
+    height: aRect.height,
+    left:   aRect.left   - sRect.left,
+    width:  aRect.width
+  };
+}
+
+function computeViewerAnchorX(viewerIdx){
+  const cfg = getViewerConfigByIndex(viewerIdx);
+  const W = stage.clientWidth;
+  const xL = W * 0.18;
+  const xR = W * 0.82;
+  const total = (Array.isArray(FOYER_VIEWERS) && FOYER_VIEWERS.length) ? FOYER_VIEWERS.length : 5;
+  let frac = (typeof cfg.xFrac === 'number') ? cfg.xFrac : ((viewerIdx+1)/(total+1));
+  if(frac < 0) frac = 0;
+  if(frac > 1) frac = 1;
+  return xL + frac * (xR - xL);
+}
+
 /* ====== DOM ====== */
-const stage=document.getElementById('stage');
 const actor=document.getElementById('actor');
 const springEl=document.getElementById('spring');
 const spotlight=document.getElementById('spotlight');
@@ -603,7 +578,6 @@ const slSlow=document.getElementById('slSlow'), valSlow=document.getElementById(
 const countdownOverlay=document.getElementById('countdownOverlay');
 const countdownTimerEl=document.getElementById('countdownTimer');
 const xtChart=document.getElementById('xtChart');
-const audienceImg=document.querySelector('.audience');
 const paramsBoxEl=document.getElementById('paramsBox');
 const paramAEl=document.getElementById('paramA');
 const paramWEl=document.getElementById('paramW');
@@ -688,10 +662,10 @@ let firstThoughtMul=parseFloat(slFirst.value);
 let timelineScale=parseFloat(slScale.value);
 let bubbleDurationSec=parseFloat(slDur.value);
 let slowFactor=parseFloat(slSlow.value);
-slFirst.addEventListener('input',function(){ firstThoughtMul=parseFloat(slFirst.value); valFirst.textContent=firstThoughtMul.toFixed(1)+'·T'; });
-slScale.addEventListener('input',function(){ timelineScale=parseFloat(slScale.value); valScale.textContent=timelineScale.toFixed(1)+'×'; });
-slDur.addEventListener('input',function(){ bubbleDurationSec=parseFloat(slDur.value); valDur.textContent=bubbleDurationSec.toFixed(1)+'s'; });
-slSlow.addEventListener('input',function(){ slowFactor=parseFloat(slSlow.value); valSlow.textContent=slowFactor.toFixed(2)+'×'; });
+slFirst.addEventListener('input',()=>{ firstThoughtMul=parseFloat(slFirst.value); valFirst.textContent=`${firstThoughtMul.toFixed(1)}·T`; });
+slScale.addEventListener('input',()=>{ timelineScale=parseFloat(slScale.value); valScale.textContent=`${timelineScale.toFixed(1)}×`; });
+slDur.addEventListener('input',()=>{ bubbleDurationSec=parseFloat(slDur.value); valDur.textContent=`${bubbleDurationSec.toFixed(1)}s`; });
+slSlow.addEventListener('input',()=>{ slowFactor=parseFloat(slSlow.value); valSlow.textContent=`${slowFactor.toFixed(2)}×`; });
 
 /* ====== TIMELINE STATE ====== */
 let nextThoughtIdx=0;
@@ -708,9 +682,9 @@ function logMeasurement(tObs,xMeters){
   if(tObs-lastSampleObsTime<sampleInterval) return; lastSampleObsTime=tObs;
   const tr=document.createElement('tr');
   tr.className='new';
-  tr.innerHTML='<td>'+((++measureRowIdx))+'</td><td>'+tObs.toFixed(2)+'</td><td>'+xMeters.toFixed(2)+'</td>';
+  tr.innerHTML=`<td>${(++measureRowIdx)}</td><td>${tObs.toFixed(2)}</td><td>${xMeters.toFixed(2)}</td>`;
   measureTBody.appendChild(tr);
-  setTimeout(function(){ tr.classList.remove('new'); }, 650);
+  setTimeout(()=>{ tr.classList.remove('new'); }, 650);
   try{ tr.scrollIntoView({block:'end'}); }catch(e){}
   try{ measureBox.scrollTop=measureBox.scrollHeight; }catch(e){}
 }
@@ -720,7 +694,7 @@ function setMode(newMode){
   mode=newMode;
   btnSlow.classList.toggle('active', mode==='slow');
   btnPlay.classList.toggle('active', mode==='run');
-  slowHint.textContent = (mode==='slow' && slowFactor<1) ? 'SLOW-MO ×'+slowFactor.toFixed(2) : '';
+  slowHint.textContent = (mode==='slow' && slowFactor<1) ? `SLOW-MO ×${slowFactor.toFixed(2)}` : '';
 }
 
 /* ====== TYPEWRITER HTML (ΠΡΑΞΕΙΣ) ====== */
@@ -729,19 +703,18 @@ function typeWriterHTML(el, html, speed, done){
   const textNodes=[];
   function collect(node){
     if(node.nodeType===3){
-      textNodes.push({node:node, text:node.textContent});
+      textNodes.push({node, text:node.textContent});
       node.textContent='';
     }else if(node.nodeType===1){
-      for(let i=0;i<node.childNodes.length;i++) collect(node.childNodes[i]);
+      for(const child of node.childNodes) collect(child);
     }
   }
   collect(el);
-  const totalChars = textNodes.reduce(function(s,o){return s+o.text.length;},0);
+  const totalChars = textNodes.reduce((s,o)=>s+o.text.length,0);
   let i=0;
   (function tick(){
     let remaining = i;
-    for(let k=0;k<textNodes.length;k++){
-      const obj=textNodes[k];
+    for(const obj of textNodes){
       if(remaining>obj.text.length){
         obj.node.textContent=obj.text;
         remaining-=obj.text.length;
@@ -763,7 +736,7 @@ function typeWriterHTML(el, html, speed, done){
 function tint(hex, alpha){
   const c = (hex||'#ffffff').replace('#','');
   const r=parseInt(c.slice(0,2),16)||255, g=parseInt(c.slice(2,4),16)||255, b=parseInt(c.slice(4,6),16)||255;
-  return 'rgba('+r+','+g+','+b+','+alpha+')';
+  return `rgba(${r},${g},${b},${alpha})`;
 }
 
 /* ====== BUBBLE SCHEDULER (Πράξεις) ====== */
@@ -777,16 +750,11 @@ class BubbleScheduler {
   }
   sanitize(html){
     const wrap=document.createElement('div'); wrap.innerHTML=html||'';
-    const all=wrap.querySelectorAll('*');
-    all.forEach(function(n){
+    wrap.querySelectorAll('*').forEach(n=>{
       const tag=n.tagName.toLowerCase();
-      if(!this._ALLOWED.has(tag)){
-        n.replaceWith(document.createTextNode(n.textContent));
-      }else{
-        const attrs=[].slice.call(n.attributes);
-        attrs.forEach(function(a){ n.removeAttribute(a.name); });
-      }
-    }, this);
+      if(!this._ALLOWED.has(tag)) n.replaceWith(document.createTextNode(n.textContent));
+      else [...n.attributes].forEach(a=>n.removeAttribute(a.name));
+    });
     return wrap.innerHTML;
   }
   computeDur(text){
@@ -795,37 +763,47 @@ class BubbleScheduler {
   }
   showSpeaker(viewer){
     if(!this.labelEl) return;
+
+    const cfg = getViewerConfigByIndex(viewer);
     const viewersArr = Array.isArray(FOYER_VIEWERS) ? FOYER_VIEWERS : [];
-    const vc = viewersArr[viewer] || viewersArr[0] || null;
+    const fv = (cfg && (typeof cfg.id!=='undefined')) ? cfg : (viewersArr[viewer] || viewersArr[0] || null);
+
+    const anchorX = computeViewerAnchorX(viewer);
+    const audGeo = getAudienceGeometry();
 
     let labelText='';
-    if(vc){
+    if(fv){
       if(LANG==='en'){
-        labelText = vc.name_en || vc.name || ('SPECTATOR '+(viewer+1));
+        labelText = fv.name_en || fv.name || ('Viewer '+(viewer+1));
       }else{
-        labelText = vc.name_gr || vc.name || ('ΘΕΑΤΗΣ '+(viewer+1));
+        labelText = fv.name_gr || fv.name || ('Θεατής '+(viewer+1));
       }
-      this.labelEl.style.backgroundColor = tint(vc.color || '#000000', 0.9);
+      this.labelEl.style.backgroundColor=tint(fv.color || '#000000',0.9);
     }else{
-      labelText = (LANG==='en' ? 'SPECTATOR '+(viewer+1) : 'ΘΕΑΤΗΣ '+(viewer+1));
-      this.labelEl.style.backgroundColor = 'rgba(0,0,0,0.7)';
+      labelText = (LANG==='en' ? ('Viewer '+(viewer+1)) : ('Θεατής '+(viewer+1)));
+      this.labelEl.style.backgroundColor='rgba(0,0,0,0.7)';
     }
 
-    const centerX = getViewerAnchorXByIndex(viewer);
-    const topPx   = stage.clientHeight * 0.24;
+    const baseAvatarDy = (typeof cfg.avatarDy === 'number') ? cfg.avatarDy : 0;
+    const avatarHeight = audGeo.height * (typeof cfg.avatarScale === 'number' ? cfg.avatarScale : 0.4);
+    const topPx = audGeo.bottom - baseAvatarDy - avatarHeight - 24;
 
     this.labelEl.textContent = labelText;
-    this.labelEl.style.left  = centerX + 'px';
-    this.labelEl.style.top   = topPx + 'px';
-    this.labelEl.style.transform = 'translateX(-50%)';
-    this.labelEl.style.display = 'block';
+    this.labelEl.style.left = anchorX+'px';
+    this.labelEl.style.top  = Math.max(10, topPx)+'px';
+    this.labelEl.style.transform='translateX(-50%)';
+    this.labelEl.style.display='block';
   }
 
-  placePanelNearViewer(viewer, _liftIgnored, xShift){
+  /* === Bubbles κουμπωμένα σε θεατή μέσα στο 64% === */
+  placePanelNearViewer(viewer,lift=140,xShift=0){
     const W = stage.clientWidth;
-    const xL = W*0.18;
-    const xR = W*0.82;
+    const xL = W * 0.18;
+    const xR = W * 0.82;
     const pad = 12;
+
+    const cfg = getViewerConfigByIndex(viewer);
+    const audGeo = getAudienceGeometry();
 
     this.el.style.display='block';
     this.el.style.opacity='0';
@@ -834,45 +812,22 @@ class BubbleScheduler {
 
     const bw = this.el.offsetWidth || 320;
 
-    const viewersArr = Array.isArray(FOYER_VIEWERS)?FOYER_VIEWERS:[];
-    const vc = viewersArr[viewer] || viewersArr[0] || null;
+    const anchorX = computeViewerAnchorX(viewer);
+    const baseDx  = (typeof cfg.bubbleDx === 'number' ? cfg.bubbleDx : 0);
+    let centerX   = anchorX + baseDx + (xShift || 0);
 
-    const anchorX = getViewerAnchorXByIndex(viewer);
-    const bubbleDx = vc && typeof vc.bubbleDx === 'number' ? vc.bubbleDx : 40;
-    const bubbleDy = vc && typeof vc.bubbleDy === 'number' ? vc.bubbleDy : -80;
+    centerX = Math.max(xL + pad + bw/2, Math.min(centerX, xR - pad - bw/2));
+    const leftPx = centerX - bw/2;
 
-    let leftPx = anchorX + bubbleDx + (xShift || 0);
-    const maxLeft = xR - pad - bw;
-    const minLeft = xL + pad;
-    if(leftPx < minLeft) leftPx = minLeft;
-    if(leftPx > maxLeft) leftPx = maxLeft;
-
-    let topPx;
-    const audRect  = audienceImg ? audienceImg.getBoundingClientRect() : null;
-    const stageRect= stage.getBoundingClientRect();
-
-    if(audRect && audRect.height>10){
-      const baseY = audRect.top - stageRect.top;
-      topPx = baseY + bubbleDy;
-    }else{
-      const frac = vc && typeof vc.bubbleYFrac === 'number' ? vc.bubbleYFrac : 0.6;
-      topPx = stage.clientHeight * frac;
-    }
-    if(topPx < 40) topPx = 40;
+    const baseDy = (typeof cfg.bubbleDy === 'number' ? cfg.bubbleDy : 0);
+    const topPx  = audGeo.bottom - baseDy;
 
     this.el.style.left = leftPx + 'px';
-    this.el.style.top  = topPx + 'px';
+    this.el.style.top  = Math.max(40, topPx)+'px';
   }
 
-  showOnce(cfg){
-    const viewer=cfg.viewer;
-    const text=cfg.text;
-    const lift=cfg.lift;
-    const xShift=cfg.xShift;
-    const durSec=cfg.durSec;
-    const pauseAfterSec=cfg.pauseAfterSec;
-
-    return new Promise((resolve)=>{
+  showOnce({viewer,text,lift,xShift,durSec,pauseAfterSec}){
+    return new Promise(resolve=>{
       if(this._currentCancel){ try{ this._currentCancel(); }catch(e){} this._currentCancel=null; }
       const textEl=this.el.querySelector('.text');
       const sanitized = this.sanitize(text||'');
@@ -905,7 +860,7 @@ class BubbleScheduler {
           const extraPause = (typeof pauseAfterSec==='number' && pauseAfterSec>=0)
             ? pauseAfterSec*1000
             : 500;
-          setTimeout(cancel, extraPause);
+          setTimeout(()=>cancel(), extraPause);
         });
       }, 220);
 
@@ -933,16 +888,8 @@ class BubbleScheduler {
       this._currentCancel=cancel;
     });
   }
-  say(viewer,text,lift,xShift,durSec,pauseAfterSec){
-    const cfg={
-      viewer:viewer,
-      text:text,
-      lift:lift,
-      xShift:xShift,
-      durSec:durSec,
-      pauseAfterSec:pauseAfterSec
-    };
-    this._queue=this._queue.then(()=>this.showOnce(cfg));
+  say(viewer,text,lift=140,xShift=0,durSec=null,pauseAfterSec=null){
+    this._queue=this._queue.then(()=>this.showOnce({viewer,text,lift,xShift,durSec,pauseAfterSec}));
     return this._queue;
   }
   clear(){
@@ -1036,9 +983,9 @@ function drawXTChart(){ if(uXT){ uXT.setData(buildSeriesData()); } }
 /* ====== ΠΑΡΑΜΕΤΡΟΙ ====== */
 function showCurtainParams(){
   const phi0deg=((omega*obsStartPlaybackOffset)*180/Math.PI + 360)%360;
-  paramAEl.textContent  ='A = '+A_m.toFixed(2)+' m';
-  paramWEl.textContent  ='ω = '+omega.toFixed(3)+' rad/s';
-  paramPhiEl.textContent='φ₀ = '+phi0deg.toFixed(1)+'°';
+  paramAEl.textContent  =`A = ${A_m.toFixed(2)} m`;
+  paramWEl.textContent  =`ω = ${omega.toFixed(3)} rad/s`;
+  paramPhiEl.textContent=`φ₀ = ${phi0deg.toFixed(1)}°`;
   paramsBoxEl.style.display='block';
   positionParamsBox();
 }
@@ -1049,7 +996,7 @@ function closeCurtainsSequence(){
   stage.classList.remove('open');
   markerEl.style.opacity='0';
   setMode('run');
-  setTimeout(function(){
+  setTimeout(()=>{
     const cuRect = curtainUpper.getBoundingClientRect();
     const sRect = stage.getBoundingClientRect();
     const centralLeftPx = sRect.left + stage.clientWidth*0.18;
@@ -1124,17 +1071,17 @@ function handleTimelineEvent(th){
 }
 
 /* ====== ΚΟΥΜΠΙΑ ====== */
-btnPause.addEventListener('click',function(){ setMode(mode==='pause'?'run':'pause'); });
-btnSlow .addEventListener('click', function(){ setMode('slow');  });
-btnPlay .addEventListener('click', function(){ setMode('run');  });
+btnPause.addEventListener('click',()=>{ setMode(mode==='pause'?'run':'pause'); });
+btnSlow .addEventListener('click', ()=>{ setMode('slow');  });
+btnPlay .addEventListener('click', ()=>{ setMode('run');  });
 
-btnSettings.addEventListener('click',function(){
+btnSettings.addEventListener('click',()=>{
   settingsPanel.style.display = (settingsPanel.style.display==='block' ? 'none' : 'block');
 });
 
 function resetShow(){
   if(bubbleAutoTimer){ clearTimeout(bubbleAutoTimer); bubbleAutoTimer=null; }
-  thoughtScript = thoughtScriptBase.slice();
+  thoughtScript = [...thoughtScriptBase];
   nextThoughtIdx=0; isBubbleActive=false;
   measureRowIdx=0; lastSampleObsTime=-Infinity;
   firstLawShown=false; lawCount=0;
@@ -1213,7 +1160,7 @@ function animate(now){
   if(obsStarted && !isBubbleActive && nextThoughtIdx<thoughtScript.length){
     const th=thoughtScript[nextThoughtIdx];
     const shiftMul=(firstThoughtMul-DEFAULT_FIRST_MUL);
-    const baseMul=(th.atT||0);
+    const baseMul=(th.atT??0);
     const eventAtSec=(baseMul+shiftMul)*T*timelineScale;
     if(tObs>=eventAtSec){
       try{ handleTimelineEvent(th); }finally{ nextThoughtIdx+=1; }
@@ -1225,17 +1172,17 @@ function animate(now){
   if(!L0_px && springRect.width>0){ L0_px=springRect.width; }
   if(skRect.width>0){ skaterWidthPx=skRect.width; hookOffsetPx=skaterWidthPx/2; }
 
-  const axX=anchorX();
+  const ax=anchorX();
   const centerX=stage.clientWidth/2;
   const skaterHookX=centerX + A_px*Math.sin(omega*playbackTime);
-  const distance=skaterHookX-axX;
+  const distance=skaterHookX-ax;
   const scale=(L0_px && L0_px>0) ? (distance/L0_px) : 1;
-  springEl.style.left=axX+'px';
-  springEl.style.transform='scaleX('+scale+')';
+  springEl.style.left=ax+'px';
+  springEl.style.transform=`scaleX(${scale})`;
   actor.style.transform='none';
   actor.style.left=(skaterHookX-hookOffsetPx)+'px';
   markerEl.style.left=skaterHookX+'px';
-  spotlight.style.background='radial-gradient(220px 140px at '+skaterHookX+'px '+(stage.clientHeight*0.62)+'px, rgba(255,255,220,.65), rgba(255,255,255,0) 70%)';
+  spotlight.style.background=`radial-gradient(220px 140px at ${skaterHookX}px ${stage.clientHeight*0.62}px, rgba(255,255,220,.65), rgba(255,255,255,0) 70%)`;
 
   const xMeters=(skaterHookX-centerX)/pxPerMeter;
   logMeasurement(tObs,xMeters);
@@ -1250,8 +1197,7 @@ const boardRight = document.getElementById('boardRight');
 const foyer      = document.getElementById('foyer');
 const fbubble    = document.getElementById('foyerBubble');
 
-function typeWriter(el, text, opt, done){
-  if(typeof opt==='undefined') opt=12;
+function typeWriter(el, text, opt=12, done){
   el.innerHTML=''; let i=0;
   const src = String(text||'').replaceAll('sqrt(','√(');
   const total = src.length || 1;
@@ -1283,30 +1229,31 @@ function typeWriter(el, text, opt, done){
 }
 
 function showSpeakerChip(viewerId){
-  const vInfo = getViewerConfigById(viewerId);
+  const arr = Array.isArray(FOYER_VIEWERS) ? FOYER_VIEWERS : [];
+  const vInfo = arr.find(x=>x.id===viewerId) || arr[0];
   if(!vInfo) return;
+
+  const audGeo = getAudienceGeometry();
+  const anchorX = computeViewerAnchorX((viewerId-1)|0);
+
   let labelText;
   if(LANG==='en'){
-    labelText = vInfo.name_en || vInfo.name || ('SPECTATOR '+viewerId);
+    labelText = vInfo.name_en || vInfo.name || ('Viewer '+viewerId);
   }else{
-    labelText = vInfo.name_gr || vInfo.name || ('ΘΕΑΤΗΣ '+viewerId);
+    labelText = vInfo.name_gr || vInfo.name || ('Θεατής '+viewerId);
   }
   fbubble.textContent = labelText;
   fbubble.style.backgroundColor = tint(vInfo.color || '#000000',0.85);
   fbubble.style.borderColor     = 'rgba(255,255,255,.85)';
-  const centerX = getViewerAnchorXById(viewerId);
-  const topPx   = foyer.offsetTop + 8;
-  fbubble.style.left = centerX + 'px';
-  fbubble.style.top  = topPx + 'px';
+
+  const baseAvatarDy = (typeof vInfo.avatarDy==='number' ? vInfo.avatarDy : 0);
+  const avatarHeight = audGeo.height * (typeof vInfo.avatarScale==='number' ? vInfo.avatarScale : 0.4);
+  const topPx = audGeo.bottom - baseAvatarDy - avatarHeight - 24;
+
+  fbubble.style.left = anchorX + 'px';
+  fbubble.style.top  = Math.max(10, topPx) + 'px';
   fbubble.style.transform = 'translateX(-50%)';
   fbubble.style.display = 'block';
-
-  if(FOYER_AVATARS && FOYER_AVATARS.length){
-    FOYER_AVATARS.forEach(function(el){
-      const id = Number(el.dataset.viewerId);
-      el.style.display = (id === Number(vInfo.id) ? 'block' : 'none');
-    });
-  }
 }
 
 let _syncing=false;
@@ -1314,8 +1261,8 @@ function syncScroll(from,to){
   if(_syncing) return;
   _syncing=true; to.scrollTop=from.scrollTop; _syncing=false;
 }
-boardLeft.addEventListener('scroll', function(){syncScroll(boardLeft,boardRight);});
-boardRight.addEventListener('scroll',function(){syncScroll(boardRight,boardLeft);});
+boardLeft.addEventListener('scroll', ()=>syncScroll(boardLeft,boardRight));
+boardRight.addEventListener('scroll',()=>syncScroll(boardRight,boardLeft));
 
 function isFormulaBlock(text){
   const s = String(text||'').trim();
@@ -1329,8 +1276,8 @@ function isFormulaBlock(text){
 }
 
 function addRow(leftText, rightText, viewer, durLeftSec, durRightSec, pauseAfterSec, whenDone){
-  const baseViewer = Array.isArray(FOYER_VIEWERS) ? FOYER_VIEWERS : [];
-  const viewerInfo = baseViewer.find(function(v){return v.id===viewer;}) || baseViewer[0] || {color:'#ffffff'};
+  const baseViewer = (Array.isArray(FOYER_VIEWERS) ? FOYER_VIEWERS : []);
+  const viewerInfo = baseViewer.find(v=>v.id===viewer) || baseViewer[0] || {color:'#ffffff'};
 
   const bgLeft  = tint(viewerInfo.color, 0.22);
   const bgRight = tint(viewerInfo.color, 0.16);
@@ -1339,10 +1286,10 @@ function addRow(leftText, rightText, viewer, durLeftSec, durRightSec, pauseAfter
   const r = document.createElement('div'); r.className='cell right sync-row';
 
   l.style.background = bgLeft;
-  l.style.borderLeft = '4px solid '+tint(viewerInfo.color,0.85);
+  l.style.borderLeft = `4px solid ${tint(viewerInfo.color,0.85)}`;
 
   r.style.background = bgRight;
-  r.style.borderLeft = '4px solid '+tint(viewerInfo.color,0.55);
+  r.style.borderLeft = `4px solid ${tint(viewerInfo.color,0.55)}`;
 
   if (isFormulaBlock(rightText)){
     r.classList.add('formula');
@@ -1354,7 +1301,7 @@ function addRow(leftText, rightText, viewer, durLeftSec, durRightSec, pauseAfter
   showSpeakerChip(viewer);
 
   function finalizeRow(){
-    requestAnimationFrame(function(){
+    requestAnimationFrame(()=>{
       const h = Math.max(l.offsetHeight, r.offsetHeight);
       l.style.minHeight = h+'px';
       r.style.minHeight = h+'px';
@@ -1369,7 +1316,7 @@ function addRow(leftText, rightText, viewer, durLeftSec, durRightSec, pauseAfter
   const leftOpt  = (typeof durLeftSec  === 'number' && durLeftSec>0)  ? {durationSec:durLeftSec}  : 10;
   const rightOpt = (typeof durRightSec === 'number' && durRightSec>0) ? {durationSec:durRightSec} : 10;
 
-  typeWriter(l, leftText, leftOpt, function(){
+  typeWriter(l, leftText, leftOpt, ()=>{
     if(rt.length>0){
       typeWriter(r, rightText, rightOpt, finalizeRow);
     }else{
@@ -1389,7 +1336,7 @@ function foyerStep(){
   let text = null;
 
   if(meta && meta.id){
-    text = (dlgLang.foyer || []).find(function(e){ return e && e.id === meta.id; }) || null;
+    text = (dlgLang.foyer || []).find(e => e && e.id === meta.id) || null;
   }else{
     text = dlgLang.foyer[foyerIdx] || null;
   }
@@ -1423,7 +1370,7 @@ function foyerStep(){
     durLeft,
     durRight,
     pauseAfterSec,
-    function(pause){
+    (pause)=>{
       const len = (String(text.left||'').length + String(text.right||'').length);
       let delay;
       if(typeof pause === 'number'){
@@ -1441,65 +1388,26 @@ function foyerStep(){
 }
 
 function repositionFoyer(){
-  const sRect = stage.getBoundingClientRect();
-  foyer.style.left   = (sRect.width*0.18) + 'px';
-  foyer.style.width  = (sRect.width*0.64) + 'px';
-  foyer.style.top    = '0';
-  foyer.style.height = getComputedStyle(document.documentElement).getPropertyValue('--foyer-h') || '445px';
-  repositionAvatars();
+  const sRect=stage.getBoundingClientRect();
+  foyer.style.left = (sRect.width*0.18)+'px';
+  foyer.style.width= (sRect.width*0.64)+'px';
+  foyer.style.top='0';
+  foyer.style.height=getComputedStyle(document.documentElement).getPropertyValue('--foyer-h')||'445px';
 }
-function buildFoyerAvatars(){
-  if(!audienceImg) return;
-  FOYER_AVATARS.forEach(function(el){ try{ el.remove(); }catch(e){} });
-  FOYER_AVATARS = [];
-  const arr = Array.isArray(FOYER_VIEWERS) ? FOYER_VIEWERS : [];
-  if(!arr.length) return;
-  arr.forEach(function(v){
-    const img = document.createElement('img');
-    img.className = 'foyer-avatar';
-    img.dataset.viewerId = String(v.id);
-    if(v.img){ img.src = v.img; }
-    else if(v.image){ img.src = v.image; }
-    stage.appendChild(img);
-    FOYER_AVATARS.push(img);
-  });
-  repositionAvatars();
-  FOYER_AVATARS.forEach(function(el){ el.style.display='none'; });
-}
-function repositionAvatars(){
-  if(!FOYER_AVATARS.length || !audienceImg) return;
-  const audienceBottom = parseFloat(getComputedStyle(audienceImg).bottom||'0') || 0;
-  const audRect = audienceImg.getBoundingClientRect();
-  FOYER_AVATARS.forEach(function(el){
-    const id = Number(el.dataset.viewerId);
-    const vc = getViewerConfigById(id);
-    if(!vc) return;
-    const anchorX = getViewerAnchorXFromConfig(vc);
-    const avatarDy = (typeof vc.avatarDy === 'number') ? vc.avatarDy : 100;
-    const avatarScale = (typeof vc.avatarScale === 'number') ? vc.avatarScale : 0.35;
-    el.style.left   = anchorX + 'px';
-    el.style.bottom = (audienceBottom + avatarDy) + 'px';
-    el.style.height = (audRect.height * avatarScale) + 'px';
-    el.style.width  = 'auto';
-  });
-}
-function foyerOpen(auto){
-  if(typeof auto==='undefined') auto=true;
+function foyerOpen(auto=true){
   foyer.style.display='block';
   boardLeft.innerHTML=''; boardRight.innerHTML='';
   foyerIdx=0; foyerAuto= !!auto;
   if(foyerTimer){ clearTimeout(foyerTimer); foyerTimer=null; }
-  repositionFoyer();
-  buildFoyerAvatars();
   setTimeout(foyerStep, 400);
+  repositionFoyer();
 }
-function foyerClose(){
+function foyerClose(silent=false){
   if(foyerTimer){ clearTimeout(foyerTimer); foyerTimer=null; }
   foyer.style.display='none';
-  FOYER_AVATARS.forEach(function(el){ el.style.display='none'; });
 }
-btnFoyer.addEventListener('click', function(){foyerOpen(true);});
-btnFoyerGo.addEventListener('click', function(){
+btnFoyer.addEventListener('click', ()=>foyerOpen(true));
+btnFoyerGo.addEventListener('click', ()=>{
   foyerBreak.style.display='none';
   foyerOpen(true);
 });
@@ -1543,11 +1451,11 @@ window.foyerClose = foyerClose;
     const A_real_px  = pxPerMeter * A_m;
     const A_ghost_px = pxPerMeter * Aghost_m;
 
-    const loop=function(){
+    const loop=()=>{
       const sRect = stage.getBoundingClientRect();
       const aRect = actor.getBoundingClientRect();
       const cx    = stage.clientWidth/2;
-      const axX    = anchorX();
+      const ax    = anchorX();
 
       const hookX_real = (aRect.left - sRect.left) + aRect.width/2;
       const sinθ = Math.max(-1, Math.min(1, (hookX_real - cx) / Math.max(1, A_real_px)));
@@ -1556,10 +1464,10 @@ window.foyerClose = foyerClose;
       ghost.style.left = hookX_ghost + 'px';
 
       const base = L0_px || ghostSpring.getBoundingClientRect().width || 1;
-      const dist  = Math.max(0, hookX_ghost - axX);
+      const dist  = Math.max(0, hookX_ghost - ax);
       const scale = dist / base;
-      ghostSpring.style.left = axX + 'px';
-      ghostSpring.style.transform = 'scaleX('+scale+')';
+      ghostSpring.style.left = ax + 'px';
+      ghostSpring.style.transform = `scaleX(${scale})`;
 
       ghostRAF = requestAnimationFrame(loop);
     };
@@ -1602,13 +1510,13 @@ window.foyerClose = foyerClose;
         if(step.lawText || step.law){
           const lawTxt = step.lawText || step.law;
           addLaw(lawTxt);
-          await new Promise((r)=>setTimeout(r,220));
+          await new Promise(r=>setTimeout(r,220));
           continue;
         }
         const viewerIdx = (typeof step.v==='number' ? step.v :
                            (typeof step.viewer==='number' ? step.viewer : 0));
         const yOff = (typeof step.y==='number' ? step.y :
-                      (typeof step.yOffset==='number' ? step.yOffset : 0));
+                      (typeof step.yOffset==='number' ? step.yOffset : 135));
         const xShift = (typeof step.x==='number' ? step.x :
                         (typeof step.xShift==='number' ? step.xShift : 0));
 
@@ -1627,7 +1535,7 @@ window.foyerClose = foyerClose;
       markerEl.style.opacity='0';
       curtainUpper.classList.add('slow-close');
       stage.classList.remove('open');
-      await new Promise((r)=>setTimeout(r,1600));
+      await new Promise(r=>setTimeout(r,1600));
       curtainUpper.classList.remove('slow-close');
 
       const cuRect = curtainUpper.getBoundingClientRect();
@@ -1647,7 +1555,7 @@ window.foyerClose = foyerClose;
     }
   }
   document.addEventListener('act2-start', playAct2, { once:true });
-  document.getElementById('btnAct2').addEventListener('click', function(){document.dispatchEvent(new Event('act2-start'));});
+  document.getElementById('btnAct2').addEventListener('click', ()=>document.dispatchEvent(new Event('act2-start')));
 })();
 
 /* ====== LANG SWITCH HANDLER ====== */
@@ -1667,7 +1575,7 @@ const ro=new ResizeObserver(()=>{ positionRightPanel(); if(uXT){ drawXTChart(); 
 ro.observe(stage);
 
 /* ====== BOOTSTRAP ====== */
-(async function(){
+(async ()=>{
   await loadTimeline();
   await loadDialogOverrides('gr');
   await loadDialogOverrides('en');
