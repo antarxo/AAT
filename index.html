@@ -17,7 +17,7 @@
   .stage{position:relative;width:100vw;height:100vh;overflow:hidden}
 
   .curtain-top,.curtain-upper,.curtain-side{position:absolute;transition:transform 1.2s cubic-bezier(.2,.9,.2,1),opacity 1s}
-  .curtain-top{top:0;left:0;width:100%;height:calc(28% - 30px);background:linear-gradient(to.bottom,#230000,#180000);box-shadow:0 5px 18px rgba(0,0,0,.8);z-index:160}
+  .curtain-top{top:0;left:0;width:100%;height:calc(28% - 30px);background:linear-gradient(to bottom,#230000,#180000);box-shadow:0 5px 18px rgba(0,0,0,.8);z-index:160}
   .curtain-upper{
     top:calc(28% - 23px);
     left:0;width:100%;height:calc(40% + 30px);
@@ -38,7 +38,7 @@
   .actor img{width:100%;height:auto;display:block;filter:drop-shadow(0 4px 6px rgba(0,0,0,.6))}
   .floor{position:absolute;left:0;bottom:calc(32vh - 8px);width:100%;height:2px;background:#888;z-index:155;pointer-events:none}
 
-  /* ΝΕΟ: δεύτερη εικόνα κοινού πίσω από το koino.png */
+  /* extra εικόνα κοινού πίσω από το koino.png */
   .audience-back{
     position:absolute;
     left:18%;
@@ -85,7 +85,7 @@
   .measure-box thead.th{position:sticky;top:0;background:rgba(0,0,0,.65);z-index:1}
   .measure-box th,.measure-box td{border-bottom:1px solid rgba(255,255,255,.2);padding:2px 4px;text-align:right}
   .measure-box th:first-child,.measure-box td:first-child{text-align:center}
-  .measure-box tr.new td{background:rgba(255,210,122,.15);transition:background .6s.ease}
+  .measure-box tr.new td{background:rgba(255,210,122,.15);transition:background .6s ease}
 
   .ruler{position:absolute;bottom:calc(32vh - 8px + 1px);height:24px;font-size:10px;font-family:"Courier New",monospace;color:#aaa;pointer-events:none;z-index:270}
   .ruler::before{content:'';position:absolute;left:0;right:0;bottom:0;height:1px;background:#aaa}
@@ -98,11 +98,11 @@
   @keyframes popIn{0%{transform:scale(.9);opacity:0}60%{transform:scale(1.04);opacity:1}100%{transform:scale(1)}}
   .thought-bubble{
     position:absolute;max-width:420px;background:rgba(255,255,255,.92);color:#000;
-    font-size:15px;line-height:1.45;padding:10px 12px 12px;border:2px solid.transparent;border-radius:10px;
+    font-size:15px;line-height:1.45;padding:10px 12px 12px;border:2px solid transparent;border-radius:10px;
     border-image:repeating-linear-gradient(90deg, rgba(0,0,0,.6) 0 6px, transparent 6px 10px, rgba(0,0,0,.6) 10px 12px, transparent 12px 16px) 1;
-    box-shadow:0 6px 12px rgba(0,0,0,.4);z-index:750;pointer-events:none;opacity:0;display:none;transition:opacity .25s ease, transform .25s.ease
+    box-shadow:0 6px 12px rgba(0,0,0,.4);z-index:750;pointer-events:none;opacity:0;display:none;transition:opacity .25s ease, transform .25s ease
   }
-  .thought-bubble.active{opacity:1;transform:translateY(-2px);animation:popIn .25s.ease}
+  .thought-bubble.active{opacity:1;transform:translateY(-2px);animation:popIn .25s ease}
   .thought-bubble.closing{opacity:0}
   .thought-bubble .tail{display:none;}
   .thought-bubble .checkmark{position:absolute;top:-8px;right:-8px;background:#2ecc71;color:#fff;font-size:11px;line-height:1;border-radius:50%;border:1px solid rgba(0,0,0,.4);width:18px;height:18px;display:none;align-items:center;justify-content:center;font-family:system-ui,sans-serif;font-weight:600}
@@ -129,7 +129,7 @@
   }
 
   .controls{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.2);border-radius:8px;padding:6px 8px;display:flex;gap:8px;z-index:300}
-  .controls button{background:none;border:0;color:#fff;font-size:16px;line-height:1;cursor:pointer;min-width:32px;min-height:32px;border-radius:4px;padding:4px 6px;transition:transform .08s.ease}
+  .controls button{background:none;border:0;color:#fff;font-size:16px;line-height:1;cursor:pointer;min-width:32px;min-height:32px;border-radius:4px;padding:4px 6px;transition:transform .08s ease}
   .controls button:active{transform:translateY(1px)}
   .controls button.active{background:rgba(255,255,255,.2)}
   #btnSlow{display:none}
@@ -277,7 +277,7 @@
     <div class="actor" id="actor"><img src="skater.png" alt="Skater"></div>
     <div class="floor"></div>
 
-    <!-- ΝΕΟ: πρόσθετη εικόνα κοινού -->
+    <!-- extra εικόνα κοινού -->
     <img class="audience-back" src="koino_extra.png" alt="δεύτερη ζώνη κοινού">
     <img class="audience" src="koino.png" alt="κοινό">
 
@@ -344,7 +344,7 @@ const i18nDyn = {
     thoughts: {
       t7A: (A)=>`…with A=${A}m!`,
       t8Tw:(Tval,om)=>`…and T=${Tval}s and therefore ω=${om}rad/s!`,
-      t9phi:(x0,phi)=>`…indeed it is S.H.M., and since x₀=${x0}m there is a phase φ₀=${phi}°. Nice, one.result secured!`
+      t9phi:(x0,phi)=>`…indeed it is S.H.M., and since x₀=${x0}m there is a phase φ₀=${phi}°. Nice, one result secured!`
     }
   }
 };
@@ -363,7 +363,7 @@ async function loadDialogOverrides(lang){
   try{
     const resp = await fetch(`dialogs-${lang}.json`, {cache:'no-store'});
     if(!resp.ok) return;
-    const.data = await resp.json();
+    const data = await resp.json();
     const dlg = DIALOGS[lang] || (DIALOGS[lang]={act1:{},act2:{},foyer:[]});
 
     if(Array.isArray(data.act1)){
@@ -429,7 +429,7 @@ async function loadUI(lang){
 
 async function loadViewers(){
   try{
-    const resp = await.fetch('viewers.json', {cache:'no-store'});
+    const resp = await fetch('viewers.json', {cache:'no-store'});
     if(!resp.ok) return;
     const data = await resp.json();
     if(Array.isArray(data)) FOYER_VIEWERS = data;
@@ -439,7 +439,7 @@ async function loadViewers(){
 /* ====== I18N / UI ====== */
 const stage=document.getElementById('stage');
 const langSwitch = document.getElementById('langSwitch');
-let.firstLawShown = false;
+let firstLawShown = false;
 
 function setLang(lang){
   LANG = lang;
@@ -473,7 +473,7 @@ function setLang(lang){
   if(mbTitleEl && ui.measurementsTitle) mbTitleEl.textContent = ui.measurementsTitle;
 
   if(firstLawShown){
-    const.uiLT = ui.lawsTitle;
+    const uiLT = ui.lawsTitle;
     if(uiLT) document.getElementById('lawsTitle').textContent = uiLT;
   }
 
@@ -557,12 +557,12 @@ function getAudienceGeometry(){
   };
 }
 
-function.computeViewerAnchorX(viewerIdx){
+function computeViewerAnchorX(viewerIdx){
   const cfg = getViewerConfigByIndex(viewerIdx);
   const W = stage.clientWidth;
   const xL = W * 0.18;
   const xR = W * 0.82;
-  const.total = (Array.isArray(FOYER_VIEWERS) && FOYER_VIEWERS.length) ? FOYER_VIEWERS.length : 5;
+  const total = (Array.isArray(FOYER_VIEWERS) && FOYER_VIEWERS.length) ? FOYER_VIEWERS.length : 5;
   let frac = (typeof cfg.xFrac === 'number') ? cfg.xFrac : ((viewerIdx+1)/(total+1));
   if(frac < 0) frac = 0;
   if(frac > 1) frac = 1;
@@ -583,7 +583,7 @@ const actBubble=document.getElementById('actBubble');
 const btnPause=document.getElementById('btnPause');
 const btnSlow=document.getElementById('btnSlow');
 const btnPlay=document.getElementById('btnPlay');
-const.btnSettings=document.getElementById('btnSettings');
+const btnSettings=document.getElementById('btnSettings');
 const btnReset=document.getElementById('btnReset');
 const btnEndShow=document.getElementById('btnEndShow');
 const btnFoyer=document.getElementById('btnFoyer');
@@ -611,7 +611,7 @@ const btnFoyerGo=document.getElementById('btnFoyerGo');
 const curtainUpper=document.querySelector('.curtain-upper');
 
 if (typeof window.foyerOpen  !== 'function') window.foyerOpen  = function(){};
-if (typeof.window.foyerClose !== 'function') window.foyerClose = function(){};
+if (typeof window.foyerClose !== 'function') window.foyerClose = function(){};
 
 /* ====== ΦΥΣΙΚΗ ====== */
 const m=70, T=6.0, A_m=3.0;
@@ -620,7 +620,7 @@ const D=Math.round(m*omega*omega);
 const E_mech=0.5*D*A_m*A_m;
 const pxPerMeter=50; let A_px=pxPerMeter*A_m;
 
-function.positionParamsBox(){
+function positionParamsBox(){
   const rightEdge = stage.clientWidth*0.82;
   const w = paramsBoxEl.offsetWidth || 180;
   paramsBoxEl.style.left = (rightEdge - w - 6) + 'px';
@@ -628,7 +628,7 @@ function.positionParamsBox(){
 }
 let lastRulerW=0;
 function updateRuler(){
-  const.baseLeft=stage.clientWidth*0.18;
+  const baseLeft=stage.clientWidth*0.18;
   const usableW =stage.clientWidth*0.64;
   if(Math.abs(usableW-lastRulerW)<1) return;
   lastRulerW=usableW;
@@ -645,7 +645,7 @@ function updateRuler(){
     lbl.style.left=rel+'px'; rulerEl.appendChild(lbl);
   }
 }
-function.positionRightPanel(){
+function positionRightPanel(){
   const W=stage.clientWidth, H=stage.clientHeight;
   const curtainLeft=W*0.82, curtainW=W*0.18, centerX=curtainLeft+curtainW/2;
   if(clockEl){ clockEl.style.left=centerX+'px'; }
@@ -694,7 +694,7 @@ let t0=performance.now(), lastFrame=performance.now();
 let playbackTime=0, mode='run', obsStarted=false, obsStartPlaybackOffset=0;
 let lastSampleObsTime=-Infinity;
 const sampleInterval=0.25;
-function.logMeasurement(tObs,xMeters){
+function logMeasurement(tObs,xMeters){
   if(!obsStarted || mode==='pause') return;
   if(tObs-lastSampleObsTime<sampleInterval) return; lastSampleObsTime=tObs;
   const tr=document.createElement('tr');
@@ -727,7 +727,7 @@ function typeWriterHTML(el, html, speed, done){
     }
   }
   collect(el);
-  const.totalChars = textNodes.reduce((s,o)=>s+o.text.length,0);
+  const totalChars = textNodes.reduce((s,o)=>s+o.text.length,0);
   let i=0;
   (function tick(){
     let remaining = i;
@@ -750,7 +750,7 @@ function typeWriterHTML(el, html, speed, done){
 }
 
 /* ====== ΧΡΩΜΑΤΑ ====== */
-function.tint(hex, alpha){
+function tint(hex, alpha){
   const c = (hex||'#ffffff').replace('#','');
   const r=parseInt(c.slice(0,2),16)||255, g=parseInt(c.slice(2,4),16)||255, b=parseInt(c.slice(4,6),16)||255;
   return `rgba(${r},${g},${b},${alpha})`;
@@ -782,10 +782,10 @@ class BubbleScheduler {
     if(!this.labelEl) return;
 
     const cfg = getViewerConfigByIndex(viewer);
-    const.viewersArr = Array.isArray(FOYER_VIEWERS) ? FOYER_VIEWERS : [];
+    const viewersArr = Array.isArray(FOYER_VIEWERS) ? FOYER_VIEWERS : [];
     const fv = (cfg && (typeof cfg.id!=='undefined')) ? cfg : (viewersArr[viewer] || viewersArr[0] || null);
 
-    const.anchorX = computeViewerAnchorX(viewer);
+    const anchorX = computeViewerAnchorX(viewer);
     const audGeo = getAudienceGeometry();
 
     let labelText='';
@@ -801,7 +801,7 @@ class BubbleScheduler {
       this.labelEl.style.backgroundColor='rgba(0,0,0,0.7)';
     }
 
-    const.baseAvatarDy = (typeof cfg.avatarDy === 'number') ? cfg.avatarDy : 0;
+    const baseAvatarDy = (typeof cfg.avatarDy === 'number') ? cfg.avatarDy : 0;
     const avatarHeight = audGeo.height * (typeof cfg.avatarScale === 'number' ? cfg.avatarScale : 0.4);
     const topPx = audGeo.bottom - baseAvatarDy - avatarHeight - 24;
 
@@ -812,7 +812,6 @@ class BubbleScheduler {
     this.labelEl.style.display='block';
   }
 
-  /* === Bubbles κουμπωμένα σε θεατή μέσα στο 64% === */
   placePanelNearViewer(viewer,lift=140,xShift=0){
     const W = stage.clientWidth;
     const xL = W * 0.18;
@@ -829,14 +828,14 @@ class BubbleScheduler {
 
     const bw = this.el.offsetWidth || 320;
 
-    const.anchorX = computeViewerAnchorX(viewer);
+    const anchorX = computeViewerAnchorX(viewer);
     const baseDx  = (typeof cfg.bubbleDx === 'number' ? cfg.bubbleDx : 0);
     let centerX   = anchorX + baseDx + (xShift || 0);
 
     centerX = Math.max(xL + pad + bw/2, Math.min(centerX, xR - pad - bw/2));
     const leftPx = centerX - bw/2;
 
-    const.baseDy = (typeof cfg.bubbleDy === 'number' ? cfg.bubbleDy : 0);
+    const baseDy = (typeof cfg.bubbleDy === 'number' ? cfg.bubbleDy : 0);
     const topPx  = audGeo.bottom - baseDy;
 
     this.el.style.left = leftPx + 'px';
@@ -849,16 +848,16 @@ class BubbleScheduler {
       const textEl=this.el.querySelector('.text');
       const sanitized = this.sanitize(text||'');
       const plain = sanitized.replace(/<[^>]+>/g,'');
-      const.totalChars = Math.max(plain.length,10);
+      const totalChars = Math.max(plain.length,10);
 
-      const.effectiveDurSec = (typeof durSec==='number' && durSec>0)
+      const effectiveDurSec = (typeof durSec==='number' && durSec>0)
         ? durSec
         : (bubbleDurationSec || 3.0);
       const baseMs = effectiveDurSec*1000;
       const speed = Math.max(15, Math.min(80, Math.round(baseMs/totalChars)));
 
       let done=false;
-      let.started=false;
+      let started=false;
 
       this.showSpeaker(viewer);
 
@@ -936,28 +935,28 @@ function addLaw(txt){
 }
 let vCan=null,aCan=null,axCan=null;
 function sizeLawCanvas(c){ const w=Math.floor(stage.clientWidth*0.16); const h=140; c.width=w; c.height=h; c.style.width=w+'px'; c.style.height=h+'px'; }
-function.positionLawCharts(){
+function positionLawCharts(){
   const r = lawsPane.getBoundingClientRect();
   const s = stage.getBoundingClientRect();
   lawCharts.style.top = (r.bottom - s.top + 8) + 'px';
   lawCharts.style.left= '2%';
   lawCharts.style.width= '16%';
 }
-function.ensureVelocityChart(){
+function ensureVelocityChart(){
   if(!vCan){
     vCan = document.createElement('canvas');
     lawCharts.appendChild(vCan);
   }
   sizeLawCanvas(vCan);
 }
-function.ensureAccelerationChart(){
+function ensureAccelerationChart(){
   if(!aCan){
     aCan = document.createElement('canvas');
     lawCharts.appendChild(aCan);
   }
   sizeLawCanvas(aCan);
 }
-function.ensureAxChart(){
+function ensureAxChart(){
   if(!axCan){
     axCan = document.createElement('canvas');
     lawCharts.appendChild(axCan);
@@ -967,8 +966,8 @@ function.ensureAxChart(){
 
 /* ====== uPlot x(t) ====== */
 let uXT=null;
-function.buildSeriesData(){
-  const N=240, tArr=new Array(N+1), xArr=new.Array(N+1);
+function buildSeriesData(){
+  const N=240, tArr=new Array(N+1), xArr=new Array(N+1);
   for(let i=0;i<=N;i++){
     const tloc=(i/N)*T;
     tArr[i]=tloc; xArr[i]=A_m*Math.sin(omega*(tloc+obsStartPlaybackOffset));
@@ -1108,7 +1107,7 @@ function resetShow(){
   countdownOverlay.style.display='none';
   startBtn.style.display='block';
   clockEl.style.display='none';
- .measureBox.style.display='none';
+  measureBox.style.display='none';
   paramsBoxEl.style.display='none';
   markerEl.style.opacity='0';
   bubbleEl.classList.remove('active','checked','closing'); bubbleEl.style.display='none'; bubbleEl.style.opacity='0';
@@ -1116,7 +1115,7 @@ function resetShow(){
   actBreak.style.display='none';
   foyerBreak.style.display='none';
   settingsPanel.style.display='none';
- .measureTBody.innerHTML='';
+  measureTBody.innerHTML='';
   lawsBody.innerHTML=''; lawsPane.style.display='none';
   lawCharts.innerHTML='';
   vCan=null; aCan=null; axCan=null;
@@ -1137,14 +1136,14 @@ function beginObservationAfterCountdown(){
   stage.classList.add('open');
   if(!obsStarted){ obsStarted=true; obsStartPlaybackOffset=playbackTime; }
   clockEl.style.display='block';
- .measureBox.style.display='block';
+  measureBox.style.display='block';
   markerEl.style.opacity='1';
   positionRightPanel();
 }
 function startShowCountdown(){
   startBtn.style.display='none';
   countdownOverlay.style.display='flex';
-  const.seconds=5;
+  const seconds=5;
   let end=performance.now()+seconds*1000;
   function tick(){
     const now=performance.now();
@@ -1163,28 +1162,28 @@ startBtn.addEventListener('click', startShowCountdown);
 
 /* ====== ANIMATION LOOP ====== */
 let L0_px; let skaterWidthPx; let hookOffsetPx;
-function.animate(now){
-  const.realDt=(now-lastFrame)/1000; lastFrame=now;
+function animate(now){
+  const realDt=(now-lastFrame)/1000; lastFrame=now;
   positionRightPanel(); updateRuler();
 
   const tPhys=(now-t0)/1000;
   if(!obsStarted){ playbackTime=tPhys; }
   else{ playbackTime += (mode==='run'? realDt : (mode==='slow'? realDt*slowFactor : 0)); }
 
-  const.tObs= obsStarted ? (playbackTime-obsStartPlaybackOffset) : 0;
+  const tObs= obsStarted ? (playbackTime-obsStartPlaybackOffset) : 0;
   clockEl.textContent='t = '+tObs.toFixed(2)+' s';
 
   if(obsStarted && !isBubbleActive && nextThoughtIdx<thoughtScript.length){
     const th=thoughtScript[nextThoughtIdx];
     const shiftMul=(firstThoughtMul-DEFAULT_FIRST_MUL);
     const baseMul=(th.atT??0);
-    const.eventAtSec=(baseMul+shiftMul)*T*timelineScale;
+    const eventAtSec=(baseMul+shiftMul)*T*timelineScale;
     if(tObs>=eventAtSec){
       try{ handleTimelineEvent(th); }finally{ nextThoughtIdx+=1; }
     }
   }
 
-  const.springRect=springEl.getBoundingClientRect();
+  const springRect=springEl.getBoundingClientRect();
   const skRect=actor.getBoundingClientRect();
   if(!L0_px && springRect.width>0){ L0_px=springRect.width; }
   if(skRect.width>0){ skaterWidthPx=skRect.width; hookOffsetPx=skaterWidthPx/2; }
@@ -1214,7 +1213,7 @@ const boardRight = document.getElementById('boardRight');
 const foyer      = document.getElementById('foyer');
 const fbubble    = document.getElementById('foyerBubble');
 
-function.typeWriter(el, text, opt=12, done){
+function typeWriter(el, text, opt=12, done){
   el.innerHTML=''; let i=0;
   const src = String(text||'').replaceAll('sqrt(','√(');
   const total = src.length || 1;
@@ -1251,7 +1250,7 @@ function showSpeakerChip(viewerId){
   if(!vInfo) return;
 
   const audGeo = getAudienceGeometry();
-  const.anchorX = computeViewerAnchorX((viewerId-1)|0);
+  const anchorX = computeViewerAnchorX((viewerId-1)|0);
 
   let labelText;
   if(LANG==='en'){
@@ -1263,7 +1262,7 @@ function showSpeakerChip(viewerId){
   fbubble.style.backgroundColor = tint(vInfo.color || '#000000',0.85);
   fbubble.style.borderColor     = 'rgba(255,255,255,.85)';
 
-  const.baseAvatarDy = (typeof vInfo.avatarDy==='number' ? vInfo.avatarDy : 0);
+  const baseAvatarDy = (typeof vInfo.avatarDy==='number' ? vInfo.avatarDy : 0);
   const avatarHeight = audGeo.height * (typeof vInfo.avatarScale==='number' ? vInfo.avatarScale : 0.4);
   const topPx = audGeo.bottom - baseAvatarDy - avatarHeight - 24;
 
@@ -1274,7 +1273,7 @@ function showSpeakerChip(viewerId){
 }
 
 let _syncing=false;
-function.syncScroll(from,to){
+function syncScroll(from,to){
   if(_syncing) return;
   _syncing=true; to.scrollTop=from.scrollTop; _syncing=false;
 }
@@ -1292,7 +1291,7 @@ function isFormulaBlock(text){
   return false;
 }
 
-function.addRow(leftText, rightText, viewer, durLeftSec, durRightSec, pauseAfterSec, whenDone){
+function addRow(leftText, rightText, viewer, durLeftSec, durRightSec, pauseAfterSec, whenDone){
   const baseViewer = (Array.isArray(FOYER_VIEWERS) ? FOYER_VIEWERS : []);
   const viewerInfo = baseViewer.find(v=>v.id===viewer) || baseViewer[0] || {color:'#ffffff'};
 
@@ -1343,7 +1342,7 @@ function.addRow(leftText, rightText, viewer, durLeftSec, durRightSec, pauseAfter
 }
 
 let foyerIdx=0, foyerAuto=true, foyerTimer=null;
-function.foyerStep(){
+function foyerStep(){
   const dlgLang = DIALOGS[LANG];
   if(!dlgLang || !Array.isArray(dlgLang.foyer)) return;
 
@@ -1411,7 +1410,7 @@ function repositionFoyer(){
   foyer.style.top='0';
   foyer.style.height=getComputedStyle(document.documentElement).getPropertyValue('--foyer-h')||'445px';
 }
-function.foyerOpen(auto=true){
+function foyerOpen(auto=true){
   foyer.style.display='block';
   boardLeft.innerHTML=''; boardRight.innerHTML='';
   foyerIdx=0; foyerAuto= !!auto;
@@ -1419,7 +1418,7 @@ function.foyerOpen(auto=true){
   setTimeout(foyerStep, 400);
   repositionFoyer();
 }
-function.foyerClose(silent=false){
+function foyerClose(silent=false){
   if(foyerTimer){ clearTimeout(foyerTimer); foyerTimer=null; }
   foyer.style.display='none';
 }
@@ -1436,7 +1435,7 @@ window.foyerClose = foyerClose;
   let ghost=null, ghostSpring=null, ghostRAF=0;
   const Aghost_m=5.0;
   function getBottom(el){ return parseFloat(getComputedStyle(el).bottom||'0')||0; }
-  function.ensureGhost(){
+  function ensureGhost(){
     if(!ghost){
       ghost=document.createElement('div'); ghost.id='actorGhost';
       Object.assign(ghost.style,{position:'absolute', transform:'translate(-50%,0)', zIndex:121, pointerEvents:'none', opacity:0.85, filter:'grayscale(1) brightness(1.2)', display:'none'});
@@ -1459,7 +1458,7 @@ window.foyerClose = foyerClose;
     ghost.style.width=aRect.width+'px';
     ghost.style.height=aRect.height+'px';
   }
-  function.startGhost(){
+  function startGhost(){
     ensureGhost();
     ghost.style.display='block';
     ghostSpring.style.display='block';
@@ -1490,7 +1489,7 @@ window.foyerClose = foyerClose;
     };
     ghostRAF = requestAnimationFrame(loop);
   }
-  function.stopGhost(){
+  function stopGhost(){
     cancelAnimationFrame(ghostRAF); ghostRAF=0;
     if(ghost){ ghost.style.display='none'; }
     if(ghostSpring){ ghostSpring.style.display='none'; ghostSpring.style.transform='scaleX(1)'; }
@@ -1503,7 +1502,7 @@ window.foyerClose = foyerClose;
     const seq = Array.isArray(ACT2_TIMELINE) ? ACT2_TIMELINE : [];
     if(!seq.length){ finished=true; return; }
 
-   .running=true;
+    running=true;
     try{
       actBreak.style.display='none';
       BUBBLE.clear();
@@ -1552,13 +1551,13 @@ window.foyerClose = foyerClose;
       markerEl.style.opacity='0';
       curtainUpper.classList.add('slow-close');
       stage.classList.remove('open');
-      await.new Promise(r=>setTimeout(r,1600));
+      await new Promise(r=>setTimeout(r,1600));
       curtainUpper.classList.remove('slow-close');
 
       const cuRect = curtainUpper.getBoundingClientRect();
       const sRect = stage.getBoundingClientRect();
       const centralLeftPx = sRect.left + stage.clientWidth*0.18;
-      const.centralWidthPx = stage.clientWidth*0.64;
+      const centralWidthPx = stage.clientWidth*0.64;
       foyerBreak.style.left   = (centralLeftPx - sRect.left) + 'px';
       foyerBreak.style.top    = (cuRect.top  - sRect.top ) + 'px';
       foyerBreak.style.width  = centralWidthPx + 'px';
@@ -1568,7 +1567,7 @@ window.foyerClose = foyerClose;
       finished=true;
     }catch(e){
     }finally{
-     .running=false;
+      running=false;
     }
   }
   document.addEventListener('act2-start', playAct2, { once:true });
