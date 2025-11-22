@@ -38,49 +38,7 @@
   .actor img{width:100%;height:auto;display:block;filter:drop-shadow(0 4px 6px rgba(0,0,0,.6))}
   .floor{position:absolute;left:0;bottom:calc(32vh - 8px);width:100%;height:2px;background:#888;z-index:155;pointer-events:none}
 
-  /* EXTRA ΚΟΙΝΟ + ΚΥΡΙΟ ΚΟΙΝΟ + AVATARS */
-  .audience-extra{
-    position:absolute;
-    left:18%;
-    bottom:0;
-    width:64%;
-    height:auto;
-    object-position:bottom center;
-    z-index:1400;
-    pointer-events:none;
-    filter:contrast(1) brightness(.95);
-    display:block;
-  }
-  .audience{
-    position:absolute;
-    left:18%;
-    bottom:0;
-    width:64%;
-    height:auto;
-    object-position:bottom center;
-    z-index:1500;
-    pointer-events:none;
-    filter:contrast(1.05) brightness(.95);
-    display:block;
-  }
-
-  .avatar-layer{
-    position:absolute;
-    left:0;
-    bottom:0;
-    width:100%;
-    height:100%;
-    pointer-events:none;
-    z-index:1450;
-  }
-  .foyer-avatar{
-    position:absolute;
-    transform:translateX(-50%);
-    bottom:0;
-    display:none;
-    filter:drop-shadow(0 4px 6px rgba(0,0,0,.6));
-  }
-
+  .audience{position:absolute; left:18%; bottom:0; width:64%; height:auto; object-position:bottom center; z-index:158; pointer-events:none; filter:contrast(1.05) brightness(.95); display:block;}
   .viewers{position:absolute;left:18%;width:64%;bottom:0;display:flex;justify-content:space-between;z-index:159;padding:0 4vw 12px}
   .viewer{width:60px;height:100px;background:url('https://upload.wikimedia.org/wikipedia/commons/f/f9/Silhouette_icon.svg') no-repeat center/contain;filter:grayscale(1) brightness(.6);opacity:.75}
 
@@ -156,12 +114,12 @@
     text-shadow:0 1px 2px rgba(0,0,0,.7);
   }
 
-  .controls{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.2);border-radius:8px;padding:6px 8px;display:flex;gap:8px;z-index:2000}
-  .controls button{background:none;border:0;color:#fff;font-size:16px;line-height:1;cursor:pointer;min-width:32px;min-height:32px;border-radius:4px;padding:4px 6px;transition:transform .08s ease}
+  .controls{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.2);border-radius:8px;padding:6px 8px;display:flex;gap:8px;z-index:300}
+  .controls button{background:none;border:0;color:#fff;font-size:16px;line-height:1;cursor:pointer;min-width:32px;min-height:32px;border-radius:4px;padding:4px 6px;transition:transform .08s.ease}
   .controls button:active{transform:translateY(1px)}
   .controls button.active{background:rgba(255,255,255,.2)}
   #btnSlow{display:none}
-  .btn-end{position:absolute;bottom:12px;right:12px;z-index:2000;background:#333;border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:8px;padding:8px 12px;cursor:pointer}
+  .btn-end{position:absolute;bottom:12px;right:12px;z-index:300;background:#333;border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:8px;padding:8px 12px;cursor:pointer}
 
   .settings{position:absolute;bottom:56px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.7);color:#fff;border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:10px 12px;z-index:310;display:none;min-width:320px}
   .settings h5{margin:0 0 6px 0;font-size:14px;color:#ffd27a;text-align:center;font-family:'Georgia',serif}
@@ -206,7 +164,7 @@
     position:absolute;
     bottom:12px;
     left:12px;
-    z-index:2000;
+    z-index:300;
     background:#333;
     border:1px solid rgba(255,255,255,.25);
     color:#fff;
@@ -304,11 +262,7 @@
     <img id="spring" class="spring" src="spring.png" alt="ελατήριο">
     <div class="actor" id="actor"><img src="skater.png" alt="Skater"></div>
     <div class="floor"></div>
-
-    <!-- ΕΠΙΠΛΕΟΝ ΣΤΡΩΣΕΙΣ ΚΟΙΝΟΥ + AVATARS -->
-    <img id="koinoExtra" class="audience-extra" src="koino_extra.png" alt="έξτρα κοινό">
     <img class="audience" src="koino.png" alt="κοινό">
-    <div id="avatarLayer" class="avatar-layer"></div>
 
     <div class="viewers">
       <div class="viewer" data-idx="0"></div>
@@ -386,7 +340,6 @@ let thoughtScript     = [];
 let FOYER_META        = [];
 let ACT2_TIMELINE     = [];
 let FOYER_VIEWERS     = [];
-let AVATARS           = [];
 
 /* ====== TIMELINE / DIALOG / UI LOADERS ====== */
 async function loadDialogOverrides(lang){
@@ -397,26 +350,33 @@ async function loadDialogOverrides(lang){
     const dlg = DIALOGS[lang] || (DIALOGS[lang]={act1:{},act2:{},foyer:[]});
 
     if(Array.isArray(data.act1)){
-      data.act1.forEach(item=>{
+      data.act1.forEach(function(item){
         if(item && item.id && typeof item.text==='string'){
           dlg.act1[item.id] = item.text;
         }
       });
     }
     if(Array.isArray(data.act2)){
-      data.act2.forEach(item=>{
+      data.act2.forEach(function(item){
         if(item && item.id && typeof item.text==='string'){
           dlg.act2[item.id] = item.text;
         }
       });
     }
+
+    /* ΝΕΟ: κρατάμε όλα τα πεδία του foyer όπως τα δίνεις στο dialogs-*.json */
     if(Array.isArray(data.foyer)){
-      dlg.foyer = data.foyer.map(it=>({
-        id: it.id || undefined,
-        left: it.left || '',
-        right: it.right || '',
-        viewer: (typeof it.viewer==='number'? it.viewer : undefined)
-      }));
+      dlg.foyer = data.foyer.map(function(it){
+        return {
+          id: it.id || undefined,
+          kind: it.kind || 'foyerLine',
+          viewer: (typeof it.viewer === 'number' ? it.viewer : undefined),
+          left: it.left || '',
+          right: it.right || '',
+          typeMs: (typeof it.typeMs === 'number' ? it.typeMs : undefined),
+          pauseMs: (typeof it.pauseMs === 'number' ? it.pauseMs : undefined)
+        };
+      });
     }
   }catch(e){}
 }
@@ -428,21 +388,23 @@ async function loadTimeline(){
     const data = await resp.json() || {};
 
     if(Array.isArray(data.act1)){
-      thoughtScriptBase = data.act1.map(ev=>({...ev}));
-      thoughtScript     = [...thoughtScriptBase];
+      thoughtScriptBase = data.act1.map(function(ev){ return Object.assign({}, ev); });
+      thoughtScript     = thoughtScriptBase.slice();
     }else{
       thoughtScriptBase = [];
       thoughtScript     = [];
     }
 
     if(Array.isArray(data.act2)){
-      ACT2_TIMELINE = data.act2.map(ev=>({...ev}));
+      ACT2_TIMELINE = data.act2.map(function(ev){ return Object.assign({}, ev); });
     }else{
       ACT2_TIMELINE = [];
     }
 
+    /* FOYER_META δεν το χρησιμοποιούμε πλέον για το φουαγιέ,
+       αλλά το αφήνουμε να φορτώνεται για συμβατότητα αν χρειαστεί αργότερα. */
     if(Array.isArray(data.foyer)){
-      FOYER_META = data.foyer.map(ev=>({...ev}));
+      FOYER_META = data.foyer.map(function(ev){ return Object.assign({}, ev); });
     }else{
       FOYER_META = [];
     }
@@ -462,70 +424,8 @@ async function loadViewers(){
     const resp = await fetch('viewers.json', {cache:'no-store'});
     if(!resp.ok) return;
     const data = await resp.json();
-    if(Array.isArray(data)){
-      FOYER_VIEWERS = data;
-      createAvatars();
-    }
+    if(Array.isArray(data)) FOYER_VIEWERS = data;
   }catch(e){}
-}
-
-/* ====== AVATARS (ΟΜΙΛΗΤΕΣ) ====== */
-function createAvatars(){
-  const layer = document.getElementById('avatarLayer');
-  if(!layer || !Array.isArray(FOYER_VIEWERS) || !FOYER_VIEWERS.length) return;
-
-  layer.innerHTML = '';
-  AVATARS = [];
-
-  FOYER_VIEWERS.forEach(v=>{
-    const img = document.createElement('img');
-    img.className = 'foyer-avatar';
-    img.dataset.viewerId = String(v.id);
-    if(v.img) img.src = v.img;
-    img.style.display = 'none';
-    layer.appendChild(img);
-    AVATARS.push(img);
-  });
-
-  positionAvatars();
-}
-
-function positionAvatars(){
-  if(!AVATARS.length || !Array.isArray(FOYER_VIEWERS) || !FOYER_VIEWERS.length) return;
-  const sRect = stage.getBoundingClientRect();
-  const stageW = sRect.width;
-  const leftFrac = 0.18;
-  const widthFrac = 0.64;
-  const xLeft = stageW * leftFrac;
-  const xWidth = stageW * widthFrac;
-
-  FOYER_VIEWERS.forEach((v,idx)=>{
-    const img = AVATARS[idx];
-    if(!img) return;
-    const frac = (typeof v.xFrac === 'number') ? v.xFrac : ((idx+1)/(FOYER_VIEWERS.length+1));
-    const cx = xLeft + frac * xWidth;
-    const scale = (typeof v.avatarScale === 'number') ? v.avatarScale : 0.4;
-    const baseW = 220;
-    img.style.width = (baseW*scale) + 'px';
-    const dy = (typeof v.avatarDy === 'number') ? v.avatarDy : 120;
-    img.style.left = cx + 'px';
-    img.style.bottom = dy + 'px';
-  });
-}
-
-function hideAllAvatars(){
-  AVATARS.forEach(img=>{
-    img.style.display = 'none';
-  });
-}
-
-function setActiveAvatar(viewerId){
-  const vid = Number(viewerId) || 0;
-  AVATARS.forEach((img,idx)=>{
-    const v = FOYER_VIEWERS[idx];
-    const id = v && v.id;
-    img.style.display = (id === vid && foyer.style.display === 'block') ? 'block' : 'none';
-  });
 }
 
 /* ====== I18N / UI ====== */
@@ -719,7 +619,6 @@ function positionRightPanel(){
   }
   positionLawCharts();
   positionParamsBox();
-  positionAvatars();
 }
 window.addEventListener('resize', positionRightPanel);
 function anchorX(){ return stage.clientWidth*0.18; }
@@ -730,10 +629,10 @@ let firstThoughtMul=parseFloat(slFirst.value);
 let timelineScale=parseFloat(slScale.value);
 let bubbleDurationSec=parseFloat(slDur.value);
 let slowFactor=parseFloat(slSlow.value);
-slFirst.addEventListener('input',()=>{ firstThoughtMul=parseFloat(slFirst.value); valFirst.textContent=`${firstThoughtMul.toFixed(1)}·T`; });
-slScale.addEventListener('input',()=>{ timelineScale=parseFloat(slScale.value); valScale.textContent=`${timelineScale.toFixed(1)}×`; });
-slDur.addEventListener('input',()=>{ bubbleDurationSec=parseFloat(slDur.value); valDur.textContent=`${bubbleDurationSec.toFixed(1)}s`; });
-slSlow.addEventListener('input',()=>{ slowFactor=parseFloat(slSlow.value); valSlow.textContent=`${slowFactor.toFixed(2)}×`; });
+slFirst.addEventListener('input',function(){ firstThoughtMul=parseFloat(slFirst.value); valFirst.textContent=firstThoughtMul.toFixed(1)+'·T'; });
+slScale.addEventListener('input',function(){ timelineScale=parseFloat(slScale.value); valScale.textContent=timelineScale.toFixed(1)+'×'; });
+slDur.addEventListener('input',function(){ bubbleDurationSec=parseFloat(slDur.value); valDur.textContent=bubbleDurationSec.toFixed(1)+'s'; });
+slSlow.addEventListener('input',function(){ slowFactor=parseFloat(slSlow.value); valSlow.textContent=slowFactor.toFixed(2)+'×'; });
 
 /* ====== TIMELINE STATE ====== */
 let nextThoughtIdx=0;
@@ -750,9 +649,9 @@ function logMeasurement(tObs,xMeters){
   if(tObs-lastSampleObsTime<sampleInterval) return; lastSampleObsTime=tObs;
   const tr=document.createElement('tr');
   tr.className='new';
-  tr.innerHTML=`<td>${(++measureRowIdx)}</td><td>${tObs.toFixed(2)}</td><td>${xMeters.toFixed(2)}</td>`;
+  tr.innerHTML='<td>'+((++measureRowIdx))+'</td><td>'+tObs.toFixed(2)+'</td><td>'+xMeters.toFixed(2)+'</td>';
   measureTBody.appendChild(tr);
-  setTimeout(()=>{ tr.classList.remove('new'); }, 650);
+  setTimeout(function(){ tr.classList.remove('new'); }, 650);
   try{ tr.scrollIntoView({block:'end'}); }catch(e){}
   try{ measureBox.scrollTop=measureBox.scrollHeight; }catch(e){}
 }
@@ -762,7 +661,7 @@ function setMode(newMode){
   mode=newMode;
   btnSlow.classList.toggle('active', mode==='slow');
   btnPlay.classList.toggle('active', mode==='run');
-  slowHint.textContent = (mode==='slow' && slowFactor<1) ? `SLOW-MO ×${slowFactor.toFixed(2)}` : '';
+  slowHint.textContent = (mode==='slow' && slowFactor<1) ? 'SLOW-MO ×'+slowFactor.toFixed(2) : '';
 }
 
 /* ====== TYPEWRITER HTML (ΠΡΑΞΕΙΣ) ====== */
@@ -771,18 +670,19 @@ function typeWriterHTML(el, html, speed, done){
   const textNodes=[];
   function collect(node){
     if(node.nodeType===3){
-      textNodes.push({node, text:node.textContent});
+      textNodes.push({node:node, text:node.textContent});
       node.textContent='';
     }else if(node.nodeType===1){
-      for(const child of node.childNodes) collect(child);
+      for(let i=0;i<node.childNodes.length;i++) collect(node.childNodes[i]);
     }
   }
   collect(el);
-  const totalChars = textNodes.reduce((s,o)=>s+o.text.length,0);
+  const totalChars = textNodes.reduce(function(s,o){return s+o.text.length;},0);
   let i=0;
   (function tick(){
     let remaining = i;
-    for(const obj of textNodes){
+    for(let k=0;k<textNodes.length;k++){
+      const obj=textNodes[k];
       if(remaining>obj.text.length){
         obj.node.textContent=obj.text;
         remaining-=obj.text.length;
@@ -804,7 +704,7 @@ function typeWriterHTML(el, html, speed, done){
 function tint(hex, alpha){
   const c = (hex||'#ffffff').replace('#','');
   const r=parseInt(c.slice(0,2),16)||255, g=parseInt(c.slice(2,4),16)||255, b=parseInt(c.slice(4,6),16)||255;
-  return `rgba(${r},${g},${b},${alpha})`;
+  return 'rgba('+r+','+g+','+b+','+alpha+')';
 }
 
 /* ====== BUBBLE SCHEDULER (Πράξεις) ====== */
@@ -814,36 +714,38 @@ class BubbleScheduler {
     this.labelEl=labelEl;
     this._queue=Promise.resolve();
     this._currentCancel=null;
-    this._ALLOWED={'b':1,'strong':1,'i':1,'em':1,'sub':1,'sup':1,'br':1,'span':1};
+    this._ALLOWED=new Set(['b','strong','i','em','sub','sup','br','span']);
   }
   sanitize(html){
     const wrap=document.createElement('div'); wrap.innerHTML=html||'';
-    wrap.querySelectorAll('*').forEach(n=>{
+    const nodes=wrap.querySelectorAll('*');
+    for(let i=0;i<nodes.length;i++){
+      const n=nodes[i];
       const tag=n.tagName.toLowerCase();
-      if(!this._ALLOWED[tag]) n.replaceWith(document.createTextNode(n.textContent));
-      else [...n.attributes].forEach(a=>n.removeAttribute(a.name));
-    });
+      if(!this._ALLOWED.has(tag)){
+        n.parentNode.replaceChild(document.createTextNode(n.textContent), n);
+      }else{
+        const attrs=n.attributes;
+        for(let j=attrs.length-1;j>=0;j--){
+          n.removeAttribute(attrs[j].name);
+        }
+      }
+    }
     return wrap.innerHTML;
   }
   computeDur(text){
-    const s=String(text||''); const len=s.length; const BASE=0.8, PER=0.055, MIN=2.0, MAX=10.0;
+    const s=String(text||'');
+    const len=s.length;
+    const BASE=0.8, PER=0.055, MIN=2.0, MAX=10.0;
     return Math.max(MIN, Math.min(MAX, BASE+PER*len)) * (bubbleDurationSec/3.0);
   }
   showSpeaker(viewer){
     if(!this.labelEl) return;
-    const viewersArr = Array.isArray(FOYER_VIEWERS) && FOYER_VIEWERS.length ? FOYER_VIEWERS : null;
+    const viewersArr = Array.isArray(FOYER_VIEWERS) ? FOYER_VIEWERS : [];
+    const fv = viewersArr[viewer] || viewersArr[0] || null;
 
-    let fv = null;
-    if(viewersArr){
-      const id = viewer+1;
-      fv = viewersArr.find(v=>v.id===id) || viewersArr[viewer] || viewersArr[0];
-    }
-
-    const vEl=document.querySelector(`.viewer[data-idx="${viewer}"]`);
-    if(!vEl){
-      this.labelEl.style.display='none';
-      return;
-    }
+    const vEl=document.querySelector('.viewer[data-idx="'+viewer+'"]');
+    if(!vEl){ this.labelEl.style.display='none'; return; }
     const sRect=stage.getBoundingClientRect();
     const vRect=vEl.getBoundingClientRect();
     const centerX=(vRect.left+vRect.width/2)-sRect.left;
@@ -852,13 +754,13 @@ class BubbleScheduler {
     let labelText='';
     if(fv){
       if(LANG==='en'){
-        labelText = fv.name_en || fv.name_gr || (`Viewer ${viewer+1}`);
+        labelText = fv.name_en || fv.name || ('SPECTATOR '+(viewer+1));
       }else{
-        labelText = fv.name_gr || fv.name_en || (`Θεατής ${viewer+1}`);
+        labelText = fv.name_gr || fv.name || ('ΘΕΑΤΗΣ '+(viewer+1));
       }
       this.labelEl.style.backgroundColor=tint(fv.color,0.9);
     }else{
-      labelText = (LANG==='en' ? `Viewer ${viewer+1}` : `Θεατής ${viewer+1}`);
+      labelText = (LANG==='en' ? ('SPECTATOR '+(viewer+1)) : ('ΘΕΑΤΗΣ '+(viewer+1)));
       this.labelEl.style.backgroundColor='rgba(0,0,0,0.7)';
     }
 
@@ -869,8 +771,7 @@ class BubbleScheduler {
     this.labelEl.style.display='block';
   }
 
-  /* === Bubbles κουμπωμένα σε θεατή μέσα στο 64% === */
-  placePanelNearViewer(viewer,lift=140,xShift=0){
+  placePanelNearViewer(viewer,lift,xShift){
     const W = stage.clientWidth;
     const H = stage.clientHeight;
 
@@ -885,7 +786,7 @@ class BubbleScheduler {
 
     const bw = this.el.offsetWidth || 320;
 
-    const vEl = document.querySelector(`.viewer[data-idx="${viewer}"]`);
+    const vEl = document.querySelector('.viewer[data-idx="'+viewer+'"]');
     const sRect = stage.getBoundingClientRect();
 
     let baseCenterX;
@@ -913,9 +814,16 @@ class BubbleScheduler {
     this.el.style.top  = topPx + 'px';
   }
 
-  showOnce({viewer,text,lift,xShift,durSec,pauseAfterSec}){
-    return new Promise(resolve=>{
-      if(this._currentCancel){ try{ this._currentCancel(); }catch{} this._currentCancel=null; }
+  showOnce(opts){
+    const viewer = opts.viewer;
+    const text = opts.text;
+    const lift = opts.lift;
+    const xShift = opts.xShift;
+    const durSec = opts.durSec;
+    const pauseAfterSec = opts.pauseAfterSec;
+
+    return new Promise((resolve)=>{
+      if(this._currentCancel){ try{ this._currentCancel(); }catch(e){} this._currentCancel=null; }
       const textEl=this.el.querySelector('.text');
       const sanitized = this.sanitize(text||'');
       const plain = sanitized.replace(/<[^>]+>/g,'');
@@ -947,7 +855,7 @@ class BubbleScheduler {
           const extraPause = (typeof pauseAfterSec==='number' && pauseAfterSec>=0)
             ? pauseAfterSec*1000
             : 500;
-          setTimeout(()=>cancel(), extraPause);
+          setTimeout(cancel, extraPause);
         });
       }, 220);
 
@@ -975,12 +883,22 @@ class BubbleScheduler {
       this._currentCancel=cancel;
     });
   }
-  say(viewer,text,lift=140,xShift=0,durSec=null,pauseAfterSec=null){
-    this._queue=this._queue.then(()=>this.showOnce({viewer,text,lift,xShift,durSec,pauseAfterSec}));
+  say(viewer,text,lift,xShift,durSec,pauseAfterSec){
+    const self=this;
+    this._queue=this._queue.then(function(){
+      return self.showOnce({
+        viewer:viewer,
+        text:text,
+        lift:lift,
+        xShift:xShift,
+        durSec:durSec,
+        pauseAfterSec:pauseAfterSec
+      });
+    });
     return this._queue;
   }
   clear(){
-    if(this._currentCancel){ try{ this._currentCancel(); }catch{} this._currentCancel=null; }
+    if(this._currentCancel){ try{ this._currentCancel(); }catch(e){} this._currentCancel=null; }
     this._queue=Promise.resolve();
     this.el.style.display='none';
     if(this.labelEl) this.labelEl.style.display='none';
@@ -1057,9 +975,9 @@ function initXTChart(){
     scales:{ x:{time:false, range:[0,T]}, y:{range:[-A_m*1.1, A_m*1.1]} },
     axes:[
       { stroke:"#fff", grid:{show:true, stroke:"rgba(255,255,255,0.25)"},
-        values:(u,vals)=>vals.map(v=>v.toFixed(1)+" s"), label:"t (s)", labelSize:18, labelGap:6 },
+        values:function(u,vals){return vals.map(function(v){return v.toFixed(1)+' s';});}, label:"t (s)", labelSize:18, labelGap:6 },
       { stroke:"#fff", grid:{show:true, stroke:"rgba(255,255,255,0.25)"},
-        values:(u,vals)=>vals.map(v=>v.toFixed(1)+" m"), label:"x (m)", labelSize:18, labelGap:8 }
+        values:function(u,vals){return vals.map(function(v){return v.toFixed(1)+' m';});}, label:"x (m)", labelSize:18, labelGap:8 }
     ],
     series:[{}, {label:"x(t)", stroke:"#ffd27a", width:2}]
   };
@@ -1070,9 +988,9 @@ function drawXTChart(){ if(uXT){ uXT.setData(buildSeriesData()); } }
 /* ====== ΠΑΡΑΜΕΤΡΟΙ ====== */
 function showCurtainParams(){
   const phi0deg=((omega*obsStartPlaybackOffset)*180/Math.PI + 360)%360;
-  paramAEl.textContent  =`A = ${A_m.toFixed(2)} m`;
-  paramWEl.textContent  =`ω = ${omega.toFixed(3)} rad/s`;
-  paramPhiEl.textContent=`φ₀ = ${phi0deg.toFixed(1)}°`;
+  paramAEl.textContent  ='A = '+A_m.toFixed(2)+' m';
+  paramWEl.textContent  ='ω = '+omega.toFixed(3)+' rad/s';
+  paramPhiEl.textContent='φ₀ = '+phi0deg.toFixed(1)+'°';
   paramsBoxEl.style.display='block';
   positionParamsBox();
 }
@@ -1083,7 +1001,7 @@ function closeCurtainsSequence(){
   stage.classList.remove('open');
   markerEl.style.opacity='0';
   setMode('run');
-  setTimeout(()=>{
+  setTimeout(function(){
     const cuRect = curtainUpper.getBoundingClientRect();
     const sRect = stage.getBoundingClientRect();
     const centralLeftPx = sRect.left + stage.clientWidth*0.18;
@@ -1106,8 +1024,8 @@ function handleTimelineEvent(th){
       txt,
       th.yOffset,
       th.xShift||0,
-      typeof th.dur==='number' ? th.dur : null,
-      typeof th.pauseAfter==='number' ? th.pauseAfter : null
+      (typeof th.dur==='number' ? th.dur : null),
+      (typeof th.pauseAfter==='number' ? th.pauseAfter : null)
     );
   }else if(th.kind==='bubbleDyn'){
     const dyn = (i18nDyn[LANG] && i18nDyn[LANG].thoughts) || {};
@@ -1158,17 +1076,17 @@ function handleTimelineEvent(th){
 }
 
 /* ====== ΚΟΥΜΠΙΑ ====== */
-btnPause.addEventListener('click',()=>{ setMode(mode==='pause'?'run':'pause'); });
-btnSlow .addEventListener('click', ()=>{ setMode('slow');  });
-btnPlay .addEventListener('click', ()=>{ setMode('run');  });
+btnPause.addEventListener('click',function(){ setMode(mode==='pause'?'run':'pause'); });
+btnSlow .addEventListener('click', function(){ setMode('slow');  });
+btnPlay .addEventListener('click', function(){ setMode('run');  });
 
-btnSettings.addEventListener('click',()=>{
+btnSettings.addEventListener('click',function(){
   settingsPanel.style.display = (settingsPanel.style.display==='block' ? 'none' : 'block');
 });
 
 function resetShow(){
   if(bubbleAutoTimer){ clearTimeout(bubbleAutoTimer); bubbleAutoTimer=null; }
-  thoughtScript = [...thoughtScriptBase];
+  thoughtScript = thoughtScriptBase.slice();
   nextThoughtIdx=0; isBubbleActive=false;
   measureRowIdx=0; lastSampleObsTime=-Infinity;
   firstLawShown=false; lawCount=0;
@@ -1195,7 +1113,6 @@ function resetShow(){
   springEl.style.display='none';
 
   window.foyerClose(true);
-  hideAllAvatars();
   setLang(LANG);
 
   t0=performance.now(); lastFrame=t0; playbackTime=0;
@@ -1216,7 +1133,7 @@ function startShowCountdown(){
   startBtn.style.display='none';
   countdownOverlay.style.display='flex';
   const seconds=5;
-  let end=performance.now()+seconds*1000;
+  const end=performance.now()+seconds*1000;
   function tick(){
     const now=performance.now();
     const remain=Math.max(0, Math.ceil((end-now)/1000));
@@ -1248,7 +1165,7 @@ function animate(now){
   if(obsStarted && !isBubbleActive && nextThoughtIdx<thoughtScript.length){
     const th=thoughtScript[nextThoughtIdx];
     const shiftMul=(firstThoughtMul-DEFAULT_FIRST_MUL);
-    const baseMul=(th.atT??0);
+    const baseMul=(th.atT!=null?th.atT:0);
     const eventAtSec=(baseMul+shiftMul)*T*timelineScale;
     if(tObs>=eventAtSec){
       try{ handleTimelineEvent(th); }finally{ nextThoughtIdx+=1; }
@@ -1266,11 +1183,11 @@ function animate(now){
   const distance=skaterHookX-ax;
   const scale=(L0_px && L0_px>0) ? (distance/L0_px) : 1;
   springEl.style.left=ax+'px';
-  springEl.style.transform=`scaleX(${scale})`;
+  springEl.style.transform='scaleX('+scale+')';
   actor.style.transform='none';
   actor.style.left=(skaterHookX-hookOffsetPx)+'px';
   markerEl.style.left=skaterHookX+'px';
-  spotlight.style.background=`radial-gradient(220px 140px at ${skaterHookX}px ${stage.clientHeight*0.62}px, rgba(255,255,220,.65), rgba(255,255,255,0) 70%)`;
+  spotlight.style.background='radial-gradient(220px 140px at '+skaterHookX+'px '+(stage.clientHeight*0.62)+'px, rgba(255,255,220,.65), rgba(255,255,255,0) 70%)';
 
   const xMeters=(skaterHookX-centerX)/pxPerMeter;
   logMeasurement(tObs,xMeters);
@@ -1285,7 +1202,7 @@ const boardRight = document.getElementById('boardRight');
 const foyer      = document.getElementById('foyer');
 const fbubble    = document.getElementById('foyerBubble');
 
-function typeWriter(el, text, opt=12, done){
+function typeWriter(el, text, opt, done){
   el.innerHTML=''; let i=0;
   const src = String(text||'').replaceAll('sqrt(','√(');
   const total = src.length || 1;
@@ -1317,18 +1234,22 @@ function typeWriter(el, text, opt=12, done){
 }
 
 function showSpeakerChip(viewerId){
-  const vArr = Array.isArray(FOYER_VIEWERS) ? FOYER_VIEWERS : [];
-  const vInfo = vArr.find(x=>x.id===viewerId) || vArr[viewerId-1] || vArr[0];
+  const baseViewer = (Array.isArray(FOYER_VIEWERS) ? FOYER_VIEWERS : []);
+  let vInfo = null;
+  for(let i=0;i<baseViewer.length;i++){
+    if(baseViewer[i].id===viewerId){ vInfo=baseViewer[i]; break; }
+  }
+  if(!vInfo && baseViewer.length>0) vInfo=baseViewer[0];
 
-  const anchor = document.querySelector(`.viewer[data-idx="${viewerId-1}"]`);
+  const anchor = document.querySelector('.viewer[data-idx="'+(viewerId-1)+'"]');
   if(!vInfo || !anchor) return;
   const sRect = stage.getBoundingClientRect();
   const aRect = anchor.getBoundingClientRect();
   let labelText;
   if(LANG==='en'){
-    labelText = vInfo.name_en || vInfo.name_gr || `Viewer ${viewerId}`;
+    labelText = vInfo.name_en || vInfo.name || ('SPECTATOR '+viewerId);
   }else{
-    labelText = vInfo.name_gr || vInfo.name_en || `Θεατής ${viewerId}`;
+    labelText = vInfo.name_gr || vInfo.name || ('ΘΕΑΤΗΣ '+viewerId);
   }
   fbubble.textContent = labelText;
   fbubble.style.backgroundColor = tint(vInfo.color,0.85);
@@ -1346,8 +1267,8 @@ function syncScroll(from,to){
   if(_syncing) return;
   _syncing=true; to.scrollTop=from.scrollTop; _syncing=false;
 }
-boardLeft.addEventListener('scroll', ()=>syncScroll(boardLeft,boardRight));
-boardRight.addEventListener('scroll',()=>syncScroll(boardRight,boardLeft));
+boardLeft.addEventListener('scroll', function(){syncScroll(boardLeft,boardRight);});
+boardRight.addEventListener('scroll',function(){syncScroll(boardRight,boardLeft);});
 
 function isFormulaBlock(text){
   const s = String(text||'').trim();
@@ -1361,8 +1282,13 @@ function isFormulaBlock(text){
 }
 
 function addRow(leftText, rightText, viewer, durLeftSec, durRightSec, pauseAfterSec, whenDone){
-  const baseViewer = Array.isArray(FOYER_VIEWERS) ? FOYER_VIEWERS : [];
-  const viewerInfo = baseViewer.find(v=>v.id===viewer) || baseViewer[viewer-1] || baseViewer[0] || {color:'#ffffff'};
+  const baseViewer = (Array.isArray(FOYER_VIEWERS) ? FOYER_VIEWERS : []);
+  let viewerInfo = null;
+  for(let i=0;i<baseViewer.length;i++){
+    if(baseViewer[i].id===viewer){ viewerInfo=baseViewer[i]; break; }
+  }
+  if(!viewerInfo && baseViewer.length>0) viewerInfo=baseViewer[0];
+  if(!viewerInfo) viewerInfo={color:'#ffffff'};
 
   const bgLeft  = tint(viewerInfo.color, 0.22);
   const bgRight = tint(viewerInfo.color, 0.16);
@@ -1371,10 +1297,10 @@ function addRow(leftText, rightText, viewer, durLeftSec, durRightSec, pauseAfter
   const r = document.createElement('div'); r.className='cell right sync-row';
 
   l.style.background = bgLeft;
-  l.style.borderLeft = `4px solid ${tint(viewerInfo.color,0.85)}`;
+  l.style.borderLeft = '4px solid '+tint(viewerInfo.color,0.85);
 
   r.style.background = bgRight;
-  r.style.borderLeft = `4px solid ${tint(viewerInfo.color,0.55)}`;
+  r.style.borderLeft = '4px solid '+tint(viewerInfo.color,0.55);
 
   if (isFormulaBlock(rightText)){
     r.classList.add('formula');
@@ -1384,10 +1310,9 @@ function addRow(leftText, rightText, viewer, durLeftSec, durRightSec, pauseAfter
   boardLeft.appendChild(l);
 
   showSpeakerChip(viewer);
-  setActiveAvatar(viewer);
 
   function finalizeRow(){
-    requestAnimationFrame(()=>{
+    requestAnimationFrame(function(){
       const h = Math.max(l.offsetHeight, r.offsetHeight);
       l.style.minHeight = h+'px';
       r.style.minHeight = h+'px';
@@ -1402,7 +1327,7 @@ function addRow(leftText, rightText, viewer, durLeftSec, durRightSec, pauseAfter
   const leftOpt  = (typeof durLeftSec  === 'number' && durLeftSec>0)  ? {durationSec:durLeftSec}  : 10;
   const rightOpt = (typeof durRightSec === 'number' && durRightSec>0) ? {durationSec:durRightSec} : 10;
 
-  typeWriter(l, leftText, leftOpt, ()=>{
+  typeWriter(l, leftText, leftOpt, function(){
     if(rt.length>0){
       typeWriter(r, rightText, rightOpt, finalizeRow);
     }else{
@@ -1412,55 +1337,36 @@ function addRow(leftText, rightText, viewer, durLeftSec, durRightSec, pauseAfter
 }
 
 let foyerIdx=0, foyerAuto=true, foyerTimer=null;
+
+/* ΝΕΟ foyerStep: ΜΟΝΟ από dialogs-*.json, αγνοεί FOYER_META / timeline.json */
 function foyerStep(){
   const dlgLang = DIALOGS[LANG];
   if(!dlgLang || !Array.isArray(dlgLang.foyer)) return;
 
-  const metaArr = Array.isArray(FOYER_META) ? FOYER_META : [];
-
-  const meta = metaArr[foyerIdx] || null;
-  let text = null;
-
-  if(meta && meta.id){
-    text = (dlgLang.foyer || []).find(e => e && e.id === meta.id) || null;
-  }else{
-    text = dlgLang.foyer[foyerIdx] || null;
-  }
-
-  if(!text){
-    if(foyerIdx >= (dlgLang.foyer||[]).length){
-      foyerAuto=false;
-    }
+  const arr = dlgLang.foyer;
+  if(foyerIdx >= arr.length){
+    foyerAuto=false;
     return;
   }
 
-  let viewerId;
-  if(typeof text.viewer==='number'){
-    viewerId = text.viewer;
-  }else if(meta){
-    if(typeof meta.viewer==='number') viewerId = meta.viewer;
-    else if(typeof meta.v==='number') viewerId = meta.v;
-  }
-  if(typeof viewerId!=='number') viewerId=1;
-
-  const durLeft  = meta && typeof meta.durLeft  === 'number' ? meta.durLeft  : undefined;
-  const durRight = meta && typeof meta.durRight === 'number' ? meta.durRight : undefined;
-  const pauseAfterSec = meta && typeof meta.pauseAfter === 'number' ? meta.pauseAfter : undefined;
-
-  foyerIdx++;
+  const row = arr[foyerIdx++];
+  const viewerId = (typeof row.viewer === 'number') ? row.viewer : 1;
+  const pauseAfterSec = (typeof row.pauseMs === 'number') ? (row.pauseMs / 1000) : undefined;
 
   addRow(
-    text.left || '',
-    text.right || '',
+    row.left || '',
+    row.right || '',
     viewerId,
-    durLeft,
-    durRight,
+    undefined,
+    undefined,
     pauseAfterSec,
-    (pause)=>{
-      const len = (String(text.left||'').length + String(text.right||'').length);
+    function(pause){
+      const len = (String(row.left||'').length + String(row.right||'').length);
       let delay;
       if(typeof pause === 'number'){
         delay = Math.max(0, pause*1000);
+      }else if(typeof pauseAfterSec === 'number'){
+        delay = Math.max(0, pauseAfterSec*1000);
       }else{
         const baseDelay = 600;
         const extra     = Math.min(2000, Math.max(400, 15*len/4));
@@ -1480,23 +1386,20 @@ function repositionFoyer(){
   foyer.style.top='0';
   foyer.style.height=getComputedStyle(document.documentElement).getPropertyValue('--foyer-h')||'445px';
 }
-function foyerOpen(auto=true){
+function foyerOpen(auto){
   foyer.style.display='block';
   boardLeft.innerHTML=''; boardRight.innerHTML='';
   foyerIdx=0; foyerAuto= !!auto;
   if(foyerTimer){ clearTimeout(foyerTimer); foyerTimer=null; }
-  hideAllAvatars();
   setTimeout(foyerStep, 400);
   repositionFoyer();
 }
-function foyerClose(silent=false){
+function foyerClose(silent){
   if(foyerTimer){ clearTimeout(foyerTimer); foyerTimer=null; }
   foyer.style.display='none';
-  fbubble.style.display='none';
-  hideAllAvatars();
 }
-btnFoyer.addEventListener('click', ()=>foyerOpen(true));
-btnFoyerGo.addEventListener('click', ()=>{
+btnFoyer.addEventListener('click', function(){foyerOpen(true);});
+btnFoyerGo.addEventListener('click', function(){
   foyerBreak.style.display='none';
   foyerOpen(true);
 });
@@ -1540,7 +1443,7 @@ window.foyerClose = foyerClose;
     const A_real_px  = pxPerMeter * A_m;
     const A_ghost_px = pxPerMeter * Aghost_m;
 
-    const loop=()=>{
+    const loop=function(){
       const sRect = stage.getBoundingClientRect();
       const aRect = actor.getBoundingClientRect();
       const cx    = stage.clientWidth/2;
@@ -1556,7 +1459,7 @@ window.foyerClose = foyerClose;
       const dist  = Math.max(0, hookX_ghost - ax);
       const scale = dist / base;
       ghostSpring.style.left = ax + 'px';
-      ghostSpring.style.transform = `scaleX(${scale})`;
+      ghostSpring.style.transform = 'scaleX('+scale+')';
 
       ghostRAF = requestAnimationFrame(loop);
     };
@@ -1595,11 +1498,12 @@ window.foyerClose = foyerClose;
       if(sbC && ui.sbC2) sbC.textContent = ui.sbC2;
       if(sbD && ui.sbD2) sbD.textContent = ui.sbD2;
 
-      for(const step of seq){
+      for(let i=0;i<seq.length;i++){
+        const step=seq[i];
         if(step.lawText || step.law){
           const lawTxt = step.lawText || step.law;
           addLaw(lawTxt);
-          await new Promise(r=>setTimeout(r,220));
+          await new Promise(function(r){setTimeout(r,220);});
           continue;
         }
         const viewerIdx = (typeof step.v==='number' ? step.v :
@@ -1615,8 +1519,8 @@ window.foyerClose = foyerClose;
           getAct2BubbleText(step.key),
           yOff,
           xShift,
-          typeof step.dur==='number' ? step.dur : null,
-          typeof step.pauseAfter==='number' ? step.pauseAfter : null
+          (typeof step.dur==='number' ? step.dur : null),
+          (typeof step.pauseAfter==='number' ? step.pauseAfter : null)
         );
         if(step.gStop)  stopGhost();
       }
@@ -1624,7 +1528,7 @@ window.foyerClose = foyerClose;
       markerEl.style.opacity='0';
       curtainUpper.classList.add('slow-close');
       stage.classList.remove('open');
-      await new Promise(r=>setTimeout(r,1600));
+      await new Promise(function(r){setTimeout(r,1600);});
       curtainUpper.classList.remove('slow-close');
 
       const cuRect = curtainUpper.getBoundingClientRect();
@@ -1644,13 +1548,17 @@ window.foyerClose = foyerClose;
     }
   }
   document.addEventListener('act2-start', playAct2, { once:true });
-  document.getElementById('btnAct2').addEventListener('click', ()=>document.dispatchEvent(new Event('act2-start')));
+  document.getElementById('btnAct2').addEventListener('click', function(){document.dispatchEvent(new Event('act2-start'));});
 })();
 
 /* ====== LANG SWITCH HANDLER ====== */
-langSwitch.addEventListener('click', async (e)=>{
+langSwitch.addEventListener('click', async function(e){
   const btn=e.target.closest('button[data-lang]'); if(!btn) return;
-  [...langSwitch.querySelectorAll('button')].forEach(b=>b.classList.toggle('on', b===btn));
+  const buttons=langSwitch.querySelectorAll('button');
+  for(let i=0;i<buttons.length;i++){
+    const b=buttons[i];
+    b.classList.toggle('on', b===btn);
+  }
   const lang = btn.dataset.lang;
   await Promise.all([
     loadDialogOverrides(lang),
@@ -1660,18 +1568,13 @@ langSwitch.addEventListener('click', async (e)=>{
 });
 
 /* ====== RESIZE OBSERVER ====== */
-const ro=new ResizeObserver(()=>{
-  positionRightPanel();
-  if(uXT){ drawXTChart(); }
-  positionLawCharts();
-  positionParamsBox();
-  repositionFoyer();
-  positionAvatars();
+const ro=new ResizeObserver(function(){
+  positionRightPanel(); if(uXT){ drawXTChart(); } positionLawCharts(); positionParamsBox(); repositionFoyer();
 });
 ro.observe(stage);
 
 /* ====== BOOTSTRAP ====== */
-(async ()=>{
+(async function(){
   await loadTimeline();
   await loadDialogOverrides('gr');
   await loadDialogOverrides('en');
