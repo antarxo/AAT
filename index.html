@@ -1114,7 +1114,7 @@ startBtn.addEventListener('click', startShowCountdown);
 /* ====== ANIMATION LOOP ====== */
 let L0_px; let skaterWidthPx; let hookOffsetPx;
 function animate(now){
-  const.realDt=(now-lastFrame)/1000; lastFrame=now;
+  const realDt=(now-lastFrame)/1000; lastFrame=now;
   positionRightPanel(); updateRuler();
 
   const tPhys=(now-t0)/1000;
@@ -1540,7 +1540,7 @@ ro.observe(stage);
 (async ()=>{
   await loadTimeline();
   await loadDialogOverrides('gr');
-  await.loadDialogOverrides('en');
+  await loadDialogOverrides('en');
   await loadUI('gr');
   await loadUI('en');
   await loadViewers();
