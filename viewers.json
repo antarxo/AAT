@@ -6,7 +6,7 @@
     "color": "#ffcc00",
     "xFrac": 0.16,
     "bubbleDx": 40,
-    "bubbleDy": -180,
+    "bubbleDy": 80,
     "avatarDy": 120,
     "avatarScale": 0.4,
     "img": "viewer1.png"
@@ -18,7 +18,7 @@
     "color": "#66ccff",
     "xFrac": 0.32,
     "bubbleDx": 40,
-    "bubbleDy": -80,
+    "bubbleDy": 80,
     "avatarDy": 120,
     "avatarScale": 0.4,
     "img": "viewer2.png"
