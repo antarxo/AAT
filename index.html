@@ -38,9 +38,47 @@
   .actor img{width:100%;height:auto;display:block;filter:drop-shadow(0 4px 6px rgba(0,0,0,.6))}
   .floor{position:absolute;left:0;bottom:calc(32vh - 8px);width:100%;height:2px;background:#888;z-index:155;pointer-events:none}
 
-  .audience{position:absolute; left:18%; bottom:0; width:64%; height:auto; object-position:bottom center; z-index:158; pointer-events:none; filter:contrast(1.05) brightness(.95); display:block;}
+  /* βασικό κοινό */
+  .audience{
+    position:absolute;
+    left:18%;
+    bottom:0;
+    width:64%;
+    height:auto;
+    object-position:bottom center;
+    z-index:1500;
+    pointer-events:none;
+    filter:contrast(1.05) brightness(.95);
+    display:block;
+  }
+  /* έξτρα κοινό, πίσω από ομιλητές */
+  .audience-extra{
+    position:absolute;
+    left:18%;
+    bottom:0;
+    width:64%;
+    height:auto;
+    object-position:bottom center;
+    z-index:1390;
+    pointer-events:none;
+    filter:contrast(1.0) brightness(1.0);
+    display:block;
+  }
+
+  /* παλιό «σκιερό» κοινό */
   .viewers{position:absolute;left:18%;width:64%;bottom:0;display:flex;justify-content:space-between;z-index:159;padding:0 4vw 12px}
   .viewer{width:60px;height:100px;background:url('https://upload.wikimedia.org/wikipedia/commons/f/f9/Silhouette_icon.svg') no-repeat center/contain;filter:grayscale(1) brightness(.6);opacity:.75}
+
+  /* avatars ομιλητών (μόνο στο φουαγιέ) */
+  .viewer-avatar{
+    position:absolute;
+    bottom:120px;
+    transform:translate(-50%,0) scale(0.4);
+    z-index:1400;
+    pointer-events:none;
+    display:none;
+    image-rendering:auto;
+  }
 
   .signboard{position:absolute;top:-6px;left:50%;transform:translateX(-50%);background:transparent;border:none;border-radius:10px;padding:12px 18px;color:#ddd;font-family:'Georgia',serif;text-align:center;z-index:165;line-height:1.25}
   .signboard h1{font-size:32px;margin:0;color:#fff}
@@ -262,7 +300,9 @@
     <img id="spring" class="spring" src="spring.png" alt="ελατήριο">
     <div class="actor" id="actor"><img src="skater.png" alt="Skater"></div>
     <div class="floor"></div>
+
     <img class="audience" src="koino.png" alt="κοινό">
+    <img class="audience-extra" id="audienceExtra" src="koino_extra.png" alt="επιπλέον κοινό">
 
     <div class="viewers">
       <div class="viewer" data-idx="0"></div>
@@ -310,16 +350,14 @@
 
 <script>
 /* ====== GLOBAL DATA HOLDERS ====== */
-// Όλα από dialogs-*.json
 const DIALOGS = {
   gr: { act1: [], act2: [], foyer: [], viewers: [] },
   en: { act1: [], act2: [], foyer: [], viewers: [] }
 };
 
-// Βασικές “σειρές” για σενάριο
-let ACT1_EVENTS = [];   // bubble / law / graph / close της Πράξης 1
-let ACT2_EVENTS = [];   // βήματα Πράξης 2
-let FOYER_LINES = [];   // γραμμές φουαγιέ (χρονική σειρά)
+let ACT1_EVENTS = [];
+let ACT2_EVENTS = [];
+let FOYER_LINES = [];
 
 const i18nDyn = {
   gr: {
@@ -341,7 +379,10 @@ const i18nDyn = {
 const UI = {};
 let LANG = 'gr';
 
-// helpers για εύρεση διαλόγων
+/* viewers avatars state */
+let viewerAvatars = [];
+
+/* ====== helpers ====== */
 function findDialogById(actKey, id){
   var langBlock = DIALOGS[LANG] || {};
   var arr = langBlock[actKey];
@@ -353,7 +394,6 @@ function findDialogById(actKey, id){
   return null;
 }
 
-// bubble text: act1 / act2
 function getActBubbleText(actKey, id){
   var row = findDialogById(actKey, id);
   if(!row) return '';
@@ -362,7 +402,6 @@ function getActBubbleText(actKey, id){
   return '';
 }
 
-// απλό palette για θεατές (0..4 index)
 function viewerColor(idx){
   var palette = ['#ffcc00','#66ccff','#ff99cc','#99ff99','#ff9966'];
   if(typeof idx!=='number') idx=0;
@@ -377,7 +416,62 @@ function viewerLabel(idx){
 
 let firstLawShown = false;
 
-/* ====== TIMELINE / DIALOG / UI LOADERS ====== */
+/* ====== avatars from dialogs.viewers ====== */
+function clearViewerAvatars(){
+  for (var i=0;i<viewerAvatars.length;i++){
+    var el = viewerAvatars[i].el;
+    if(el && el.parentNode) el.parentNode.removeChild(el);
+  }
+  viewerAvatars = [];
+}
+
+function buildViewerAvatars(){
+  clearViewerAvatars();
+  var base = (DIALOGS[LANG] && DIALOGS[LANG].viewers && DIALOGS[LANG].viewers.length)
+           ? DIALOGS[LANG].viewers
+           : (DIALOGS.gr && DIALOGS.gr.viewers ? DIALOGS.gr.viewers : []);
+  if(!base || !base.length) return;
+  for(var i=0;i<base.length;i++){
+    var m = base[i];
+    if(!m) continue;
+    var img = document.createElement('img');
+    img.className = 'viewer-avatar';
+    img.src = m.img || ('viewer'+(m.id || (i+1))+'.png');
+    img.dataset.viewerId = m.id || (i+1);
+    img.dataset.index    = i;
+    var scale = (typeof m.avatarScale==='number' && m.avatarScale>0) ? m.avatarScale : 0.4;
+    var bottom = (typeof m.avatarDy==='number') ? m.avatarDy : 120;
+    img.style.bottom = bottom+'px';
+    img.style.transform = 'translate(-50%,0) scale('+scale+')';
+    img.style.display = 'none';
+    stage.appendChild(img);
+    viewerAvatars.push({meta:m, el:img});
+  }
+  updateViewerAvatarPositions();
+}
+
+function updateViewerAvatarPositions(){
+  if(!viewerAvatars.length) return;
+  var W = stage.clientWidth;
+  var leftInner = W*0.18;
+  var innerW    = W*0.64;
+  for(var i=0;i<viewerAvatars.length;i++){
+    var item = viewerAvatars[i];
+    var m = item.meta;
+    var el = item.el;
+    var xf = (typeof m.xFrac==='number') ? m.xFrac : ((i+1)/(viewerAvatars.length+1));
+    var cx = leftInner + xf*innerW;
+    el.style.left = cx+'px';
+  }
+}
+
+function setViewerAvatarsVisible(flag){
+  for(var i=0;i<viewerAvatars.length;i++){
+    viewerAvatars[i].el.style.display = flag ? 'block' : 'none';
+  }
+}
+
+/* ====== LOADERS ====== */
 async function loadDialogOverrides(lang){
   try{
     const resp = await fetch('dialogs-'+lang+'.json', {cache:'no-store'});
@@ -395,7 +489,6 @@ async function loadDialogOverrides(lang){
     block.foyer   = Array.isArray(data.foyer)   ? data.foyer   : [];
     block.viewers = Array.isArray(data.viewers) ? data.viewers : [];
 
-    // Βάση σεναρίου: ελληνική έκδοση
     if(lang === 'gr'){
       ACT1_EVENTS = block.act1 ? block.act1.slice() : [];
       ACT2_EVENTS = block.act2 ? block.act2.slice() : [];
@@ -414,9 +507,7 @@ async function loadUI(lang){
   }catch(e){}
 }
 
-/* ====== I18N / UI ====== */
-const langSwitch = document.getElementById('langSwitch');
-
+/* ====== I18N ====== */
 function setLang(lang){
   LANG = lang;
   document.documentElement.lang = (lang==='en'?'en':'el');
@@ -536,6 +627,7 @@ const actBreak=document.getElementById('actBreak');
 const foyerBreak=document.getElementById('foyerBreak');
 const btnFoyerGo=document.getElementById('btnFoyerGo');
 const curtainUpper=document.querySelector('.curtain-upper');
+const audienceExtraEl = document.getElementById('audienceExtra');
 
 if (typeof window.foyerOpen  !== 'function') window.foyerOpen  = function(){};
 if (typeof window.foyerClose !== 'function') window.foyerClose = function(){};
@@ -596,6 +688,7 @@ function positionRightPanel(){
   }
   positionLawCharts();
   positionParamsBox();
+  updateViewerAvatarPositions();
 }
 window.addEventListener('resize', positionRightPanel);
 function anchorX(){ return stage.clientWidth*0.18; }
@@ -899,7 +992,7 @@ class BubbleScheduler {
       durSec:durSec,
       pauseAfterSec:pauseAfterSec
     };
-    this._queue=this._queue.then(()=>this.showOnce(cfg));
+    this._queue=this._queue.then(function(){ return this.showOnce(cfg); }.bind(this));
     return this._queue;
   }
   clear(){
@@ -1122,6 +1215,7 @@ function resetShow(){
   springEl.style.display='none';
 
   window.foyerClose(true);
+  setViewerAvatarsVisible(false);
   setLang(LANG);
 
   t0=performance.now(); lastFrame=t0; playbackTime=0;
@@ -1137,6 +1231,7 @@ function beginObservationAfterCountdown(){
   measureBox.style.display='block';
   markerEl.style.opacity='1';
   positionRightPanel();
+  setViewerAvatarsVisible(false);
 }
 function startShowCountdown(){
   startBtn.style.display='none';
@@ -1174,7 +1269,6 @@ function animate(now){
   const tObs= obsStarted ? (playbackTime-obsStartPlaybackOffset) : 0;
   clockEl.textContent='t = '+tObs.toFixed(2)+' s';
 
-  // Act 1 events από ACT1_EVENTS
   if(obsStarted && !isBubbleActive && nextThoughtIdx<ACT1_EVENTS.length){
     const ev = ACT1_EVENTS[nextThoughtIdx];
     const baseMul = (typeof ev.atT==='number'?ev.atT:0);
@@ -1249,7 +1343,6 @@ function typeWriter(el, text, opt, done){
 }
 
 function showSpeakerChip(viewerId){
-  // viewerId: 1..5
   const idx = (typeof viewerId==='number'?viewerId-1:0);
   const anchor = document.querySelector('.viewer[data-idx="'+idx+'"]');
   if(!anchor) return;
@@ -1348,7 +1441,6 @@ function foyerStep(){
   const metaBase = FOYER_LINES[foyerIdx++];
   if(!metaBase) return;
 
-  // προσπαθούμε να βρούμε αντίστοιχη γραμμή στην τρέχουσα γλώσσα με ίδιο id
   var row = null;
   if(metaBase.id){
     row = findDialogById('foyer', metaBase.id) || metaBase;
@@ -1389,6 +1481,7 @@ function repositionFoyer(){
   foyer.style.top='0';
   foyer.style.height=getComputedStyle(document.documentElement).getPropertyValue('--foyer-h')||'445px';
 }
+
 function foyerOpen(auto){
   foyer.style.display='block';
   boardLeft.innerHTML=''; boardRight.innerHTML='';
@@ -1396,11 +1489,17 @@ function foyerOpen(auto){
   if(foyerTimer){ clearTimeout(foyerTimer); foyerTimer=null; }
   setTimeout(foyerStep, 400);
   repositionFoyer();
+  setViewerAvatarsVisible(true);
+  updateViewerAvatarPositions();
 }
+
 function foyerClose(silent){
   if(foyerTimer){ clearTimeout(foyerTimer); foyerTimer=null; }
   foyer.style.display='none';
+  fbubble.style.display='none';
+  setViewerAvatarsVisible(false);
 }
+
 btnFoyer.addEventListener('click', function(){foyerOpen(true);});
 btnFoyerGo.addEventListener('click', function(){
   foyerBreak.style.display='none';
@@ -1511,7 +1610,7 @@ window.foyerClose = foyerClose;
           continue;
         }
 
-        const viewerIdx = (typeof step.viewer==='number'?step.viewer:0); // 0..4
+        const viewerIdx = (typeof step.viewer==='number'?step.viewer:0);
         const yOff = (typeof step.yOffset==='number'?step.yOffset:(typeof step.y==='number'?step.y:135));
         const xShift = (typeof step.xShift==='number'?step.xShift:(typeof step.x==='number'?step.x:0));
 
@@ -1562,6 +1661,7 @@ window.foyerClose = foyerClose;
 })();
 
 /* ====== LANG SWITCH HANDLER ====== */
+const langSwitch = document.getElementById('langSwitch');
 langSwitch.addEventListener('click', async function(e){
   const btn=e.target.closest('button[data-lang]');
   if(!btn) return;
@@ -1575,6 +1675,8 @@ langSwitch.addEventListener('click', async function(e){
     loadUI(lang)
   ]);
   setLang(lang);
+  buildViewerAvatars();
+  setViewerAvatarsVisible(false);
 });
 
 /* ====== RESIZE OBSERVER ====== */
@@ -1584,6 +1686,7 @@ const ro=new ResizeObserver(function(){
   positionLawCharts();
   positionParamsBox();
   repositionFoyer();
+  updateViewerAvatarPositions();
 });
 ro.observe(stage);
 
@@ -1594,6 +1697,7 @@ ro.observe(stage);
   await loadUI('gr');
   await loadUI('en');
   setLang('gr');
+  buildViewerAvatars();
   resetShow();
 })();
 </script>
