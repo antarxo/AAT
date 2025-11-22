@@ -38,7 +38,7 @@
   .actor img{width:100%;height:auto;display:block;filter:drop-shadow(0 4px 6px rgba(0,0,0,.6))}
   .floor{position:absolute;left:0;bottom:calc(32vh - 8px);width:100%;height:2px;background:#888;z-index:155;pointer-events:none}
 
-  /* ΝΕΟ: extra εικόνα κοινού, ίδια θέση/κλίμακα με koino.png, z-index κάτω από avatars */
+  /* extra εικόνα κοινού, ίδια θέση/κλίμακα με koino.png, z-index κάτω από avatars */
   .audience-extra{
     position:absolute;
     left:18%;
@@ -286,7 +286,7 @@
     <div class="actor" id="actor"><img src="skater.png" alt="Skater"></div>
     <div class="floor"></div>
 
-    <!-- ΝΕΟ: συμπληρωματική εικόνα κοινού, πίσω από avatars -->
+    <!-- extra εικόνα κοινού, πίσω από avatars -->
     <img class="audience-extra" src="koino_extra.png" alt="συμπληρωματικό κοινό">
 
     <img class="audience" src="koino.png" alt="κοινό">
@@ -378,26 +378,28 @@ async function loadDialogOverrides(lang){
     const dlg = DIALOGS[lang] || (DIALOGS[lang]={act1:{},act2:{},foyer:[]});
 
     if(Array.isArray(data.act1)){
-      data.act1.forEach(item=>{
+      data.act1.forEach(function(item){
         if(item && item.id && typeof item.text==='string'){
           dlg.act1[item.id] = item.text;
         }
       });
     }
     if(Array.isArray(data.act2)){
-      data.act2.forEach(item=>{
+      data.act2.forEach(function(item){
         if(item && item.id && typeof item.text==='string'){
           dlg.act2[item.id] = item.text;
         }
       });
     }
     if(Array.isArray(data.foyer)){
-      dlg.foyer = data.foyer.map(it=>({
-        id: it.id || undefined,
-        left: it.left || '',
-        right: it.right || '',
-        viewer: (typeof it.viewer==='number'? it.viewer : undefined)
-      }));
+      dlg.foyer = data.foyer.map(function(it){
+        return {
+          id: it.id || undefined,
+          left: it.left || '',
+          right: it.right || '',
+          viewer: (typeof it.viewer==='number'? it.viewer : undefined)
+        };
+      });
     }
   }catch(e){}
 }
@@ -409,21 +411,27 @@ async function loadTimeline(){
     const data = await resp.json() || {};
 
     if(Array.isArray(data.act1)){
-      thoughtScriptBase = data.act1.map(ev=>({...ev}));
-      thoughtScript     = [...thoughtScriptBase];
+      thoughtScriptBase = data.act1.map(function(ev){
+        return Object.assign({}, ev);
+      });
+      thoughtScript     = thoughtScriptBase.slice();
     }else{
       thoughtScriptBase = [];
       thoughtScript     = [];
     }
 
     if(Array.isArray(data.act2)){
-      ACT2_TIMELINE = data.act2.map(ev=>({...ev}));
+      ACT2_TIMELINE = data.act2.map(function(ev){
+        return Object.assign({}, ev);
+      });
     }else{
       ACT2_TIMELINE = [];
     }
 
     if(Array.isArray(data.foyer)){
-      FOYER_META = data.foyer.map(ev=>({...ev}));
+      FOYER_META = data.foyer.map(function(ev){
+        return Object.assign({}, ev);
+      });
     }else{
       FOYER_META = [];
     }
@@ -457,7 +465,7 @@ function getViewerConfigById(id){
   if(!arr.length) return null;
   const numId = Number(id);
   if(Number.isFinite(numId)){
-    const found = arr.find(v=>Number(v.id)===numId);
+    const found = arr.find(function(v){ return Number(v.id)===numId; });
     if(found) return found;
   }
   return arr[0] || null;
@@ -680,10 +688,10 @@ let firstThoughtMul=parseFloat(slFirst.value);
 let timelineScale=parseFloat(slScale.value);
 let bubbleDurationSec=parseFloat(slDur.value);
 let slowFactor=parseFloat(slSlow.value);
-slFirst.addEventListener('input',()=>{ firstThoughtMul=parseFloat(slFirst.value); valFirst.textContent=`${firstThoughtMul.toFixed(1)}·T`; });
-slScale.addEventListener('input',()=>{ timelineScale=parseFloat(slScale.value); valScale.textContent=`${timelineScale.toFixed(1)}×`; });
-slDur.addEventListener('input',()=>{ bubbleDurationSec=parseFloat(slDur.value); valDur.textContent=`${bubbleDurationSec.toFixed(1)}s`; });
-slSlow.addEventListener('input',()=>{ slowFactor=parseFloat(slSlow.value); valSlow.textContent=`${slowFactor.toFixed(2)}×`; });
+slFirst.addEventListener('input',function(){ firstThoughtMul=parseFloat(slFirst.value); valFirst.textContent=firstThoughtMul.toFixed(1)+'·T'; });
+slScale.addEventListener('input',function(){ timelineScale=parseFloat(slScale.value); valScale.textContent=timelineScale.toFixed(1)+'×'; });
+slDur.addEventListener('input',function(){ bubbleDurationSec=parseFloat(slDur.value); valDur.textContent=bubbleDurationSec.toFixed(1)+'s'; });
+slSlow.addEventListener('input',function(){ slowFactor=parseFloat(slSlow.value); valSlow.textContent=slowFactor.toFixed(2)+'×'; });
 
 /* ====== TIMELINE STATE ====== */
 let nextThoughtIdx=0;
@@ -700,9 +708,9 @@ function logMeasurement(tObs,xMeters){
   if(tObs-lastSampleObsTime<sampleInterval) return; lastSampleObsTime=tObs;
   const tr=document.createElement('tr');
   tr.className='new';
-  tr.innerHTML=`<td>${(++measureRowIdx)}</td><td>${tObs.toFixed(2)}</td><td>${xMeters.toFixed(2)}</td>`;
+  tr.innerHTML='<td>'+((++measureRowIdx))+'</td><td>'+tObs.toFixed(2)+'</td><td>'+xMeters.toFixed(2)+'</td>';
   measureTBody.appendChild(tr);
-  setTimeout(()=>{ tr.classList.remove('new'); }, 650);
+  setTimeout(function(){ tr.classList.remove('new'); }, 650);
   try{ tr.scrollIntoView({block:'end'}); }catch(e){}
   try{ measureBox.scrollTop=measureBox.scrollHeight; }catch(e){}
 }
@@ -712,7 +720,7 @@ function setMode(newMode){
   mode=newMode;
   btnSlow.classList.toggle('active', mode==='slow');
   btnPlay.classList.toggle('active', mode==='run');
-  slowHint.textContent = (mode==='slow' && slowFactor<1) ? `SLOW-MO ×${slowFactor.toFixed(2)}` : '';
+  slowHint.textContent = (mode==='slow' && slowFactor<1) ? 'SLOW-MO ×'+slowFactor.toFixed(2) : '';
 }
 
 /* ====== TYPEWRITER HTML (ΠΡΑΞΕΙΣ) ====== */
@@ -721,18 +729,19 @@ function typeWriterHTML(el, html, speed, done){
   const textNodes=[];
   function collect(node){
     if(node.nodeType===3){
-      textNodes.push({node, text:node.textContent});
+      textNodes.push({node:node, text:node.textContent});
       node.textContent='';
     }else if(node.nodeType===1){
-      for(const child of node.childNodes) collect(child);
+      for(let i=0;i<node.childNodes.length;i++) collect(node.childNodes[i]);
     }
   }
   collect(el);
-  const totalChars = textNodes.reduce((s,o)=>s+o.text.length,0);
+  const totalChars = textNodes.reduce(function(s,o){return s+o.text.length;},0);
   let i=0;
   (function tick(){
     let remaining = i;
-    for(const obj of textNodes){
+    for(let k=0;k<textNodes.length;k++){
+      const obj=textNodes[k];
       if(remaining>obj.text.length){
         obj.node.textContent=obj.text;
         remaining-=obj.text.length;
@@ -754,7 +763,7 @@ function typeWriterHTML(el, html, speed, done){
 function tint(hex, alpha){
   const c = (hex||'#ffffff').replace('#','');
   const r=parseInt(c.slice(0,2),16)||255, g=parseInt(c.slice(2,4),16)||255, b=parseInt(c.slice(4,6),16)||255;
-  return `rgba(${r},${g},${b},${alpha})`;
+  return 'rgba('+r+','+g+','+b+','+alpha+')';
 }
 
 /* ====== BUBBLE SCHEDULER (Πράξεις) ====== */
@@ -768,11 +777,16 @@ class BubbleScheduler {
   }
   sanitize(html){
     const wrap=document.createElement('div'); wrap.innerHTML=html||'';
-    wrap.querySelectorAll('*').forEach(n=>{
+    const all=wrap.querySelectorAll('*');
+    all.forEach(function(n){
       const tag=n.tagName.toLowerCase();
-      if(!this._ALLOWED.has(tag)) n.replaceWith(document.createTextNode(n.textContent));
-      else [...n.attributes].forEach(a=>n.removeAttribute(a.name));
-    });
+      if(!this._ALLOWED.has(tag)){
+        n.replaceWith(document.createTextNode(n.textContent));
+      }else{
+        const attrs=[].slice.call(n.attributes);
+        attrs.forEach(function(a){ n.removeAttribute(a.name); });
+      }
+    }, this);
     return wrap.innerHTML;
   }
   computeDur(text){
@@ -787,13 +801,13 @@ class BubbleScheduler {
     let labelText='';
     if(vc){
       if(LANG==='en'){
-        labelText = vc.name_en || vc.name || (`SPECTATOR ${viewer+1}`);
+        labelText = vc.name_en || vc.name || ('SPECTATOR '+(viewer+1));
       }else{
-        labelText = vc.name_gr || vc.name || (`ΘΕΑΤΗΣ ${viewer+1}`);
+        labelText = vc.name_gr || vc.name || ('ΘΕΑΤΗΣ '+(viewer+1));
       }
       this.labelEl.style.backgroundColor = tint(vc.color || '#000000', 0.9);
     }else{
-      labelText = (LANG==='en' ? `SPECTATOR ${viewer+1}` : `ΘΕΑΤΗΣ ${viewer+1}`);
+      labelText = (LANG==='en' ? 'SPECTATOR '+(viewer+1) : 'ΘΕΑΤΗΣ '+(viewer+1));
       this.labelEl.style.backgroundColor = 'rgba(0,0,0,0.7)';
     }
 
@@ -807,7 +821,6 @@ class BubbleScheduler {
     this.labelEl.style.display = 'block';
   }
 
-  /* === Βασικό: θέση bubbles/σκέψεων δεμένη στο koino.png === */
   placePanelNearViewer(viewer, _liftIgnored, xShift){
     const W = stage.clientWidth;
     const xL = W*0.18;
@@ -839,8 +852,8 @@ class BubbleScheduler {
     const stageRect= stage.getBoundingClientRect();
 
     if(audRect && audRect.height>10){
-      const baseY = audRect.top - stageRect.top; // top του κοινού σε coords της σκηνής
-      topPx = baseY + bubbleDy;                  // bubbleDy < 0 → πάνω από το κοινό
+      const baseY = audRect.top - stageRect.top;
+      topPx = baseY + bubbleDy;
     }else{
       const frac = vc && typeof vc.bubbleYFrac === 'number' ? vc.bubbleYFrac : 0.6;
       topPx = stage.clientHeight * frac;
@@ -851,8 +864,15 @@ class BubbleScheduler {
     this.el.style.top  = topPx + 'px';
   }
 
-  showOnce({viewer,text,lift,xShift,durSec,pauseAfterSec}){
-    return new Promise(resolve=>{
+  showOnce(cfg){
+    const viewer=cfg.viewer;
+    const text=cfg.text;
+    const lift=cfg.lift;
+    const xShift=cfg.xShift;
+    const durSec=cfg.durSec;
+    const pauseAfterSec=cfg.pauseAfterSec;
+
+    return new Promise((resolve)=>{
       if(this._currentCancel){ try{ this._currentCancel(); }catch(e){} this._currentCancel=null; }
       const textEl=this.el.querySelector('.text');
       const sanitized = this.sanitize(text||'');
@@ -885,7 +905,7 @@ class BubbleScheduler {
           const extraPause = (typeof pauseAfterSec==='number' && pauseAfterSec>=0)
             ? pauseAfterSec*1000
             : 500;
-          setTimeout(()=>cancel(), extraPause);
+          setTimeout(cancel, extraPause);
         });
       }, 220);
 
@@ -913,8 +933,16 @@ class BubbleScheduler {
       this._currentCancel=cancel;
     });
   }
-  say(viewer,text,lift=0,xShift=0,durSec=null,pauseAfterSec=null){
-    this._queue=this._queue.then(()=>this.showOnce({viewer,text,lift,xShift,durSec,pauseAfterSec}));
+  say(viewer,text,lift,xShift,durSec,pauseAfterSec){
+    const cfg={
+      viewer:viewer,
+      text:text,
+      lift:lift,
+      xShift:xShift,
+      durSec:durSec,
+      pauseAfterSec:pauseAfterSec
+    };
+    this._queue=this._queue.then(()=>this.showOnce(cfg));
     return this._queue;
   }
   clear(){
@@ -991,7 +1019,7 @@ function initXTChart(){
   const h = Math.floor(xtChart.clientHeight || Math.max(120, stage.clientHeight*0.35));
   const xData=buildSeriesData();
   const opts={
-    width:w, height=h,
+    width:w, height:h,
     scales:{ x:{time:false, range:[0,T]}, y:{range:[-A_m*1.1, A_m*1.1]} },
     axes:[
       { stroke:"#fff", grid:{show:true, stroke:"rgba(255,255,255,0.25)"},
@@ -1008,9 +1036,9 @@ function drawXTChart(){ if(uXT){ uXT.setData(buildSeriesData()); } }
 /* ====== ΠΑΡΑΜΕΤΡΟΙ ====== */
 function showCurtainParams(){
   const phi0deg=((omega*obsStartPlaybackOffset)*180/Math.PI + 360)%360;
-  paramAEl.textContent  =`A = ${A_m.toFixed(2)} m`;
-  paramWEl.textContent  =`ω = ${omega.toFixed(3)} rad/s`;
-  paramPhiEl.textContent=`φ₀ = ${phi0deg.toFixed(1)}°`;
+  paramAEl.textContent  ='A = '+A_m.toFixed(2)+' m';
+  paramWEl.textContent  ='ω = '+omega.toFixed(3)+' rad/s';
+  paramPhiEl.textContent='φ₀ = '+phi0deg.toFixed(1)+'°';
   paramsBoxEl.style.display='block';
   positionParamsBox();
 }
@@ -1021,7 +1049,7 @@ function closeCurtainsSequence(){
   stage.classList.remove('open');
   markerEl.style.opacity='0';
   setMode('run');
-  setTimeout(()=>{
+  setTimeout(function(){
     const cuRect = curtainUpper.getBoundingClientRect();
     const sRect = stage.getBoundingClientRect();
     const centralLeftPx = sRect.left + stage.clientWidth*0.18;
@@ -1096,17 +1124,17 @@ function handleTimelineEvent(th){
 }
 
 /* ====== ΚΟΥΜΠΙΑ ====== */
-btnPause.addEventListener('click',()=>{ setMode(mode==='pause'?'run':'pause'); });
-btnSlow .addEventListener('click', ()=>{ setMode('slow');  });
-btnPlay .addEventListener('click', ()=>{ setMode('run');  });
+btnPause.addEventListener('click',function(){ setMode(mode==='pause'?'run':'pause'); });
+btnSlow .addEventListener('click', function(){ setMode('slow');  });
+btnPlay .addEventListener('click', function(){ setMode('run');  });
 
-btnSettings.addEventListener('click',()=>{
+btnSettings.addEventListener('click',function(){
   settingsPanel.style.display = (settingsPanel.style.display==='block' ? 'none' : 'block');
 });
 
 function resetShow(){
   if(bubbleAutoTimer){ clearTimeout(bubbleAutoTimer); bubbleAutoTimer=null; }
-  thoughtScript = [...thoughtScriptBase];
+  thoughtScript = thoughtScriptBase.slice();
   nextThoughtIdx=0; isBubbleActive=false;
   measureRowIdx=0; lastSampleObsTime=-Infinity;
   firstLawShown=false; lawCount=0;
@@ -1185,7 +1213,7 @@ function animate(now){
   if(obsStarted && !isBubbleActive && nextThoughtIdx<thoughtScript.length){
     const th=thoughtScript[nextThoughtIdx];
     const shiftMul=(firstThoughtMul-DEFAULT_FIRST_MUL);
-    const baseMul=(th.atT??0);
+    const baseMul=(th.atT||0);
     const eventAtSec=(baseMul+shiftMul)*T*timelineScale;
     if(tObs>=eventAtSec){
       try{ handleTimelineEvent(th); }finally{ nextThoughtIdx+=1; }
@@ -1197,17 +1225,17 @@ function animate(now){
   if(!L0_px && springRect.width>0){ L0_px=springRect.width; }
   if(skRect.width>0){ skaterWidthPx=skRect.width; hookOffsetPx=skaterWidthPx/2; }
 
-  const ax=anchorX();
+  const axX=anchorX();
   const centerX=stage.clientWidth/2;
   const skaterHookX=centerX + A_px*Math.sin(omega*playbackTime);
-  const distance=skaterHookX-ax;
+  const distance=skaterHookX-axX;
   const scale=(L0_px && L0_px>0) ? (distance/L0_px) : 1;
-  springEl.style.left=ax+'px';
-  springEl.style.transform=`scaleX(${scale})`;
+  springEl.style.left=axX+'px';
+  springEl.style.transform='scaleX('+scale+')';
   actor.style.transform='none';
   actor.style.left=(skaterHookX-hookOffsetPx)+'px';
   markerEl.style.left=skaterHookX+'px';
-  spotlight.style.background=`radial-gradient(220px 140px at ${skaterHookX}px ${stage.clientHeight*0.62}px, rgba(255,255,220,.65), rgba(255,255,255,0) 70%)`;
+  spotlight.style.background='radial-gradient(220px 140px at '+skaterHookX+'px '+(stage.clientHeight*0.62)+'px, rgba(255,255,220,.65), rgba(255,255,255,0) 70%)';
 
   const xMeters=(skaterHookX-centerX)/pxPerMeter;
   logMeasurement(tObs,xMeters);
@@ -1222,7 +1250,8 @@ const boardRight = document.getElementById('boardRight');
 const foyer      = document.getElementById('foyer');
 const fbubble    = document.getElementById('foyerBubble');
 
-function typeWriter(el, text, opt=12, done){
+function typeWriter(el, text, opt, done){
+  if(typeof opt==='undefined') opt=12;
   el.innerHTML=''; let i=0;
   const src = String(text||'').replaceAll('sqrt(','√(');
   const total = src.length || 1;
@@ -1258,9 +1287,9 @@ function showSpeakerChip(viewerId){
   if(!vInfo) return;
   let labelText;
   if(LANG==='en'){
-    labelText = vInfo.name_en || vInfo.name || `SPECTATOR ${viewerId}`;
+    labelText = vInfo.name_en || vInfo.name || ('SPECTATOR '+viewerId);
   }else{
-    labelText = vInfo.name_gr || vInfo.name || `ΘΕΑΤΗΣ ${viewerId}`;
+    labelText = vInfo.name_gr || vInfo.name || ('ΘΕΑΤΗΣ '+viewerId);
   }
   fbubble.textContent = labelText;
   fbubble.style.backgroundColor = tint(vInfo.color || '#000000',0.85);
@@ -1273,7 +1302,7 @@ function showSpeakerChip(viewerId){
   fbubble.style.display = 'block';
 
   if(FOYER_AVATARS && FOYER_AVATARS.length){
-    FOYER_AVATARS.forEach(el=>{
+    FOYER_AVATARS.forEach(function(el){
       const id = Number(el.dataset.viewerId);
       el.style.display = (id === Number(vInfo.id) ? 'block' : 'none');
     });
@@ -1285,8 +1314,8 @@ function syncScroll(from,to){
   if(_syncing) return;
   _syncing=true; to.scrollTop=from.scrollTop; _syncing=false;
 }
-boardLeft.addEventListener('scroll', ()=>syncScroll(boardLeft,boardRight));
-boardRight.addEventListener('scroll',()=>syncScroll(boardRight,boardLeft));
+boardLeft.addEventListener('scroll', function(){syncScroll(boardLeft,boardRight);});
+boardRight.addEventListener('scroll',function(){syncScroll(boardRight,boardLeft);});
 
 function isFormulaBlock(text){
   const s = String(text||'').trim();
@@ -1301,7 +1330,7 @@ function isFormulaBlock(text){
 
 function addRow(leftText, rightText, viewer, durLeftSec, durRightSec, pauseAfterSec, whenDone){
   const baseViewer = Array.isArray(FOYER_VIEWERS) ? FOYER_VIEWERS : [];
-  const viewerInfo = baseViewer.find(v=>v.id===viewer) || baseViewer[0] || {color:'#ffffff'};
+  const viewerInfo = baseViewer.find(function(v){return v.id===viewer;}) || baseViewer[0] || {color:'#ffffff'};
 
   const bgLeft  = tint(viewerInfo.color, 0.22);
   const bgRight = tint(viewerInfo.color, 0.16);
@@ -1310,10 +1339,10 @@ function addRow(leftText, rightText, viewer, durLeftSec, durRightSec, pauseAfter
   const r = document.createElement('div'); r.className='cell right sync-row';
 
   l.style.background = bgLeft;
-  l.style.borderLeft = `4px solid ${tint(viewerInfo.color,0.85)}`;
+  l.style.borderLeft = '4px solid '+tint(viewerInfo.color,0.85);
 
   r.style.background = bgRight;
-  r.style.borderLeft = `4px solid ${tint(viewerInfo.color,0.55)}`;
+  r.style.borderLeft = '4px solid '+tint(viewerInfo.color,0.55);
 
   if (isFormulaBlock(rightText)){
     r.classList.add('formula');
@@ -1325,7 +1354,7 @@ function addRow(leftText, rightText, viewer, durLeftSec, durRightSec, pauseAfter
   showSpeakerChip(viewer);
 
   function finalizeRow(){
-    requestAnimationFrame(()=>{
+    requestAnimationFrame(function(){
       const h = Math.max(l.offsetHeight, r.offsetHeight);
       l.style.minHeight = h+'px';
       r.style.minHeight = h+'px';
@@ -1340,7 +1369,7 @@ function addRow(leftText, rightText, viewer, durLeftSec, durRightSec, pauseAfter
   const leftOpt  = (typeof durLeftSec  === 'number' && durLeftSec>0)  ? {durationSec:durLeftSec}  : 10;
   const rightOpt = (typeof durRightSec === 'number' && durRightSec>0) ? {durationSec:durRightSec} : 10;
 
-  typeWriter(l, leftText, leftOpt, ()=>{
+  typeWriter(l, leftText, leftOpt, function(){
     if(rt.length>0){
       typeWriter(r, rightText, rightOpt, finalizeRow);
     }else{
@@ -1360,7 +1389,7 @@ function foyerStep(){
   let text = null;
 
   if(meta && meta.id){
-    text = (dlgLang.foyer || []).find(e => e && e.id === meta.id) || null;
+    text = (dlgLang.foyer || []).find(function(e){ return e && e.id === meta.id; }) || null;
   }else{
     text = dlgLang.foyer[foyerIdx] || null;
   }
@@ -1394,7 +1423,7 @@ function foyerStep(){
     durLeft,
     durRight,
     pauseAfterSec,
-    (pause)=>{
+    function(pause){
       const len = (String(text.left||'').length + String(text.right||'').length);
       let delay;
       if(typeof pause === 'number'){
@@ -1421,11 +1450,11 @@ function repositionFoyer(){
 }
 function buildFoyerAvatars(){
   if(!audienceImg) return;
-  FOYER_AVATARS.forEach(el=>{ try{ el.remove(); }catch(e){} });
+  FOYER_AVATARS.forEach(function(el){ try{ el.remove(); }catch(e){} });
   FOYER_AVATARS = [];
   const arr = Array.isArray(FOYER_VIEWERS) ? FOYER_VIEWERS : [];
   if(!arr.length) return;
-  arr.forEach(v=>{
+  arr.forEach(function(v){
     const img = document.createElement('img');
     img.className = 'foyer-avatar';
     img.dataset.viewerId = String(v.id);
@@ -1435,13 +1464,13 @@ function buildFoyerAvatars(){
     FOYER_AVATARS.push(img);
   });
   repositionAvatars();
-  FOYER_AVATARS.forEach(el=>{ el.style.display='none'; });
+  FOYER_AVATARS.forEach(function(el){ el.style.display='none'; });
 }
 function repositionAvatars(){
   if(!FOYER_AVATARS.length || !audienceImg) return;
   const audienceBottom = parseFloat(getComputedStyle(audienceImg).bottom||'0') || 0;
   const audRect = audienceImg.getBoundingClientRect();
-  FOYER_AVATARS.forEach(el=>{
+  FOYER_AVATARS.forEach(function(el){
     const id = Number(el.dataset.viewerId);
     const vc = getViewerConfigById(id);
     if(!vc) return;
@@ -1454,7 +1483,8 @@ function repositionAvatars(){
     el.style.width  = 'auto';
   });
 }
-function foyerOpen(auto=true){
+function foyerOpen(auto){
+  if(typeof auto==='undefined') auto=true;
   foyer.style.display='block';
   boardLeft.innerHTML=''; boardRight.innerHTML='';
   foyerIdx=0; foyerAuto= !!auto;
@@ -1463,13 +1493,13 @@ function foyerOpen(auto=true){
   buildFoyerAvatars();
   setTimeout(foyerStep, 400);
 }
-function foyerClose(silent=false){
+function foyerClose(){
   if(foyerTimer){ clearTimeout(foyerTimer); foyerTimer=null; }
   foyer.style.display='none';
-  FOYER_AVATARS.forEach(el=>{ el.style.display='none'; });
+  FOYER_AVATARS.forEach(function(el){ el.style.display='none'; });
 }
-btnFoyer.addEventListener('click', ()=>foyerOpen(true));
-btnFoyerGo.addEventListener('click', ()=>{
+btnFoyer.addEventListener('click', function(){foyerOpen(true);});
+btnFoyerGo.addEventListener('click', function(){
   foyerBreak.style.display='none';
   foyerOpen(true);
 });
@@ -1513,11 +1543,11 @@ window.foyerClose = foyerClose;
     const A_real_px  = pxPerMeter * A_m;
     const A_ghost_px = pxPerMeter * Aghost_m;
 
-    const loop=()=>{
+    const loop=function(){
       const sRect = stage.getBoundingClientRect();
       const aRect = actor.getBoundingClientRect();
       const cx    = stage.clientWidth/2;
-      const ax    = anchorX();
+      const axX    = anchorX();
 
       const hookX_real = (aRect.left - sRect.left) + aRect.width/2;
       const sinθ = Math.max(-1, Math.min(1, (hookX_real - cx) / Math.max(1, A_real_px)));
@@ -1526,10 +1556,10 @@ window.foyerClose = foyerClose;
       ghost.style.left = hookX_ghost + 'px';
 
       const base = L0_px || ghostSpring.getBoundingClientRect().width || 1;
-      const dist  = Math.max(0, hookX_ghost - ax);
+      const dist  = Math.max(0, hookX_ghost - axX);
       const scale = dist / base;
-      ghostSpring.style.left = ax + 'px';
-      ghostSpring.style.transform = `scaleX(${scale})`;
+      ghostSpring.style.left = axX + 'px';
+      ghostSpring.style.transform = 'scaleX('+scale+')';
 
       ghostRAF = requestAnimationFrame(loop);
     };
@@ -1572,7 +1602,7 @@ window.foyerClose = foyerClose;
         if(step.lawText || step.law){
           const lawTxt = step.lawText || step.law;
           addLaw(lawTxt);
-          await new Promise(r=>setTimeout(r,220));
+          await new Promise((r)=>setTimeout(r,220));
           continue;
         }
         const viewerIdx = (typeof step.v==='number' ? step.v :
@@ -1597,7 +1627,7 @@ window.foyerClose = foyerClose;
       markerEl.style.opacity='0';
       curtainUpper.classList.add('slow-close');
       stage.classList.remove('open');
-      await new Promise(r=>setTimeout(r,1600));
+      await new Promise((r)=>setTimeout(r,1600));
       curtainUpper.classList.remove('slow-close');
 
       const cuRect = curtainUpper.getBoundingClientRect();
@@ -1617,7 +1647,7 @@ window.foyerClose = foyerClose;
     }
   }
   document.addEventListener('act2-start', playAct2, { once:true });
-  document.getElementById('btnAct2').addEventListener('click', ()=>document.dispatchEvent(new Event('act2-start')));
+  document.getElementById('btnAct2').addEventListener('click', function(){document.dispatchEvent(new Event('act2-start'));});
 })();
 
 /* ====== LANG SWITCH HANDLER ====== */
@@ -1637,7 +1667,7 @@ const ro=new ResizeObserver(()=>{ positionRightPanel(); if(uXT){ drawXTChart(); 
 ro.observe(stage);
 
 /* ====== BOOTSTRAP ====== */
-(async ()=>{
+(async function(){
   await loadTimeline();
   await loadDialogOverrides('gr');
   await loadDialogOverrides('en');
