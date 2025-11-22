@@ -1379,9 +1379,11 @@ function showSpeakerChip(viewerId){
   fbubble.style.backgroundColor = tint(vInfo.color || '#000000',0.85);
   fbubble.style.borderColor     = 'rgba(255,255,255,.85)';
 
-  const topPx = Math.max(10, layout.avatarTopY - 24);
+  /* Χρήση των ΙΔΙΩΝ συντεταγμένων με τα thought bubbles */
+  const topPx    = Math.max(10, layout.bubbleTopY);
+  const centerX  = layout.bubbleCenterX;
 
-  fbubble.style.left = layout.anchorX + 'px';
+  fbubble.style.left = centerX + 'px';
   fbubble.style.top  = topPx + 'px';
   fbubble.style.transform = 'translateX(-50%)';
   fbubble.style.display = 'block';
