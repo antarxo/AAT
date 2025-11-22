@@ -86,7 +86,7 @@
     position:absolute;max-width:420px;background:rgba(255,255,255,.92);color:#000;
     font-size:15px;line-height:1.45;padding:10px 12px 12px;border:2px solid.transparent;border-radius:10px;
     border-image:repeating-linear-gradient(90deg, rgba(0,0,0,.6) 0 6px, transparent 6px 10px, rgba(0,0,0,.6) 10px 12px, transparent 12px 16px) 1;
-    box-shadow:0 6px 12px rgba(0,0,0,.4);z-index:750;pointer-events:none;opacity:0;display:none;transition:opacity .25s ease, transform .25s ease
+    box-shadow:0 6px 12px rgba(0,0,0,.4);z-index:750;pointer-events:none;opacity:0;display:none;transition:opacity .25s ease, transform .25s.ease
   }
   .thought-bubble.active{opacity:1;transform:translateY(-2px);animation:popIn .25s.ease}
   .thought-bubble.closing{opacity:0}
@@ -806,7 +806,7 @@ class BubbleScheduler {
       const speed = Math.max(15, Math.min(80, Math.round(baseMs/totalChars)));
 
       let done=false;
-      let.started=false;
+      let started=false;
 
       this.showSpeaker(viewer);
 
@@ -822,14 +822,14 @@ class BubbleScheduler {
         setMode('slow');
 
         typeWriterHTML(textEl, sanitized, speed, ()=>{
-          const extraPause = (typeof.pauseAfterSec==='number' && pauseAfterSec>=0)
+          const extraPause = (typeof pauseAfterSec==='number' && pauseAfterSec>=0)
             ? pauseAfterSec*1000
             : 500;
           setTimeout(()=>cancel(), extraPause);
         });
       }, 220);
 
-      const.cancel=()=>{
+      const cancel=()=>{
         if(done) return;
         done=true;
         clearTimeout(timerId);
@@ -1097,7 +1097,7 @@ function startShowCountdown(){
   const seconds=5;
   let end=performance.now()+seconds*1000;
   function tick(){
-    const.now=performance.now();
+    const now=performance.now();
     const remain=Math.max(0, Math.ceil((end-now)/1000));
     countdownTimerEl.textContent=remain;
     if(now>=end){
@@ -1328,9 +1328,9 @@ function foyerStep(){
     durRightSec,
     pauseAfterSec,
     (pause)=>{
-      const.effectivePause = (typeof pause === 'number')
-        ? pause
-        : (typeof pauseAfterSec === 'number' ?.pauseAfterSec : undefined);
+      const effectivePause =
+        (typeof pause === 'number') ? pause :
+        (typeof pauseAfterSec === 'number') ? pauseAfterSec : undefined;
 
       let delayMs;
       if (typeof effectivePause === 'number'){
@@ -1338,7 +1338,7 @@ function foyerStep(){
       } else {
         const len = (String(text.left||'').length + String(text.right||'').length);
         const baseDelay = 600;
-        const.extra     = Math.min(2000, Math.max(400, 15*len/4));
+        const extra     = Math.min(2000, Math.max(400, 15*len/4));
         delayMs = baseDelay + extra;
       }
 
@@ -1540,7 +1540,7 @@ ro.observe(stage);
 (async ()=>{
   await loadTimeline();
   await loadDialogOverrides('gr');
-  await loadDialogOverrides('en');
+  await.loadDialogOverrides('en');
   await loadUI('gr');
   await loadUI('en');
   await loadViewers();
