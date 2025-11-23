@@ -86,7 +86,7 @@
     position:absolute;max-width:420px;background:rgba(255,255,255,.92);color:#000;
     font-size:15px;line-height:1.45;padding:10px 12px 12px;border:2px solid transparent;border-radius:10px;
     border-image:repeating-linear-gradient(90deg, rgba(0,0,0,.6) 0 6px, transparent 6px 10px, rgba(0,0,0,.6) 10px 12px, transparent 12px 16px) 1;
-    box-shadow:0 6px 12px rgba(0,0,0,.4);z-index:750;pointer-events:none;opacity:0;display:none;transition:opacity .25s ease, transform .25s.ease
+    box-shadow:0 6px 12px rgba(0,0,0,.4);z-index:750;pointer-events:none;opacity:0;display:none;transition:opacity .25s ease, transform .25s ease
   }
   .thought-bubble.active{opacity:1;transform:translateY(-2px);animation:popIn .25s ease}
   .thought-bubble.closing{opacity:0}
@@ -115,7 +115,7 @@
   }
 
   .controls{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.2);border-radius:8px;padding:6px 8px;display:flex;gap:8px;z-index:300}
-  .controls button{background:none;border:0;color:#fff;font-size:16px;line-height:1;cursor:pointer;min-width:32px;min-height:32px;border-radius:4px;padding:4px 6px;transition:transform .08s.ease}
+  .controls button{background:none;border:0;color:#fff;font-size:16px;line-height:1;cursor:pointer;min-width:32px;min-height:32px;border-radius:4px;padding:4px 6px;transition:transform .08s ease}
   .controls button:active{transform:translateY(1px)}
   .controls button.active{background:rgba(255,255,255,.2)}
   #btnSlow{display:none}
@@ -139,16 +139,7 @@
   .actbreak{position:absolute;background:rgba(0,0,0,.55);color:#fff;z-index:410;display:none;align-items:center;justify-content:center;text-align:center}
   .foyerbreak{position:absolute;background:rgba(0,0,0,.55);color:#fff;z-index:410;display:none;align-items:center;justify-content:center;text-align:center}
 
-  .foyer{
-    position:absolute;
-    left:18%;
-    width:64%;
-    top:0;
-    height:var(--foyer-h);
-    z-index:500;
-    display:none;
-    background:url('koino_extra.png') bottom center/contain no-repeat;
-  }
+  .foyer{position:absolute;left:18%;width:64%;top:0;height:var(--foyer-h);z-index:500;display:none}
   .foyer .wrap{position:absolute;inset:0;display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid rgba(255,255,255,.25);border-radius:10px;overflow:hidden}
   .board-left,.board-right{
     background:#0d2a1e url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%228%22 height=%228%22><circle cx=%224%22 cy=%224%22 r=%221%22 fill=%22rgba(255,255,255,0.03)%22/></svg>') repeat;
@@ -180,6 +171,53 @@
     border-radius:8px;
     padding:8px 12px;
     cursor:pointer;
+  }
+
+  /* extra κοινό και avatars στο φουαγιέ */
+  .foyer-audience{
+    position:absolute;
+    left:0;
+    bottom:-8px;
+    width:100%;
+    opacity:0.85;
+    z-index:-1;
+    pointer-events:none;
+  }
+  .foyer-speakers{
+    position:absolute;
+    top:6px;
+    left:50%;
+    transform:translateX(-50%);
+    display:flex;
+    gap:8px;
+    z-index:20;
+  }
+  .foyer-speaker{
+    width:40px;
+    height:40px;
+    border-radius:999px;
+    border:2px solid rgba(255,255,255,0.7);
+    overflow:hidden;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:11px;
+    font-weight:700;
+    color:#fff;
+    background:rgba(0,0,0,0.6);
+    box-shadow:0 0 6px rgba(0,0,0,0.7);
+    opacity:0.7;
+    transition:transform 0.15s, opacity 0.15s, box-shadow 0.15s;
+  }
+  .foyer-speaker img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+  }
+  .foyer-speaker.active{
+    transform:scale(1.1);
+    opacity:1;
+    box-shadow:0 0 10px rgba(255,255,200,0.9);
   }
 </style>
 </head>
@@ -308,6 +346,8 @@
     </div>
 
     <div class="foyer" id="foyer">
+      <img src="koino_extra.png" alt="" class="foyer-audience" id="foyerAudience">
+      <div class="foyer-speakers" id="foyerSpeakers"></div>
       <div class="wrap">
         <div class="board-left"  id="boardLeft"  aria-label="μαυροπίνακας-αριστερά"></div>
         <div class="board-right" id="boardRight" aria-label="μαυροπίνακας-δεξιά"></div>
@@ -318,8 +358,10 @@
   </div>
 
 <script>
-/* ====== GLOBAL DATA HOLDERS ====== */
+/* ====== GLOBAL DATA ====== */
 const DIALOGS = { gr: null, en: null };
+let LANG = 'gr';
+let FOYER_VIEWERS = [];
 
 const UI = {
   gr: {
@@ -403,9 +445,7 @@ const i18nDyn = {
   }
 };
 
-let LANG = 'gr';
-let FOYER_VIEWERS = [];
-
+/* ====== ELEMENTS ====== */
 const stage=document.getElementById('stage');
 const actor=document.getElementById('actor');
 const springEl=document.getElementById('spring');
@@ -448,9 +488,11 @@ const btnFoyerGo=document.getElementById('btnFoyerGo');
 const curtainUpper=document.querySelector('.curtain-upper');
 const langSwitch=document.getElementById('langSwitch');
 
+/* stubs ώστε resetShow να μην σκάει πριν οριστούν */
 if (typeof window.foyerOpen  !== 'function') window.foyerOpen  = function(){};
 if (typeof window.foyerClose !== 'function') window.foyerClose = function(){};
 
+/* φυσικές σταθερές */
 const m=70, T=6.0, A_m=3.0;
 const omega=2*Math.PI/T;
 const D=Math.round(m*omega*omega);
@@ -469,60 +511,27 @@ let firstLawShown=false;
 let vCan=null,aCan=null,axCan=null;
 
 let act1Started=false, act1Finished=false;
+let act1HadClose=false;
 
+/* foyer stuff */
 const boardLeft  = document.getElementById('boardLeft');
 const boardRight = document.getElementById('boardRight');
 const foyer      = document.getElementById('foyer');
 const fbubble    = document.getElementById('foyerBubble');
+const foyerSpeakers = document.getElementById('foyerSpeakers');
 
 let foyerIdx=0, foyerAuto=true, foyerTimer=null;
 
-const DEFAULT_FIRST_MUL=1.1;
+/* ρυθμίσεις */
 let firstThoughtMul=parseFloat(slFirst.value);
 let timelineScale=parseFloat(slScale.value);
 let bubbleDurationSec=parseFloat(slDur.value);
 let slowFactor=parseFloat(slSlow.value);
 
 let isBubbleActive=false;
-
 const sleep = (ms)=>new Promise(r=>setTimeout(r,ms));
 
-function tint(hex, alpha){
-  const c = (hex||'#ffffff').replace('#','');
-  const r=parseInt(c.slice(0,2),16)||255;
-  const g=parseInt(c.slice(2,4),16)||255;
-  const b=parseInt(c.slice(4,6),16)||255;
-  return `rgba(${r},${g},${b},${alpha})`;
-}
-
-/* ====== VIEWERS IMAGES ====== */
-function refreshViewersVisuals(){
-  const vEls = document.querySelectorAll('.viewer');
-  vEls.forEach(el=>{
-    const idx = parseInt(el.dataset.idx,10);
-    const info = FOYER_VIEWERS[idx];
-    if(info){
-      const img = info.img || info.image || info.avatar || info.icon || '';
-      if(img){
-        el.style.backgroundImage = `url('${img}')`;
-        el.style.backgroundSize = 'contain';
-        el.style.backgroundRepeat = 'no-repeat';
-        el.style.backgroundPosition = 'center bottom';
-        el.style.filter='none';
-        el.style.opacity='1';
-      }else{
-        el.style.backgroundImage='url("https://upload.wikimedia.org/wikipedia/commons/f/f9/Silhouette_icon.svg")';
-        el.style.backgroundSize='contain';
-        el.style.backgroundRepeat='no-repeat';
-        el.style.backgroundPosition='center bottom';
-        el.style.filter='grayscale(1) brightness(.6)';
-        el.style.opacity='.75';
-      }
-    }
-  });
-}
-
-/* ====== LOAD DIALOGS (ΜΟΝΗ ΠΗΓΗ ΣΕΝΑΡΙΟΥ) ====== */
+/* ====== LOAD DIALOGS ====== */
 async function loadDialogs(lang){
   try{
     const resp = await fetch(`dialogs-${lang}.json`, {cache:'no-store'});
@@ -530,33 +539,34 @@ async function loadDialogs(lang){
     const data = await resp.json();
     DIALOGS[lang] = data;
 
-    if(!FOYER_VIEWERS.length && data && Array.isArray(data.viewers)){
+    if(data && Array.isArray(data.viewers)){
       FOYER_VIEWERS = data.viewers.slice();
-      refreshViewersVisuals();
+      buildFoyerSpeakers();
     }
-  }catch(e){}
+  }catch(e){
+    console.error('loadDialogs error',e);
+  }
 }
 
-/* ====== I18N / UI ====== */
+/* ====== I18N ====== */
 function setLang(lang){
   LANG = lang;
   document.documentElement.lang = (lang==='en'?'en':'el');
-
   const ui = UI[lang] || {};
 
   if(ui.pageTitle) document.title = ui.pageTitle;
 
   const actTitleEl = document.querySelector('[data-i18n="actTitle"]');
-  if(actTitleEl && ui.act1Title) actTitleEl.textContent = ui.act1Title;
+  if(actTitleEl && ui.act1Title && !act1Started) actTitleEl.textContent = ui.act1Title;
 
   const sbA = document.getElementById('sbLineA');
   const sbB = document.getElementById('sbLineB');
   const sbC = document.getElementById('sbLineC');
   const sbD = document.getElementById('sbLineD');
-  if(sbA && ui.sbA1) sbA.textContent = ui.sbA1;
-  if(sbB && ui.sbB1) sbB.innerHTML   = ui.sbB1;
-  if(sbC && ui.sbC1) sbC.textContent = ui.sbC1;
-  if(sbD && ui.sbD1) sbD.textContent = ui.sbD1;
+  if(sbA && ui.sbA1 && !act1Started) sbA.textContent = ui.sbA1;
+  if(sbB && ui.sbB1 && !act1Started) sbB.innerHTML   = ui.sbB1;
+  if(sbC && ui.sbC1 && !act1Started) sbC.textContent = ui.sbC1;
+  if(sbD && ui.sbD1 && !act1Started) sbD.textContent = ui.sbD1;
 
   const startBtnEl = document.getElementById('startBtn');
   if(startBtnEl && ui.startBtn) startBtnEl.textContent = ui.startBtn;
@@ -590,8 +600,8 @@ function setLang(lang){
   const foyerBtn = document.getElementById('btnFoyer');
   if(foyerBtn && ui.foyerBtnLabel) foyerBtn.textContent = ui.foyerBtnLabel;
 
-  const endShowBtn = document.getElementById('btnEndShow');
-  if(endShowBtn && ui.endShowBtn) endShowBtn.textContent = ui.endShowBtn;
+  const endShowBtnEl = document.getElementById('btnEndShow');
+  if(endShowBtnEl && ui.endShowBtn) endShowBtnEl.textContent = ui.endShowBtn;
 
   const settingsTitleEl = document.querySelector('[data-i18n="settingsTitle"]');
   if(settingsTitleEl && ui.settingsTitle) settingsTitleEl.textContent = ui.settingsTitle;
@@ -620,7 +630,6 @@ function positionParamsBox(){
   paramsBoxEl.style.left = (rightEdge - w - 6) + 'px';
   paramsBoxEl.style.top  = '33px';
 }
-
 function updateRuler(){
   const baseLeft=stage.clientWidth*0.18;
   const usableW =stage.clientWidth*0.64;
@@ -639,7 +648,6 @@ function updateRuler(){
     lbl.style.left=rel+'px'; rulerEl.appendChild(lbl);
   }
 }
-
 function anchorX(){ return stage.clientWidth*0.18; }
 
 function positionRightPanel(){
@@ -667,12 +675,12 @@ function positionRightPanel(){
   positionLawCharts();
   positionParamsBox();
 }
-
 window.addEventListener('resize', positionRightPanel);
 
 function logMeasurement(tObs,xMeters){
   if(!obsStarted || mode==='pause') return;
-  if(tObs-lastSampleObsTime<sampleInterval) return; lastSampleObsTime=tObs;
+  if(tObs-lastSampleObsTime<sampleInterval) return;
+  lastSampleObsTime=tObs;
   const tr=document.createElement('tr');
   tr.className='new';
   tr.innerHTML=`<td>${(++measureRowIdx)}</td><td>${tObs.toFixed(2)}</td><td>${xMeters.toFixed(2)}</td>`;
@@ -684,12 +692,12 @@ function logMeasurement(tObs,xMeters){
 
 function setMode(newMode){
   mode=newMode;
-  btnSlow.classList.toggle('active', mode==='slow');
-  btnPlay.classList.toggle('active', mode==='run');
+  if(btnSlow) btnSlow.classList.toggle('active', mode==='slow');
+  if(btnPlay) btnPlay.classList.toggle('active', mode==='run');
   slowHint.textContent = (mode==='slow' && slowFactor<1) ? `SLOW-MO ×${slowFactor.toFixed(2)}` : '';
 }
 
-/* ====== TYPEWRITER HTML (ΠΡΑΞΕΙΣ) ====== */
+/* ====== TYPEWRITER HTML ====== */
 function typeWriterHTML(el, html, speed, done){
   el.innerHTML = html || '';
   const textNodes=[];
@@ -724,7 +732,15 @@ function typeWriterHTML(el, html, speed, done){
   })();
 }
 
-/* ====== BUBBLE SCHEDULER (Πράξεις) ====== */
+function tint(hex, alpha){
+  const c = (hex||'#ffffff').replace('#','');
+  const r=parseInt(c.slice(0,2),16)||255;
+  const g=parseInt(c.slice(2,4),16)||255;
+  const b=parseInt(c.slice(4,6),16)||255;
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
+/* ====== BUBBLE SCHEDULER (ΠΡΑΞΕΙΣ) ====== */
 class BubbleScheduler {
   constructor(panelEl, labelEl){
     this.el=panelEl;
@@ -742,17 +758,10 @@ class BubbleScheduler {
     });
     return wrap.innerHTML;
   }
-  computeDur(text){
-    const s=String(text||'');
-    const len=s.length;
-    const BASE=0.8, PER=0.055, MIN=2.0, MAX=10.0;
-    return Math.max(MIN, Math.min(MAX, BASE+PER*len)) * (bubbleDurationSec/3.0);
-  }
   showSpeaker(viewerIdx){
     if(!this.labelEl) return;
     const viewersArr = Array.isArray(FOYER_VIEWERS) ? FOYER_VIEWERS : [];
     const fv = viewersArr[viewerIdx] || viewersArr[0] || null;
-
     const vEl=document.querySelector(`.viewer[data-idx="${viewerIdx}"]`);
     if(!vEl){
       this.labelEl.style.display='none';
@@ -762,7 +771,6 @@ class BubbleScheduler {
     const vRect=vEl.getBoundingClientRect();
     const centerX=(vRect.left+vRect.width/2)-sRect.left;
     const topPx=Math.max(10,(vRect.top-sRect.top)-110);
-
     let labelText='';
     if(fv){
       if(LANG==='en'){
@@ -775,32 +783,25 @@ class BubbleScheduler {
       labelText = (LANG==='en' ? `SPECTATOR ${viewerIdx+1}` : `ΘΕΑΤΗΣ ${viewerIdx+1}`);
       this.labelEl.style.backgroundColor='rgba(0,0,0,0.7)';
     }
-
     this.labelEl.textContent = labelText;
     this.labelEl.style.left=centerX+'px';
     this.labelEl.style.top=topPx+'px';
     this.labelEl.style.transform='translateX(-50%)';
     this.labelEl.style.display='block';
   }
-
   placePanelNearViewer(viewerIdx,lift=140,xShift=0){
     const W = stage.clientWidth;
     const H = stage.clientHeight;
-
     const xL = W * 0.18;
     const xR = W * 0.82;
     const pad = 12;
-
     this.el.style.display='block';
     this.el.style.opacity='0';
     this.el.style.left='0px';
     this.el.style.top='0px';
-
     const bw = this.el.offsetWidth || 320;
-
     const vEl = document.querySelector(`.viewer[data-idx="${viewerIdx}"]`);
     const sRect = stage.getBoundingClientRect();
-
     let baseCenterX;
     if(vEl){
       const vRect = vEl.getBoundingClientRect();
@@ -811,21 +812,16 @@ class BubbleScheduler {
       const rel = (idx + 1) / (totalViewers + 1);
       baseCenterX = xL + rel * (xR - xL);
     }
-
     let centerX = baseCenterX + (xShift || 0);
     centerX = Math.max(xL + pad + bw/2, Math.min(centerX, xR - pad - bw/2));
-
     const leftPx = centerX - bw/2;
-
     const baseTop = H * 0.23;
     const liftVal = (typeof lift === 'number' ? lift : 135);
     const deltaY = (135 - liftVal);
     const topPx = Math.max(40, baseTop + deltaY);
-
     this.el.style.left = leftPx + 'px';
     this.el.style.top  = topPx + 'px';
   }
-
   showOnce({viewerIdx,text,lift,xShift,durSec,pauseAfterSec}){
     return new Promise(resolve=>{
       if(this._currentCancel){ try{ this._currentCancel(); }catch{} this._currentCancel=null; }
@@ -833,29 +829,22 @@ class BubbleScheduler {
       const sanitized = this.sanitize(text||'');
       const plain = sanitized.replace(/<[^>]+>/g,'');
       const totalChars = Math.max(plain.length,10);
-
       const effectiveDurSec = (typeof durSec==='number' && durSec>0)
         ? durSec
         : (bubbleDurationSec || 3.0);
       const baseMs = effectiveDurSec*1000;
       const speed = Math.max(15, Math.min(80, Math.round(baseMs/totalChars)));
-
       let done=false;
       let started=false;
-
       this.showSpeaker(viewerIdx);
-
       const timerId = setTimeout(()=>{
         if(done) return;
         started=true;
-
         this.placePanelNearViewer(viewerIdx,lift,xShift);
-
         this.el.classList.add('active');
         this.el.style.opacity='1';
         isBubbleActive=true;
         setMode('slow');
-
         typeWriterHTML(textEl, sanitized, speed, ()=>{
           const extraPause = (typeof pauseAfterSec==='number' && pauseAfterSec>=0)
             ? pauseAfterSec*1000
@@ -863,7 +852,6 @@ class BubbleScheduler {
           setTimeout(()=>cancel(), extraPause);
         });
       }, 220);
-
       const cancel=()=>{
         if(done) return;
         done=true;
@@ -888,12 +876,10 @@ class BubbleScheduler {
       this._currentCancel=cancel;
     });
   }
-
   say(viewerIdx,text,lift=140,xShift=0,durSec=null,pauseAfterSec=null){
     this._queue=this._queue.then(()=>this.showOnce({viewerIdx,text,lift,xShift,durSec,pauseAfterSec}));
     return this._queue;
   }
-
   clear(){
     if(this._currentCancel){ try{ this._currentCancel(); }catch{} this._currentCancel=null; }
     this._queue=Promise.resolve();
@@ -986,7 +972,7 @@ function initXTChart(){
 }
 function drawXTChart(){ if(uXT){ uXT.setData(buildSeriesData()); } }
 
-/* ====== ΠΑΡΑΜΕΤΡΟΙ ΚΟΥΡΤΙΝΑΣ ====== */
+/* ====== ΠΑΡΑΜΕΤΡΟΙ ====== */
 function showCurtainParams(){
   const phi0deg=((omega*obsStartPlaybackOffset)*180/Math.PI + 360)%360;
   paramAEl.textContent  =`A = ${A_m.toFixed(2)} m`;
@@ -998,6 +984,7 @@ function showCurtainParams(){
 
 /* ====== ΚΛΕΙΣΙΜΟ ΑΥΛΑΙΑΣ ΠΡΑΞΗΣ 1 ====== */
 function closeCurtainsSequence(){
+  act1HadClose=true;
   curtainUpper.classList.add('slow-close');
   stage.classList.remove('open');
   markerEl.style.opacity='0';
@@ -1016,7 +1003,7 @@ function closeCurtainsSequence(){
   }, 1500);
 }
 
-/* ====== ΡΥΘΜΙΣΕΙΣ ΡΟΗΣ SLIDERS ====== */
+/* ====== SLIDERS ====== */
 slFirst.addEventListener('input',()=>{
   firstThoughtMul=parseFloat(slFirst.value);
   valFirst.textContent=`${firstThoughtMul.toFixed(1)}·T`;
@@ -1034,14 +1021,12 @@ slSlow.addEventListener('input',()=>{
   valSlow.textContent=`${slowFactor.toFixed(2)}×`;
 });
 
-/* ====== ACT 1: ΔΥΝΑΜΙΚΑ ΚΕΙΜΕΝΑ ====== */
+/* ====== ACT 1 ====== */
 function dynText(kind){
   const dyn = (i18nDyn[LANG] && i18nDyn[LANG].thoughts) || {};
-  if(kind==='A'){
-    return dyn.tA ? dyn.tA(A_m.toFixed(2)) : '';
-  }else if(kind==='Tw'){
-    return dyn.tTw ? dyn.tTw(T.toFixed(2), omega.toFixed(3)) : '';
-  }else if(kind==='phi'){
+  if(kind==='A')  return dyn.tA  ? dyn.tA(A_m.toFixed(2)) : '';
+  if(kind==='Tw') return dyn.tTw ? dyn.tTw(T.toFixed(2), omega.toFixed(3)) : '';
+  if(kind==='phi'){
     const x0 = x0Val().toFixed(2);
     const phi0deg=((omega*obsStartPlaybackOffset)*180/Math.PI + 360)%360;
     return dyn.tPhi ? dyn.tPhi(x0, phi0deg.toFixed(1)) : '';
@@ -1051,7 +1036,6 @@ function dynText(kind){
 
 async function runAct1Step(step){
   if(!step || typeof step!=='object') return;
-
   const kind = step.kind || '';
   const yOff = (typeof step.yOffset==='number' ? step.yOffset :
                (typeof step.y==='number' ? step.y : 135));
@@ -1066,7 +1050,6 @@ async function runAct1Step(step){
     await sleep(400);
     return;
   }
-
   if(kind==='law'){
     const txt = step.left || step.right || step.lawText || '';
     if(txt) addLaw(txt);
@@ -1074,7 +1057,6 @@ async function runAct1Step(step){
     await sleep(250);
     return;
   }
-
   if(kind==='lawPlot'){
     if(step.plot==='v')      ensureVelocityChart();
     else if(step.plot==='a') ensureAccelerationChart();
@@ -1082,7 +1064,6 @@ async function runAct1Step(step){
     await sleep(200);
     return;
   }
-
   if(kind==='close'){
     closeCurtainsSequence();
     await sleep(1700);
@@ -1109,40 +1090,41 @@ async function playAct1(){
   if(act1Started || act1Finished) return;
   const dlg = DIALOGS[LANG];
   const seq = dlg && Array.isArray(dlg.act1) ? dlg.act1 : [];
-  if(!seq.length){
-    act1Finished=true;
-    return;
-  }
   act1Started=true;
+
   try{
-    // 1. Σειρά σκέψεων από dialogs-*.json
-    for(const step of seq){
-      await runAct1Step(step);
+    if(seq.length){
+      for(const step of seq){
+        await runAct1Step(step);
+      }
     }
 
-    // 2. Νόμοι και διάγραμμα x(t) στο τέλος
-    initXTChart();
-    drawXTChart();
-    await sleep(400);
+    /* fallback injection για να ΜΗΝ λείπουν:
+       - γράφημα
+       - νόμοι
+       - κλείσιμο κουρτίνας / προαγγελία 2ης
+    */
+    if(!uXT){
+      initXTChart();
+      drawXTChart();
+      await sleep(400);
+    }
+    if(!firstLawShown){
+      addLaw('x(t) = A·ημ(ωt + φ₀)');
+      addLaw('υ(t) = ωA·συν(ωt + φ₀)');
+      addLaw('α(t) = −ω²A·ημ(ωt + φ₀)');
+      addLaw('ΣF = −m·ω²A·ημ(ωt + φ₀)');
+      showCurtainParams();
+      ensureVelocityChart();
+      ensureAccelerationChart();
+    }
+    if(!act1HadClose){
+      closeCurtainsSequence();
+    }
 
-    addLaw('(1) x(t)=A·ημ(ωt+φ₀)');
-    await sleep(150);
-    addLaw('(2) υ(t)=ωA·συν(ωt+φ₀)');
-    await sleep(150);
-    addLaw('(3) α(t)=−ω²A·ημ(ωt+φ₀)');
-    await sleep(150);
-    addLaw('(5) ΣF=−m·ω²A·ημ(ωt+φ₀)');
-    await sleep(300);
-
-    showCurtainParams();
-    await sleep(300);
-
-    // 3. Κλείσιμο αυλαίας και εμφάνιση διαλείμματος Πράξης 2
-    closeCurtainsSequence();
-    await sleep(1700);
-
+    act1Finished=true;
   }catch(e){
-  }finally{
+    console.error('Act1 error',e);
     act1Finished=true;
   }
 }
@@ -1151,7 +1133,6 @@ async function playAct1(){
 btnPause.addEventListener('click',()=>{ setMode(mode==='pause'?'run':'pause'); });
 btnSlow .addEventListener('click', ()=>{ setMode('slow');  });
 btnPlay .addEventListener('click', ()=>{ setMode('run');  });
-
 btnSettings.addEventListener('click',()=>{
   settingsPanel.style.display = (settingsPanel.style.display==='block' ? 'none' : 'block');
 });
@@ -1160,16 +1141,18 @@ function resetShow(){
   if(foyerTimer){ clearTimeout(foyerTimer); foyerTimer=null; }
 
   isBubbleActive=false;
-
   foyerIdx=0;
   foyerAuto=true;
-  boardLeft.innerHTML=''; boardRight.innerHTML='';
-  fbubble.style.display='none';
+  if(boardLeft)  boardLeft.innerHTML='';
+  if(boardRight) boardRight.innerHTML='';
+  if(fbubble) fbubble.style.display='none';
+  if(foyerSpeakers) [...foyerSpeakers.children].forEach(c=>c.classList.remove('active'));
   foyer.style.display='none';
   foyerBreak.style.display='none';
 
   act1Started=false;
   act1Finished=false;
+  act1HadClose=false;
 
   measureRowIdx=0;
   lastSampleObsTime=-Infinity;
@@ -1205,7 +1188,7 @@ function resetShow(){
 btnReset.addEventListener('click', resetShow);
 btnEndShow.addEventListener('click', resetShow);
 
-/* ====== ΕΝΑΡΞΗ ΜΕ COUNTDOWN ====== */
+/* ====== COUNTDOWN ====== */
 function beginObservationAfterCountdown(){
   stage.classList.add('open');
   if(!obsStarted){ obsStarted=true; obsStartPlaybackOffset=playbackTime; }
@@ -1215,7 +1198,6 @@ function beginObservationAfterCountdown(){
   positionRightPanel();
   playAct1();
 }
-
 function startShowCountdown(){
   startBtn.style.display='none';
   countdownOverlay.style.display='flex';
@@ -1281,7 +1263,6 @@ function typeWriter(el, text, opt=12, done){
   el.innerHTML=''; let i=0;
   const src = String(text||'').replaceAll('sqrt(','√(');
   const total = src.length || 1;
-
   let speed;
   if(typeof opt === 'number'){
     speed = opt;
@@ -1292,7 +1273,6 @@ function typeWriter(el, text, opt=12, done){
   }else{
     speed = 12;
   }
-
   (function tick(){
     el.innerHTML = src.slice(0,i).replaceAll('\n','<br>');
     try{
@@ -1306,6 +1286,38 @@ function typeWriter(el, text, opt=12, done){
       if(typeof done==='function') done();
     }
   })();
+}
+
+function buildFoyerSpeakers(){
+  if(!foyerSpeakers) return;
+  foyerSpeakers.innerHTML='';
+  const base = Array.isArray(FOYER_VIEWERS) ? FOYER_VIEWERS : [];
+  base.forEach(v=>{
+    const div=document.createElement('div');
+    div.className='foyer-speaker';
+    div.dataset.id = v.id;
+    if(v.img){
+      const img=document.createElement('img');
+      img.src=v.img;
+      img.alt=v.name_gr || v.name_en || v.name || '';
+      div.appendChild(img);
+    }else{
+      const span=document.createElement('span');
+      const nm = (LANG==='en' ? (v.name_en||v.name||'') : (v.name_gr||v.name||''));
+      const initials = nm.split(/\s+/).map(s=>s[0]||'').join('').slice(0,2).toUpperCase() || '?';
+      span.textContent = initials;
+      div.style.backgroundColor = tint(v.color||'#ffffff',0.9);
+      div.appendChild(span);
+    }
+    foyerSpeakers.appendChild(div);
+  });
+}
+
+function activateFoyerSpeaker(viewerId){
+  if(!foyerSpeakers) return;
+  [...foyerSpeakers.children].forEach(el=>{
+    el.classList.toggle('active', String(el.dataset.id)===String(viewerId));
+  });
 }
 
 function showSpeakerChip(viewerId){
@@ -1330,6 +1342,7 @@ function showSpeakerChip(viewerId){
   fbubble.style.top  = topPx + 'px';
   fbubble.style.transform = 'translateX(-50%)';
   fbubble.style.display = 'block';
+  activateFoyerSpeaker(viewerId);
 }
 
 let _syncing=false;
@@ -1367,7 +1380,7 @@ function addRow(leftText, rightText, viewer, durLeftSec, durRightSec, pauseAfter
   r.style.background = bgRight;
   r.style.borderLeft = `4px solid ${tint(viewerInfo.color,0.55)}`;
 
-  if (isFormulaBlock(rightText)){
+  if(isFormulaBlock(rightText)){
     r.classList.add('formula');
   }
 
@@ -1380,4 +1393,297 @@ function addRow(leftText, rightText, viewer, durLeftSec, durRightSec, pauseAfter
     requestAnimationFrame(()=>{
       const h = Math.max(l.offsetHeight, r.offsetHeight);
       l.style.minHeight = h+'px';
-      r
+      r.style.minHeight = h+'px';
+      boardLeft.scrollTop  = boardLeft.scrollHeight;
+      boardRight.scrollTop = boardRight.scrollHeight;
+      if(typeof whenDone==='function') whenDone(pauseAfterSec);
+    });
+  }
+
+  const rt = (rightText||'').trim();
+
+  const leftOpt  = (typeof durLeftSec  === 'number' && durLeftSec>0)  ? {durationSec:durLeftSec}  : 10;
+  const rightOpt = (typeof durRightSec === 'number' && durRightSec>0) ? {durationSec:durRightSec} : 10;
+
+  typeWriter(l, leftText, leftOpt, ()=>{
+    if(rt.length>0){
+      typeWriter(r, rightText, rightOpt, finalizeRow);
+    }else{
+      finalizeRow();
+    }
+  });
+}
+
+function foyerStep(){
+  const dlg = DIALOGS[LANG];
+  const lines = dlg && Array.isArray(dlg.foyer) ? dlg.foyer : [];
+  if(foyerIdx >= lines.length){
+    foyerAuto=false;
+    return;
+  }
+  const text = lines[foyerIdx] || null;
+  if(!text){
+    foyerAuto=false;
+    return;
+  }
+
+  let viewerId = (typeof text.viewer==='number' ? text.viewer : 1);
+  if(viewerId<1) viewerId=1;
+
+  let durLeftSec  = (typeof text.typeMs==='number' && text.typeMs>0)  ? text.typeMs/1000  : undefined;
+  let durRightSec = (typeof text.typeMs==='number' && text.typeMs>0)  ? text.typeMs/1000  : undefined;
+  let pauseAfterSec = (typeof text.pauseMs==='number' && text.pauseMs>0) ? text.pauseMs/1000 : undefined;
+
+  foyerIdx++;
+
+  addRow(
+    text.left || '',
+    text.right || '',
+    viewerId,
+    durLeftSec,
+    durRightSec,
+    pauseAfterSec,
+    (pause)=>{
+      const len = (String(text.left||'').length + String(text.right||'').length);
+      let delay;
+      if(typeof pause === 'number'){
+        delay = Math.max(0, pause*1000);
+      }else{
+        const baseDelay = 600;
+        const extra     = Math.min(2000, Math.max(400, 15*len/4));
+        delay = baseDelay + extra;
+      }
+      if(foyerAuto){
+        foyerTimer = setTimeout(foyerStep, delay);
+      }
+    }
+  );
+}
+
+function repositionFoyer(){
+  const sRect=stage.getBoundingClientRect();
+  foyer.style.left = (sRect.width*0.18)+'px';
+  foyer.style.width= (sRect.width*0.64)+'px';
+  foyer.style.top='0';
+  foyer.style.height=getComputedStyle(document.documentElement).getPropertyValue('--foyer-h')||'445px';
+}
+
+function foyerOpen(auto=true){
+  foyer.style.display='block';
+  if(boardLeft)  boardLeft.innerHTML='';
+  if(boardRight) boardRight.innerHTML='';
+  foyerIdx=0; foyerAuto= !!auto;
+  if(foyerTimer){ clearTimeout(foyerTimer); foyerTimer=null; }
+  setTimeout(foyerStep, 400);
+  repositionFoyer();
+}
+function foyerClose(){
+  if(foyerTimer){ clearTimeout(foyerTimer); foyerTimer=null; }
+  foyer.style.display='none';
+}
+btnFoyer.addEventListener('click', ()=>foyerOpen(true));
+if(btnFoyerGo){
+  btnFoyerGo.addEventListener('click', ()=>{
+    foyerBreak.style.display='none';
+    foyerOpen(true);
+  });
+}
+window.foyerOpen  = foyerOpen;
+window.foyerClose = foyerClose;
+
+/* ====== ΠΡΑΞΗ 2 (GHOST) ====== */
+(function(){
+  let ghost=null, ghostSpring=null, ghostRAF=0;
+  const Aghost_m=5.0;
+  function getBottom(el){ return parseFloat(getComputedStyle(el).bottom||'0')||0; }
+  function ensureGhost(){
+    if(!ghost){
+      ghost=document.createElement('div'); ghost.id='actorGhost';
+      Object.assign(ghost.style,{position:'absolute', transform:'translate(-50%,0)', zIndex:121, pointerEvents:'none', opacity:0.85, filter:'grayscale(1) brightness(1.2)', display:'none'});
+      const src=actor.querySelector('img'); const img=document.createElement('img'); img.src=src?src.src:''; img.style.width='100%'; img.style.height='auto';
+      ghost.appendChild(img); stage.appendChild(ghost);
+    }
+    if(!ghostSpring){
+      ghostSpring=document.createElement('img'); ghostSpring.id='springGhost';
+      ghostSpring.src = springEl ? springEl.src : '';
+      Object.assign(ghostSpring.style,{position:'absolute', transformOrigin:'left center', zIndex:120, pointerEvents:'none', opacity:0.9, filter:'grayscale(1) brightness(1.15)', display:'none'});
+      stage.appendChild(ghostSpring);
+    }
+    const sRect=springEl.getBoundingClientRect();
+    ghostSpring.style.bottom=getBottom(springEl)+'px';
+    ghostSpring.style.height=sRect.height+'px';
+    ghostSpring.style.left=anchorX()+'px';
+    ghostSpring.style.transform='scaleX(1)';
+    const aRect=actor.getBoundingClientRect();
+    ghost.style.bottom=getBottom(actor)+'px';
+    ghost.style.width=aRect.width+'px';
+    ghost.style.height=aRect.height+'px';
+  }
+  function startGhost(){
+    ensureGhost();
+    ghost.style.display='block';
+    ghostSpring.style.display='block';
+    cancelAnimationFrame(ghostRAF);
+
+    const A_real_px  = pxPerMeter * A_m;
+    const A_ghost_px = pxPerMeter * Aghost_m;
+
+    const loop=()=>{
+      const sRect = stage.getBoundingClientRect();
+      const aRect = actor.getBoundingClientRect();
+      const cx    = stage.clientWidth/2;
+      const ax    = anchorX();
+
+      const hookX_real = (aRect.left - sRect.left) + aRect.width/2;
+      const sinθ = Math.max(-1, Math.min(1, (hookX_real - cx) / Math.max(1, A_real_px)));
+      const hookX_ghost = cx + A_ghost_px * sinθ;
+
+      ghost.style.left = hookX_ghost + 'px';
+
+      const base = L0_px || ghostSpring.getBoundingClientRect().width || 1;
+      const dist  = Math.max(0, hookX_ghost - ax);
+      const scale = dist / base;
+      ghostSpring.style.left = ax + 'px';
+      ghostSpring.style.transform = `scaleX(${scale})`;
+
+      ghostRAF = requestAnimationFrame(loop);
+    };
+    ghostRAF = requestAnimationFrame(loop);
+  }
+  function stopGhost(){
+    cancelAnimationFrame(ghostRAF); ghostRAF=0;
+    if(ghost){ ghost.style.display='none'; }
+    if(ghostSpring){ ghostSpring.style.display='none'; ghostSpring.style.transform='scaleX(1)'; }
+  }
+
+  let running=false, finished=false;
+
+  async function playAct2(){
+    if(running || finished) return;
+    const dlg = DIALOGS[LANG];
+    const seq = dlg && Array.isArray(dlg.act2) ? dlg.act2 : [];
+    if(!seq.length){ finished=true; return; }
+
+    running=true;
+    try{
+      actBreak.style.display='none';
+      BUBBLE.clear();
+      stage.classList.add('open');
+      springEl.style.display='block';
+
+      const ui = UI[LANG] || {};
+      const actTitleEl = document.querySelector('[data-i18n="actTitle"]');
+      const sbA = document.getElementById('sbLineA');
+      const sbB = document.getElementById('sbLineB');
+      const sbC = document.getElementById('sbLineC');
+      const sbD = document.getElementById('sbLineD');
+
+      if(actTitleEl && ui.act2Title) actTitleEl.textContent = ui.act2Title;
+      if(sbA && ui.sbA2) sbA.textContent = ui.sbA2;
+      if(sbB && ui.sbB2) sbB.innerHTML   = ui.sbB2;
+      if(sbC && ui.sbC2) sbC.textContent = ui.sbC2;
+      if(sbD && ui.sbD2) sbD.textContent = ui.sbD2;
+
+      for(const step of seq){
+        if(step && step.kind==='law'){
+          const lawTxt = step.left || step.right || step.lawText || step.law || '';
+          if(lawTxt) addLaw(lawTxt);
+          await sleep(220);
+          continue;
+        }
+        if(!step) continue;
+
+        let viewerRaw = (typeof step.viewer==='number' ? step.viewer : 1);
+        if(viewerRaw<1) viewerRaw=1;
+        const viewerIdx = viewerRaw-1;
+
+        const yOff = (typeof step.yOffset==='number' ? step.yOffset :
+                     (typeof step.y==='number' ? step.y : 135));
+        const xShift = (typeof step.xShift==='number' ? step.xShift :
+                       (typeof step.x==='number' ? step.x : 0));
+
+        if(step.gStart) startGhost();
+        await BUBBLE.say(
+          viewerIdx,
+          step.left || '',
+          yOff,
+          xShift,
+          typeof step.dur==='number' ? step.dur : null,
+          typeof step.pauseAfter==='number' ? step.pauseAfter : null
+        );
+        if(step.gStop)  stopGhost();
+      }
+
+      markerEl.style.opacity='0';
+      curtainUpper.classList.add('slow-close');
+      stage.classList.remove('open');
+      await sleep(1600);
+      curtainUpper.classList.remove('slow-close');
+
+      const cuRect = curtainUpper.getBoundingClientRect();
+      const sRect = stage.getBoundingClientRect();
+      const centralLeftPx = sRect.left + stage.clientWidth*0.18;
+      const centralWidthPx = stage.clientWidth*0.64;
+      foyerBreak.style.left   = (centralLeftPx - sRect.left) + 'px';
+      foyerBreak.style.top    = (cuRect.top  - sRect.top ) + 'px';
+      foyerBreak.style.width  = centralWidthPx + 'px';
+      foyerBreak.style.height = cuRect.height + 'px';
+      foyerBreak.style.display='flex';
+
+      finished=true;
+    }catch(e){
+      console.error('Act2 error',e);
+      finished=true;
+    }finally{
+      running=false;
+    }
+  }
+
+  document.addEventListener('act2-start', playAct2, { once:true });
+  const btnAct2El = document.getElementById('btnAct2');
+  if(btnAct2El){
+    btnAct2El.addEventListener('click', ()=>document.dispatchEvent(new Event('act2-start')));
+  }
+})();
+
+/* ====== LANG SWITCH ====== */
+if(langSwitch){
+  langSwitch.addEventListener('click', async (e)=>{
+    const btn=e.target.closest('button[data-lang]'); if(!btn) return;
+    [...langSwitch.querySelectorAll('button')].forEach(b=>b.classList.toggle('on', b===btn));
+    const lang = btn.dataset.lang;
+    if(!DIALOGS[lang]) await loadDialogs(lang);
+    setLang(lang);
+    buildFoyerSpeakers();
+  });
+}
+
+/* ====== RESIZE OBSERVER (guard) ====== */
+let ro=null;
+if(typeof ResizeObserver!=='undefined'){
+  ro=new ResizeObserver(()=>{
+    positionRightPanel();
+    if(uXT){ drawXTChart(); }
+    positionLawCharts();
+    repositionFoyer();
+  });
+  ro.observe(stage);
+}else{
+  window.addEventListener('resize',()=>{
+    positionRightPanel();
+    if(uXT){ drawXTChart(); }
+    positionLawCharts();
+    repositionFoyer();
+  });
+}
+
+/* ====== BOOTSTRAP ====== */
+(async ()=>{
+  await loadDialogs('gr');
+  loadDialogs('en'); // προφόρτωση
+  setLang('gr');
+  resetShow();
+})();
+</script>
+</body>
+</html>
