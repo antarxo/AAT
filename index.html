@@ -86,7 +86,7 @@
     position:absolute;max-width:420px;background:rgba(255,255,255,.92);color:#000;
     font-size:15px;line-height:1.45;padding:10px 12px 12px;border:2px solid transparent;border-radius:10px;
     border-image:repeating-linear-gradient(90deg, rgba(0,0,0,.6) 0 6px, transparent 6px 10px, rgba(0,0,0,.6) 10px 12px, transparent 12px 16px) 1;
-    box-shadow:0 6px 12px rgba(0,0,0,.4);z-index:750;pointer-events:none;opacity:0;display:none;transition:opacity .25s ease, transform .25s ease
+    box-shadow:0 6px 12px rgba(0,0,0,.4);z-index:750;pointer-events:none;opacity:0;display:none;transition:opacity .25s ease, transform .25s.ease
   }
   .thought-bubble.active{opacity:1;transform:translateY(-2px);animation:popIn .25s ease}
   .thought-bubble.closing{opacity:0}
@@ -139,7 +139,16 @@
   .actbreak{position:absolute;background:rgba(0,0,0,.55);color:#fff;z-index:410;display:none;align-items:center;justify-content:center;text-align:center}
   .foyerbreak{position:absolute;background:rgba(0,0,0,.55);color:#fff;z-index:410;display:none;align-items:center;justify-content:center;text-align:center}
 
-  .foyer{position:absolute;left:18%;width:64%;top:0;height:var(--foyer-h);z-index:500;display:none}
+  .foyer{
+    position:absolute;
+    left:18%;
+    width:64%;
+    top:0;
+    height:var(--foyer-h);
+    z-index:500;
+    display:none;
+    background:url('koino_extra.png') bottom center/contain no-repeat;
+  }
   .foyer .wrap{position:absolute;inset:0;display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid rgba(255,255,255,.25);border-radius:10px;overflow:hidden}
   .board-left,.board-right{
     background:#0d2a1e url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%228%22 height=%228%22><circle cx=%224%22 cy=%224%22 r=%221%22 fill=%22rgba(255,255,255,0.03)%22/></svg>') repeat;
@@ -321,7 +330,6 @@ const UI = {
     sbB1: 'στον μονόλογο <span class="hl">«ατέλειωτο πήγαινε έλα»</span>... επί σκηνής!',
     sbC1: 'Παραγωγή-Σκηνοθεσία: Εμηχ. Ενεργειούλης',
     sbD1: '(*) ... εσείς',
-    // μπορείς να προσαρμόσεις αυτά αν έχεις άλλα για Πράξη 2
     sbA2: 'Ο ταλαντωτής (m,D) ξαναχτυπά!',
     sbB2: 'σε μια πιο «δυναμική» ανάγνωση του 2ου Νόμου…',
     sbC2: 'Παραγωγή-Σκηνοθεσία: Εμηχ. Ενεργειούλης',
@@ -479,6 +487,41 @@ let isBubbleActive=false;
 
 const sleep = (ms)=>new Promise(r=>setTimeout(r,ms));
 
+function tint(hex, alpha){
+  const c = (hex||'#ffffff').replace('#','');
+  const r=parseInt(c.slice(0,2),16)||255;
+  const g=parseInt(c.slice(2,4),16)||255;
+  const b=parseInt(c.slice(4,6),16)||255;
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
+/* ====== VIEWERS IMAGES ====== */
+function refreshViewersVisuals(){
+  const vEls = document.querySelectorAll('.viewer');
+  vEls.forEach(el=>{
+    const idx = parseInt(el.dataset.idx,10);
+    const info = FOYER_VIEWERS[idx];
+    if(info){
+      const img = info.img || info.image || info.avatar || info.icon || '';
+      if(img){
+        el.style.backgroundImage = `url('${img}')`;
+        el.style.backgroundSize = 'contain';
+        el.style.backgroundRepeat = 'no-repeat';
+        el.style.backgroundPosition = 'center bottom';
+        el.style.filter='none';
+        el.style.opacity='1';
+      }else{
+        el.style.backgroundImage='url("https://upload.wikimedia.org/wikipedia/commons/f/f9/Silhouette_icon.svg")';
+        el.style.backgroundSize='contain';
+        el.style.backgroundRepeat='no-repeat';
+        el.style.backgroundPosition='center bottom';
+        el.style.filter='grayscale(1) brightness(.6)';
+        el.style.opacity='.75';
+      }
+    }
+  });
+}
+
 /* ====== LOAD DIALOGS (ΜΟΝΗ ΠΗΓΗ ΣΕΝΑΡΙΟΥ) ====== */
 async function loadDialogs(lang){
   try{
@@ -489,6 +532,7 @@ async function loadDialogs(lang){
 
     if(!FOYER_VIEWERS.length && data && Array.isArray(data.viewers)){
       FOYER_VIEWERS = data.viewers.slice();
+      refreshViewersVisuals();
     }
   }catch(e){}
 }
@@ -678,14 +722,6 @@ function typeWriterHTML(el, html, speed, done){
       if(typeof done==='function') done();
     }
   })();
-}
-
-function tint(hex, alpha){
-  const c = (hex||'#ffffff').replace('#','');
-  const r=parseInt(c.slice(0,2),16)||255;
-  const g=parseInt(c.slice(2,4),16)||255;
-  const b=parseInt(c.slice(4,6),16)||255;
-  return `rgba(${r},${g},${b},${alpha})`;
 }
 
 /* ====== BUBBLE SCHEDULER (Πράξεις) ====== */
@@ -980,7 +1016,7 @@ function closeCurtainsSequence(){
   }, 1500);
 }
 
-/* ====== ΡΥΘΜΙΣΕΙΣ ΡΟΗΣ SLIDERS (κρατιούνται για UI, δεν επηρεάζουν άλλη λογική τώρα) ====== */
+/* ====== ΡΥΘΜΙΣΕΙΣ ΡΟΗΣ SLIDERS ====== */
 slFirst.addEventListener('input',()=>{
   firstThoughtMul=parseFloat(slFirst.value);
   valFirst.textContent=`${firstThoughtMul.toFixed(1)}·T`;
@@ -998,7 +1034,7 @@ slSlow.addEventListener('input',()=>{
   valSlow.textContent=`${slowFactor.toFixed(2)}×`;
 });
 
-/* ====== ACT 1: ΔΙΑΒΑΣΜΑ ΚΑΤΕΥΘΕΙΑΝ ΑΠΟ dialogs-*.json ====== */
+/* ====== ACT 1: ΔΥΝΑΜΙΚΑ ΚΕΙΜΕΝΑ ====== */
 function dynText(kind){
   const dyn = (i18nDyn[LANG] && i18nDyn[LANG].thoughts) || {};
   if(kind==='A'){
@@ -1053,7 +1089,6 @@ async function runAct1Step(step){
     return;
   }
 
-  // bubble ή dynamic bubble
   let text = step.left || '';
   let viewerRaw = (typeof step.viewer==='number' ? step.viewer : 1);
   if(viewerRaw<1) viewerRaw=1;
@@ -1080,11 +1115,34 @@ async function playAct1(){
   }
   act1Started=true;
   try{
+    // 1. Σειρά σκέψεων από dialogs-*.json
     for(const step of seq){
       await runAct1Step(step);
     }
-    act1Finished=true;
+
+    // 2. Νόμοι και διάγραμμα x(t) στο τέλος
+    initXTChart();
+    drawXTChart();
+    await sleep(400);
+
+    addLaw('(1) x(t)=A·ημ(ωt+φ₀)');
+    await sleep(150);
+    addLaw('(2) υ(t)=ωA·συν(ωt+φ₀)');
+    await sleep(150);
+    addLaw('(3) α(t)=−ω²A·ημ(ωt+φ₀)');
+    await sleep(150);
+    addLaw('(5) ΣF=−m·ω²A·ημ(ωt+φ₀)');
+    await sleep(300);
+
+    showCurtainParams();
+    await sleep(300);
+
+    // 3. Κλείσιμο αυλαίας και εμφάνιση διαλείμματος Πράξης 2
+    closeCurtainsSequence();
+    await sleep(1700);
+
   }catch(e){
+  }finally{
     act1Finished=true;
   }
 }
@@ -1105,8 +1163,7 @@ function resetShow(){
 
   foyerIdx=0;
   foyerAuto=true;
-  boardLeft.innerHTML='';
-  boardRight.innerHTML='';
+  boardLeft.innerHTML=''; boardRight.innerHTML='';
   fbubble.style.display='none';
   foyer.style.display='none';
   foyerBreak.style.display='none';
@@ -1156,7 +1213,7 @@ function beginObservationAfterCountdown(){
   measureBox.style.display='block';
   markerEl.style.opacity='1';
   positionRightPanel();
-  playAct1();  // ξεκινάμε τη ροή της 1ης πράξης από τους διαλόγους
+  playAct1();
 }
 
 function startShowCountdown(){
@@ -1323,278 +1380,4 @@ function addRow(leftText, rightText, viewer, durLeftSec, durRightSec, pauseAfter
     requestAnimationFrame(()=>{
       const h = Math.max(l.offsetHeight, r.offsetHeight);
       l.style.minHeight = h+'px';
-      r.style.minHeight = h+'px';
-      boardLeft.scrollTop  = boardLeft.scrollHeight;
-      boardRight.scrollTop = boardRight.scrollHeight;
-      if(typeof whenDone==='function') whenDone(pauseAfterSec);
-    });
-  }
-
-  const rt = (rightText||'').trim();
-
-  const leftOpt  = (typeof durLeftSec  === 'number' && durLeftSec>0)  ? {durationSec:durLeftSec}  : 10;
-  const rightOpt = (typeof durRightSec === 'number' && durRightSec>0) ? {durationSec:durRightSec} : 10;
-
-  typeWriter(l, leftText, leftOpt, ()=>{
-    if(rt.length>0){
-      typeWriter(r, rightText, rightOpt, finalizeRow);
-    }else{
-      finalizeRow();
-    }
-  });
-}
-
-function foyerStep(){
-  const dlg = DIALOGS[LANG];
-  const lines = dlg && Array.isArray(dlg.foyer) ? dlg.foyer : [];
-  if(foyerIdx >= lines.length){
-    foyerAuto=false;
-    return;
-  }
-  const text = lines[foyerIdx] || null;
-  if(!text){
-    foyerAuto=false;
-    return;
-  }
-
-  let viewerId = (typeof text.viewer==='number' ? text.viewer : 1);
-  if(viewerId<1) viewerId=1;
-
-  let durLeftSec  = (typeof text.typeMs==='number' && text.typeMs>0)  ? text.typeMs/1000  : undefined;
-  let durRightSec = (typeof text.typeMs==='number' && text.typeMs>0)  ? text.typeMs/1000  : undefined;
-  let pauseAfterSec = (typeof text.pauseMs==='number' && text.pauseMs>0) ? text.pauseMs/1000 : undefined;
-
-  foyerIdx++;
-
-  addRow(
-    text.left || '',
-    text.right || '',
-    viewerId,
-    durLeftSec,
-    durRightSec,
-    pauseAfterSec,
-    (pause)=>{
-      const len = (String(text.left||'').length + String(text.right||'').length);
-      let delay;
-      if(typeof pause === 'number'){
-        delay = Math.max(0, pause*1000);
-      }else{
-        const baseDelay = 600;
-        const extra     = Math.min(2000, Math.max(400, 15*len/4));
-        delay = baseDelay + extra;
-      }
-      if(foyerAuto){
-        foyerTimer = setTimeout(foyerStep, delay);
-      }
-    }
-  );
-}
-
-function repositionFoyer(){
-  const sRect=stage.getBoundingClientRect();
-  foyer.style.left = (sRect.width*0.18)+'px';
-  foyer.style.width= (sRect.width*0.64)+'px';
-  foyer.style.top='0';
-  foyer.style.height=getComputedStyle(document.documentElement).getPropertyValue('--foyer-h')||'445px';
-}
-
-function foyerOpen(auto=true){
-  foyer.style.display='block';
-  boardLeft.innerHTML=''; boardRight.innerHTML='';
-  foyerIdx=0; foyerAuto= !!auto;
-  if(foyerTimer){ clearTimeout(foyerTimer); foyerTimer=null; }
-  setTimeout(foyerStep, 400);
-  repositionFoyer();
-}
-function foyerClose(silent=false){
-  if(foyerTimer){ clearTimeout(foyerTimer); foyerTimer=null; }
-  foyer.style.display='none';
-}
-btnFoyer.addEventListener('click', ()=>foyerOpen(true));
-btnFoyerGo.addEventListener('click', ()=>{
-  foyerBreak.style.display='none';
-  foyerOpen(true);
-});
-window.foyerOpen  = foyerOpen;
-window.foyerClose = foyerClose;
-
-/* ====== ΠΡΑΞΗ 2 (GHOST) ====== */
-(function(){
-  let ghost=null, ghostSpring=null, ghostRAF=0;
-  const Aghost_m=5.0;
-  function getBottom(el){ return parseFloat(getComputedStyle(el).bottom||'0')||0; }
-  function ensureGhost(){
-    if(!ghost){
-      ghost=document.createElement('div'); ghost.id='actorGhost';
-      Object.assign(ghost.style,{position:'absolute', transform:'translate(-50%,0)', zIndex:121, pointerEvents:'none', opacity:0.85, filter:'grayscale(1) brightness(1.2)', display:'none'});
-      const src=actor.querySelector('img'); const img=document.createElement('img'); img.src=src?src.src:''; img.style.width='100%'; img.style.height='auto';
-      ghost.appendChild(img); stage.appendChild(ghost);
-    }
-    if(!ghostSpring){
-      ghostSpring=document.createElement('img'); ghostSpring.id='springGhost';
-      ghostSpring.src = springEl ? springEl.src : '';
-      Object.assign(ghostSpring.style,{position:'absolute', transformOrigin:'left center', zIndex:120, pointerEvents:'none', opacity:0.9, filter:'grayscale(1) brightness(1.15)', display:'none'});
-      stage.appendChild(ghostSpring);
-    }
-    const sRect=springEl.getBoundingClientRect();
-    ghostSpring.style.bottom=getBottom(springEl)+'px';
-    ghostSpring.style.height=sRect.height+'px';
-    ghostSpring.style.left=anchorX()+'px';
-    ghostSpring.style.transform='scaleX(1)';
-    const aRect=actor.getBoundingClientRect();
-    ghost.style.bottom=getBottom(actor)+'px';
-    ghost.style.width=aRect.width+'px';
-    ghost.style.height=aRect.height+'px';
-  }
-  function startGhost(){
-    ensureGhost();
-    ghost.style.display='block';
-    ghostSpring.style.display='block';
-    cancelAnimationFrame(ghostRAF);
-
-    const A_real_px  = pxPerMeter * A_m;
-    const A_ghost_px = pxPerMeter * Aghost_m;
-
-    const loop=()=>{
-      const sRect = stage.getBoundingClientRect();
-      const aRect = actor.getBoundingClientRect();
-      const cx    = stage.clientWidth/2;
-      const ax    = anchorX();
-
-      const hookX_real = (aRect.left - sRect.left) + aRect.width/2;
-      const sinθ = Math.max(-1, Math.min(1, (hookX_real - cx) / Math.max(1, A_real_px)));
-      const hookX_ghost = cx + A_ghost_px * sinθ;
-
-      ghost.style.left = hookX_ghost + 'px';
-
-      const base = L0_px || ghostSpring.getBoundingClientRect().width || 1;
-      const dist  = Math.max(0, hookX_ghost - ax);
-      const scale = dist / base;
-      ghostSpring.style.left = ax + 'px';
-      ghostSpring.style.transform = `scaleX(${scale})`;
-
-      ghostRAF = requestAnimationFrame(loop);
-    };
-    ghostRAF = requestAnimationFrame(loop);
-  }
-  function stopGhost(){
-    cancelAnimationFrame(ghostRAF); ghostRAF=0;
-    if(ghost){ ghost.style.display='none'; }
-    if(ghostSpring){ ghostSpring.style.display='none'; ghostSpring.style.transform='scaleX(1)'; }
-  }
-
-  let running=false, finished=false;
-
-  async function playAct2(){
-    if(running || finished) return;
-    const dlg = DIALOGS[LANG];
-    const seq = dlg && Array.isArray(dlg.act2) ? dlg.act2 : [];
-    if(!seq.length){ finished=true; return; }
-
-    running=true;
-    try{
-      actBreak.style.display='none';
-      BUBBLE.clear();
-      stage.classList.add('open');
-      springEl.style.display='block';
-
-      const ui = UI[LANG] || {};
-      const actTitleEl = document.querySelector('[data-i18n="actTitle"]');
-      const sbA = document.getElementById('sbLineA');
-      const sbB = document.getElementById('sbLineB');
-      const sbC = document.getElementById('sbLineC');
-      const sbD = document.getElementById('sbLineD');
-
-      if(actTitleEl && ui.act2Title) actTitleEl.textContent = ui.act2Title;
-      if(sbA && ui.sbA2) sbA.textContent = ui.sbA2;
-      if(sbB && ui.sbB2) sbB.innerHTML   = ui.sbB2;
-      if(sbC && ui.sbC2) sbC.textContent = ui.sbC2;
-      if(sbD && ui.sbD2) sbD.textContent = ui.sbD2;
-
-      for(const step of seq){
-        if(step && step.kind==='law'){
-          const lawTxt = step.left || step.right || step.lawText || step.law || '';
-          if(lawTxt) addLaw(lawTxt);
-          await sleep(220);
-          continue;
-        }
-
-        if(!step) continue;
-
-        let viewerRaw = (typeof step.viewer==='number' ? step.viewer : 1);
-        if(viewerRaw<1) viewerRaw=1;
-        const viewerIdx = viewerRaw-1;
-
-        const yOff = (typeof step.yOffset==='number' ? step.yOffset :
-                     (typeof step.y==='number' ? step.y : 135));
-        const xShift = (typeof step.xShift==='number' ? step.xShift :
-                       (typeof step.x==='number' ? step.x : 0));
-
-        if(step.gStart) startGhost();
-        await BUBBLE.say(
-          viewerIdx,
-          step.left || '',
-          yOff,
-          xShift,
-          typeof step.dur==='number' ? step.dur : null,
-          typeof step.pauseAfter==='number' ? step.pauseAfter : null
-        );
-        if(step.gStop)  stopGhost();
-      }
-
-      markerEl.style.opacity='0';
-      curtainUpper.classList.add('slow-close');
-      stage.classList.remove('open');
-      await sleep(1600);
-      curtainUpper.classList.remove('slow-close');
-
-      const cuRect = curtainUpper.getBoundingClientRect();
-      const sRect = stage.getBoundingClientRect();
-      const centralLeftPx = sRect.left + stage.clientWidth*0.18;
-      const centralWidthPx = stage.clientWidth*0.64;
-      foyerBreak.style.left   = (centralLeftPx - sRect.left) + 'px';
-      foyerBreak.style.top    = (cuRect.top  - sRect.top ) + 'px';
-      foyerBreak.style.width  = centralWidthPx + 'px';
-      foyerBreak.style.height = cuRect.height + 'px';
-      foyerBreak.style.display='flex';
-
-      finished=true;
-    }catch(e){
-      finished=true;
-    }finally{
-      running=false;
-    }
-  }
-
-  document.addEventListener('act2-start', playAct2, { once:true });
-  document.getElementById('btnAct2').addEventListener('click', ()=>document.dispatchEvent(new Event('act2-start')));
-})();
-
-/* ====== LANG SWITCH HANDLER ====== */
-langSwitch.addEventListener('click', async (e)=>{
-  const btn=e.target.closest('button[data-lang]'); if(!btn) return;
-  [...langSwitch.querySelectorAll('button')].forEach(b=>b.classList.toggle('on', b===btn));
-  const lang = btn.dataset.lang;
-  if(!DIALOGS[lang]) await loadDialogs(lang);
-  setLang(lang);
-});
-
-/* ====== RESIZE OBSERVER ====== */
-const ro=new ResizeObserver(()=>{
-  positionRightPanel();
-  if(uXT){ drawXTChart(); }
-  positionLawCharts();
-  repositionFoyer();
-});
-ro.observe(stage);
-
-/* ====== BOOTSTRAP ====== */
-(async ()=>{
-  await loadDialogs('gr');
-  loadDialogs('en'); // προφόρτωση αν υπάρχει
-  setLang('gr');
-  resetShow();
-})();
-</script>
-</body>
-</html>
+      r
