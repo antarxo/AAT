@@ -173,52 +173,17 @@
     cursor:pointer;
   }
 
-  /* extra κοινό και avatars στο φουαγιέ */
+  /* extra κοινό στο φουαγιέ */
   .foyer-audience{
     position:absolute;
     left:0;
     bottom:-8px;
     width:100%;
     opacity:0.85;
-    z-index:-1;
+    z-index:5;
     pointer-events:none;
   }
-  .foyer-speakers{
-    position:absolute;
-    top:6px;
-    left:50%;
-    transform:translateX(-50%);
-    display:flex;
-    gap:8px;
-    z-index:20;
-  }
-  .foyer-speaker{
-    width:40px;
-    height:40px;
-    border-radius:999px;
-    border:2px solid rgba(255,255,255,0.7);
-    overflow:hidden;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-size:11px;
-    font-weight:700;
-    color:#fff;
-    background:rgba(0,0,0,0.6);
-    box-shadow:0 0 6px rgba(0,0,0,0.7);
-    opacity:0.7;
-    transition:transform 0.15s, opacity 0.15s, box-shadow 0.15s;
-  }
-  .foyer-speaker img{
-    width:100%;
-    height:100%;
-    object-fit:cover;
-  }
-  .foyer-speaker.active{
-    transform:scale(1.1);
-    opacity:1;
-    box-shadow:0 0 10px rgba(255,255,200,0.9);
-  }
+
 </style>
 </head>
 <body>
@@ -347,7 +312,6 @@
 
     <div class="foyer" id="foyer">
       <img src="koino_extra.png" alt="" class="foyer-audience" id="foyerAudience">
-      <div class="foyer-speakers" id="foyerSpeakers"></div>
       <div class="wrap">
         <div class="board-left"  id="boardLeft"  aria-label="μαυροπίνακας-αριστερά"></div>
         <div class="board-right" id="boardRight" aria-label="μαυροπίνακας-δεξιά"></div>
@@ -518,7 +482,6 @@ const boardLeft  = document.getElementById('boardLeft');
 const boardRight = document.getElementById('boardRight');
 const foyer      = document.getElementById('foyer');
 const fbubble    = document.getElementById('foyerBubble');
-const foyerSpeakers = document.getElementById('foyerSpeakers');
 
 let foyerIdx=0, foyerAuto=true, foyerTimer=null;
 
@@ -541,7 +504,6 @@ async function loadDialogs(lang){
 
     if(data && Array.isArray(data.viewers)){
       FOYER_VIEWERS = data.viewers.slice();
-      buildFoyerSpeakers();
     }
   }catch(e){
     console.error('loadDialogs error',e);
@@ -1098,30 +1060,6 @@ async function playAct1(){
         await runAct1Step(step);
       }
     }
-
-    /* fallback injection για να ΜΗΝ λείπουν:
-       - γράφημα
-       - νόμοι
-       - κλείσιμο κουρτίνας / προαγγελία 2ης
-    */
-    if(!uXT){
-      initXTChart();
-      drawXTChart();
-      await sleep(400);
-    }
-    if(!firstLawShown){
-      addLaw('x(t) = A·ημ(ωt + φ₀)');
-      addLaw('υ(t) = ωA·συν(ωt + φ₀)');
-      addLaw('α(t) = −ω²A·ημ(ωt + φ₀)');
-      addLaw('ΣF = −m·ω²A·ημ(ωt + φ₀)');
-      showCurtainParams();
-      ensureVelocityChart();
-      ensureAccelerationChart();
-    }
-    if(!act1HadClose){
-      closeCurtainsSequence();
-    }
-
     act1Finished=true;
   }catch(e){
     console.error('Act1 error',e);
@@ -1146,7 +1084,6 @@ function resetShow(){
   if(boardLeft)  boardLeft.innerHTML='';
   if(boardRight) boardRight.innerHTML='';
   if(fbubble) fbubble.style.display='none';
-  if(foyerSpeakers) [...foyerSpeakers.children].forEach(c=>c.classList.remove('active'));
   foyer.style.display='none';
   foyerBreak.style.display='none';
 
@@ -1288,36 +1225,23 @@ function typeWriter(el, text, opt=12, done){
   })();
 }
 
-function buildFoyerSpeakers(){
-  if(!foyerSpeakers) return;
-  foyerSpeakers.innerHTML='';
-  const base = Array.isArray(FOYER_VIEWERS) ? FOYER_VIEWERS : [];
-  base.forEach(v=>{
-    const div=document.createElement('div');
-    div.className='foyer-speaker';
-    div.dataset.id = v.id;
-    if(v.img){
-      const img=document.createElement('img');
-      img.src=v.img;
-      img.alt=v.name_gr || v.name_en || v.name || '';
-      div.appendChild(img);
-    }else{
-      const span=document.createElement('span');
-      const nm = (LANG==='en' ? (v.name_en||v.name||'') : (v.name_gr||v.name||''));
-      const initials = nm.split(/\s+/).map(s=>s[0]||'').join('').slice(0,2).toUpperCase() || '?';
-      span.textContent = initials;
-      div.style.backgroundColor = tint(v.color||'#ffffff',0.9);
-      div.appendChild(span);
-    }
-    foyerSpeakers.appendChild(div);
-  });
+let _syncing=false;
+function syncScroll(from,to){
+  if(_syncing) return;
+  _syncing=true; to.scrollTop=from.scrollTop; _syncing=false;
 }
+boardLeft.addEventListener('scroll', ()=>syncScroll(boardLeft,boardRight));
+boardRight.addEventListener('scroll',()=>syncScroll(boardRight,boardLeft));
 
-function activateFoyerSpeaker(viewerId){
-  if(!foyerSpeakers) return;
-  [...foyerSpeakers.children].forEach(el=>{
-    el.classList.toggle('active', String(el.dataset.id)===String(viewerId));
-  });
+function isFormulaBlock(text){
+  const s = String(text||'').trim();
+  if(!s) return false;
+  if(/^\(\d+\)/.test(s)) return true;
+  if(/[ΑA]\.[ΔD]\.[ΜM]\.[ΕE]\.[ΤT]/.test(s)) return true;
+  if(/M\.E\.C/.test(s)) return true;
+  if(/[⇒⇔]/.test(s)) return true;
+  if(/Νόμος του Νεύτωνα/i.test(s) || /Newton’s law/i.test(s)) return true;
+  return false;
 }
 
 function showSpeakerChip(viewerId){
@@ -1342,26 +1266,6 @@ function showSpeakerChip(viewerId){
   fbubble.style.top  = topPx + 'px';
   fbubble.style.transform = 'translateX(-50%)';
   fbubble.style.display = 'block';
-  activateFoyerSpeaker(viewerId);
-}
-
-let _syncing=false;
-function syncScroll(from,to){
-  if(_syncing) return;
-  _syncing=true; to.scrollTop=from.scrollTop; _syncing=false;
-}
-boardLeft.addEventListener('scroll', ()=>syncScroll(boardLeft,boardRight));
-boardRight.addEventListener('scroll',()=>syncScroll(boardRight,boardLeft));
-
-function isFormulaBlock(text){
-  const s = String(text||'').trim();
-  if(!s) return false;
-  if(/^\(\d+\)/.test(s)) return true;
-  if(/[ΑA]\.[ΔD]\.[ΜM]\.[ΕE]\.[ΤT]/.test(s)) return true;
-  if(/M\.E\.C/.test(s)) return true;
-  if(/[⇒⇔]/.test(s)) return true;
-  if(/Νόμος του Νεύτωνα/i.test(s) || /Newton’s law/i.test(s)) return true;
-  return false;
 }
 
 function addRow(leftText, rightText, viewer, durLeftSec, durRightSec, pauseAfterSec, whenDone){
@@ -1654,7 +1558,6 @@ if(langSwitch){
     const lang = btn.dataset.lang;
     if(!DIALOGS[lang]) await loadDialogs(lang);
     setLang(lang);
-    buildFoyerSpeakers();
   });
 }
 
