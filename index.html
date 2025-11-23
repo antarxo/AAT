@@ -3,757 +3,779 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Θεατρική Σκηνή — Ενιαία Έκδοση (Act I + Act II + Φουαγιέ)</title>
+  <title>Θεατρική Σκηνή — Α.Α.Τ. (Πράξη I, II & Φουαγιέ)</title>
 
   <link rel="stylesheet" href="https://unpkg.com/uplot@1.6.30/dist/uPlot.min.css">
   <script src="https://unpkg.com/uplot@1.6.30/dist/uPlot.iife.min.js"></script>
 
   <style>
-    :root{
+    :root {
       --foyer-h: 445px;
     }
 
-    body{
-      margin:0;
-      background:radial-gradient(circle at center,#222 0%,#000 100%);
-      overflow:hidden;
-      font-family:Inter,system-ui,sans-serif;
-      color:#f5f5f5;
+    * {
+      box-sizing: border-box;
     }
 
-    .stage{
-      position:relative;
-      width:100vw;
-      height:100vh;
-      overflow:hidden;
+    body {
+      margin: 0;
+      background: radial-gradient(circle at center, #222 0%, #000 100%);
+      overflow: hidden;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: #f5f5f5;
     }
 
-    /* Σκηνικά */
-    #mainScene{
-      position:absolute;
-      inset:0;
-      overflow:hidden;
+    .stage {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
     }
 
-    #sceneBg{
-      position:absolute;
-      inset:0;
-      width:100%;
-      height:100%;
-      object-fit:cover;
-      z-index:100;
+    /* Σκηνικό και κοινό */
+
+    #sceneBg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: 100;
     }
 
-    #koinoExtra{
-      position:absolute;
-      left:50%;
-      bottom:0;
-      transform:translateX(-50%);
-      width:70vw;
-      max-width:1200px;
-      z-index:1300; /* κάτω από ομιλητές */
-      pointer-events:none;
+    #audienceExtra {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: 0;
+      max-width: 100%;
+      height: auto;
+      z-index: 1350; /* πίσω από τους θεατές */
+      pointer-events: none;
     }
 
-    #koino{
-      position:absolute;
-      left:50%;
-      bottom:0;
-      transform:translateX(-50%);
-      width:70vw;
-      max-width:1200px;
-      z-index:1500; /* κοινό πάνω από extra, κάτω από controls */
-      pointer-events:none;
+    #audienceBase {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: 0;
+      max-width: 100%;
+      height: auto;
+      z-index: 1500; /* πάνω από extra, κάτω από bubbles */
+      pointer-events: none;
     }
 
-    /* Bubble σκηνής (1η & 2η πράξη) */
-    #bubble{
-      position:absolute;
-      min-width:200px;
-      max-width:380px;
-      padding:12px 14px;
-      border-radius:16px;
-      background:rgba(0,0,0,0.8);
-      border:1px solid rgba(255,255,255,0.3);
-      box-shadow:0 8px 18px rgba(0,0,0,0.7);
-      display:none;
+    /* Θεατές (avatars) */
+
+    #viewerLayer {
+      position: absolute;
+      inset: 0;
+      z-index: 1400; /* κάτω από κουμπιά, πάνω από extra, κάτω από κοινό */
+      pointer-events: none;
     }
 
-    #bubbleText{
-      font-size:14px;
-      line-height:1.4;
+    .viewer-avatar {
+      position: absolute;
+      transform-origin: bottom center;
+      image-rendering: auto;
+      pointer-events: none;
     }
 
-    /* Πλαίσιο νόμων / τύπων */
-    #lawPanel{
-      position:absolute;
-      top:6%;
-      right:4%;
-      width:28%;
-      min-width:260px;
-      max-width:380px;
-      height:34%;
-      padding:10px 12px;
-      background:rgba(12,12,18,0.9);
-      border-radius:16px;
-      border:1px solid rgba(255,255,255,0.2);
-      box-shadow:0 8px 18px rgba(0,0,0,0.6);
-      z-index:1200;
-      overflow:auto;
+    /* Bubble για πράξεις 1–2 */
+
+    #bubbleLayer {
+      position: absolute;
+      inset: 0;
+      z-index: 1600; /* πάνω από audienceBase */
+      pointer-events: none;
     }
 
-    #lawText{
-      font-size:13px;
-      line-height:1.4;
-      white-space:pre-wrap;
+    .bubble {
+      position: absolute;
+      max-width: 420px;
+      padding: 14px 16px;
+      background: rgba(0, 0, 0, 0.8);
+      border-radius: 16px;
+      border: 2px solid rgba(255, 255, 255, 0.4);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.65);
+      font-size: 15px;
+      line-height: 1.4;
+      display: none;
     }
 
-    /* Πάνελ γραφήματος */
-    #graphPanel{
-      position:absolute;
-      bottom:6%;
-      right:4%;
-      width:28%;
-      min-width:260px;
-      max-width:380px;
-      height:32%;
-      padding:6px;
-      background:rgba(8,8,12,0.9);
-      border-radius:12px;
-      border:1px solid rgba(255,255,255,0.1);
-      box-shadow:0 8px 18px rgba(0,0,0,0.6);
-      z-index:1100;
-      display:flex;
-      flex-direction:column;
-      gap:4px;
+    .bubble::after {
+      content: "";
+      position: absolute;
+      width: 0;
+      height: 0;
+      border-style: solid;
+      border-width: 10px 10px 0 10px;
+      border-color: rgba(0, 0, 0, 0.8) transparent transparent transparent;
+      bottom: -10px;
+      left: 40px;
     }
 
-    #graphTitle{
-      font-size:12px;
-      opacity:0.8;
+    /* Πίνακας νόμων στις πράξεις */
+
+    #lawPanel {
+      position: absolute;
+      top: 8%;
+      left: 4%;
+      width: 26%;
+      min-height: 30%;
+      padding: 10px 12px;
+      background: rgba(10, 10, 10, 0.85);
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      font-size: 14px;
+      z-index: 1550;
+      overflow-y: auto;
     }
 
-    #plotContainer{
-      flex:1;
-      min-height:120px;
+    /* Ghost ηθοποιός */
+
+    #ghostActor {
+      position: absolute;
+      right: 6%;
+      top: 30%;
+      width: 180px;
+      height: auto;
+      opacity: 0.0;
+      transition: opacity 0.4s ease;
+      z-index: 1300;
+      pointer-events: none;
     }
 
-    /* Φουαγιέ */
-    #foyerPanel{
-      position:absolute;
-      left:0;
-      right:0;
-      bottom:0;
-      height:var(--foyer-h);
-      background:linear-gradient(to top,rgba(10,10,14,0.98),rgba(10,10,14,0.94));
-      border-top:1px solid rgba(255,255,255,0.2);
-      display:none;
-      z-index:1000;
-      padding:12px 26px 10px 26px;
-      box-sizing:border-box;
+    #ghostActor.visible {
+      opacity: 0.8;
     }
 
-    #foyerInner{
-      position:relative;
-      width:100%;
-      height:100%;
-      display:grid;
-      grid-template-columns:1.4fr 1.1fr;
-      gap:18px;
+    /* Foyer */
+
+    #foyerBoard {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: 0;
+      width: 90%;
+      height: var(--foyer-h);
+      background: rgba(8, 8, 8, 0.92);
+      border-top: 2px solid rgba(255, 255, 255, 0.3);
+      display: none;
+      z-index: 1700;
+      padding: 16px 22px;
+      display: none;
     }
 
-    #foyerLeftText,
-    #foyerRightText{
-      font-size:14px;
-      line-height:1.4;
-      white-space:pre-wrap;
-      overflow:auto;
-      padding:8px 10px;
-      border-radius:12px;
-      background:rgba(0,0,0,0.4);
-      border:1px solid rgba(255,255,255,0.15);
+    #foyerInner {
+      display: flex;
+      gap: 18px;
+      height: 100%;
     }
 
-    /* Avatars ομιλητών (φουαγιέ) */
-    .foyer-avatar{
-      position:absolute;
-      bottom:8px;
-      width:72px;
-      height:auto;
-      transform:translateX(-50%);
-      opacity:0;
-      display:none;
-      transition:opacity 0.4s;
-      z-index:1400;
-      pointer-events:none;
+    .foyer-col {
+      flex: 1;
+      font-size: 14px;
+      line-height: 1.4;
+      white-space: pre-wrap;
+      overflow-y: auto;
     }
 
-    .foyer-avatar[data-viewer="1"]{ left:16%; }
-    .foyer-avatar[data-viewer="2"]{ left:32%; }
-    .foyer-avatar[data-viewer="3"]{ left:50%; }
-    .foyer-avatar[data-viewer="4"]{ left:68%; }
-    .foyer-avatar[data-viewer="5"]{ left:84%; }
-
-    /* Controls */
-    #controls{
-      position:absolute;
-      top:10px;
-      left:50%;
-      transform:translateX(-50%);
-      display:flex;
-      gap:10px;
-      z-index:2000;
+    .foyer-col strong {
+      color: #ffe45e;
     }
 
-    #controls button{
-      padding:6px 12px;
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,0.3);
-      background:rgba(0,0,0,0.7);
-      color:#f5f5f5;
-      font-size:13px;
-      cursor:pointer;
-      backdrop-filter:blur(8px);
+    /* Κουμπιά πράξεων */
+
+    .controls {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      display: flex;
+      gap: 8px;
+      z-index: 2000;
     }
 
-    #controls button:hover{
-      background:rgba(255,255,255,0.1);
+    .controls button {
+      border: none;
+      border-radius: 999px;
+      padding: 6px 14px;
+      font-size: 13px;
+      cursor: pointer;
+      background: rgba(0, 0, 0, 0.7);
+      color: #f5f5f5;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      backdrop-filter: blur(6px);
+      transition: background 0.2s ease, transform 0.1s ease;
     }
 
-    #controls button.active{
-      background:#f5f5f5;
-      color:#000;
+    .controls button:hover {
+      background: rgba(255, 255, 255, 0.16);
+      transform: translateY(-1px);
+    }
+
+    .controls button.active {
+      background: #ffb703;
+      color: #000;
+      border-color: #ffb703;
+    }
+
+    /* Απλό placeholder για plot (αν το χρειαστούμε) */
+
+    #plotContainer {
+      position: absolute;
+      right: 4%;
+      top: 8%;
+      width: 32%;
+      height: 26%;
+      background: rgba(0, 0, 0, 0.7);
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      z-index: 1500;
+      overflow: hidden;
+    }
+
+    #plotContainer.hidden {
+      display: none;
+    }
+
+    #plot {
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Κουρτίνες (κρατάω βασικά) */
+
+    .curtain-side {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 16%;
+      background: radial-gradient(circle at top, #700 0%, #300 40%, #100 100%);
+      z-index: 1900;
+      transition: transform 0.9s cubic-bezier(.2,.9,.2,1);
+    }
+
+    #curtainLeft {
+      left: 0;
+      transform-origin: left center;
+    }
+
+    #curtainRight {
+      right: 0;
+      transform-origin: right center;
+    }
+
+    .curtain-open #curtainLeft {
+      transform: translateX(-100%);
+    }
+
+    .curtain-open #curtainRight {
+      transform: translateX(100%);
     }
 
   </style>
 </head>
 <body>
-  <div class="stage">
+  <div class="stage" id="stageRoot">
 
-    <!-- Σκηνικά -->
-    <div id="mainScene">
-      <img id="sceneBg" src="scene_bg.png" alt="Σκηνικό" />
+    <!-- Κεντρικό σκηνικό (βάλε εδώ τη δική σου εικόνα σκηνής) -->
+    <img id="sceneBg" src="scene_bg.png" alt="Σκηνικό" />
 
-      <img id="koinoExtra" src="koino_extra.png" alt="Επέκταση κοινού" />
-      <img id="koino" src="koino.png" alt="Κοινό" />
+    <!-- Extra κοινό (πίσω από avatars) -->
+    <img id="audienceExtra" src="koino_extra.png" alt="Επιπλέον κοινό" />
 
-      <div id="lawPanel">
-        <div id="lawText"></div>
-      </div>
+    <!-- Βασικό κοινό -->
+    <img id="audienceBase" src="koino.png" alt="Κοινό" />
 
-      <div id="graphPanel">
-        <div id="graphTitle">Διάγραμμα</div>
-        <div id="plotContainer"></div>
-      </div>
+    <!-- Layer θεατών (avatars) -->
+    <div id="viewerLayer"></div>
 
-      <div id="bubble">
+    <!-- Ghost ηθοποιός -->
+    <img id="ghostActor" src="ghost_actor.png" alt="Ghost mD" />
+
+    <!-- Bubble layer για Πράξεις 1 & 2 -->
+    <div id="bubbleLayer">
+      <div id="bubbleBox" class="bubble">
         <div id="bubbleText"></div>
       </div>
     </div>
 
-    <!-- Φουαγιέ -->
-    <div id="foyerPanel">
-      <div id="foyerInner">
-        <div id="foyerLeftText"></div>
-        <div id="foyerRightText"></div>
+    <!-- Panel νόμων / τύπων -->
+    <div id="lawPanel"></div>
 
-        <!-- Avatars θεατών -->
-        <img class="foyer-avatar" data-viewer="1" src="viewer1.png" alt="Θεατής 1" />
-        <img class="foyer-avatar" data-viewer="2" src="viewer2.png" alt="Θεατής 2" />
-        <img class="foyer-avatar" data-viewer="3" src="viewer3.png" alt="Θεατής 3" />
-        <img class="foyer-avatar" data-viewer="4" src="viewer4.png" alt="Θεατής 4" />
-        <img class="foyer-avatar" data-viewer="5" src="viewer5.png" alt="Θεατής 5" />
+    <!-- Plot container (uPlot) -->
+    <div id="plotContainer" class="hidden">
+      <div id="plot"></div>
+    </div>
+
+    <!-- Φουαγιέ (μαυροπίνακας) -->
+    <div id="foyerBoard">
+      <div id="foyerInner">
+        <div id="foyerLeft" class="foyer-col"></div>
+        <div id="foyerRight" class="foyer-col"></div>
       </div>
     </div>
 
-    <!-- Κουμπιά -->
-    <div id="controls">
-      <button id="btnAct1">1η Πράξη</button>
-      <button id="btnAct2">2η Πράξη</button>
+    <!-- Κουρτίνες -->
+    <div id="curtainLeft" class="curtain-side"></div>
+    <div id="curtainRight" class="curtain-side"></div>
+
+    <!-- Κουμπιά πράξεων -->
+    <div class="controls">
+      <button id="btnAct1">Πράξη I</button>
+      <button id="btnAct2">Πράξη II</button>
       <button id="btnFoyer">Φουαγιέ</button>
     </div>
   </div>
 
   <script>
-  'use strict';
+    // ---------------------------
+    // Κατάσταση / globals
+    // ---------------------------
+    let dialogs = null;
+    let viewersMeta = [];
+    let currentTimeouts = [];
+    let currentIntervals = [];
+    let currentAct = null;
+    let uplot = null;
 
-  // ---------------- ΓΕΝΙΚΑ ΔΕΔΟΜΕΝΑ ΔΙΑΛΟΓΩΝ ----------------
+    const stageRoot = document.getElementById('stageRoot');
+    const audienceBase = document.getElementById('audienceBase');
+    const audienceExtra = document.getElementById('audienceExtra');
+    const viewerLayer = document.getElementById('viewerLayer');
+    const bubbleBox = document.getElementById('bubbleBox');
+    const bubbleText = document.getElementById('bubbleText');
+    const lawPanel = document.getElementById('lawPanel');
+    const foyerBoard = document.getElementById('foyerBoard');
+    const foyerLeft = document.getElementById('foyerLeft');
+    const foyerRight = document.getElementById('foyerRight');
+    const ghostActor = document.getElementById('ghostActor');
+    const plotContainer = document.getElementById('plotContainer');
+    const plotDiv = document.getElementById('plot');
 
-  let DIALOGS = null;
-  let currentActKey = null;
-  let currentSeq = [];
-  let currentSeqIndex = 0;
-  let currentLang = "gr";
+    const btnAct1 = document.getElementById('btnAct1');
+    const btnAct2 = document.getElementById('btnAct2');
+    const btnFoyer = document.getElementById('btnFoyer');
 
-  // φόρτωση dialogs-XX.json
-  async function loadDialogs(lang) {
-    if (DIALOGS && currentLang === lang) return DIALOGS;
-    const response = await fetch("dialogs-" + lang + ".json?ts=" + Date.now());
-    DIALOGS = await response.json();
-    currentLang = lang;
-    return DIALOGS;
-  }
-
-  // meta θεατών από "viewers" του JSON
-  function getViewerMeta(viewerIndex) {
-    if (!DIALOGS || !DIALOGS.viewers) return null;
-    var idx = (viewerIndex || 0) - 1; // JSON: 1..5 → index 0..4
-    if (idx < 0 || idx >= DIALOGS.viewers.length) return null;
-    return DIALOGS.viewers[idx];
-  }
-
-  // ---------------- ΒΟΗΘΗΤΙΚΑ LAYOUT / PANELS ----------------
-
-  function showFoyerPanel(show) {
-    var foyer = document.getElementById("foyerPanel");
-    var mainScene = document.getElementById("mainScene");
-    if (!foyer || !mainScene) return;
-    if (show) {
-      foyer.style.display = "block";
-    } else {
-      foyer.style.display = "none";
-    }
-  }
-
-  function resetStageBubble() {
-    var bubbleEl = document.getElementById("bubble");
-    var bubbleTextEl = document.getElementById("bubbleText");
-    if (bubbleEl) {
-      bubbleEl.style.display = "none";
-    }
-    if (bubbleTextEl) {
-      bubbleTextEl.innerHTML = "";
-    }
-  }
-
-  function resetLawPanel() {
-    var lawTextEl = document.getElementById("lawText");
-    if (lawTextEl) {
-      lawTextEl.innerHTML = "";
-    }
-  }
-
-  function resetFoyerTexts() {
-    var leftEl = document.getElementById("foyerLeftText");
-    var rightEl = document.getElementById("foyerRightText");
-    if (leftEl) leftEl.innerHTML = "";
-    if (rightEl) rightEl.innerHTML = "";
-  }
-
-  function resetFoyerAvatars() {
-    var avatars = document.querySelectorAll(".foyer-avatar");
-    for (var i = 0; i < avatars.length; i++) {
-      avatars[i].style.display = "none";
-      avatars[i].style.opacity = 0;
-    }
-  }
-
-  // ---------------- ΤΟΠΟΘΕΤΗΣΗ BUBBLES / AVATARS ----------------
-
-  // Bubble σκηνής (1η & 2η πράξη) — υπολογισμός από ΚΑΤΩ μέρος του koino
-  function positionStageBubble(entry) {
-    var bubbleEl = document.getElementById("bubble");
-    var koinoEl = document.getElementById("koino");
-    if (!bubbleEl || !koinoEl) return;
-    if (!entry || !entry.viewer) return;
-
-    var viewerMeta = getViewerMeta(entry.viewer);
-    if (!viewerMeta) return;
-
-    var rect = koinoEl.getBoundingClientRect();
-
-    var xFrac = viewerMeta.xFrac || 0.5;
-    var baseX = rect.left + rect.width * xFrac;
-    var x = baseX + (entry.xShift || 0);
-
-    var baseY = rect.bottom;
-    var y = baseY - (entry.yOffset || 0);
-
-    bubbleEl.style.left = x + "px";
-    bubbleEl.style.top = y + "px";
-    bubbleEl.style.zIndex = 1400; // ομιλητές
-  }
-
-  // Ενεργός ομιλητής στο φουαγιέ (εμφάνιση μόνο ενός avatar)
-  function setActiveFoyerViewer(viewerIndex) {
-    resetFoyerAvatars();
-    if (!viewerIndex) return;
-    var selector = '.foyer-avatar[data-viewer="' + viewerIndex + '"]';
-    var target = document.querySelector(selector);
-    if (!target) return;
-    target.style.display = "block";
-    // μικρό timeout για smooth opacity (προαιρετικό)
-    setTimeout(function(){
-      target.style.opacity = 1;
-    }, 10);
-  }
-
-  // ---------------- TYPEWRITER ΕΦΕ ----------------
-
-  function typewriter(el, html, durationMs, cb) {
-    if (!el) {
-      if (cb) cb();
-      return;
-    }
-    var text = html || "";
-    if (durationMs <= 0 || text.length === 0) {
-      el.innerHTML = text;
-      if (cb) cb();
-      return;
+    // ---------------------------
+    // Helpers: cancel / timeouts
+    // ---------------------------
+    function clearAllTimers() {
+      currentTimeouts.forEach(t => clearTimeout(t));
+      currentIntervals.forEach(i => clearInterval(i));
+      currentTimeouts = [];
+      currentIntervals = [];
     }
 
-    el.innerHTML = "";
-    var totalChars = text.length;
-    var stepMs = Math.max(15, durationMs / Math.max(totalChars, 1));
-    var i = 0;
+    function setSafeTimeout(fn, ms) {
+      const id = setTimeout(fn, ms);
+      currentTimeouts.push(id);
+    }
 
-    function step() {
-      i++;
-      el.innerHTML = text.slice(0, i);
-      if (i < totalChars) {
-        setTimeout(step, stepMs);
+    function setSafeInterval(fn, ms) {
+      const id = setInterval(fn, ms);
+      currentIntervals.push(id);
+    }
+
+    // ---------------------------
+    // Helpers: viewers meta
+    // ---------------------------
+    function getViewerMeta(viewerId) {
+      return viewersMeta.find(v => v.id === viewerId) || null;
+    }
+
+    // ---------------------------
+    // Layout / positioning
+    // ---------------------------
+    function computeAudienceMetrics() {
+      const stageRect = stageRoot.getBoundingClientRect();
+      const aRect = audienceBase.getBoundingClientRect();
+      // xFrac * πλάτος, y από ΚΑΤΩ
+      return {
+        stageRect,
+        aRect,
+        baselineY: aRect.bottom - stageRect.top,
+        leftX: aRect.left - stageRect.left,
+        width: aRect.width
+      };
+    }
+
+    function positionAvatars() {
+      if (!audienceBase.complete) return;
+      const m = computeAudienceMetrics();
+      viewersMeta.forEach(v => {
+        const avatar = viewerLayer.querySelector(`.viewer-avatar[data-viewer-id="${v.id}"]`);
+        if (!avatar) return;
+        const scale = v.avatarScale || 1.0;
+
+        const x = m.leftX + m.width * v.xFrac;
+        const baseY = m.baselineY - (v.avatarDy || 0);
+
+        avatar.style.transform = `translate(-50%, 0) scale(${scale})`;
+        avatar.style.left = `${x}px`;
+        // Το ύψος δεν το ξέρουμε μέχρι να φορτώσει, οπότε ευθυγράμμιση "πόδια" στο baseY
+        const h = avatar.naturalHeight ? avatar.naturalHeight * scale : 120 * scale;
+        avatar.style.top = `${baseY - h}px`;
+      });
+    }
+
+    function positionBubbleForViewer(viewerId, xShift, yOffset) {
+      const meta = getViewerMeta(viewerId);
+      if (!meta || !audienceBase.complete) return;
+
+      const m = computeAudienceMetrics();
+      const baseX = m.leftX + m.width * meta.xFrac;
+      const baseY = m.baselineY;
+
+      const dx = (meta.bubbleDx || 0) + (xShift || 0);
+      const dy = (meta.bubbleDy || 0) + (yOffset || 0);
+
+      // Από ΚΑΤΩ πάμε ΠΑΝΩ, άρα baseY - dy
+      const x = baseX + dx;
+      const y = baseY - dy;
+
+      bubbleBox.style.left = `${x}px`;
+      bubbleBox.style.top = `${y}px`;
+      bubbleBox.style.display = 'block';
+    }
+
+    function hideBubble() {
+      bubbleBox.style.display = 'none';
+    }
+
+    // ---------------------------
+    // Viewer avatars εμφάνιση
+    // ---------------------------
+    function setupViewerAvatars() {
+      viewerLayer.innerHTML = '';
+      (viewersMeta || []).forEach(v => {
+        const img = document.createElement('img');
+        img.className = 'viewer-avatar';
+        img.dataset.viewerId = String(v.id);
+        img.src = v.img;
+        img.alt = v.name_gr || `Θεατής ${v.id}`;
+        viewerLayer.appendChild(img);
+      });
+      // μετά το onload του κοινού θα γίνει positionAvatars
+      positionAvatars();
+    }
+
+    function hideAllAvatars() {
+      viewerLayer.querySelectorAll('.viewer-avatar').forEach(el => {
+        el.style.opacity = '0';
+      });
+    }
+
+    function showAvatar(viewerId) {
+      hideAllAvatars();
+      const avatar = viewerLayer.querySelector(`.viewer-avatar[data-viewer-id="${viewerId}"]`);
+      if (avatar) {
+        avatar.style.opacity = '1';
+      }
+    }
+
+    // ---------------------------
+    // Curtain / mode
+    // ---------------------------
+    function setCurtains(open) {
+      if (open) {
+        stageRoot.classList.add('curtain-open');
       } else {
+        stageRoot.classList.remove('curtain-open');
+      }
+    }
+
+    function setMode(mode) {
+      currentAct = mode;
+      btnAct1.classList.toggle('active', mode === 'act1');
+      btnAct2.classList.toggle('active', mode === 'act2');
+      btnFoyer.classList.toggle('active', mode === 'foyer');
+
+      if (mode === 'foyer') {
+        foyerBoard.style.display = 'block';
+        lawPanel.style.display = 'none';
+        plotContainer.classList.add('hidden');
+        hideBubble();
+      } else {
+        foyerBoard.style.display = 'none';
+        lawPanel.style.display = 'block';
+        // plot εμφανίζεται αν ζητηθεί
+      }
+    }
+
+    // ---------------------------
+    // Typewriter
+    // ---------------------------
+    function typewriter(element, htmlText, typeMs, cb) {
+      element.innerHTML = '';
+      if (!htmlText || typeMs === 0) {
+        element.innerHTML = htmlText || '';
         if (cb) cb();
+        return;
+      }
+
+      // για να μην κάνουμε parser HTML χαρακτήρα-χαρακτήρα, θα γράφουμε “ωμά”
+      const text = htmlText;
+      let i = 0;
+      const delay = Math.max(10, typeMs / Math.max(1, text.length));
+
+      const id = setInterval(() => {
+        i++;
+        element.innerHTML = text.slice(0, i);
+        if (i >= text.length) {
+          clearInterval(id);
+          currentIntervals = currentIntervals.filter(x => x !== id);
+          if (cb) cb();
+        }
+      }, delay);
+      currentIntervals.push(id);
+    }
+
+    // ---------------------------
+    // Plot (απλό demo με uPlot)
+    // ---------------------------
+    function showDemoPlot(kind) {
+      // kind: "x", "v", "a", "ax" κλπ
+      plotContainer.classList.remove('hidden');
+
+      const N = 200;
+      const xs = [];
+      const ys = [];
+      const A = 1;
+      const w = 2 * Math.PI;
+
+      for (let i = 0; i < N; i++) {
+        const t = (i / (N - 1)) * 2 * Math.PI;
+        xs.push(t);
+        let y;
+        if (kind === 'v') y = w * A * Math.cos(w * t);
+        else if (kind === 'a') y = -w * w * A * Math.sin(w * t);
+        else if (kind === 'ax') y = -w * w * A * Math.sin(w * t); // placeholder
+        else y = A * Math.sin(w * t);
+        ys.push(y);
+      }
+
+      if (uplot) {
+        uplot.setData([xs, ys]);
+        return;
+      }
+
+      uplot = new uPlot({
+        width: plotDiv.clientWidth || 300,
+        height: plotDiv.clientHeight || 180,
+        series: [
+          {},
+          { label: kind || 'x', points: { show: false } }
+        ]
+      }, [xs, ys], plotDiv);
+    }
+
+    function hidePlot() {
+      plotContainer.classList.add('hidden');
+    }
+
+    // ---------------------------
+    // Ghost actor
+    // ---------------------------
+    function setGhostVisible(flag) {
+      if (flag) {
+        ghostActor.classList.add('visible');
+      } else {
+        ghostActor.classList.remove('visible');
       }
     }
 
-    step();
-  }
+    // ---------------------------
+    // Generic sequence player
+    // ---------------------------
+    function playSequence(lines, config) {
+      clearAllTimers();
+      hideBubble();
+      hideAllAvatars();
+      lawPanel.innerHTML = '';
+      foyerLeft.innerHTML = '';
+      foyerRight.innerHTML = '';
+      setGhostVisible(false);
+      hidePlot();
 
-  // ---------------- ΓΡΑΦΗΜΑΤΑ (απλό setup με uPlot) ----------------
+      if (!Array.isArray(lines) || lines.length === 0) return;
 
-  var currentPlot = null;
-  var currentGraphKind = null;
+      let index = 0;
 
-  function buildDataFor(kind) {
-    // πολύ απλό demo: Α=1, ω=1
-    var A = 1;
-    var w = 1;
-    var N = 200;
-    var t = [];
-    var x = [];
-    var v = [];
-    var a = [];
-    var ax = [];
+      function step() {
+        if (index >= lines.length) {
+          hideBubble();
+          hideAllAvatars();
+          return;
+        }
 
-    for (var i = 0; i < N; i++) {
-      var tt = i * 0.05;
-      var xt = A * Math.sin(w * tt);
-      var vt = w * A * Math.cos(w * tt);
-      var at = -w * w * A * Math.sin(w * tt);
-      t.push(tt);
-      x.push(xt);
-      v.push(vt);
-      a.push(at);
-      ax.push(at); // απλά ίδιο για demo
-    }
+        const line = lines[index++];
+        if (!line) {
+          setSafeTimeout(step, 0);
+          return;
+        }
 
-    return {
-      t: t,
-      x: x,
-      v: v,
-      a: a,
-      ax: ax
-    };
-  }
+        // special actions with "kind" για πράξεις
+        const kind = line.kind || null;
 
-  function showGraph(kind) {
-    var container = document.getElementById("plotContainer");
-    var titleEl = document.getElementById("graphTitle");
-    if (!container) return;
+        // Ghost control (act2)
+        if (line.gStart) setGhostVisible(true);
+        if (line.gStop) setGhostVisible(false);
 
-    var data = buildDataFor(kind);
+        if (kind === 'graph') {
+          // Εμφάνιση βασικού x(t)
+          showDemoPlot('x');
+          setSafeTimeout(step, line.pauseMs || 0);
+          return;
+        }
 
-    var series;
-    var title;
-    if (kind === "xt") {
-      series = [
-        {},
-        { label:"x(t)" }
-      ];
-      title = "x–t";
-    } else {
-      // default
-      series = [
-        {},
-        { label:"x(t)" }
-      ];
-      title = "x–t";
-    }
+        if (kind === 'lawPlot') {
+          const plotKind = line.plot || 'v';
+          showDemoPlot(plotKind);
+          setSafeTimeout(step, line.pauseMs || 0);
+          return;
+        }
 
-    if (titleEl) {
-      titleEl.textContent = "Διάγραμμα " + title;
-    }
+        if (kind === 'close') {
+          hideBubble();
+          hideAllAvatars();
+          hidePlot();
+          setGhostVisible(false);
+          return;
+        }
 
-    if (currentPlot) {
-      currentPlot.destroy();
-      currentPlot = null;
-    }
+        // FOYER
+        if (config.mode === 'foyer') {
+          const viewerId = line.viewer || null;
+          if (viewerId) showAvatar(viewerId);
+          const tMs = line.typeMs || 0;
+          const pMs = line.pauseMs || 0;
 
-    currentPlot = new uPlot({
-      width: container.clientWidth || 260,
-      height: container.clientHeight || 150,
-      series: series,
-      axes: [
-        {},
-        {}
-      ]
-    }, [data.t, data.x], container);
+          typewriter(foyerLeft, line.left || '', tMs, () => {
+            typewriter(foyerRight, line.right || '', tMs, () => {
+              setSafeTimeout(step, pMs);
+            });
+          });
+          return;
+        }
 
-    currentGraphKind = kind;
-  }
+        // ΠΡΑΞΕΙΣ 1–2
+        const viewerId = line.viewer || null;
+        const tMs = line.typeMs || 0;
+        const pMs = line.pauseMs || 0;
 
-  function showLawPlot(plotKey) {
-    var container = document.getElementById("plotContainer");
-    var titleEl = document.getElementById("graphTitle");
-    if (!container) return;
-
-    var data = buildDataFor("xt");
-
-    var y;
-    var label;
-    var title;
-    if (plotKey === "v") {
-      y = data.v;
-      label = "v(t)";
-      title = "v–t";
-    } else if (plotKey === "a") {
-      y = data.a;
-      label = "a(t)";
-      title = "a–t";
-    } else if (plotKey === "ax") {
-      y = data.ax;
-      label = "a(x)";
-      title = "a–x (προσομοίωση)";
-    } else {
-      y = data.x;
-      label = "x(t)";
-      title = "x–t";
-    }
-
-    if (titleEl) {
-      titleEl.textContent = "Διάγραμμα " + title;
-    }
-
-    if (currentPlot) {
-      currentPlot.destroy();
-      currentPlot = null;
-    }
-
-    currentPlot = new uPlot({
-      width: container.clientWidth || 260,
-      height: container.clientHeight || 150,
-      series: [
-        {},
-        { label: label }
-      ],
-      axes: [
-        {},
-        {}
-      ]
-    }, [data.t, y], container);
-  }
-
-  // param bubble (π.χ. φ, Α, Tw) – εδώ απλή υλοποίηση
-  function showParamBubble(paramKey, viewerIndex) {
-    // μπορείς αργότερα να το εξελίξεις σε ξεχωριστό overlay
-    var lawTextEl = document.getElementById("lawText");
-    if (!lawTextEl) return;
-    var txt;
-    if (paramKey === "phi") {
-      txt = "Ρύθμιση φάσης φ₀";
-    } else if (paramKey === "A") {
-      txt = "Ρύθμιση πλάτους A";
-    } else if (paramKey === "Tw") {
-      txt = "Ρύθμιση περιόδου T / γωνιακής συχνότητας ω";
-    } else {
-      txt = "Παράμετρος: " + paramKey;
-    }
-    lawTextEl.innerHTML = txt;
-  }
-
-  // Ghost σκηνή (2η πράξη) – stubs, για να μην σπάνε τα flags
-  function startGhostScene() {
-    // βάλε εδώ ό,τι είχες για την ghost σκηνή
-  }
-
-  function stopGhostScene() {
-    // αντίστοιχα
-  }
-
-  function onActFinished(actKey) {
-    // callback στο τέλος πράξης, αν χρειαστεί
-  }
-
-  // ---------------- RENDER ENTRIES ----------------
-
-  function renderStageEntry(entry) {
-    var bubbleEl     = document.getElementById("bubble");
-    var bubbleTextEl = document.getElementById("bubbleText");
-    var lawTextEl    = document.getElementById("lawText");
-
-    resetStageBubble();
-    // νόμοι: δεν καθαρίζω πάντα, για να μπορείς να "κρατάς" προηγούμενους αν θέλεις.
-    // Αν θες να καθαρίζει σε κάθε βήμα, βάλε resetLawPanel() εδώ.
-
-    // 1. Bubble (σκέψη/ατάκα) αν έχει left + viewer
-    if (entry.left && entry.viewer) {
-      positionStageBubble(entry);
-      if (bubbleEl) {
-        bubbleEl.style.display = "block";
-        bubbleEl.style.zIndex = 1400;
+        // Αν έχει viewer -> bubble πάνω από θεατή
+        if (viewerId) {
+          showAvatar(viewerId);
+          positionBubbleForViewer(viewerId, line.xShift || 0, line.yOffset || 0);
+          typewriter(bubbleText, line.left || '', tMs, () => {
+            // Αν right υπάρχει, πάει στον πίνακα νόμων
+            if (line.right) {
+              lawPanel.innerHTML = line.right;
+            }
+            setSafeTimeout(step, pMs);
+          });
+        } else {
+          // viewer == null -> “καθαρός” νόμος / κείμενο στον lawPanel
+          const txt = (line.left || '') + (line.right || '');
+          typewriter(lawPanel, txt, tMs, () => {
+            setSafeTimeout(step, pMs);
+          });
+        }
       }
-      typewriter(
-        bubbleTextEl,
-        entry.left,
-        entry.typeMs || 0,
-        null
-      );
+
+      step();
     }
 
-    // 2. Νόμοι / τύποι (right)
-    if (entry.right && lawTextEl) {
-      typewriter(
-        lawTextEl,
-        entry.right,
-        entry.typeMs || 0,
-        null
-      );
+    // ---------------------------
+    // Act functions
+    // ---------------------------
+
+    function playAct1() {
+      if (!dialogs) return;
+      setMode('act1');
+      setCurtains(true);
+      playSequence(dialogs.act1 || [], { mode: 'act1' });
     }
 
-    // 3. Δυναμικές παράμετροι
-    if (entry.param) {
-      showParamBubble(entry.param, entry.viewer || null);
+    function playAct2() {
+      if (!dialogs) return;
+      setMode('act2');
+      setCurtains(true);
+      playSequence(dialogs.act2 || [], { mode: 'act2' });
     }
 
-    // 4. Γραφήματα
-    if (entry.graph) {
-      showGraph(entry.graph);
+    function playFoyer() {
+      if (!dialogs) return;
+      setMode('foyer');
+      setCurtains(false);
+      playSequence(dialogs.foyer || [], { mode: 'foyer' });
     }
 
-    // 5. Plot επιλογή
-    if (entry.plot) {
-      showLawPlot(entry.plot);
+    // ---------------------------
+    // Init
+    // ---------------------------
+
+    async function loadDialogs(lang = 'gr') {
+      const url = `dialogs-${lang}.json`;
+      const res = await fetch(url);
+      dialogs = await res.json();
+
+      // viewers από dialogs
+      viewersMeta = (dialogs.viewers || []).map(v => ({
+        id: v.id,
+        name_gr: v.name_gr,
+        name_en: v.name_en,
+        color: v.color,
+        xFrac: v.xFrac,
+        bubbleDx: v.bubbleDx,
+        bubbleDy: v.bubbleDy,
+        avatarDy: v.avatarDy,
+        avatarScale: v.avatarScale,
+        img: v.img
+      }));
+
+      setupViewerAvatars();
     }
 
-    // 6. Ghost flags
-    if (entry.gStart) {
-      startGhostScene();
-    }
-    if (entry.gStop) {
-      stopGhostScene();
-    }
+    window.addEventListener('load', async () => {
+      try {
+        await loadDialogs('gr');
+      } catch (e) {
+        console.error('Αποτυχία φόρτωσης dialogs-gr.json', e);
+      }
+      positionAvatars();
+      setMode('act1');
+      setCurtains(true);
+      // default: ξεκινάμε Πράξη 1
+      playAct1();
+    });
 
-    // 7. Close flag
-    if (entry.close) {
-      onActFinished(currentActKey);
-    }
-  }
+    window.addEventListener('resize', () => {
+      positionAvatars();
+    });
 
-  function renderFoyerEntry(entry) {
-    var leftEl  = document.getElementById("foyerLeftText");
-    var rightEl = document.getElementById("foyerRightText");
+    audienceBase.addEventListener('load', () => {
+      positionAvatars();
+    });
 
-    setActiveFoyerViewer(entry.viewer || null);
+    // Buttons
+    btnAct1.addEventListener('click', () => {
+      clearAllTimers();
+      playAct1();
+    });
 
-    typewriter(
-      leftEl,
-      entry.left || "",
-      entry.typeMs || 0,
-      null
-    );
+    btnAct2.addEventListener('click', () => {
+      clearAllTimers();
+      playAct2();
+    });
 
-    typewriter(
-      rightEl,
-      entry.right || "",
-      entry.typeMs || 0,
-      null
-    );
-  }
+    btnFoyer.addEventListener('click', () => {
+      clearAllTimers();
+      playFoyer();
+    });
 
-  // ---------------- SEQUENCE ENGINE (ΜΙΑ ΣΥΝΑΡΤΗΣΗ ΓΙΑ ΟΛΑ) ----------------
-
-  function stepSequence() {
-    if (!currentSeq || currentSeqIndex >= currentSeq.length) {
-      onActFinished(currentActKey);
-      return;
-    }
-
-    var entry = currentSeq[currentSeqIndex];
-
-    if (currentActKey === "foyer") {
-      renderFoyerEntry(entry);
-    } else {
-      renderStageEntry(entry);
-    }
-
-    var totalMs = (entry.typeMs || 0) + (entry.pauseMs || 0);
-    if (totalMs <= 0) totalMs = 800;
-
-    currentSeqIndex++;
-    setTimeout(stepSequence, totalMs);
-  }
-
-  async function playSequence(actKey, lang) {
-    if (!lang) lang = "gr";
-    await loadDialogs(lang);
-
-    currentActKey   = actKey;
-    currentSeq      = DIALOGS[actKey] || [];
-    currentSeqIndex = 0;
-
-    // reset UI ανά act
-    resetStageBubble();
-    resetLawPanel();
-    resetFoyerTexts();
-    resetFoyerAvatars();
-
-    if (actKey === "foyer") {
-      showFoyerPanel(true);
-    } else {
-      showFoyerPanel(false);
-    }
-
-    stepSequence();
-  }
-
-  // ---------------- CONTROLS ----------------
-
-  function setActiveButton(btnId) {
-    var buttons = document.querySelectorAll("#controls button");
-    for (var i = 0; i < buttons.length; i++) {
-      buttons[i].classList.remove("active");
-    }
-    var btn = document.getElementById(btnId);
-    if (btn) btn.classList.add("active");
-  }
-
-  document.addEventListener("DOMContentLoaded", function(){
-    var btnAct1  = document.getElementById("btnAct1");
-    var btnAct2  = document.getElementById("btnAct2");
-    var btnFoyer = document.getElementById("btnFoyer");
-
-    if (btnAct1) {
-      btnAct1.addEventListener("click", function(){
-        setActiveButton("btnAct1");
-        playSequence("act1", "gr");
-      });
-    }
-
-    if (btnAct2) {
-      btnAct2.addEventListener("click", function(){
-        setActiveButton("btnAct2");
-        playSequence("act2", "gr");
-      });
-    }
-
-    if (btnFoyer) {
-      btnFoyer.addEventListener("click", function(){
-        setActiveButton("btnFoyer");
-        playSequence("foyer", "gr");
-      });
-    }
-  });
   </script>
 </body>
 </html>
