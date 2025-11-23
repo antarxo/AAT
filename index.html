@@ -338,9 +338,7 @@ let LANG = 'gr';
 
 let thoughtScriptBase = [];
 let thoughtScript     = [];
-let FOYER_META        = [];
 let ACT2_TIMELINE     = [];
-let FOYER_VIEWERS     = [];
 
 /* ====== TIMELINE / DIALOG / UI LOADERS ====== */
 async function loadDialogOverrides(lang){
@@ -396,12 +394,6 @@ async function loadTimeline(){
     }else{
       ACT2_TIMELINE = [];
     }
-
-    if(Array.isArray(data.foyer)){
-      FOYER_META = data.foyer.map(ev=>({...ev}));
-    }else{
-      FOYER_META = [];
-    }
   }catch(e){}
 }
 
@@ -410,15 +402,6 @@ async function loadUI(lang){
     const resp = await fetch(`ui-${lang}.json`, {cache:'no-store'});
     if(!resp.ok) return;
     UI[lang] = await resp.json();
-  }catch(e){}
-}
-
-async function loadViewers(){
-  try{
-    const resp = await fetch('viewers.json', {cache:'no-store'});
-    if(!resp.ok) return;
-    const data = await resp.json();
-    if(Array.isArray(data)) FOYER_VIEWERS = data;
   }catch(e){}
 }
 
@@ -617,7 +600,7 @@ function positionRightPanel(){
 window.addEventListener('resize', positionRightPanel);
 function anchorX(){ return stage.clientWidth*0.18; }
 
-/* ====== ΡΥΘΜΙΣΕΙΣ ΡΟΗΣ ====== */
+/* ====== ΡΥΘΜΙΣΕΙΣ ΡΟΗΣ (UI ΜΟΝΟ) ====== */
 const DEFAULT_FIRST_MUL=1.1;
 let firstThoughtMul=parseFloat(slFirst.value);
 let timelineScale=parseFloat(slScale.value);
@@ -629,9 +612,7 @@ slDur.addEventListener('input',()=>{ bubbleDurationSec=parseFloat(slDur.value); 
 slSlow.addEventListener('input',()=>{ slowFactor=parseFloat(slSlow.value); valSlow.textContent=`${slowFactor.toFixed(2)}×`; });
 
 /* ====== TIMELINE STATE ====== */
-let nextThoughtIdx=0;
 let isBubbleActive=false;
-let bubbleAutoTimer=null;
 let measureRowIdx=0;
 
 let t0=performance.now(), lastFrame=performance.now();
@@ -699,6 +680,17 @@ function tint(hex, alpha){
   const r=parseInt(c.slice(0,2),16)||255, g=parseInt(c.slice(2,4),16)||255, b=parseInt(c.slice(4,6),16)||255;
   return `rgba(${r},${g},${b},${alpha})`;
 }
+const VIEWER_COLORS = ['#e74c3c','#3498db','#2ecc71','#f1c40f','#9b59b6'];
+function viewerColor(idx){
+  return VIEWER_COLORS[idx % VIEWER_COLORS.length];
+}
+function normViewer(v){
+  if(typeof v==='number'){
+    const idx = v-1;
+    return idx<0 ? 0 : idx;
+  }
+  return 0;
+}
 
 /* ====== BUBBLE SCHEDULER (Πράξεις) ====== */
 class BubbleScheduler {
@@ -724,39 +716,11 @@ class BubbleScheduler {
   }
   showSpeaker(viewer){
     if(!this.labelEl) return;
-    const viewersArr = Array.isArray(FOYER_VIEWERS) ? FOYER_VIEWERS : [];
-    let fv = null;
-    let idx0 = 0;
+    const totalViewers = document.querySelectorAll('.viewer').length || 0;
+    if(totalViewers===0){ this.labelEl.style.display='none'; return; }
 
-    if(viewersArr.length){
-      if(typeof viewer === 'number'){
-        fv = viewersArr.find(v => v && typeof v.id === 'number' && v.id === viewer) || null;
-        if(fv){
-          idx0 = viewersArr.indexOf(fv);
-        }else if(viewer >= 0 && viewer < viewersArr.length){
-          idx0 = viewer;
-          fv = viewersArr[idx0];
-        }else if(viewer > 0 && viewer <= viewersArr.length){
-          idx0 = viewer - 1;
-          fv = viewersArr[idx0];
-        }else{
-          idx0 = 0;
-          fv = viewersArr[0];
-        }
-      }else{
-        fv = viewersArr[0];
-        idx0 = 0;
-      }
-    }else{
-      const totalViewers = Math.max(1, (document.querySelectorAll('.viewer').length || 5));
-      if(typeof viewer === 'number'){
-        if(viewer > 0 && viewer <= totalViewers) idx0 = viewer - 1;
-        else if(viewer >= 0 && viewer < totalViewers) idx0 = viewer;
-        else idx0 = 0;
-      }else{
-        idx0 = 0;
-      }
-    }
+    const idx0 = (typeof viewer === 'number' ? viewer : 0);
+    if(idx0<0 || idx0>=totalViewers){ this.labelEl.style.display='none'; return; }
 
     const vEl=document.querySelector(`.viewer[data-idx="${idx0}"]`);
     if(!vEl){ this.labelEl.style.display='none'; return; }
@@ -766,29 +730,16 @@ class BubbleScheduler {
     const centerX=(vRect.left+vRect.width/2)-sRect.left;
     const topPx=Math.max(10,(vRect.top-sRect.top)-110);
 
-    let labelText='';
-    if(fv){
-      const num = (fv.id!=null ? fv.id : (idx0+1));
-      if(LANG==='en'){
-        labelText = fv.name_en || fv.name || (`SPECTATOR ${num}`);
-      }else{
-        labelText = fv.name_gr || fv.name || (`ΘΕΑΤΗΣ ${num}`);
-      }
-      this.labelEl.style.backgroundColor=tint(fv.color,0.9);
-    }else{
-      const num = (typeof viewer==='number' ? (viewer>0?viewer:viewer+1) : idx0+1);
-      labelText = (LANG==='en' ? `SPECTATOR ${num}` : `ΘΕΑΤΗΣ ${num}`);
-      this.labelEl.style.backgroundColor='rgba(0,0,0,0.7)';
-    }
-
+    const num = idx0+1;
+    const labelText = (LANG==='en' ? `SPECTATOR ${num}` : `ΘΕΑΤΗΣ ${num}`);
     this.labelEl.textContent = labelText;
+    this.labelEl.style.backgroundColor=tint(viewerColor(idx0),0.9);
     this.labelEl.style.left=centerX+'px';
     this.labelEl.style.top=topPx+'px';
     this.labelEl.style.transform='translateX(-50%)';
     this.labelEl.style.display='block';
   }
 
-  /* === Bubbles κουμπωμένα σε θεατή μέσα στο 64% === */
   placePanelNearViewer(viewer,lift=140,xShift=0){
     const W = stage.clientWidth;
     const H = stage.clientHeight;
@@ -1019,15 +970,23 @@ function closeCurtainsSequence(){
   }, 1500);
 }
 
-/* ====== ΒΟΗΘΗΤΙΚΟ ΓΙΑ ΚΕΙΜΕΝΟ ΠΡΑΞΗΣ 1 ====== */
+/* ====== ΒΟΗΘΗΤΙΚΟ ΓΙΑ ΚΕΙΜΕΝΟ ΠΡΑΞΗΣ 1 & 2 ====== */
 function resolveAct1Text(th){
   if(typeof th.left === 'string' && th.left) return th.left;
+  if(typeof th.right=== 'string' && th.right) return th.right;
   if(typeof th.text === 'string' && th.text) return th.text;
   if(th.key) return getAct1BubbleText(th.key);
   return '';
 }
+function resolveAct2Text(step){
+  if(typeof step.left === 'string' && step.left) return step.left;
+  if(typeof step.right=== 'string' && step.right) return step.right;
+  if(typeof step.text === 'string' && step.text) return step.text;
+  if(step.key) return getAct2BubbleText(step.key);
+  return '';
+}
 
-/* ====== HANDLER TIMELINE ΠΡΑΞΗΣ 1 ====== */
+/* ====== HANDLER TIMELINE ΠΡΑΞΗΣ 1 (sequential script, χωρίς atT) ====== */
 function handleTimelineEvent(th){
   if(!th) return;
 
@@ -1038,11 +997,17 @@ function handleTimelineEvent(th){
   let kind = th.kind || th.type || '';
 
   if(!kind){
-    if(hasLaw && !th.left && !th.text && !th.key)        kind='law';
-    else if(hasPlot && !th.left && !th.text && !th.key)  kind='lawPlot';
-    else if(hasGraph && !th.left && !th.text && !th.key) kind='graph';
+    if(hasLaw && !th.left && !th.text && !th.key && !th.right)        kind='law';
+    else if(hasPlot && !th.left && !th.text && !th.key && !th.right)  kind='lawPlot';
+    else if(hasGraph && !th.left && !th.text && !th.key && !th.right) kind='graph';
     else kind='bubble';
   }
+
+  const viewerIdx = normViewer(th.viewer);
+  const yOff   = (typeof th.yOffset==='number' ? th.yOffset : 135);
+  const xShift = (typeof th.xShift==='number' ? th.xShift : 0);
+  const dur    = (typeof th.dur==='number' ? th.dur : null);
+  const pa     = (typeof th.pauseAfter==='number' ? th.pauseAfter : null);
 
   if(kind==='law'){
     const lawTxt = th.lawText || th.law || th.left || th.right || '';
@@ -1051,14 +1016,7 @@ function handleTimelineEvent(th){
 
     const txt = resolveAct1Text(th);
     if(txt){
-      BUBBLE.say(
-        (typeof th.viewer==='number' ? th.viewer : 1),
-        txt,
-        (typeof th.yOffset==='number' ? th.yOffset : 135),
-        (typeof th.xShift==='number' ? th.xShift : 0),
-        (typeof th.dur==='number' ? th.dur : null),
-        (typeof th.pauseAfter==='number' ? th.pauseAfter : null)
-      );
+      BUBBLE.say(viewerIdx, txt, yOff, xShift, dur, pa);
     }
   }else if(kind==='lawPlot'){
     if(th.plot==='v')      ensureVelocityChart();
@@ -1067,14 +1025,7 @@ function handleTimelineEvent(th){
 
     const txt = resolveAct1Text(th);
     if(txt){
-      BUBBLE.say(
-        (typeof th.viewer==='number' ? th.viewer : 1),
-        txt,
-        (typeof th.yOffset==='number' ? th.yOffset : 135),
-        (typeof th.xShift==='number' ? th.xShift : 0),
-        (typeof th.dur==='number' ? th.dur : null),
-        (typeof th.pauseAfter==='number' ? th.pauseAfter : null)
-      );
+      BUBBLE.say(viewerIdx, txt, yOff, xShift, dur, pa);
     }
   }else if(kind==='graph'){
     initXTChart();
@@ -1082,40 +1033,24 @@ function handleTimelineEvent(th){
 
     const txt = resolveAct1Text(th);
     if(txt){
-      BUBBLE.say(
-        (typeof th.viewer==='number' ? th.viewer : 1),
-        txt,
-        (typeof th.yOffset==='number' ? th.yOffset : 135),
-        (typeof th.xShift==='number' ? th.xShift : 0),
-        (typeof th.dur==='number' ? th.dur : null),
-        (typeof th.pauseAfter==='number' ? th.pauseAfter : null)
-      );
+      BUBBLE.say(viewerIdx, txt, yOff, xShift, dur, pa);
     }
   }else if(kind==='bubbleDyn'){
     const dyn = (i18nDyn[LANG] && i18nDyn[LANG].thoughts) || {};
-    const dur = (typeof th.dur==='number' ? th.dur : null);
-    const pa  = (typeof th.pauseAfter==='number' ? th.pauseAfter : null);
-    const viewerIdx = (typeof th.viewer==='number' ? th.viewer : 1);
-    const yOff = (typeof th.yOffset==='number' ? th.yOffset : 135);
-    const xShift = (typeof th.xShift==='number' ? th.xShift : 0);
+    const y   = yOff;
+    const x   = xShift;
 
     if(th.what==='A'){
       BUBBLE.say(
         viewerIdx,
         dyn.t7A ? dyn.t7A(A_m.toFixed(2)) : '',
-        yOff,
-        xShift,
-        dur,
-        pa
+        y,x,dur,pa
       );
     }else if(th.what==='Tw'){
       BUBBLE.say(
         viewerIdx,
         dyn.t8Tw ? dyn.t8Tw(T.toFixed(2), omega.toFixed(3)) : '',
-        yOff,
-        xShift,
-        dur,
-        pa
+        y,x,dur,pa
       );
     }else if(th.what==='phi'){
       const x0 = x0Val().toFixed(2);
@@ -1123,25 +1058,21 @@ function handleTimelineEvent(th){
       BUBBLE.say(
         viewerIdx,
         dyn.t9phi ? dyn.t9phi(x0, phi0deg.toFixed(1)) : '',
-        yOff,
-        xShift,
-        dur,
-        pa
+        y,x,dur,pa
       );
     }
   }else if(kind==='close'){
     closeCurtainsSequence();
   }else{
     const txt = resolveAct1Text(th);
-    BUBBLE.say(
-      (typeof th.viewer==='number' ? th.viewer : 1),
-      txt,
-      (typeof th.yOffset==='number' ? th.yOffset : 135),
-      (typeof th.xShift==='number' ? th.xShift : 0),
-      (typeof th.dur==='number' ? th.dur : null),
-      (typeof th.pauseAfter==='number' ? th.pauseAfter : null)
-    );
+    BUBBLE.say(viewerIdx, txt, yOff, xShift, dur, pa);
   }
+}
+
+/* ====== ΣΕΙΡΙΑΚΗ ΕΚΚΙΝΗΣΗ SCRIPT ΠΡΑΞΗΣ 1 ====== */
+function startAct1Script(){
+  if(!Array.isArray(thoughtScript) || !thoughtScript.length) return;
+  thoughtScript.forEach(th => handleTimelineEvent(th));
 }
 
 /* ====== ΚΟΥΜΠΙΑ ====== */
@@ -1154,9 +1085,8 @@ btnSettings.addEventListener('click',()=>{
 });
 
 function resetShow(){
-  if(bubbleAutoTimer){ clearTimeout(bubbleAutoTimer); bubbleAutoTimer=null; }
   thoughtScript = [...thoughtScriptBase];
-  nextThoughtIdx=0; isBubbleActive=false;
+  isBubbleActive=false;
   measureRowIdx=0; lastSampleObsTime=-Infinity;
   firstLawShown=false; lawCount=0;
   obsStarted=false; obsStartPlaybackOffset=0;
@@ -1197,6 +1127,7 @@ function beginObservationAfterCountdown(){
   measureBox.style.display='block';
   markerEl.style.opacity='1';
   positionRightPanel();
+  startAct1Script();  // Πράξη 1: σειριακό script, χωρίς atT
 }
 function startShowCountdown(){
   startBtn.style.display='none';
@@ -1230,16 +1161,6 @@ function animate(now){
 
   const tObs= obsStarted ? (playbackTime-obsStartPlaybackOffset) : 0;
   clockEl.textContent='t = '+tObs.toFixed(2)+' s';
-
-  if(obsStarted && !isBubbleActive && nextThoughtIdx<thoughtScript.length){
-    const th=thoughtScript[nextThoughtIdx];
-    const shiftMul=(firstThoughtMul-DEFAULT_FIRST_MUL);
-    const baseMul=(th.atT??0);
-    const eventAtSec=(baseMul+shiftMul)*T*timelineScale;
-    if(tObs>=eventAtSec){
-      try{ handleTimelineEvent(th); }finally{ nextThoughtIdx+=1; }
-    }
-  }
 
   const springRect=springEl.getBoundingClientRect();
   const skRect=actor.getBoundingClientRect();
@@ -1302,66 +1223,25 @@ function typeWriter(el, text, opt=12, done){
   })();
 }
 
-function showSpeakerChip(viewerId){
-  const arr = Array.isArray(FOYER_VIEWERS) ? FOYER_VIEWERS : [];
-  let vInfo = null;
-  let idx0  = 0;
+function showSpeakerChip(viewerIdx){
+  const spectators = document.querySelectorAll('.viewer');
+  const total = spectators.length || 0;
+  if(total===0){ fbubble.style.display='none'; return; }
 
-  if(arr.length){
-    if(typeof viewerId === 'number'){
-      vInfo = arr.find(v => v && typeof v.id==='number' && v.id===viewerId) || null;
-      if(vInfo){
-        idx0 = arr.indexOf(vInfo);
-      }else if(viewerId >= 0 && viewerId < arr.length){
-        idx0 = viewerId;
-        vInfo = arr[idx0];
-      }else if(viewerId > 0 && viewerId <= arr.length){
-        idx0 = viewerId - 1;
-        vInfo = arr[idx0];
-      }else{
-        idx0 = 0;
-        vInfo = arr[0];
-      }
-    }else{
-      vInfo = arr[0];
-      idx0  = 0;
-    }
-  }else{
-    const spectators = document.querySelectorAll('.viewer');
-    const total = spectators.length || 5;
-    if(typeof viewerId === 'number'){
-      if(viewerId>0 && viewerId<=total) idx0 = viewerId-1;
-      else if(viewerId>=0 && viewerId<total) idx0 = viewerId;
-      else idx0 = 0;
-    }else{
-      idx0 = 0;
-    }
-  }
+  const idx0 = (typeof viewerIdx==='number' ? viewerIdx : 0);
+  if(idx0<0 || idx0>=total){ fbubble.style.display='none'; return; }
 
   const anchor = document.querySelector(`.viewer[data-idx="${idx0}"]`);
-  if(!anchor) return;
+  if(!anchor){ fbubble.style.display='none'; return; }
 
   const sRect = stage.getBoundingClientRect();
   const aRect = anchor.getBoundingClientRect();
-  let labelText;
-  const num = (vInfo && vInfo.id!=null ? vInfo.id : (idx0+1));
 
-  if(vInfo){
-    if(LANG==='en'){
-      labelText = vInfo.name_en || vInfo.name || `SPECTATOR ${num}`;
-    }else{
-      labelText = vInfo.name_gr || vInfo.name || `ΘΕΑΤΗΣ ${num}`;
-    }
-  }else{
-    if(LANG==='en'){
-      labelText = `SPECTATOR ${num}`;
-    }else{
-      labelText = `ΘΕΑΤΗΣ ${num}`;
-    }
-  }
+  const num = idx0+1;
+  const labelText = (LANG==='en' ? `SPECTATOR ${num}` : `ΘΕΑΤΗΣ ${num}`);
 
   fbubble.textContent = labelText;
-  fbubble.style.backgroundColor = vInfo ? tint(vInfo.color,0.85) : 'rgba(0,0,0,0.75)';
+  fbubble.style.backgroundColor = tint(viewerColor(idx0),0.85);
   fbubble.style.borderColor     = 'rgba(255,255,255,.85)';
   const centerX = (aRect.left + aRect.width/2) - sRect.left;
   const topPx   = Math.max(10, (aRect.top - sRect.top) - 110);
@@ -1390,21 +1270,21 @@ function isFormulaBlock(text){
   return false;
 }
 
-function addRow(leftText, rightText, viewer, durLeftSec, durRightSec, pauseAfterSec, whenDone){
-  const baseViewer = Array.isArray(FOYER_VIEWERS) ? FOYER_VIEWERS : [];
-  const viewerInfo = baseViewer.find(v=>v.id===viewer) || baseViewer[0] || {color:'#ffffff'};
+function addRow(leftText, rightText, viewerIdx0, durLeftSec, durRightSec, pauseAfterSec, whenDone){
+  const idx0 = (typeof viewerIdx0==='number' ? viewerIdx0 : 0);
+  const col  = viewerColor(idx0);
 
-  const bgLeft  = tint(viewerInfo.color, 0.22);
-  const bgRight = tint(viewerInfo.color, 0.16);
+  const bgLeft  = tint(col, 0.22);
+  const bgRight = tint(col, 0.16);
 
   const l = document.createElement('div'); l.className='cell left sync-row';
   const r = document.createElement('div'); r.className='cell right sync-row';
 
   l.style.background = bgLeft;
-  l.style.borderLeft = `4px solid ${tint(viewerInfo.color,0.85)}`;
+  l.style.borderLeft = `4px solid ${tint(col,0.85)}`;
 
   r.style.background = bgRight;
-  r.style.borderLeft = `4px solid ${tint(viewerInfo.color,0.55)}`;
+  r.style.borderLeft = `4px solid ${tint(col,0.55)}`;
 
   if (isFormulaBlock(rightText)){
     r.classList.add('formula');
@@ -1413,7 +1293,7 @@ function addRow(leftText, rightText, viewer, durLeftSec, durRightSec, pauseAfter
   boardRight.appendChild(r);
   boardLeft.appendChild(l);
 
-  showSpeakerChip(viewer);
+  showSpeakerChip(idx0);
 
   function finalizeRow(){
     requestAnimationFrame(()=>{
@@ -1442,16 +1322,12 @@ function addRow(leftText, rightText, viewer, durLeftSec, durRightSec, pauseAfter
 
 let foyerIdx=0, foyerAuto=true, foyerTimer=null;
 
-/* === ΕΝΗΜΕΡΩΜΕΝΗ foyerStep ΓΙΑ ΤΗ ΝΕΑ ΔΟΜΗ (typeMs / pauseMs) === */
 function foyerStep(){
   const dlgLang = DIALOGS[LANG];
   if(!dlgLang || !Array.isArray(dlgLang.foyer)) return;
 
-  const metaArr = Array.isArray(FOYER_META) ? FOYER_META : [];
-  const lines   = dlgLang.foyer || [];
-
-  const text = lines[foyerIdx] || null;
-  const meta = metaArr[foyerIdx] || null;
+  const lines = dlgLang.foyer || [];
+  const text  = lines[foyerIdx] || null;
 
   if(!text){
     if(foyerIdx >= lines.length){
@@ -1460,29 +1336,15 @@ function foyerStep(){
     return;
   }
 
-  let viewerId;
-  if(typeof text.viewer==='number'){
-    viewerId = text.viewer;
-  }else if(meta){
-    if(typeof meta.viewer==='number') viewerId = meta.viewer;
-    else if(typeof meta.v==='number') viewerId = meta.v;
-  }
-  if(typeof viewerId!=='number') viewerId=1;
+  const viewerIdx = normViewer(text.viewer);
+  let durLeftSec, durRightSec, pauseAfterSec;
 
-  let durLeftSec, durRightSec;
-  if(typeof text.typeMs==='number'){
+  if(typeof text.typeMs === 'number'){
     durLeftSec  = text.typeMs / 1000;
     durRightSec = text.typeMs / 1000;
-  }else if(meta){
-    if(typeof meta.durLeft==='number')  durLeftSec  = meta.durLeft;
-    if(typeof meta.durRight==='number') durRightSec = meta.durRight;
   }
-
-  let pauseAfterSec;
-  if(typeof text.pauseMs==='number'){
+  if(typeof text.pauseMs === 'number'){
     pauseAfterSec = text.pauseMs / 1000;
-  }else if(meta && typeof meta.pauseAfter==='number'){
-    pauseAfterSec = meta.pauseAfter;
   }
 
   foyerIdx++;
@@ -1490,7 +1352,7 @@ function foyerStep(){
   addRow(
     text.left || '',
     text.right || '',
-    viewerId,
+    viewerIdx,
     durLeftSec,
     durRightSec,
     pauseAfterSec,
@@ -1633,31 +1495,24 @@ window.foyerClose = foyerClose;
       if(sbD && ui.sbD2) sbD.textContent = ui.sbD2;
 
       for(const step of seq){
-        const viewerIdx = (typeof step.v==='number' ? step.v :
-                           (typeof step.viewer==='number' ? step.viewer : 0));
+        const viewerIdx = normViewer(
+          (typeof step.v==='number' ? step.v :
+          (typeof step.viewer==='number' ? step.viewer : 1))
+        );
         const yOff = (typeof step.y==='number' ? step.y :
                       (typeof step.yOffset==='number' ? step.yOffset : 135));
         const xShift = (typeof step.x==='number' ? step.x :
                         (typeof step.xShift==='number' ? step.xShift : 0));
+        const dur  = (typeof step.dur==='number' ? step.dur : null);
+        const pa   = (typeof step.pauseAfter==='number' ? step.pauseAfter : null);
 
         if(step.kind==='law' || step.lawText || step.law){
           const lawTxt = step.lawText || step.law || step.left || step.right || '';
           if(lawTxt) addLaw(lawTxt);
 
-          let txt2='';
-          if(typeof step.left==='string' && step.left) txt2=step.left;
-          else if(typeof step.text==='string' && step.text) txt2=step.text;
-          else if(step.key) txt2=getAct2BubbleText(step.key);
-
+          const txt2 = resolveAct2Text(step);
           if(txt2){
-            await BUBBLE.say(
-              viewerIdx,
-              txt2,
-              yOff,
-              xShift,
-              typeof step.dur==='number' ? step.dur : null,
-              typeof step.pauseAfter==='number' ? step.pauseAfter : null
-            );
+            await BUBBLE.say(viewerIdx, txt2, yOff, xShift, dur, pa);
           }else{
             await new Promise(r=>setTimeout(r,220));
           }
@@ -1669,20 +1524,9 @@ window.foyerClose = foyerClose;
           else if(step.plot==='a') ensureAccelerationChart();
           else if(step.plot==='ax')ensureAxChart();
 
-          let txt2='';
-          if(typeof step.left==='string' && step.left) txt2=step.left;
-          else if(typeof step.text==='string' && step.text) txt2=step.text;
-          else if(step.key) txt2=getAct2BubbleText(step.key);
-
+          const txt2 = resolveAct2Text(step);
           if(txt2){
-            await BUBBLE.say(
-              viewerIdx,
-              txt2,
-              yOff,
-              xShift,
-              typeof step.dur==='number' ? step.dur : null,
-              typeof step.pauseAfter==='number' ? step.pauseAfter : null
-            );
+            await BUBBLE.say(viewerIdx, txt2, yOff, xShift, dur, pa);
           }else{
             await new Promise(r=>setTimeout(r,220));
           }
@@ -1693,20 +1537,9 @@ window.foyerClose = foyerClose;
           initXTChart();
           drawXTChart();
 
-          let txt2='';
-          if(typeof step.left==='string' && step.left) txt2=step.left;
-          else if(typeof step.text==='string' && step.text) txt2=step.text;
-          else if(step.key) txt2=getAct2BubbleText(step.key);
-
+          const txt2 = resolveAct2Text(step);
           if(txt2){
-            await BUBBLE.say(
-              viewerIdx,
-              txt2,
-              yOff,
-              xShift,
-              typeof step.dur==='number' ? step.dur : null,
-              typeof step.pauseAfter==='number' ? step.pauseAfter : null
-            );
+            await BUBBLE.say(viewerIdx, txt2, yOff, xShift, dur, pa);
           }else{
             await new Promise(r=>setTimeout(r,220));
           }
@@ -1716,11 +1549,11 @@ window.foyerClose = foyerClose;
         if(step.gStart) startGhost();
         await BUBBLE.say(
           viewerIdx,
-          getAct2BubbleText(step.key),
+          resolveAct2Text(step),
           yOff,
           xShift,
-          typeof step.dur==='number' ? step.dur : null,
-          typeof step.pauseAfter==='number' ? step.pauseAfter : null
+          dur,
+          pa
         );
         if(step.gStop)  stopGhost();
       }
@@ -1774,7 +1607,6 @@ ro.observe(stage);
   await loadDialogOverrides('en');
   await loadUI('gr');
   await loadUI('en');
-  await loadViewers();
   setLang('gr');
   resetShow();
 })();
