@@ -1,386 +1,23 @@
-<!DOCTYPE html>
-<html lang="el">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Θεατρική Σκηνή — Ενιαία Έκδοση (Act I + Act II + Φουαγιέ)</title>
-
-<link rel="stylesheet" href="https://unpkg.com/uplot@1.6.30/dist/uPlot.min.css">
-<script src="https://unpkg.com/uplot@1.6.30/dist/uPlot.iife.min.js"></script>
-
-<style>
-  :root{
-    --foyer-h: 445px;
-  }
-
-  body{margin:0;background:radial-gradient(circle at center,#222 0%,#000 100%);overflow:hidden;font-family:Inter,system-ui,sans-serif}
-  .stage{position:relative;width:100vw;height:100vh;overflow:hidden}
-
-  .curtain-top,.curtain-upper,.curtain-side{position:absolute;transition:transform 1.2s cubic-bezier(.2,.9,.2,1),opacity 1s}
-  .curtain-top{top:0;left:0;width:100%;height:calc(28% - 30px);background:linear-gradient(to bottom,#230000,#180000);box-shadow:0 5px 18px rgba(0,0,0,.8);z-index:160}
-  .curtain-upper{
-    top:calc(28% - 23px);
-    left:0;width:100%;height:calc(40% + 30px);
-    background:url('courtin.png') center top/cover no-repeat, linear-gradient(to bottom,#8b0000,#400000);
-    transform-origin:top; z-index:160
-  }
-  .open .curtain-upper{ transform: translateY(calc(-100% + 10px)); }
-  .curtain-upper.slow-close{ transition: transform 1.8s cubic-bezier(.2,.9,.2,1), opacity 1.2s; }
-
-  .curtain-side{top:0;height:100%;width:18%;z-index:160}
-  .curtain-side.left{left:0;background:linear-gradient(to right,#300000,#1a0000);box-shadow:inset -6px 0 10px rgba(0,0,0,.6)}
-  .curtain-side.right{right:0;background:linear-gradient(to left,#300000,#1a0000);box-shadow:inset 6px 0 10px rgba(0,0,0,.6)}
-
-  .spotlight{position:absolute;inset:0;pointer-events:none;z-index:150;opacity:.25;background:radial-gradient(200px 120px at 50% 50%, rgba(255,255,220,.65), rgba(255,255,220,0) 70%)}
-
-  .spring{position:absolute;bottom:calc(32vh + 82px);left:10%;height:96px;width:auto;z-index:90;pointer-events:none;filter:drop-shadow(0 4px 6px rgba(0,0,0,.55));transform-origin:left center;opacity:1;display:none}
-  .actor{position:absolute;bottom:calc(32vh + 133px);left:50%;width:144px;height:96px;transform:translate(-50%,0);z-index:110;pointer-events:none;opacity:1}
-  .actor img{width:100%;height:auto;display:block;filter:drop-shadow(0 4px 6px rgba(0,0,0,.6))}
-  .floor{position:absolute;left:0;bottom:calc(32vh - 8px);width:100%;height:2px;background:#888;z-index:155;pointer-events:none}
-
-  /* === ΣΤΟΙΒΑ ΘΕΑΤΩΝ / ΚΟΥΜΠΙΩΝ ===
-     controls: 2000
-     koino.png (.audience): 1500
-     viewers (avatars): 1000
-     koino_extra.png (.foyer-audience): 980
-  */
-  .audience{
-    position:absolute;
-    left:18%;
-    bottom:0;
-    width:64%;
-    height:auto;
-    object-position:bottom center;
-    z-index:1500;
-    pointer-events:none;
-    filter:contrast(1.05) brightness(.95);
-    display:block;
-  }
-
-  .foyer-audience{
-    position:absolute;
-    left:18%;
-    bottom:0;
-    width:64%;
-    height:auto;
-    object-position:bottom center;
-    z-index:980;
-    pointer-events:none;
-    filter:contrast(1.05) brightness(.95);
-    display:block;
-  }
-
-  .viewers{
-    position:absolute;
-    left:18%;
-    width:64%;
-    bottom:0;
-    display:flex;
-    justify-content:space-between;
-    z-index:1000;
-    padding:0 4vw 12px;
-  }
-  .viewer{width:60px;height:100px;background:url('https://upload.wikimedia.org/wikipedia/commons/f/f9/Silhouette_icon.svg') no-repeat center/contain;filter:grayscale(1) brightness(.6);opacity:.75}
-
-  .signboard{position:absolute;top:-6px;left:50%;transform:translateX(-50%);background:transparent;border:none;border-radius:10px;padding:12px 18px;color:#ddd;font-family:'Georgia',serif;text-align:center;z-index:165;line-height:1.25}
-  .signboard h1{font-size:32px;margin:0;color:#fff}
-  .signboard .sb-lineA{font-size:18px;font-style:italic;margin-top:2px;color:#ddd}
-  .signboard .sb-lineB{font-size:18px;margin-top:2px}
-  .signboard .sb-lineB .hl{color:#ffd27a;font-weight:600}
-  .signboard .sb-lineC{font-size:16px;margin-top:2px;font-weight:700;color:#fff}
-  .signboard .sb-lineD{font-size:14px;margin-top:2px;font-style:italic;opacity:.9}
-
-  .clock{position:absolute;top:10px;left:calc(82vw + 9vw);transform:translateX(-50%);background:rgba(0,0,0,.5);color:#fff;padding:6px 10px;font-size:16px;font-family:"Courier New",monospace;border-radius:6px;border:1px solid rgba(255,255,255,.3);z-index:265;pointer-events:none;display:none}
-  .clock .hint{font-size:10px;color:#ffd27a;opacity:.9;margin-left:6px}
-  .measure-box{position:absolute;left:calc(82vw + 9vw);transform:translateX(-50%);top:54px;width:calc(18vw - 16px);z-index:262;background:rgba(0,0,0,.45);color:#fff;border:1px solid rgba(255,255,255,.25);border-radius:8px;padding:6px 8px;display:none;height:50vh;overflow-y:auto}
-
-  .laws{position:absolute;left:2%;top:44px;width:16%;background:rgba(20,0,0,.6);color:#fff;border:1px solid rgba(255,200,200,.3);border-radius:8px;padding:6px 8px;font-size:16px;line-height:1.45;z-index:260;display:none;overflow:visible}
-  .laws h4{margin:0 0 6px 0}
-  .laws-body .law-line{padding:4px 6px;margin:2px 0;border-left:3px solid rgba(255,210,122,.6);background:rgba(255,210,122,.08)}
-
-  .params-box{position:absolute;top:33px; z-index:268;background:rgba(0,0,0,.5);color:#fff;border:1px solid rgba(255,255,255,.25);border-radius:8px;padding:6px 10px;font-size:16px;line-height:1.45;display:none}
-
-  #xtChart{position:absolute;display:none;z-index:266;pointer-events:none;border:1px dashed rgba(255,255,255,.25)}
-  .uplot{background:rgba(0,0,0,.2);border:1px solid rgba(255,255,255,.2);border-radius:6px}
-  .u-legend{display:none!important}
-  .u-axis text{fill:#fff}
-  .u-grid line{stroke:rgba(255,255,255,.25)}
-
-  .measure-box .mb-title{font-weight:700;margin:0 0 6px 0}
-  .measure-box table{width:100%;border-collapse:separate;border-spacing:0;font-size:12px}
-  .measure-box thead th{position:sticky;top:0;background:rgba(0,0,0,.65);z-index:1}
-  .measure-box th,.measure-box td{border-bottom:1px solid rgba(255,255,255,.2);padding:2px 4px;text-align:right}
-  .measure-box th:first-child,.measure-box td:first-child{text-align:center}
-  .measure-box tr.new td{background:rgba(255,210,122,.15);transition:background .6s ease}
-
-  .ruler{position:absolute;bottom:calc(32vh - 8px + 1px);height:24px;font-size:10px;font-family:"Courier New",monospace;color:#aaa;pointer-events:none;z-index:270}
-  .ruler::before{content:'';position:absolute;left:0;right:0;bottom:0;height:1px;background:#aaa}
-  .tick{position:absolute;bottom:0;width:1px;height:10px;background:#aaa}
-  .tick-label{position:absolute;bottom:12px;transform:translateX(-50%);font-size:10px;color:#aaa;white-space:nowrap}
-  .marker{position:absolute;bottom:calc(32vh - 8px + 1px);width:0;height:80px;transform:translateX(-50%);pointer-events:none;z-index:275;opacity:0;transition:opacity .3s}
-  .marker-line{position:absolute;left:50%;bottom:8px;width:2px;height:70px;background:#ffd27a;box-shadow:0 0 4px rgba(255,210,122,.8);transform:translateX(-50%)}
-  .marker-tip{position:absolute;left:50%;bottom:0;width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:8px solid #ffd27a;filter:drop-shadow(0 2px 2px rgba(255,210,122,.8));transform:translateX(-50%)}
-
-  @keyframes popIn{0%{transform:scale(.9);opacity:0}60%{transform:scale(1.04);opacity:1}100%{transform:scale(1)}}
-  .thought-bubble{
-    position:absolute;max-width:420px;background:rgba(255,255,255,.92);color:#000;
-    font-size:15px;line-height:1.45;padding:10px 12px 12px;border:2px solid transparent;border-radius:10px;
-    border-image:repeating-linear-gradient(90deg, rgba(0,0,0,.6) 0 6px, transparent 6px 10px, rgba(0,0,0,.6) 10px 12px, transparent 12px 16px) 1;
-    box-shadow:0 6px 12px rgba(0,0,0,.4);z-index:750;pointer-events:none;opacity:0;display:none;transition:opacity .25s ease, transform .25s ease
-  }
-  .thought-bubble.active{opacity:1;transform:translateY(-2px);animation:popIn .25s ease}
-  .thought-bubble.closing{opacity:0}
-  .thought-bubble .tail{display:none;}
-  .thought-bubble .checkmark{position:absolute;top:-8px;right:-8px;background:#2ecc71;color:#fff;font-size:11px;line-height:1;border-radius:50%;border:1px solid rgba(0,0,0,.4);width:18px;height:18px;display:none;align-items:center;justify-content:center;font-family:system-ui,sans-serif;font-weight:600}
-  .thought-bubble.checked .checkmark{display:flex}
-  .thought-bubble .text{word-wrap:break-word}
-
-  .act-bubble,
-  .foyer-bubble{
-    position:absolute;
-    z-index:760;
-    display:none;
-    pointer-events:none;
-    min-width:120px;
-    text-align:center;
-    color:#fff;
-    font-weight:800;
-    font-size:13px;
-    padding:6px 12px;
-    border-radius:999px;
-    border:2px solid rgba(255,255,255,.65);
-    box-shadow:0 6px 14px rgba(0,0,0,.5);
-    letter-spacing:0.03em;
-    text-shadow:0 1px 2px rgba(0,0,0,.7);
-  }
-
-  .controls{
-    position:absolute;
-    bottom:12px;
-    left:50%;
-    transform:translateX(-50%);
-    background:rgba(0,0,0,.6);
-    border:1px solid rgba(255,255,255,.2);
-    border-radius:8px;
-    padding:6px 8px;
-    display:flex;
-    gap:8px;
-    z-index:2000;
-  }
-  .controls button{background:none;border:0;color:#fff;font-size:16px;line-height:1;cursor:pointer;min-width:32px;min-height:32px;border-radius:4px;padding:4px 6px;transition:transform .08s.ease}
-  .controls button:active{transform:translateY(1px)}
-  .controls button.active{background:rgba(255,255,255,.2)}
-  #btnSlow{display:none}
-  .btn-end{position:absolute;bottom:12px;right:12px;z-index:300;background:#333;border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:8px;padding:8px 12px;cursor:pointer}
-
-  .settings{position:absolute;bottom:56px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.7);color:#fff;border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:10px 12px;z-index:310;display:none;min-width:320px}
-  .settings h5{margin:0 0 6px 0;font-size:14px;color:#ffd27a;text-align:center;font-family:'Georgia',serif}
-  .settings .row{display:flex;align-items:center;gap:10px;margin:6px 0}
-  .settings label{flex:0 0 170px;font-size:12px;color:#ddd}
-  .settings input[type=range]{flex:1}
-  .settings .val{width:60px;text-align:right;font-family:"Courier New",monospace}
-
-  .countdown-overlay{position:absolute;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,.6);color:#fff;display:none;align-items:center;justify-content:center;text-align:center;z-index:400;pointer-events:none;font-family:Inter,system-ui,sans-serif}
-  .countdown-box{max-width:80%}
-  .countdown-main{font-size:24px;font-weight:600;margin-bottom:8px;color:#fff}
-  .countdown-sub{font-size:14px;color:#ffd27a;margin-bottom:16px}
-  .countdown-timer{font-family:"Courier New",monospace;font-size:40px;font-weight:700;color:#fff}
-
-  .start-btn{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1000;background:#700;color:#fff;border:none;border-radius:8px;padding:12px 24px;font-size:18px;cursor:pointer;box-shadow:0 0 10px #300;pointer-events:auto}
-
-  .actbreak{position:absolute;background:rgba(0,0,0,.55);color:#fff;z-index:410;display:none;align-items:center;justify-content:center;text-align:center}
-  .foyerbreak{position:absolute;background:rgba(0,0,0,.55);color:#fff;z-index:410;display:none;align-items:center;justify-content:center;text-align:center}
-
-  .foyer{position:absolute;left:18%;width:64%;top:0;height:var(--foyer-h);z-index:500;display:none}
-  .foyer .wrap{position:absolute;inset:0;display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid rgba(255,255,255,.25);border-radius:10px;overflow:hidden}
-  .board-left,.board-right{
-    background:#0d2a1e url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%228%22 height=%228%22><circle cx=%224%22 cy=%224%22 r=%221%22 fill=%22rgba(255,255,255,0.03)%22/></svg>') repeat;
-    color:#fff; padding:8px 10px; overflow:auto; scroll-behavior:smooth; font-size:14px; line-height:1.35;
-  }
-  .board-left{border-right:1px solid rgba(255,255,255,.25)}
-  .cell{padding:6px 10px;border-bottom:1px dashed rgba(255,255,255,.12)}
-  .cell.right{text-align:left;white-space:pre-wrap}
-  .cell.left{white-space:pre-wrap}
-  .cell.formula{
-    color:#fffde7;
-    border-left-width:6px!important;
-    font-weight:600;
-    box-shadow:0 0 0 1px rgba(0,0,0,0.35) inset;
-  }
-  .cell.right.formula{
-    background:rgba(8,8,18,0.95)!important;
-  }
-  .sync-row{display:block}
-
-  .btn-foyer{
-    position:absolute;
-    bottom:12px;
-    left:12px;
-    z-index:300;
-    background:#333;
-    border:1px solid rgba(255,255,255,.25);
-    color:#fff;
-    border-radius:8px;
-    padding:8px 12px;
-    cursor:pointer;
-  }
-</style>
-</head>
-<body>
-  <div class="stage" id="stage">
-    <div class="curtain-top"></div>
-    <div class="curtain-upper"></div>
-    <div class="curtain-side left"></div>
-    <div class="curtain-side right"></div>
-
-    <div class="spotlight" id="spotlight"></div>
-
-    <div class="lang" id="langSwitch" style="position:absolute;top:8px;left:8px;z-index:360;background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.25);border-radius:999px;padding:3px 6px;display:flex;gap:6px">
-      <button data-lang="gr" class="on" style="background:rgba(255,255,255,.2);border:0;color:#fff;font-size:12px;padding:4px 8px;border-radius:999px;cursor:pointer">GR</button>
-      <button data-lang="en" style="background:none;border:0;color:#fff;font-size:12px;padding:4px 8px;border-radius:999px;cursor:pointer">EN</button>
-    </div>
-
-    <div class="signboard">
-      <h1 data-i18n="actTitle">Πράξη 1η: Η Κινηματική στα ... Αλγεβρικά</h1>
-      <div class="sb-lineA" id="sbLineA">Πρωταγωνιστεί ο ταλαντωτής (m₁, D₁) και οι θεαποιοί(*)</div>
-      <div class="sb-lineB" id="sbLineB">στον μονόλογο <span class="hl">«ατέλειωτο πήγαινε έλα»</span>... επί σκηνής!</div>
-      <div class="sb-lineC" id="sbLineC">Παραγωγή-Σκηνοθεσία: Εμηχ. Ενεργειούλης</div>
-      <div class="sb-lineD" id="sbLineD">(*) ... εσείς</div>
-    </div>
-
-    <div class="params-box" id="paramsBox">
-      <div class="param" id="paramA"></div>
-      <div class="param" id="paramW"></div>
-      <div class="param" id="paramPhi"></div>
-    </div>
-
-    <div class="clock" id="clock">t = 0.00 s<span class="hint" id="slowHint"></span></div>
-    <div class="measure-box" id="measureBox">
-      <div class="mb-title" id="mbTitle">Μετρήσεις</div>
-      <table class="mb-table">
-        <thead><tr><th>α/α</th><th>t (s)</th><th>x (m)</th></tr></thead>
-        <tbody id="measureTBody"></tbody>
-      </table>
-    </div>
-    <div id="xtChart"></div>
-
-    <div class="laws" id="laws">
-      <h4 id="lawsTitle">Νόμοι Α.Α.Τ.</h4>
-      <div id="lawsBody" class="laws-body"></div>
-    </div>
-    <div id="lawCharts" class="law-charts" style="position:absolute;left:2%;width:16%;z-index:259"></div>
-
-    <div class="ruler" id="ruler"></div>
-    <div class="marker" id="marker"><div class="marker-line"></div><div class="marker-tip"></div></div>
-
-    <div class="thought-bubble" id="bubble0"><div class="text"></div><div class="checkmark">✓</div><div class="tail"></div></div>
-    <div class="act-bubble" id="actBubble">ΘΕΑΤΗΣ 1</div>
-
-    <div class="controls" id="controls">
-      <button id="btnPause" title="παύση">⏸</button>
-      <button id="btnSlow"  title="αργά">🐌</button>
-      <button id="btnPlay"  title="κανονικά">▶</button>
-      <button id="btnSettings" title="ρυθμίσεις">⚙️</button>
-      <button id="btnReset" title="reset">↺</button>
-    </div>
-    <button class="btn-end" id="btnEndShow">Τέλος Παράστασης</button>
-
-    <button class="btn-foyer" id="btnFoyer" title="Φουαγιέ">Φουαγιέ</button>
-
-    <div class="settings" id="settingsPanel">
-      <h5 data-i18n="settingsTitle">Ρυθμίσεις ροής</h5>
-      <div class="row">
-        <label for="slFirst" data-i18n="startThoughts">Έναρξη σκέψεων (k·T):</label>
-        <input id="slFirst" type="range" min="1.0" max="2.5" step="0.1" value="1.1">
-        <div class="val" id="valFirst">1.1·T</div>
-      </div>
-      <div class="row">
-        <label for="slScale" data-i18n="flowScale">Κλίμακα ροής (×):</label>
-        <input id="slScale" type="range" min="1.0" max="2.0" step="0.1" value="1.0">
-        <div class="val" id="valScale">1.0×</div>
-      </div>
-      <div class="row">
-        <label for="slDur" data-i18n="bubbleDur">Διάρκεια σκέψης (s):</label>
-        <input id="slDur" type="range" min="2" max="8" step="0.5" value="3">
-        <div class="val" id="valDur">3.0s</div>
-      </div>
-      <div class="row">
-        <label for="slSlow" data-i18n="slowFactor">Αργή κίνηση (×):</label>
-        <input id="slSlow" type="range" min="0.05" max="1.00" step="0.05" value="1.00">
-        <div class="val" id="valSlow">1.00×</div>
-      </div>
-    </div>
-
-    <img id="spring" class="spring" src="spring.png" alt="ελατήριο">
-    <div class="actor" id="actor"><img src="skater.png" alt="Skater"></div>
-    <div class="floor"></div>
-    <img class="audience" src="koino.png" alt="κοινό">
-    <img class="foyer-audience" src="koino_extra.png" alt="επιπλέον κοινό">
-
-    <div class="viewers">
-      <div class="viewer" data-idx="0"></div>
-      <div class="viewer" data-idx="1"></div>
-      <div class="viewer" data-idx="2"></div>
-      <div class="viewer" data-idx="3"></div>
-      <div class="viewer" data-idx="4"></div>
-    </div>
-
-    <button class="start-btn" id="startBtn" data-i18n="startBtn">Έναρξη</button>
-
-    <div class="countdown-overlay" id="countdownOverlay">
-      <div class="countdown-box">
-        <div class="countdown-main" id="cdMain">Η παράσταση αρχίζει...</div>
-        <div class="countdown-sub" id="cdSub">ώρα να χρησιμοποιήσετε χαρτί και μολύβι!</div>
-        <div class="countdown-timer" id="countdownTimer">5</div>
-      </div>
-    </div>
-
-    <div class="actbreak" id="actBreak">
-      <div class="box" style="background:rgba(0,0,0,.7);border:1px solid rgba(255,255,255,.25);border-radius:12px;padding:16px 20px;max-width:520px">
-        <h3 id="actBreakTitle">Τέλος Πράξης 1</h3>
-        <p id="actBreakMsg">Ο m,D συνεχίζει. Είστε έτοιμοι για τη Δεύτερη Πράξη;</p>
-        <button id="btnAct2" style="background:#700;color:#fff;border:none;border-radius:8px;padding:10px 16px;font-size:16px;cursor:pointer">Έναρξη Πράξης 2</button>
-      </div>
-    </div>
-
-    <div class="foyerbreak" id="foyerBreak">
-      <div class="box" style="background:rgba(0,0,0,.7);border:1px solid rgba(255,255,255,.25);border-radius:12px;padding:16px 20px;max-width:520px">
-        <h3 id="foyerBreakTitle">Τέλος Πράξης 2</h3>
-        <p id="foyerBreakMsg">Θέλετε να περάσετε στο φουαγιέ για τη συζήτηση;</p>
-        <button id="btnFoyerGo" style="background:#2c7a7b;color:#fff;border:none;border-radius:8px;padding:10px 16px;font-size:16px;cursor:pointer">Μετάβαση στο Φουαγιέ</button>
-      </div>
-    </div>
-
-    <div class="foyer" id="foyer">
-      <div class="wrap">
-        <div class="board-left"  id="boardLeft"  aria-label="μαυροπίνακας-αριστερά"></div>
-        <div class="board-right" id="boardRight" aria-label="μαυροπίνακας-δεξιά"></div>
-      </div>
-      <div class="foyer-bubble" id="foyerBubble">ΘΕΑΤΗΣ 1</div>
-    </div>
-
-  </div>
-
 <script>
 /* ====== GLOBAL DATA HOLDERS ====== */
 const DIALOGS = {
-  gr: { act1Text:{}, act2Text:{}, foyer:[] },
-  en: { act1Text:{}, act2Text:{}, foyer:[] }
+  gr: { act1: [], act2: [], foyer: [] },
+  en: { act1: [], act2: [], foyer: [] }
 };
 
 const i18nDyn = {
   gr: {
     thoughts: {
-      t7A: (A)=>`…με A=${A}m!`,
-      t8Tw:(Tval,om)=>`… και T=${Tval}s και επομένως ω=${om}rad/s!`,
-      t9phi:(x0,phi)=>`… όντως είναι ΑΑΤ και αφού το x₀=${x0}m υπάρχει φ₀=${phi}°. Χαχα, ένα το κρατούμενο!`
+      A:  (A)=>`…με A=${A}m!`,
+      Tw: (Tval,om)=>`… και T=${Tval}s και επομένως ω=${om}rad/s!`,
+      phi:(x0,phi)=>`… όντως είναι ΑΑΤ και αφού το x₀=${x0}m υπάρχει φ₀=${phi}°. Χαχα, ένα το κρατούμενο!`
     }
   },
   en: {
     thoughts: {
-      t7A: (A)=>`…with A=${A}m!`,
-      t8Tw:(Tval,om)=>`…and T=${Tval}s and therefore ω=${om}rad/s!`,
-      t9phi:(x0,phi)=>`…indeed it is S.H.M., and since x₀=${x0}m there is a phase φ₀=${phi}°. Nice, one result secured!`
+      A:  (A)=>`…with A=${A}m!`,
+      Tw: (Tval,om)=>`…and T=${Tval}s and therefore ω=${om}rad/s!`,
+      phi:(x0,phi)=>`…indeed it is S.H.M., and since x₀=${x0}m there is a phase φ₀=${phi}°. Nice, one result secured!`
     }
   }
 };
@@ -393,44 +30,91 @@ let thoughtScript     = [];
 let ACT2_TIMELINE     = [];
 let FOYER_VIEWERS     = [];
 
-/* ====== ΦΟΡΤΩΣΗ dialogs-*.json ΜΟΝΟ ====== */
+/* ====== HELPERS ΓΙΑ VIEWERS ====== */
+function applyViewersToDom(){
+  const nodes = document.querySelectorAll('.viewers .viewer');
+  const arr   = Array.isArray(FOYER_VIEWERS) ? FOYER_VIEWERS : [];
+  nodes.forEach((el, idx)=>{
+    const v = arr[idx];
+    if(v && v.img){
+      el.style.backgroundImage   = `url('${v.img}')`;
+      el.style.backgroundSize    = 'contain';
+      el.style.backgroundRepeat  = 'no-repeat';
+      el.style.backgroundPosition= 'center bottom';
+      el.style.filter            = 'none';
+    }else{
+      el.style.backgroundImage   = 'url("https://upload.wikimedia.org/wikipedia/commons/f/f9/Silhouette_icon.svg")';
+      el.style.backgroundSize    = 'contain';
+      el.style.backgroundRepeat  = 'no-repeat';
+      el.style.backgroundPosition= 'center bottom';
+      el.style.filter            = 'grayscale(1) brightness(.6)';
+    }
+  });
+}
+
+/* ====== ΧΤΙΣΙΜΟ ACT1 TIMELINE ΑΠΟ dialogs.act1 ====== */
+const DEFAULT_FIRST_MUL=1.1;
+
 function buildAct1TimelineFromArray(arr){
   const result=[];
   if(!Array.isArray(arr)) return result;
+
   let seqIdx=0;
   for(const item of arr){
     if(!item) continue;
-    const kind = item.kind || 'bubble';
-    const viewer = (typeof item.viewer==='number')
-        ? item.viewer
-        : (typeof item.v==='number' ? item.v : 0);
-    const yOffset = (typeof item.y==='number')
-        ? item.y
-        : (typeof item.yOffset==='number' ? item.yOffset : 135);
-    const xShift = (typeof item.x==='number')
-        ? item.x
-        : (typeof item.xShift==='number' ? item.xShift : 0);
+
+    // viewer: 1..5 → index 0..4
+    let viewerIdx = 0;
+    if(typeof item.viewer === 'number' && item.viewer>0){
+      viewerIdx = item.viewer-1;
+    }
+
+    const yOffset = (typeof item.yOffset==='number')
+      ? item.yOffset
+      : (typeof item.y === 'number' ? item.y : 135);
+
+    const xShift = (typeof item.xShift==='number')
+      ? item.xShift
+      : (typeof item.x === 'number' ? item.x : 0);
+
     const baseMul = (typeof item.atT==='number')
-        ? item.atT
-        : (typeof item.tMul==='number' ? item.tMul : (DEFAULT_FIRST_MUL + 0.25*seqIdx));
+      ? item.atT
+      : (typeof item.tMul==='number'
+        ? item.tMul
+        : (DEFAULT_FIRST_MUL + 0.25*seqIdx));
 
     const ev = {
-      kind,
-      key: item.id || item.key || null,
-      viewer,
+      kind: 'bubble',
+      viewer: viewerIdx,
       yOffset,
       xShift,
       atT: baseMul
     };
 
-    if(item.dur != null)        ev.dur        = item.dur;
-    if(item.pauseAfter != null) ev.pauseAfter = item.pauseAfter;
-    if(item.lawText)            ev.lawText    = item.lawText;
-    if(item.law)                ev.lawText    = item.law;
-    if(item.alsoParams != null) ev.alsoParams = !!item.alsoParams;
-    if(item.showParams != null) ev.alsoParams = !!item.showParams;
-    if(item.plot)               ev.plot       = item.plot;
-    if(item.what)               ev.what       = item.what;
+    // map typeMs / pauseMs → sec
+    if(typeof item.typeMs === 'number')  ev.dur        = item.typeMs  / 1000;
+    if(typeof item.pauseMs=== 'number')  ev.pauseAfter = item.pauseMs / 1000;
+
+    // ειδικές περιπτώσεις από τη ΔΟΜΗ που έδωσες
+    if(item.graph === 'xt'){
+      ev.kind = 'graph';
+    }else if(item.plot){
+      ev.kind = 'lawPlot';
+      ev.plot = item.plot;   // "v","a","ax"
+    }else if(item.param){
+      ev.kind = 'bubbleDyn'; // "phi","A","Tw"
+      ev.what = item.param;
+    }else if(item.close){
+      ev.kind = 'close';
+    }else if(item.right && item.right.trim() && (item.viewer === null || item.viewer === undefined)){
+      ev.kind    = 'law';
+      ev.lawText = item.right;
+      if(item.alsoParams != null) ev.alsoParams = !!item.alsoParams;
+      if(item.showParams != null) ev.alsoParams = !!item.showParams;
+    }else{
+      ev.kind = 'bubble';
+      ev.text = item.left || '';
+    }
 
     result.push(ev);
     seqIdx++;
@@ -438,95 +122,95 @@ function buildAct1TimelineFromArray(arr){
   return result;
 }
 
+/* ====== ΧΤΙΣΙΜΟ ACT2 TIMELINE ΑΠΟ dialogs.act2 ====== */
 function buildAct2TimelineFromArray(arr){
   const result=[];
   if(!Array.isArray(arr)) return result;
+
   for(const item of arr){
     if(!item) continue;
-    const viewer = (typeof item.viewer==='number')
-        ? item.viewer
-        : (typeof item.v==='number' ? item.v : 0);
-    const yOffset = (typeof item.y==='number')
-        ? item.y
-        : (typeof item.yOffset==='number' ? item.yOffset : 135);
-    const xShift = (typeof item.x==='number')
-        ? item.x
-        : (typeof item.xShift==='number' ? item.xShift : 0);
+
+    let viewerIdx = 0;
+    if(typeof item.viewer === 'number' && item.viewer>0){
+      viewerIdx = item.viewer-1;
+    }
+
+    const yOffset = (typeof item.yOffset==='number')
+      ? item.yOffset
+      : (typeof item.y==='number' ? item.y : 135);
+
+    const xShift = (typeof item.xShift==='number')
+      ? item.xShift
+      : (typeof item.x==='number' ? item.x : 0);
 
     const step = {
-      key: item.id || item.key || null,
-      v: viewer,
-      viewer,
-      y: yOffset,
+      viewer: viewerIdx,
+      v: viewerIdx,
       yOffset,
-      x: xShift,
-      xShift
+      xShift,
+      gStart: !!item.gStart,
+      gStop:  !!item.gStop
     };
 
-    if(item.lawText || item.law) step.lawText = item.lawText || item.law;
-    if(item.gStart)              step.gStart  = !!item.gStart;
-    if(item.gStop)               step.gStop   = !!item.gStop;
-    if(item.dur != null)         step.dur     = item.dur;
-    if(item.pauseAfter != null)  step.pauseAfter = item.pauseAfter;
+    if(typeof item.typeMs === 'number')  step.dur        = item.typeMs  / 1000;
+    if(typeof item.pauseMs=== 'number')  step.pauseAfter = item.pauseMs / 1000;
+
+    // τα 4 τελευταία της act2: viewer:null + right → νόμοι
+    if((item.viewer === null || item.viewer === undefined)
+       && !item.left
+       && item.right && item.right.trim()){
+      step.lawText = item.right;
+    }else{
+      step.text = item.left || '';
+    }
 
     result.push(step);
   }
+
   return result;
 }
 
+/* ====== ΦΟΡΤΩΣΗ ΜΟΝΟ dialogs-*.json ====== */
 async function loadDialogOverrides(lang){
   try{
     const resp = await fetch(`dialogs-${lang}.json`, {cache:'no-store'});
     if(!resp.ok) return;
     const data = await resp.json() || {};
-    const dlg  = DIALOGS[lang] || (DIALOGS[lang]={ act1Text:{}, act2Text:{}, foyer:[] });
+    const dlg  = DIALOGS[lang] || (DIALOGS[lang]={ act1:[], act2:[], foyer:[] });
 
-    dlg.act1Text = {};
-    dlg.act2Text = {};
-    dlg.foyer    = [];
+    dlg.act1  = Array.isArray(data.act1)  ? data.act1.slice()  : [];
+    dlg.act2  = Array.isArray(data.act2)  ? data.act2.slice()  : [];
+    dlg.foyer = Array.isArray(data.foyer) ? data.foyer.map(it=>({
+      left:   it.left  || '',
+      right:  it.right || '',
+      viewer: (typeof it.viewer==='number' ? it.viewer : 1),
+      typeMs: (typeof it.typeMs==='number' ? it.typeMs : undefined),
+      pauseMs:(typeof it.pauseMs==='number'? it.pauseMs: undefined)
+    })) : [];
 
-    if(Array.isArray(data.act1)){
-      data.act1.forEach(item=>{
-        if(item && item.id && typeof item.text==='string'){
-          dlg.act1Text[item.id] = item.text;
-        }
-      });
-      if(lang === 'gr'){
-        thoughtScriptBase = buildAct1TimelineFromArray(data.act1);
-        thoughtScript     = [...thoughtScriptBase];
-      }
+    // ACT1 / ACT2 timeline φτιάχνονται ΜΟΝΟ από dialogs-gr
+    if(lang === 'gr'){
+      thoughtScriptBase = buildAct1TimelineFromArray(dlg.act1);
+      thoughtScript     = [...thoughtScriptBase];
+      ACT2_TIMELINE     = buildAct2TimelineFromArray(dlg.act2);
     }
 
-    if(Array.isArray(data.act2)){
-      data.act2.forEach(item=>{
-        if(item && item.id && typeof item.text==='string'){
-          dlg.act2Text[item.id] = item.text;
-        }
-      });
-      if(lang === 'gr'){
-        ACT2_TIMELINE = buildAct2TimelineFromArray(data.act2);
-      }
-    }
-
-    if(Array.isArray(data.foyer)){
-      dlg.foyer = data.foyer.map(it=>({
-        id: it.id || undefined,
-        left: it.left || '',
-        right: it.right || '',
-        viewer: (typeof it.viewer==='number' ? it.viewer : undefined),
-        typeMs: (typeof it.typeMs==='number' ? it.typeMs : undefined),
-        pauseMs:(typeof it.pauseMs==='number' ? it.pauseMs: undefined)
+    // viewers: βάφουμε τους θεατές και κρατάμε χρώματα / ονόματα
+    if(Array.isArray(data.viewers) && data.viewers.length){
+      FOYER_VIEWERS = data.viewers.map((v,idx)=>({
+        id: idx+1,
+        ...v
       }));
-    }
-
-    if(Array.isArray(data.viewers)){
-      FOYER_VIEWERS = data.viewers.slice();
+      applyViewersToDom();
     }
 
     if(data.ui && typeof data.ui === 'object'){
       UI[lang] = data.ui;
     }
-  }catch(e){}
+
+  }catch(e){
+    console.error('loadDialogOverrides error', e);
+  }
 }
 
 /* ====== I18N / UI ====== */
@@ -603,22 +287,12 @@ function setLang(lang){
 
 function localizeTrig(txt){
   if(!txt) return txt;
-  return (LANG==='gr') ? txt.replaceAll('sin','ημ').replaceAll('cos','συν')
-                       : txt.replaceAll('ημ','sin').replaceAll('συν','cos');
+  return (LANG==='gr')
+    ? txt.replaceAll('sin','ημ').replaceAll('cos','συν')
+    : txt.replaceAll('ημ','sin').replaceAll('συν','cos');
 }
 
-function getAct1BubbleText(id){
-  const dlg = DIALOGS[LANG];
-  if(dlg && dlg.act1Text && dlg.act1Text[id]) return dlg.act1Text[id];
-  return '';
-}
-function getAct2BubbleText(id){
-  const dlg = DIALOGS[LANG];
-  if(dlg && dlg.act2Text && dlg.act2Text[id]) return dlg.act2Text[id];
-  return '';
-}
-
-/* ====== DOM ====== */
+/* ====== DOM GRAB ====== */
 const stage=document.getElementById('stage');
 const actor=document.getElementById('actor');
 const springEl=document.getElementById('spring');
@@ -677,6 +351,7 @@ function positionParamsBox(){
   paramsBoxEl.style.left = (rightEdge - w - 6) + 'px';
   paramsBoxEl.style.top  = '33px';
 }
+
 let lastRulerW=0;
 function updateRuler(){
   const baseLeft=stage.clientWidth*0.18;
@@ -725,7 +400,6 @@ window.addEventListener('resize', positionRightPanel);
 function anchorX(){ return stage.clientWidth*0.18; }
 
 /* ====== ΡΥΘΜΙΣΕΙΣ ΡΟΗΣ ====== */
-const DEFAULT_FIRST_MUL=1.1;
 let firstThoughtMul=parseFloat(slFirst.value);
 let timelineScale=parseFloat(slScale.value);
 let bubbleDurationSec=parseFloat(slDur.value);
@@ -738,7 +412,6 @@ slSlow.addEventListener('input',()=>{ slowFactor=parseFloat(slSlow.value); valSl
 /* ====== TIMELINE STATE ====== */
 let nextThoughtIdx=0;
 let isBubbleActive=false;
-let bubbleAutoTimer=null;
 let measureRowIdx=0;
 
 let t0=performance.now(), lastFrame=performance.now();
@@ -1091,7 +764,7 @@ function closeCurtainsSequence(){
 /* ====== HANDLER TIMELINE ΠΡΑΞΗΣ 1 ====== */
 function handleTimelineEvent(th){
   if(th.kind==='bubble'){
-    const txt = getAct1BubbleText(th.key);
+    const txt = th.text || '';
     BUBBLE.say(
       th.viewer || 0,
       txt,
@@ -1104,30 +777,21 @@ function handleTimelineEvent(th){
     const dyn = (i18nDyn[LANG] && i18nDyn[LANG].thoughts) || {};
     const dur = (typeof th.dur==='number' ? th.dur : null);
     const pa  = (typeof th.pauseAfter==='number' ? th.pauseAfter : null);
-    if(th.what==='A'){
-      BUBBLE.say(
-        th.viewer || 0,
-        dyn.t7A ? dyn.t7A(A_m.toFixed(2)) : '',
-        th.yOffset,
-        th.xShift||0,
-        dur,
-        pa
-      );
-    }else if(th.what==='Tw'){
-      BUBBLE.say(
-        th.viewer || 0,
-        dyn.t8Tw ? dyn.t8Tw(T.toFixed(2), omega.toFixed(3)) : '',
-        th.yOffset,
-        th.xShift||0,
-        dur,
-        pa
-      );
-    }else if(th.what==='phi'){
+
+    if(dyn[th.what]){
       const x0 = x0Val().toFixed(2);
       const phi0deg=((omega*obsStartPlaybackOffset)*180/Math.PI + 360)%360;
+      let txt;
+      if(th.what==='A'){
+        txt = dyn.A(A_m.toFixed(2));
+      }else if(th.what==='Tw'){
+        txt = dyn.Tw(T.toFixed(2), omega.toFixed(3));
+      }else if(th.what==='phi'){
+        txt = dyn.phi(x0, phi0deg.toFixed(1));
+      }
       BUBBLE.say(
         th.viewer || 0,
-        dyn.t9phi ? dyn.t9phi(x0, phi0deg.toFixed(1)) : '',
+        txt || '',
         th.yOffset,
         th.xShift||0,
         dur,
@@ -1140,9 +804,9 @@ function handleTimelineEvent(th){
     if(th.lawText) addLaw(th.lawText);
     if(th.alsoParams){ showCurtainParams(); }
   }else if(th.kind==='lawPlot'){
-    if(th.plot==='v') ensureVelocityChart();
+    if(th.plot==='v')      ensureVelocityChart();
     else if(th.plot==='a') ensureAccelerationChart();
-    else if(th.plot==='ax') ensureAxChart();
+    else if(th.plot==='ax')ensureAxChart();
   }else if(th.kind==='close'){
     closeCurtainsSequence();
   }
@@ -1158,7 +822,6 @@ btnSettings.addEventListener('click',()=>{
 });
 
 function resetShow(){
-  if(bubbleAutoTimer){ clearTimeout(bubbleAutoTimer); bubbleAutoTimer=null; }
   thoughtScript = [...thoughtScriptBase];
   nextThoughtIdx=0; isBubbleActive=false;
   measureRowIdx=0; lastSampleObsTime=-Infinity;
@@ -1307,7 +970,8 @@ function typeWriter(el, text, opt=12, done){
 }
 
 function showSpeakerChip(viewerId){
-  const vInfo = (Array.isArray(FOYER_VIEWERS) ? FOYER_VIEWERS : []).find(x=>x.id===viewerId) || FOYER_VIEWERS[0];
+  const arr = Array.isArray(FOYER_VIEWERS) ? FOYER_VIEWERS : [];
+  const vInfo = arr.find(x=>x.id===viewerId) || arr[viewerId-1] || arr[0];
   const anchor = document.querySelector(`.viewer[data-idx="${viewerId-1}"]`);
   if(!vInfo || !anchor) return;
   const sRect = stage.getBoundingClientRect();
@@ -1579,17 +1243,17 @@ window.foyerClose = foyerClose;
           await new Promise(r=>setTimeout(r,220));
           continue;
         }
-        const viewerIdx = (typeof step.v==='number' ? step.v :
-                           (typeof step.viewer==='number' ? step.viewer : 0));
-        const yOff = (typeof step.y==='number' ? step.y :
-                      (typeof step.yOffset==='number' ? step.yOffset : 135));
-        const xShift = (typeof step.x==='number' ? step.x :
-                        (typeof step.xShift==='number' ? step.xShift : 0));
+
+        const viewerIdx = (typeof step.viewer==='number' ? step.viewer : 0);
+        const yOff = (typeof step.yOffset==='number' ? step.yOffset :
+                      (typeof step.y==='number' ? step.y : 135));
+        const xShift = (typeof step.xShift==='number' ? step.xShift :
+                        (typeof step.x==='number' ? step.x : 0));
 
         if(step.gStart) startGhost();
         await BUBBLE.say(
           viewerIdx,
-          getAct2BubbleText(step.key),
+          step.text || '',
           yOff,
           xShift,
           typeof step.dur==='number' ? step.dur : null,
@@ -1616,6 +1280,7 @@ window.foyerClose = foyerClose;
 
       finished=true;
     }catch(e){
+      console.error(e);
     }finally{
       running=false;
     }
@@ -1642,8 +1307,7 @@ ro.observe(stage);
   await loadDialogOverrides('gr');
   await loadDialogOverrides('en');
   setLang('gr');
+  applyViewersToDom();
   resetShow();
 })();
 </script>
-</body>
-</html>
