@@ -5,668 +5,238 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Θεατρική Σκηνή — Ενιαία Έκδοση (Act I + Act II + Φουαγιέ)</title>
 
+<link rel="stylesheet" href="aat-stage.css">
 <link rel="stylesheet" href="https://unpkg.com/uplot@1.6.30/dist/uPlot.min.css">
 <script src="https://unpkg.com/uplot@1.6.30/dist/uPlot.iife.min.js"></script>
 
-<link rel="stylesheet" href="aat-stage.css">
+<style>
+body {
+  margin: 0;
+  background: radial-gradient(circle at center,#222 0%,#000 100%);
+  overflow: hidden;
+  font-family: Inter, system-ui, sans-serif;
+}
+.stage {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+button {
+  border: none;
+  border-radius: 8px;
+  background: #e33;
+  color: #fff;
+  font-size: 1rem;
+  padding: 0.6em 1em;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+button:hover {
+  background: #c00;
+}
+#countdownOverlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.8);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 4rem;
+  z-index: 1000;
+}
+#xtChart {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  width: 300px;
+  height: 180px;
+  background: #111;
+  border: 1px solid #444;
+  border-radius: 6px;
+  display: none;
+}
+#paramsBox {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(0,0,0,0.6);
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  display: none;
+}
+</style>
 </head>
+
 <body>
-  <div class="stage" id="stage">
-    <div class="curtain-top"></div>
-    <div class="curtain-upper"></div>
-    <div class="curtain-side left"></div>
-    <div class="curtain-side right"></div>
+<div class="stage" id="stage">
+  <button id="startBtn" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);">
+    Έναρξη
+  </button>
 
-    <div class="spotlight" id="spotlight"></div>
+  <div id="countdownOverlay"><div id="countdownTimer">5</div></div>
 
-    <div class="lang" id="langSwitch">
-      <button data-lang="gr" class="on">GR</button>
-      <button data-lang="en">EN</button>
-    </div>
-
-    <div class="signboard">
-      <h1 id="actTitle">Πράξη 1η: Η Κινηματική στα ... Αλγεβρικά</h1>
-      <div class="sb-lineA" id="sbLineA">Πρωταγωνιστεί ο ταλαντωτής (m₁, D₁) και οι θεαποιοί(*)</div>
-      <div class="sb-lineB" id="sbLineB">στον μονόλογο <span class="hl">«ατέλειωτο πήγαινε έλα»</span>... επί σκηνής!</div>
-      <div class="sb-lineC" id="sbLineC">Παραγωγή-Σκηνοθεσία: Εμηχ. Ενεργειούλης</div>
-      <div class="sb-lineD" id="sbLineD">(*) ... εσείς</div>
-    </div>
-
-    <div class="params-box" id="paramsBox">
-      <div class="param" id="paramA"></div>
-      <div class="param" id="paramW"></div>
-      <div class="param" id="paramPhi"></div>
-    </div>
-
-    <div class="clock" id="clock">t = 0.00 s<span class="hint" id="slowHint"></span></div>
-
-    <div class="measure-box" id="measureBox">
-      <div class="mb-title" id="mbTitle">Μετρήσεις</div>
-      <table class="mb-table">
-        <thead><tr><th>α/α</th><th>t (s)</th><th>x (m)</th></tr></thead>
-        <tbody id="measureTBody"></tbody>
-      </table>
-    </div>
-
-    <div id="xtChart"></div>
-
-    <div class="laws" id="laws">
-      <h4 id="lawsTitle">Νόμοι Α.Α.Τ.</h4>
-      <div id="lawsBody" class="laws-body"></div>
-    </div>
-
-    <div id="lawCharts" class="law-charts" style="position:absolute;left:2%;width:16%;z-index:259"></div>
-
-    <div class="ruler" id="ruler"></div>
-    <div class="marker" id="marker">
-      <div class="marker-line"></div>
-      <div class="marker-tip"></div>
-    </div>
-
-    <div class="thought-bubble" id="bubble0">
-      <div class="text"></div>
-      <div class="checkmark">✓</div>
-      <div class="tail"></div>
-    </div>
-
-    <div class="act-bubble" id="actBubble">ΘΕΑΤΗΣ 1</div>
-
-    <div class="controls" id="controls">
-      <button id="btnPause" title="παύση">⏸</button>
-      <button id="btnSlow"  title="αργά">🐌</button>
-      <button id="btnPlay"  title="κανονικά">▶</button>
-      <button id="btnSettings" title="ρυθμίσεις">⚙️</button>
-      <button id="btnReset" title="reset">↺</button>
-    </div>
-
-    <button class="btn-end" id="btnEndShow">Τέλος Παράστασης</button>
-    <button class="btn-foyer" id="btnFoyer" title="Φουαγιέ">Φουαγιέ</button>
-
-    <div class="settings" id="settingsPanel">
-      <h5 id="settingsTitle">Ρυθμίσεις ροής</h5>
-      <div class="row">
-        <label for="slDur">Διάρκεια σκέψης (s):</label>
-        <input id="slDur" type="range" min="2" max="8" step="0.5" value="3">
-        <div class="val" id="valDur">3.0s</div>
-      </div>
-      <div class="row">
-        <label for="slSlow">Αργή κίνηση (×):</label>
-        <input id="slSlow" type="range" min="0.05" max="1.00" step="0.05" value="1.00">
-        <div class="val" id="valSlow">1.00×</div>
-      </div>
-    </div>
-
-    <img id="spring" class="spring" src="spring.png" alt="ελατήριο">
-    <div class="actor" id="actor"><img src="skater.png" alt="Skater"></div>
-    <div class="floor"></div>
-
-    <!-- ΚΟΙΝΟ -->
-    <img class="audience-extra" id="audienceExtra" src="koino_extra.png" alt="επιπλέον κοινό">
-    <img class="audience" src="koino.png" alt="κοινό">
-
-    <!-- ΟΜΙΛΗΤΕΣ / ΘΕΑΤΕΣ -->
-    <div class="viewers" id="viewersRow">
-      <div class="viewer" data-idx="0"><img src="" alt=""></div>
-      <div class="viewer" data-idx="1"><img src="" alt=""></div>
-      <div class="viewer" data-idx="2"><img src="" alt=""></div>
-      <div class="viewer" data-idx="3"><img src="" alt=""></div>
-      <div class="viewer" data-idx="4"><img src="" alt=""></div>
-    </div>
-
-    <button class="start-btn" id="startBtn">Έναρξη</button>
-
-    <div class="countdown-overlay" id="countdownOverlay">
-      <div class="countdown-box">
-        <div class="countdown-main" id="cdMain">Η παράσταση αρχίζει...</div>
-        <div class="countdown-sub" id="cdSub">ώρα να χρησιμοποιήσετε χαρτί και μολύβι!</div>
-        <div class="countdown-timer" id="countdownTimer">5</div>
-      </div>
-    </div>
-
-    <div class="actbreak" id="actBreak">
-      <div class="box" style="background:rgba(0,0,0,.7);border:1px solid rgba(255,255,255,.25);border-radius:12px;padding:16px 20px;max-width:520px">
-        <h3 id="actBreakTitle">Τέλος Πράξης 1</h3>
-        <p id="actBreakMsg">Ο m,D συνεχίζει. Είστε έτοιμοι για τη Δεύτερη Πράξη;</p>
-        <button id="btnAct2" style="background:#700;color:#fff;border:none;border-radius:8px;padding:10px 16px;font-size:16px;cursor:pointer">Έναρξη Πράξης 2</button>
-      </div>
-    </div>
-
-    <div class="foyerbreak" id="foyerBreak">
-      <div class="box" style="background:rgba(0,0,0,.7);border:1px solid rgba(255,255,255,.25);border-radius:12px;padding:16px 20px;max-width:520px">
-        <h3 id="foyerBreakTitle">Τέλος Πράξης 2</h3>
-        <p id="foyerBreakMsg">Θέλετε να περάσετε στο φουαγιέ για τη συζήτηση;</p>
-        <button id="btnFoyerGo" style="background:#2c7a7b;color:#fff;border:none;border-radius:8px;padding:10px 16px;font-size:16px;cursor:pointer">Μετάβαση στο Φουαγιέ</button>
-      </div>
-    </div>
-
-    <div class="foyer" id="foyer">
-      <div class="wrap">
-        <div class="board-left"  id="boardLeft"  aria-label="μαυροπίνακας-αριστερά"></div>
-        <div class="board-right" id="boardRight" aria-label="μαυροπίνακας-δεξιά"></div>
-      </div>
-      <div class="foyer-bubble" id="foyerBubble">ΘΕΑΤΗΣ 1</div>
-    </div>
-
+  <div id="xtChart"></div>
+  <div id="paramsBox">
+    <div id="paramA"></div>
+    <div id="paramW"></div>
+    <div id="paramPhi"></div>
   </div>
+</div>
 
 <script>
-/* ====== ΔΕΔΟΜΕΝΑ ΑΠΟ dialogs-*.json ====== */
-const DIALOGS = { gr:null, en:null };
+// =================== ΠΑΓΚΟΣΜΙΕΣ ΜΕΤΑΒΛΗΤΕΣ ===================
+let uXT = null;
+let A_m = 2.0;         // πλάτος ταλάντωσης (τυπικό)
+let T = 6.28;          // περίοδος
+let omega = 2*Math.PI / T;
 let LANG = 'gr';
+let xtChart = null;
+let startBtn = null;
+let countdownOverlay = null;
+let countdownTimerEl = null;
+let paramsBoxEl = null;
+let paramAEl, paramWEl, paramPhiEl;
 
-let VIEWERS = [];   // από το πεδίο "viewers"
-let ACT1_SEQ = [];  // από "act1"
-let ACT2_SEQ = [];  // από "act2"
-let FOYER_SEQ = []; // από "foyer"
+// =================== ΒΟΗΘΗΤΙΚΕΣ ΣΥΝΑΡΤΗΣΕΙΣ ===================
+function x0Val() { return 0.5 * A_m; }
 
-/* δυναμικά κομμάτια κειμένου (A, T, φ) */
-const i18nDyn = {
-  gr: {
-    tA: (A)=>`…με A=${A}m!`,
-    tTw:(Tval,om)=>`… και T=${Tval}s και επομένως ω=${om}rad/s!`,
-    tPhi:(x0,phi)=>`… όντως είναι ΑΑΤ και αφού το x₀=${x0}m υπάρχει φ₀=${phi}°. Χαχα, ένα το κρατούμενο!`
-  },
-  en: {
-    tA: (A)=>`…with A=${A}m!`,
-    tTw:(Tval,om)=>`…and T=${Tval}s and therefore ω=${om}rad/s!`,
-    tPhi:(x0,phi)=>`…indeed it is S.H.M., and since x₀=${x0}m there is a phase φ₀=${phi}°. Nice, one result secured!`
-  }
-};
-
-async function loadDialogs(lang){
-  if(DIALOGS[lang]) return;
-  const file = `dialogs-${lang}.json`;
-  try{
-    const resp = await fetch(file, {cache:'no-store'});
-    if(!resp.ok) return;
-    const data = await resp.json();
-    DIALOGS[lang] = data;
-  }catch(e){}
-}
-
-function applyLangData(lang){
-  const data = DIALOGS[lang] || {};
-  VIEWERS   = Array.isArray(data.viewers) ? data.viewers : [];
-  ACT1_SEQ  = Array.isArray(data.act1)    ? data.act1    : [];
-  ACT2_SEQ  = Array.isArray(data.act2)    ? data.act2    : [];
-  FOYER_SEQ = Array.isArray(data.foyer)   ? data.foyer   : [];
-
-  // φόρτωμα avatars στους .viewer
-  const viewerDivs = document.querySelectorAll('.viewer');
-  viewerDivs.forEach((div, idx)=>{
-    const v = VIEWERS[idx];
-    const imgEl = div.querySelector('img');
-    if(v && imgEl){
-      imgEl.src = v.img || '';
-      imgEl.alt = (lang==='en' ? (v.name_en||'Viewer') : (v.name_gr||'Θεατής'));
-    }else if(imgEl){
-      imgEl.src = '';
-      imgEl.alt = '';
-    }
-  });
-}
-
-/* ====== ΧΡΩΜΑ / ΒΟΗΘΗΤΙΚΑ ====== */
-function tint(hex, alpha){
-  const c = (hex||'#ffffff').replace('#','');
-  const r=parseInt(c.slice(0,2),16)||255;
-  const g=parseInt(c.slice(2,4),16)||255;
-  const b=parseInt(c.slice(4,6),16)||255;
-  return `rgba(${r},${g},${b},${alpha})`;
-}
-
-/* ====== DOM REF ====== */
-const stage      = document.getElementById('stage');
-const actor      = document.getElementById('actor');
-const springEl   = document.getElementById('spring');
-const spotlight  = document.getElementById('spotlight');
-const startBtn   = document.getElementById('startBtn');
-const clockEl    = document.getElementById('clock');
-const slowHint   = document.getElementById('slowHint');
-const rulerEl    = document.getElementById('ruler');
-const markerEl   = document.getElementById('marker');
-const bubbleEl   = document.getElementById('bubble0');
-const actBubble  = document.getElementById('actBubble');
-const btnPause   = document.getElementById('btnPause');
-const btnSlow    = document.getElementById('btnSlow');
-const btnPlay    = document.getElementById('btnPlay');
-const btnSettings= document.getElementById('btnSettings');
-const btnReset   = document.getElementById('btnReset');
-const btnEndShow = document.getElementById('btnEndShow');
-const btnFoyer   = document.getElementById('btnFoyer');
-const settingsPanel = document.getElementById('settingsPanel');
-const slDur      = document.getElementById('slDur');
-const valDur     = document.getElementById('valDur');
-const slSlow     = document.getElementById('slSlow');
-const valSlow    = document.getElementById('valSlow');
-const countdownOverlay = document.getElementById('countdownOverlay');
-const countdownTimerEl = document.getElementById('countdownTimer');
-const xtChart    = document.getElementById('xtChart');
-const paramsBoxEl= document.getElementById('paramsBox');
-const paramAEl   = document.getElementById('paramA');
-const paramWEl   = document.getElementById('paramW');
-const paramPhiEl = document.getElementById('paramPhi');
-const lawsPane   = document.getElementById('laws');
-const lawsTitle  = document.getElementById('lawsTitle');
-const lawsBody   = document.getElementById('lawsBody');
-const lawCharts  = document.getElementById('lawCharts');
-const measureBox = document.getElementById('measureBox');
-const measureTBody = document.getElementById('measureTBody');
-const actBreak   = document.getElementById('actBreak');
-const foyerBreak = document.getElementById('foyerBreak');
-const btnFoyerGo = document.getElementById('btnFoyerGo');
-const curtainUpper = document.querySelector('.curtain-upper');
-const langSwitch = document.getElementById('langSwitch');
-
-const boardLeft  = document.getElementById('boardLeft');
-const boardRight = document.getElementById('boardRight');
-const foyer      = document.getElementById('foyer');
-const fbubble    = document.getElementById('foyerBubble');
-
-/* ====== ΦΥΣΙΚΗ ====== */
-const m = 70, T = 6.0, A_m = 3.0;
-const omega = 2*Math.PI/T;
-const D = Math.round(m*omega*omega);
-const E_mech = 0.5*D*A_m*A_m;
-const pxPerMeter = 50; let A_px = pxPerMeter*A_m;
-
-function anchorX(){ return stage.clientWidth*0.18; }
-
-function positionParamsBox(){
-  const rightEdge = stage.clientWidth*0.82;
-  const w = paramsBoxEl.offsetWidth || 180;
-  paramsBoxEl.style.left = (rightEdge - w - 6) + 'px';
-  paramsBoxEl.style.top  = '33px';
-}
-
-let lastRulerW = 0;
-function updateRuler(){
-  const baseLeft=stage.clientWidth*0.18;
-  const usableW =stage.clientWidth*0.64;
-  if(Math.abs(usableW-lastRulerW)<1) return;
-  lastRulerW=usableW;
-  rulerEl.style.left=baseLeft+'px';
-  rulerEl.style.width=usableW+'px';
-  rulerEl.innerHTML='';
-  const centerX=stage.clientWidth/2;
-  for(let mTick=-7;mTick<=7;mTick++){
-    const xPx=centerX+mTick*pxPerMeter;
-    const rel=xPx-baseLeft;
-    const tDiv=document.createElement('div');
-    tDiv.className='tick';
-    tDiv.style.left=rel+'px';
-    rulerEl.appendChild(tDiv);
-    const lbl=document.createElement('div');
-    lbl.className='tick-label';
-    lbl.textContent=(mTick===0?'0':(mTick>0? '+'+mTick:''+mTick))+' m';
-    lbl.style.left=rel+'px';
-    rulerEl.appendChild(lbl);
-  }
-}
-
-function positionRightPanel(){
-  const W=stage.clientWidth, H=stage.clientHeight;
-  const curtainLeft=W*0.82, curtainW=W*0.18, centerX=curtainLeft+curtainW/2;
-  if(clockEl){
-    clockEl.style.left=centerX+'px';
-  }
-  if(measureBox){
-    measureBox.style.left=centerX+'px';
-    const mTop=54;
-    measureBox.style.top=mTop+'px';
-    const halfH=Math.floor(H*0.5);
-    measureBox.style.height=halfH+'px';
-    measureBox.style.overflowY='auto';
-    measureBox.style.width=Math.max(160,curtainW-16)+'px';
-  }
-  if(xtChart){
-    const mTop=measureBox.offsetTop||54;
-    const mHeight=measureBox.offsetHeight||Math.floor(H*0.5);
-    const xTop=mTop+mHeight+8;
-    const availH=Math.max(120,H-xTop-8);
-    xtChart.style.left=centerX+'px';
-    xtChart.style.top=xTop+'px';
-    const w=Math.max(160,(measureBox?measureBox.offsetWidth:(curtainW-16)));
-    xtChart.style.width=w+'px';
-    xtChart.style.height=availH+'px';
-    xtChart.style.transform='translateX(-50%)';
-    if(uXT){
-      uXT.setSize({width:Math.floor(w), height:Math.floor(availH)});
-      drawXTChart();
-    }
-  }
-  positionLawCharts();
-  positionParamsBox();
-}
-window.addEventListener('resize', positionRightPanel);
-
-/* ====== ΡΥΘΜΙΣΕΙΣ ΡΟΗΣ ====== */
-let bubbleDurationSec = parseFloat(slDur.value);
-let slowFactor        = parseFloat(slSlow.value);
-
-slDur.addEventListener('input',()=>{
-  bubbleDurationSec = parseFloat(slDur.value);
-  valDur.textContent = bubbleDurationSec.toFixed(1)+'s';
-});
-slSlow.addEventListener('input',()=>{
-  slowFactor = parseFloat(slSlow.value);
-  valSlow.textContent = slowFactor.toFixed(2)+'×';
-});
-
-/* ====== ΧΡΟΝΙΣΜΟΣ / ΜΕΤΡΗΣΕΙΣ ====== */
-let t0 = performance.now();
-let lastFrame = performance.now();
-let playbackTime = 0;
-let mode = 'run';
-let obsStarted = false;
-let obsStartPlaybackOffset = 0;
-let lastSampleObsTime = -Infinity;
-const sampleInterval = 0.25;
-
-let measureRowIdx = 0;
-
-function logMeasurement(tObs,xMeters){
-  if(!obsStarted || mode==='pause') return;
-  if(tObs-lastSampleObsTime<sampleInterval) return;
-  lastSampleObsTime=tObs;
-  const tr=document.createElement('tr');
-  tr.className='new';
-  tr.innerHTML=`<td>${(++measureRowIdx)}</td><td>${tObs.toFixed(2)}</td><td>${xMeters.toFixed(2)}</td>`;
-  measureTBody.appendChild(tr);
-  setTimeout(()=>{ tr.classList.remove('new'); }, 650);
-  try{ tr.scrollIntoView({block:'end'}); }catch(e){}
-  try{ measureBox.scrollTop=measureBox.scrollHeight; }catch(e){}
-}
-
-function setMode(newMode){
-  mode=newMode;
-  btnSlow.classList.toggle('active', mode==='slow');
-  btnPlay.classList.toggle('active', mode==='run');
-  slowHint.textContent = (mode==='slow' && slowFactor<1) ? `SLOW-MO ×${slowFactor.toFixed(2)}` : '';
-}
-
-/* ====== TYPEWRITER HTML (για bubbles πράξεων) ====== */
-function typeWriterHTML(el, html, speed, done){
-  el.innerHTML = html || '';
-  const textNodes=[];
-  function collect(node){
-    if(node.nodeType===3){
-      textNodes.push({node, text:node.textContent});
-      node.textContent='';
-    }else if(node.nodeType===1){
-      for(const child of node.childNodes) collect(child);
-    }
-  }
-  collect(el);
-  const totalChars = textNodes.reduce((s,o)=>s+o.text.length,0);
-  let i=0;
-  (function tick(){
-    let remaining = i;
-    for(const obj of textNodes){
-      if(remaining>obj.text.length){
-        obj.node.textContent=obj.text;
-        remaining-=obj.text.length;
-      }else{
-        obj.node.textContent=obj.text.slice(0, remaining);
-        remaining=0;
-      }
-    }
-    i++;
-    if(i<=totalChars){
-      setTimeout(tick, speed);
-    }else{
-      if(typeof done==='function') done();
-    }
-  })();
-}
-
-/* ====== BUBBLE SCHEDULER ΓΙΑ ΠΡΑΞΕΙΣ ====== */
-class BubbleScheduler {
-  constructor(panelEl, labelEl){
-    this.el=panelEl;
-    this.labelEl=labelEl;
-    this._queue=Promise.resolve();
-    this._currentCancel=null;
-    this._ALLOWED=new Set(['b','strong','i','em','sub','sup','br','span']);
-  }
-  sanitize(html){
-    const wrap=document.createElement('div');
-    wrap.innerHTML=html||'';
-    wrap.querySelectorAll('*').forEach(n=>{
-      const tag=n.tagName.toLowerCase();
-      if(!this._ALLOWED.has(tag)){
-        n.replaceWith(document.createTextNode(n.textContent));
-      }else{
-        [...n.attributes].forEach(a=>n.removeAttribute(a.name));
-      }
-    });
-    return wrap.innerHTML;
-  }
-  showSpeaker(viewerIndex){
-    if(!this.labelEl) return;
-    const v = VIEWERS[viewerIndex] || VIEWERS[0] || null;
-    const vEl = document.querySelector(`.viewer[data-idx="${viewerIndex}"]`);
-    if(!v || !vEl){
-      this.labelEl.style.display='none';
-      return;
-    }
-    const sRect = stage.getBoundingClientRect();
-    const vRect = vEl.getBoundingClientRect();
-    const centerX = (vRect.left+vRect.width/2)-sRect.left;
-    const topPx   = Math.max(10,(vRect.top-sRect.top)-110);
-
-    const labelText = (LANG==='en'
-      ? (v.name_en || `Viewer ${viewerIndex+1}`)
-      : (v.name_gr || `Θεατής ${viewerIndex+1}`));
-
-    this.labelEl.textContent = labelText;
-    this.labelEl.style.backgroundColor=tint(v.color,0.9);
-    this.labelEl.style.left=centerX+'px';
-    this.labelEl.style.top=topPx+'px';
-    this.labelEl.style.transform='translateX(-50%)';
-    this.labelEl.style.display='block';
-  }
-  placePanelNearViewer(viewerIndex,lift=140,xShift=0){
-    const W=stage.clientWidth, H=stage.clientHeight;
-    const xL=W*0.18, xR=W*0.82, pad=12;
-    this.el.style.display='block';
-    this.el.style.opacity='0';
-    this.el.style.left='0px';
-    this.el.style.top='0px';
-    const bw=this.el.offsetWidth || 320;
-
-    const vEl = document.querySelector(`.viewer[data-idx="${viewerIndex}"]`);
-    const sRect = stage.getBoundingClientRect();
-
-    let baseCenterX;
-    if(vEl){
-      const vRect = vEl.getBoundingClientRect();
-      baseCenterX = (vRect.left+vRect.width/2)-sRect.left;
-    }else{
-      const total = Math.max(1, document.querySelectorAll('.viewer').length||5);
-      const idx = Math.max(0, Math.min(total-1, viewerIndex|0));
-      const rel = (idx+1)/(total+1);
-      baseCenterX = xL + rel*(xR-xL);
-    }
-
-    let centerX = baseCenterX + (xShift||0);
-    centerX = Math.max(xL+pad+bw/2, Math.min(centerX, xR-pad-bw/2));
-    const leftPx = centerX-bw/2;
-
-    const baseTop = H*0.23;
-    const liftVal = (typeof lift==='number'? lift:135);
-    const deltaY  = (135-liftVal);
-    const topPx   = Math.max(40, baseTop+deltaY);
-
-    this.el.style.left=leftPx+'px';
-    this.el.style.top=topPx+'px';
-  }
-  showOnce({viewer,text,lift,xShift,durSec,pauseAfterSec}){
-    return new Promise(resolve=>{
-      if(this._currentCancel){
-        try{ this._currentCancel(); }catch{}
-        this._currentCancel=null;
-      }
-      const textEl=this.el.querySelector('.text');
-      const sanitized=this.sanitize(text||'');
-      const plain=sanitized.replace(/<[^>]+>/g,'');
-      const totalChars=Math.max(plain.length,10);
-      const effectiveDurSec = (typeof durSec==='number' && durSec>0 ? durSec : bubbleDurationSec||3);
-      const baseMs = effectiveDurSec*1000;
-      const speed = Math.max(15, Math.min(80, Math.round(baseMs/totalChars)));
-
-      let done=false, started=false;
-      this.showSpeaker(viewer);
-
-      const timerId=setTimeout(()=>{
-        if(done) return;
-        started=true;
-        this.placePanelNearViewer(viewer,lift,xShift);
-        this.el.classList.add('active');
-        this.el.style.opacity='1';
-        isBubbleActive=true;
-        setMode('slow');
-        typeWriterHTML(textEl, sanitized, speed, ()=>{
-          const extraPause=(typeof pauseAfterSec==='number' && pauseAfterSec>=0)
-            ? pauseAfterSec*1000
-            : 500;
-          setTimeout(()=>cancel(), extraPause);
-        });
-      },220);
-
-      const cancel=()=>{
-        if(done) return;
-        done=true;
-        clearTimeout(timerId);
-        if(!started){
-          if(this.labelEl) this.labelEl.style.display='none';
-          isBubbleActive=false;
-          setMode('run');
-          resolve();
-          return;
-        }
-        this.el.classList.add('closing');
-        setTimeout(()=>{
-          this.el.classList.remove('active','closing');
-          this.el.style.display='none';
-          this.el.style.opacity='0';
-          isBubbleActive=false;
-          if(this.labelEl) this.labelEl.style.display='none';
-          setMode('run');
-          resolve();
-        },220);
-      };
-      this._currentCancel=cancel;
-    });
-  }
-  say(viewer,text,lift=140,xShift=0,durSec=null,pauseAfterSec=null){
-    this._queue=this._queue.then(()=>this.showOnce({viewer,text,lift,xShift,durSec,pauseAfterSec}));
-    return this._queue;
-  }
-  clear(){
-    if(this._currentCancel){ try{ this._currentCancel(); }catch{} this._currentCancel=null; }
-    this._queue=Promise.resolve();
-    this.el.style.display='none';
-    if(this.labelEl) this.labelEl.style.display='none';
-  }
-}
-const BUBBLE = new BubbleScheduler(bubbleEl, actBubble);
-let isBubbleActive=false;
-
-/* ====== ΝΟΜΟΙ & ΜΙΝΙ ΓΡΑΦΗΜΑΤΑ ====== */
-let lawCount=0;
-let firstLawShown=false;
-
-function localizeTrig(txt){
-  if(!txt) return txt;
-  return (LANG==='gr')
-    ? txt.replaceAll('sin','ημ').replaceAll('cos','συν')
-    : txt.replaceAll('ημ','sin').replaceAll('συν','cos');
-}
-
-function addLaw(txt, alsoParams){
-  const t = localizeTrig(txt);
-  if(!firstLawShown){
-    firstLawShown=true;
-    lawsPane.style.display='block';
-  }
-  const div=document.createElement('div');
-  div.className='law-line';
-  div.textContent=t;
-  lawsBody.appendChild(div);
-  lawCount++;
-  positionLawCharts();
-  if(alsoParams) showCurtainParams();
-}
-
-let vCan=null,aCan=null,axCan=null;
-
-function sizeLawCanvas(c){
-  const w=Math.floor(stage.clientWidth*0.16);
-  const h=140;
-  c.width=w; c.height=h;
-  c.style.width=w+'px';
-  c.style.height=h+'px';
-}
-
-function positionLawCharts(){
-  const r = lawsPane.getBoundingClientRect();
-  const s = stage.getBoundingClientRect();
-  lawCharts.style.top = (r.bottom - s.top + 8) + 'px';
-  lawCharts.style.left= '2%';
-  lawCharts.style.width= '16%';
-}
-
-function ensureVelocityChart(){
-  if(!vCan){
-    vCan=document.createElement('canvas');
-    lawCharts.appendChild(vCan);
-  }
-  sizeLawCanvas(vCan);
-}
-
-function ensureAccelerationChart(){
-  if(!aCan){
-    aCan=document.createElement('canvas');
-    lawCharts.appendChild(aCan);
-  }
-  sizeLawCanvas(aCan);
-}
-
-function ensureAxChart(){
-  if(!axCan){
-    axCan=document.createElement('canvas');
-    lawCharts.appendChild(axCan);
-  }
-  sizeLawCanvas(axCan);
-}
-
-/* ====== uPlot x(t) ====== */
-let uXT=null;
-
-function buildSeriesData(){
-  const N=240;
-  const tArr=new Array(N+1);
-  const xArr=new Array(N+1);
-  for(let i=0;i<=N;i++){
-    const tloc=(i/N)*T;
-    tArr[i]=tloc;
-    xArr[i]=A_m*Math.sin(omega*(tloc+obsStartPlaybackOffset));
+function buildSeriesData() {
+  const N = 200;
+  const dt = T / (N-1);
+  const tArr = [];
+  const xArr = [];
+  for (let i=0;i<N;i++) {
+    const t = i * dt;
+    const x = A_m * Math.sin(omega*t);
+    tArr.push(t);
+    xArr.push(x);
   }
   return [tArr,xArr];
 }
 
-function x0Val(){
-  return A_m*Math.sin(omega*(0+obsStartPlaybackOffset));
+// =================== ΦΟΡΤΩΜΑ ΔΙΑΛΟΓΩΝ ===================
+async function loadDialogs(lang='gr') {
+  const res = await fetch('dialogs-' + lang + '.json');
+  if(!res.ok) throw new Error('Αποτυχία φόρτωσης διαλόγων');
+  const data = await res.json();
+  console.log('Διάλογοι φορτώθηκαν:', data.length);
 }
 
+// =================== uPlot ΔΙΑΓΡΑΜΜΑ ===================
 function initXTChart(){
   if(uXT) return;
   xtChart.style.display='block';
-  const w = Math.floor(xtChart.clientWidth || (Math.max(160, (stage.clientWidth*0.18) - 16)));
-  const h = Math.floor(xtChart.clientHeight || Math.max(120, stage.clientHeight*0.35));
+
+  const w = Math.floor(
+    xtChart.clientWidth || Math.max(160, (stage.clientWidth*0.18) - 16)
+  );
+  const h = Math.floor(
+    xtChart.clientHeight || Math.max(120, stage.clientHeight*0.35)
+  );
+
   const xData = buildSeriesData();
+  const tArr  = xData[0];
+  const xArr  = xData[1];
+
   const opts = {
-    width:w,
-    height:h,
-    scales:{ x:{time:false, range:[0,T]}, y:{range:[-A_m*1.1, A_m_*_]()
+    width:  w,
+    height: h,
+    scales: {
+      x: { time:false, range:[0, T] },
+      y: { range:[-A_m*1.1, A_m*1.1] }
+    },
+    axes: [
+      {
+        label: 't (s)',
+        values: (u, vals)=>vals.map(v=>v.toFixed(1))
+      },
+      {
+        label: 'x (m)'
+      }
+    ],
+    series: [
+      {},            // άξονας χρόνου
+      { label: 'x(t)' }
+    ]
+  };
+
+  uXT = new uPlot(opts, [tArr, xArr], xtChart);
+}
+
+function drawXTChart(){
+  if(!uXT) return;
+  const xData = buildSeriesData();
+  uXT.setData(xData);
+}
+
+// =================== ΠΑΡΑΜΕΤΡΟΙ ===================
+function showCurtainParams(){
+  paramsBoxEl.style.display='block';
+
+  const A    = A_m.toFixed(1);
+  const Tval = T.toFixed(1);
+  const om   = omega.toFixed(2);
+  const x0v  = x0Val();
+  const x0   = x0v.toFixed(2);
+
+  let phiDeg = 0;
+  if(Math.abs(A_m) > 1e-6){
+    const ratio = Math.max(-1, Math.min(1, x0v / A_m));
+    phiDeg = (Math.asin(ratio) * 180/Math.PI).toFixed(1);
+  }
+
+  paramAEl.textContent  = `A = ${A} m`;
+  paramWEl.textContent  = `T = ${Tval} s, ω = ${om} rad/s`;
+  paramPhiEl.textContent  = `x₀ = ${x0} m, φ₀ = ${phiDeg}°`;
+}
+
+// =================== ΚΥΡΙΟ SCRIPT ===================
+document.addEventListener('DOMContentLoaded', async ()=>{
+  stage = document.getElementById('stage');
+  xtChart = document.getElementById('xtChart');
+  startBtn = document.getElementById('startBtn');
+  countdownOverlay = document.getElementById('countdownOverlay');
+  countdownTimerEl = document.getElementById('countdownTimer');
+  paramsBoxEl = document.getElementById('paramsBox');
+  paramAEl = document.getElementById('paramA');
+  paramWEl = document.getElementById('paramW');
+  paramPhiEl = document.getElementById('paramPhi');
+
+  try {
+    await loadDialogs(LANG);
+  } catch(e) {
+    console.warn(e);
+  }
+
+  showCurtainParams();
+  initXTChart();
+
+  if(startBtn){
+    startBtn.addEventListener('click', ()=>{
+      startBtn.style.display='none';
+      if(!countdownOverlay || !countdownTimerEl) return;
+
+      countdownOverlay.style.display='flex';
+      let t = 5;
+      countdownTimerEl.textContent = t;
+
+      const iv = setInterval(()=>{
+        t--;
+        countdownTimerEl.textContent = t;
+        if(t <= 0){
+          clearInterval(iv);
+          countdownOverlay.style.display='none';
+          drawXTChart();
+          console.log('Έναρξη Πράξης Ι — AAT ενεργό');
+        }
+      }, 1000);
+    });
+  }
+});
+</script>
+</body>
+</html>
