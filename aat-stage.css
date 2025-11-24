@@ -142,7 +142,7 @@ body{
   height:auto;
   object-fit:contain;
   object-position:bottom center;
-  z-index:1500;
+  z-index:1500; /* όπως ζητήθηκε */
   pointer-events:none;
 }
 
@@ -155,7 +155,7 @@ body{
   object-fit:contain;
   object-position:bottom center;
   opacity:.9;
-  z-index:980;
+  z-index:980; /* όπως ζητήθηκε */
   pointer-events:none;
 }
 
@@ -165,13 +165,11 @@ body{
   position:absolute;
   left:18%;
   width:64%;
-  /* ανεβασμένοι για να φαίνονται πάνω από το κεντρικό κοινό,
-     αλλά με z-index μικρότερο όπως είχαμε συμφωνήσει */
   bottom:130px;
   display:flex;
   justify-content:space-between;
   padding:0 4vw;
-  z-index:1000;
+  z-index:1000; /* όπως ζητήθηκε */
   pointer-events:none;
 }
 
@@ -505,7 +503,7 @@ body{
   padding:10px 12px 12px;
   border-radius:10px;
   box-shadow:0 6px 12px rgba(0,0,0,.4);
-  z-index:750;
+  z-index:1800; /* bubbles πάνω από κοινό, κάτω από controls */
   pointer-events:none;
   opacity:0;
   display:none;
@@ -548,7 +546,7 @@ body{
 .act-bubble,
 .foyer-bubble{
   position:absolute;
-  z-index:760;
+  z-index:1800; /* όπως ζήτησες: bubbles ομιλητών */
   display:none;
   pointer-events:none;
   min-width:120px;
@@ -578,7 +576,7 @@ body{
   padding:6px 8px;
   display:flex;
   gap:8px;
-  z-index:2000;
+  z-index:2000; /* controls κορυφή */
 }
 
 .controls button{
@@ -739,7 +737,7 @@ body{
   width:64%;
   top:0;
   height:var(--foyer-h);
-  z-index:500;
+  z-index:500; /* κάτω από κοινό/ομιλητές, ώστε να φαίνονται στο φόντο */
   display:none;
 }
 
