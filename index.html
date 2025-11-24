@@ -9,659 +9,8 @@
   <link rel="stylesheet" href="https://unpkg.com/uplot@1.6.30/dist/uPlot.min.css">
   <script src="https://unpkg.com/uplot@1.6.30/dist/uPlot.iife.min.js"></script>
 
-  <style>
-    :root{
-      --foyer-h: 445px;
-    }
-
-    *{box-sizing:border-box;margin:0;padding:0}
-
-    body{
-      margin:0;
-      background:radial-gradient(circle at center,#222 0%,#000 100%);
-      overflow:hidden;
-      font-family:Inter,system-ui,sans-serif;
-      color:#fff;
-    }
-
-    .stage{
-      position:relative;
-      width:100vw;
-      height:100vh;
-      overflow:hidden;
-    }
-
-    /* Κουρτίνες */
-    .curtain-top,.curtain-upper,.curtain-side{
-      position:absolute;
-      transition:transform 1.2s cubic-bezier(.2,.9,.2,1),opacity 1s;
-    }
-    .curtain-top{
-      top:0;left:0;width:100%;
-      height:calc(26% - 22px);
-      background:linear-gradient(to bottom,#230000,#180000);
-      box-shadow:0 5px 18px rgba(0,0,0,.8);
-      z-index:160;
-    }
-    .curtain-upper{
-      top:calc(26% - 16px);
-      left:0;width:100%;
-      height:calc(44% + 24px);
-      background:
-        url('courtin.png') center top/cover no-repeat,
-        linear-gradient(to bottom,#8b0000,#400000);
-      transform-origin:top;
-      z-index:160;
-    }
-    .stage.open .curtain-upper{
-      transform:translateY(calc(-100% + 10px));
-    }
-    .curtain-side{
-      top:0;height:100%;width:18%;z-index:160;
-    }
-    .curtain-side.left{
-      left:0;
-      background:linear-gradient(to right,#300000,#1a0000);
-      box-shadow:inset -6px 0 10px rgba(0,0,0,.6);
-    }
-    .curtain-side.right{
-      right:0;
-      background:linear-gradient(to left,#300000,#1a0000);
-      box-shadow:inset 6px 0 10px rgba(0,0,0,.6);
-    }
-
-    .spotlight{
-      position:absolute;inset:0;
-      pointer-events:none;
-      z-index:150;
-      opacity:.25;
-      background:radial-gradient(200px 120px at 50% 60%, rgba(255,255,220,.65), rgba(255,255,220,0) 70%);
-    }
-
-    /* Σκηνή – ελατήριο, ηθοποιός, δάπεδο */
-
-    .spring{
-      position:absolute;
-      bottom:calc(32vh + 92px);
-      left:10%;
-      height:96px;
-      width:auto;
-      z-index:90;
-      pointer-events:none;
-      filter:drop-shadow(0 4px 6px rgba(0,0,0,.55));
-      transform-origin:left center;
-      display:block;
-    }
-    .actor{
-      position:absolute;
-      bottom:calc(32vh + 135px);
-      left:50%;
-      width:144px;
-      height:96px;
-      transform:translateX(-50%);
-      z-index:110;
-      pointer-events:none;
-    }
-    .actor img{
-      width:100%;height:auto;display:block;
-      filter:drop-shadow(0 4px 6px rgba(0,0,0,.6));
-    }
-    .floor{
-      position:absolute;
-      left:18%;
-      width:64%;
-      bottom:calc(32vh - 8px);
-      height:2px;
-      background:#aaa;
-      z-index:155;
-      pointer-events:none;
-    }
-
-    /* Κοινό */
-
-    .audience-main{
-      position:absolute;
-      left:18%;
-      width:64%;
-      bottom:0;
-      height:auto;
-      object-fit:contain;
-      object-position:bottom center;
-      z-index:1500;
-      pointer-events:none;
-    }
-
-    .audience-extra{
-      position:absolute;
-      left:18%;
-      width:64%;
-      bottom:0;
-      height:auto;
-      object-fit:contain;
-      object-position:bottom center;
-      opacity:.9;
-      z-index:980;
-      pointer-events:none;
-    }
-
-    .viewers{
-      position:absolute;
-      left:18%;
-      width:64%;
-      bottom:6px;
-      display:flex;
-      justify-content:space-between;
-      padding:0 4vw;
-      z-index:1000;
-      pointer-events:none;
-    }
-    .viewer-avatar{
-      position:relative;
-      width:64px;
-      height:96px;
-      overflow:hidden;
-      border-radius:999px;
-      border:2px solid rgba(0,0,0,.8);
-      box-shadow:0 4px 8px rgba(0,0,0,.8);
-      background:#111 center/cover no-repeat;
-    }
-
-    /* Ταμπέλα τίτλου */
-
-    .signboard{
-      position:absolute;
-      top:0;
-      left:50%;
-      transform:translateX(-50%);
-      background:rgba(0,0,0,.4);
-      border-radius:10px;
-      padding:12px 18px;
-      color:#ddd;
-      font-family:'Georgia',serif;
-      text-align:center;
-      z-index:170;
-      line-height:1.25;
-    }
-    .signboard h1{font-size:28px;margin:0;color:#fff}
-    .signboard .sb-lineA{font-size:16px;font-style:italic;margin-top:2px;color:#ddd}
-    .signboard .sb-lineB{font-size:16px;margin-top:2px}
-    .signboard .sb-lineB .hl{color:#ffd27a;font-weight:600}
-    .signboard .sb-lineC{font-size:15px;margin-top:2px;font-weight:700;color:#fff}
-    .signboard .sb-lineD{font-size:13px;margin-top:2px;font-style:italic;opacity:.9}
-
-    /* Ρολόι / Μετρήσεις / x–t */
-
-    .clock{
-      position:absolute;
-      top:10px;
-      right:10px;
-      background:rgba(0,0,0,.5);
-      color:#fff;
-      padding:6px 10px;
-      font-size:15px;
-      font-family:"Courier New",monospace;
-      border-radius:6px;
-      border:1px solid rgba(255,255,255,.3);
-      z-index:265;
-      pointer-events:none;
-      display:none;
-    }
-    .clock .hint{
-      font-size:10px;
-      color:#ffd27a;
-      opacity:.9;
-      margin-left:6px;
-    }
-
-    .measure-box{
-      position:absolute;
-      right:10px;
-      top:44px;
-      width:220px;
-      z-index:262;
-      background:rgba(0,0,0,.55);
-      color:#fff;
-      border:1px solid rgba(255,255,255,.25);
-      border-radius:8px;
-      padding:6px 8px;
-      display:none;
-      max-height:46vh;
-      overflow-y:auto;
-      font-size:12px;
-    }
-    .measure-box .mb-title{
-      font-weight:700;
-      margin:0 0 6px 0;
-      font-size:13px;
-    }
-    .measure-box table{
-      width:100%;
-      border-collapse:separate;
-      border-spacing:0;
-      font-size:12px;
-    }
-    .measure-box thead th{
-      position:sticky;
-      top:0;
-      background:rgba(0,0,0,.8);
-      z-index:1;
-    }
-    .measure-box th,.measure-box td{
-      border-bottom:1px solid rgba(255,255,255,.2);
-      padding:2px 4px;
-      text-align:right;
-    }
-    .measure-box th:first-child,.measure-box td:first-child{
-      text-align:center;
-    }
-    .measure-box tr.new td{
-      background:rgba(255,210,122,.2);
-      transition:background .6s ease;
-    }
-
-    #xtChart{
-      position:absolute;
-      right:10px;
-      bottom:10px;
-      width:240px;
-      height:180px;
-      display:none;
-      z-index:266;
-      border:1px dashed rgba(255,255,255,.25);
-      pointer-events:none;
-    }
-    .uplot{
-      background:rgba(0,0,0,.2);
-      border-radius:6px;
-    }
-    .u-legend{display:none!important}
-    .u-axis text{fill:#fff}
-    .u-grid line{stroke:rgba(255,255,255,.25)}
-
-    .params-box{
-      position:absolute;
-      right:10px;
-      top:calc(44px + 46vh + 10px);
-      z-index:268;
-      background:rgba(0,0,0,.6);
-      color:#fff;
-      border:1px solid rgba(255,255,255,.25);
-      border-radius:8px;
-      padding:6px 10px;
-      font-size:13px;
-      line-height:1.45;
-      display:none;
-      min-width:220px;
-    }
-
-    /* Νόμοι & mini διαγράμματα */
-
-    .laws{
-      position:absolute;
-      left:10px;
-      top:44px;
-      width:210px;
-      background:rgba(20,0,0,.7);
-      color:#fff;
-      border:1px solid rgba(255,200,200,.3);
-      border-radius:8px;
-      padding:6px 8px;
-      font-size:14px;
-      line-height:1.45;
-      z-index:260;
-      display:none;
-    }
-    .laws h4{margin:0 0 6px 0;font-size:14px}
-    .laws-body .law-line{
-      padding:4px 6px;
-      margin:2px 0;
-      border-left:3px solid rgba(255,210,122,.7);
-      background:rgba(255,210,122,.15);
-    }
-    .law-charts{
-      position:absolute;
-      left:10px;
-      top:calc(44px + 220px);
-      width:210px;
-      z-index:259;
-    }
-    .law-charts canvas{
-      display:block;
-      margin-top:6px;
-      background:rgba(0,0,0,.5);
-      border-radius:6px;
-    }
-
-    /* Ruler & marker */
-
-    .ruler{
-      position:absolute;
-      left:18%;
-      width:64%;
-      bottom:calc(32vh - 8px + 1px);
-      height:24px;
-      font-size:10px;
-      font-family:"Courier New",monospace;
-      color:#aaa;
-      pointer-events:none;
-      z-index:270;
-    }
-    .ruler::before{
-      content:'';
-      position:absolute;
-      left:0;right:0;bottom:0;
-      height:1px;
-      background:#aaa;
-    }
-    .tick{
-      position:absolute;
-      bottom:0;
-      width:1px;
-      height:10px;
-      background:#aaa;
-    }
-    .tick-label{
-      position:absolute;
-      bottom:12px;
-      transform:translateX(-50%);
-      font-size:10px;
-      color:#aaa;
-      white-space:nowrap;
-    }
-
-    .marker{
-      position:absolute;
-      bottom:calc(32vh - 8px + 1px);
-      width:0;
-      height:80px;
-      transform:translateX(-50%);
-      pointer-events:none;
-      z-index:275;
-      opacity:0;
-      transition:opacity .3s;
-    }
-    .marker-line{
-      position:absolute;
-      left:50%;
-      bottom:8px;
-      width:2px;
-      height:70px;
-      background:#ffd27a;
-      box-shadow:0 0 4px rgba(255,210,122,.8);
-      transform:translateX(-50%);
-    }
-    .marker-tip{
-      position:absolute;
-      left:50%;
-      bottom:0;
-      width:0;height:0;
-      border-left:6px solid transparent;
-      border-right:6px solid transparent;
-      border-top:8px solid #ffd27a;
-      filter:drop-shadow(0 2px 2px rgba(255,210,122,.8));
-      transform:translateX(-50%);
-    }
-
-    /* Bubbles */
-
-    @keyframes popIn{
-      0%{transform:scale(.9);opacity:0}
-      60%{transform:scale(1.04);opacity:1}
-      100%{transform:scale(1);opacity:1}
-    }
-    .thought-bubble{
-      position:absolute;
-      max-width:420px;
-      background:rgba(255,255,255,.95);
-      color:#000;
-      font-size:15px;
-      line-height:1.45;
-      padding:10px 12px 12px;
-      border-radius:10px;
-      box-shadow:0 6px 12px rgba(0,0,0,.4);
-      z-index:750;
-      pointer-events:none;
-      opacity:0;
-      display:none;
-      transition:opacity .25s ease, transform .25s ease;
-    }
-    .thought-bubble.active{
-      display:block;
-      opacity:1;
-      animation:popIn .25s ease;
-    }
-    .thought-bubble.closing{opacity:0}
-    .thought-bubble .text{word-wrap:break-word}
-    .thought-bubble .checkmark{
-      position:absolute;
-      top:-8px;right:-8px;
-      background:#2ecc71;
-      color:#fff;
-      font-size:11px;
-      line-height:1;
-      border-radius:50%;
-      border:1px solid rgba(0,0,0,.4);
-      width:18px;
-      height:18px;
-      display:none;
-      align-items:center;
-      justify-content:center;
-      font-family:system-ui,sans-serif;
-      font-weight:600;
-    }
-
-    .act-bubble,
-    .foyer-bubble{
-      position:absolute;
-      z-index:760;
-      display:none;
-      pointer-events:none;
-      min-width:120px;
-      text-align:center;
-      color:#fff;
-      font-weight:800;
-      font-size:13px;
-      padding:6px 12px;
-      border-radius:999px;
-      border:2px solid rgba(255,255,255,.65);
-      box-shadow:0 6px 14px rgba(0,0,0,.5);
-      letter-spacing:0.03em;
-      text-shadow:0 1px 2px rgba(0,0,0,.7);
-      background:rgba(0,0,0,.7);
-    }
-
-    /* Controls */
-
-    .controls{
-      position:absolute;
-      bottom:12px;
-      left:50%;
-      transform:translateX(-50%);
-      background:rgba(0,0,0,.7);
-      border:1px solid rgba(255,255,255,.25);
-      border-radius:8px;
-      padding:6px 8px;
-      display:flex;
-      gap:8px;
-      z-index:2000;
-    }
-    .controls button{
-      background:none;
-      border:0;
-      color:#fff;
-      font-size:16px;
-      line-height:1;
-      cursor:pointer;
-      min-width:32px;
-      min-height:32px;
-      border-radius:4px;
-      padding:4px 6px;
-    }
-    .controls button.active{
-      background:rgba(255,255,255,.2);
-    }
-
-    .btn-end{
-      position:absolute;
-      bottom:12px;
-      right:12px;
-      z-index:2000;
-      background:#333;
-      border:1px solid rgba(255,255,255,.25);
-      color:#fff;
-      border-radius:8px;
-      padding:8px 12px;
-      cursor:pointer;
-    }
-
-    .btn-foyer{
-      position:absolute;
-      bottom:12px;
-      left:12px;
-      z-index:2000;
-      background:#333;
-      border:1px solid rgba(255,255,255,.25);
-      color:#fff;
-      border-radius:8px;
-      padding:8px 12px;
-      cursor:pointer;
-    }
-
-    /* Start + countdown */
-
-    .start-btn{
-      position:absolute;
-      top:50%;
-      left:50%;
-      transform:translate(-50%,-50%);
-      z-index:1000;
-      background:#700;
-      color:#fff;
-      border:none;
-      border-radius:8px;
-      padding:12px 24px;
-      font-size:18px;
-      cursor:pointer;
-      box-shadow:0 0 10px #300;
-    }
-
-    .countdown-overlay{
-      position:absolute;
-      left:0;top:0;
-      width:100%;height:100%;
-      background:rgba(0,0,0,.65);
-      color:#fff;
-      display:none;
-      align-items:center;
-      justify-content:center;
-      text-align:center;
-      z-index:900;
-      pointer-events:none;
-      font-family:Inter,system-ui,sans-serif;
-    }
-    .countdown-box{max-width:80%}
-    .countdown-main{
-      font-size:24px;
-      font-weight:600;
-      margin-bottom:8px;
-      color:#fff;
-    }
-    .countdown-sub{
-      font-size:14px;
-      color:#ffd27a;
-      margin-bottom:16px;
-    }
-    .countdown-timer{
-      font-family:"Courier New",monospace;
-      font-size:40px;
-      font-weight:700;
-      color:#fff;
-    }
-
-    /* Act break / foyer break */
-
-    .actbreak,
-    .foyerbreak{
-      position:absolute;
-      left:18%;
-      width:64%;
-      top:26%;
-      height:44%;
-      background:rgba(0,0,0,.55);
-      color:#fff;
-      z-index:410;
-      display:none;
-      align-items:center;
-      justify-content:center;
-      text-align:center;
-    }
-    .actbreak .box,
-    .foyerbreak .box{
-      background:rgba(0,0,0,.7);
-      border:1px solid rgba(255,255,255,.25);
-      border-radius:12px;
-      padding:16px 20px;
-      max-width:520px;
-    }
-    .actbreak h3,
-    .foyerbreak h3{margin-bottom:8px}
-    .actbreak p,
-    .foyerbreak p{margin-bottom:16px}
-    .actbreak button,
-    .foyerbreak button{
-      background:#700;
-      color:#fff;
-      border:none;
-      border-radius:8px;
-      padding:10px 16px;
-      font-size:16px;
-      cursor:pointer;
-    }
-
-    /* Φουαγιέ */
-
-    .foyer{
-      position:absolute;
-      left:18%;
-      width:64%;
-      top:0;
-      height:var(--foyer-h);
-      z-index:500;
-      display:none;
-    }
-    .foyer .wrap{
-      position:absolute;
-      inset:0;
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      border-radius:10px;
-      overflow:hidden;
-      border:1px solid rgba(255,255,255,.25);
-    }
-    .board-left,.board-right{
-      background:#0d2a1e;
-      color:#fff;
-      padding:8px 10px;
-      overflow:auto;
-      scroll-behavior:smooth;
-      font-size:14px;
-      line-height:1.35;
-    }
-    .board-left{border-right:1px solid rgba(255,255,255,.25)}
-    .cell{
-      padding:6px 10px;
-      border-bottom:1px dashed rgba(255,255,255,.18);
-      white-space:pre-wrap;
-    }
-    .cell.formula{
-      color:#fffde7;
-      border-left-width:6px!important;
-      font-weight:600;
-      box-shadow:0 0 0 1px rgba(0,0,0,0.35) inset;
-      background:rgba(8,8,18,0.95)!important;
-    }
-
-  </style>
+  <!-- Εξωτερικό CSS της σκηνής -->
+  <link rel="stylesheet" href="aat-stage.css">
 </head>
 <body>
 <div class="stage" id="stage">
@@ -829,7 +178,7 @@ const foyerBubble = document.getElementById('foyerBubble');
 
 const viewersStrip = document.getElementById('viewersStrip');
 
-/* Φυσικά μεγέθη (όπως πριν) */
+/* Φυσικά μεγέθη */
 
 const m = 70;
 const T = 6.0;
@@ -983,26 +332,135 @@ function sizeLawCanvas(c){
   c.style.height=h+'px';
 }
 
+function drawLawChart(canvas, fn, xMin,xMax,yMin,yMax){
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width;
+  const h = canvas.height;
+  ctx.clearRect(0,0,w,h);
+  ctx.fillStyle = 'rgba(0,0,0,0.65)';
+  ctx.fillRect(0,0,w,h);
+
+  const margin = 10;
+  const innerW = w-2*margin;
+  const innerH = h-2*margin;
+
+  // grid
+  ctx.strokeStyle='rgba(255,255,255,0.2)';
+  ctx.lineWidth=1;
+  ctx.beginPath();
+  for(let i=0;i<=4;i++){
+    const yy = margin + i*innerH/4;
+    ctx.moveTo(margin,yy);
+    ctx.lineTo(w-margin,yy);
+  }
+  for(let i=0;i<=4;i++){
+    const xx = margin + i*innerW/4;
+    ctx.moveTo(xx,margin);
+    ctx.lineTo(xx,h-margin);
+  }
+  ctx.stroke();
+
+  function X(x){ return margin + (x-xMin)*innerW/(xMax-xMin); }
+  function Y(y){ return h-margin - (y-yMin)*innerH/(yMax-yMin); }
+
+  // άξονες (0)
+  ctx.strokeStyle='rgba(255,255,255,0.6)';
+  ctx.lineWidth=1.2;
+  ctx.beginPath();
+  if(xMin<=0 && xMax>=0){
+    const x0 = X(0);
+    ctx.moveTo(x0,margin);
+    ctx.lineTo(x0,h-margin);
+  }
+  if(yMin<=0 && yMax>=0){
+    const y0 = Y(0);
+    ctx.moveTo(margin,y0);
+    ctx.lineTo(w-margin,y0);
+  }
+  ctx.stroke();
+
+  // καμπύλη
+  ctx.beginPath();
+  const N = 240;
+  for(let i=0;i<=N;i++){
+    const x = xMin + (i/N)*(xMax-xMin);
+    const y = fn(x);
+    const px = X(x);
+    const py = Y(y);
+    if(i===0) ctx.moveTo(px,py);
+    else ctx.lineTo(px,py);
+  }
+  ctx.strokeStyle='rgba(255,210,122,0.95)';
+  ctx.lineWidth=1.5;
+  ctx.stroke();
+}
+
+/* mini-διάγραμμα v(t) */
+
 function ensureVelocityChart(){
   if(!vCan){
     vCan = document.createElement('canvas');
     lawCharts.appendChild(vCan);
   }
   sizeLawCanvas(vCan);
+  drawVelocityChart();
 }
+
+function drawVelocityChart(){
+  if(!vCan) return;
+  const vmax = omega*A_m;
+  drawLawChart(
+    vCan,
+    t => omega*A_m*Math.cos(omega*(t+obsStartPlaybackOffset)),
+    0, T,
+    -vmax*1.1, vmax*1.1
+  );
+}
+
+/* mini-διάγραμμα a(t) */
+
 function ensureAccelerationChart(){
   if(!aCan){
     aCan = document.createElement('canvas');
     lawCharts.appendChild(aCan);
   }
   sizeLawCanvas(aCan);
+  drawAccelerationChart();
 }
+
+function drawAccelerationChart(){
+  if(!aCan) return;
+  const amax = omega*omega*A_m;
+  drawLawChart(
+    aCan,
+    t => -omega*omega*A_m*Math.sin(omega*(t+obsStartPlaybackOffset)),
+    0, T,
+    -amax*1.1, amax*1.1
+  );
+}
+
+/* mini-διάγραμμα a(x) */
+
 function ensureAxChart(){
   if(!axCan){
     axCan = document.createElement('canvas');
     lawCharts.appendChild(axCan);
   }
   sizeLawCanvas(axCan);
+  drawAxChart();
+}
+
+function drawAxChart(){
+  if(!axCan) return;
+  const xMin = -A_m;
+  const xMax =  A_m;
+  const aMax = omega*omega*A_m;
+  drawLawChart(
+    axCan,
+    x => -omega*omega*x,
+    xMin, xMax,
+    -aMax*1.1, aMax*1.1
+  );
 }
 
 /* ---------- Παράμετροι ταλάντωσης ---------- */
@@ -1046,7 +504,7 @@ function tint(hex, alpha){
 function showSpeakerChip(idx1based){
   const {x,y,info} = viewerAnchor(idx1based);
   if(!info) return;
-  actBubble.textContent = info.name_gr || ('ΘΕΑΤΗΣ '+idx1based);
+  actBubble.textContent = info.name_gr || ('Θεατής '+idx1based);
   actBubble.style.left = x+'px';
   actBubble.style.top  = (y-130)+'px';
   actBubble.style.transform='translateX(-50%)';
@@ -1277,7 +735,6 @@ async function runAct2(){
     await showBubbleForEvent(ev);
   }
 
-  // Τέλος Πράξης 2 → κλείσιμο κουρτίνας και κάλεσμα φουαγιέ
   stage.classList.remove('open');
   markerEl.style.opacity='0';
   setTimeout(()=>{
