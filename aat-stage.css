@@ -169,7 +169,7 @@ body{
   display:flex;
   justify-content:space-between;
   padding:0 4vw;
-  z-index:1000; /* όπως ζητήθηκε */
+  z-index:2000; /* όπως ζητήθηκε */
   pointer-events:none;
 }
 
@@ -779,3 +779,4 @@ body{
   box-shadow:0 0 0 1px rgba(0,0,0,0.35) inset;
   background:rgba(8,8,18,0.95)!important;
 }
+
