@@ -38,8 +38,31 @@
   .actor img{width:100%;height:auto;display:block;filter:drop-shadow(0 4px 6px rgba(0,0,0,.6))}
   .floor{position:absolute;left:0;bottom:calc(32vh - 8px);width:100%;height:2px;background:#888;z-index:155;pointer-events:none}
 
-  .audience{position:absolute; left:18%; bottom:0; width:64%; height:auto; object-position:bottom center; z-index:158; pointer-events:none; filter:contrast(1.05) brightness(.95); display:block;}
-  .viewers{position:absolute;left:18%;width:64%;bottom:0;display:flex;justify-content:space-between;z-index:159;padding:0 4vw 12px}
+  /* koino.png */
+  .audience{
+    position:absolute;
+    left:18%;
+    bottom:0;
+    width:64%;
+    height:auto;
+    object-position:bottom center;
+    z-index:1500;
+    pointer-events:none;
+    filter:contrast(1.05) brightness(.95);
+    display:block;
+  }
+
+  /* εικόνες «ομιλητών» / θεατών */
+  .viewers{
+    position:absolute;
+    left:18%;
+    width:64%;
+    bottom:0;
+    display:flex;
+    justify-content:space-between;
+    z-index:1000;
+    padding:0 4vw 12px
+  }
   .viewer{width:60px;height:100px;background:url('https://upload.wikimedia.org/wikipedia/commons/f/f9/Silhouette_icon.svg') no-repeat center/contain;filter:grayscale(1) brightness(.6);opacity:.75}
 
   .signboard{position:absolute;top:-6px;left:50%;transform:translateX(-50%);background:transparent;border:none;border-radius:10px;padding:12px 18px;color:#ddd;font-family:'Georgia',serif;text-align:center;z-index:165;line-height:1.25}
@@ -86,7 +109,7 @@
     position:absolute;max-width:420px;background:rgba(255,255,255,.92);color:#000;
     font-size:15px;line-height:1.45;padding:10px 12px 12px;border:2px solid.transparent;border-radius:10px;
     border-image:repeating-linear-gradient(90deg, rgba(0,0,0,.6) 0 6px, transparent 6px 10px, rgba(0,0,0,.6) 10px 12px, transparent 12px 16px) 1;
-    box-shadow:0 6px 12px rgba(0,0,0,.4);z-index:750;pointer-events:none;opacity:0;display:none;transition:opacity .25s ease, transform .25s ease
+    box-shadow:0 6px 12px rgba(0,0,0,.4);z-index:750;pointer-events:none;opacity:0;display:none;transition:opacity .25s.ease, transform .25s.ease
   }
   .thought-bubble.active{opacity:1;transform:translateY(-2px);animation:popIn .25s.ease}
   .thought-bubble.closing{opacity:0}
@@ -114,7 +137,19 @@
     text-shadow:0 1px 2px rgba(0,0,0,.7);
   }
 
-  .controls{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.2);border-radius:8px;padding:6px 8px;display:flex;gap:8px;z-index:300}
+  .controls{
+    position:absolute;
+    bottom:12px;
+    left:50%;
+    transform:translateX(-50%);
+    background:rgba(0,0,0,.6);
+    border:1px solid rgba(255,255,255,.2);
+    border-radius:8px;
+    padding:6px 8px;
+    display:flex;
+    gap:8px;
+    z-index:2000;
+  }
   .controls button{background:none;border:0;color:#fff;font-size:16px;line-height:1;cursor:pointer;min-width:32px;min-height:32px;border-radius:4px;padding:4px 6px;transition:transform .08s ease}
   .controls button:active{transform:translateY(1px)}
   .controls button.active{background:rgba(255,255,255,.2)}
@@ -173,14 +208,14 @@
     cursor:pointer;
   }
 
-  /* extra κοινό στο φουαγιέ */
+  /* extra κοινό στο φουαγιέ: koino_extra.png */
   .foyer-audience{
     position:absolute;
     left:0;
     bottom:-8px;
     width:100%;
     opacity:0.85;
-    z-index:5;
+    z-index:980;
     pointer-events:none;
   }
 
@@ -190,8 +225,8 @@
   <div class="stage" id="stage">
     <div class="curtain-top"></div>
     <div class="curtain-upper"></div>
-    <div class="curtain-side.left"></div>
-    <div class="curtain-side.right"></div>
+    <div class="curtain-side left"></div>
+    <div class="curtain-side right"></div>
 
     <div class="spotlight" id="spotlight"></div>
 
@@ -1398,7 +1433,7 @@ window.foyerClose = foyerClose;
     if(!ghostSpring){
       ghostSpring=document.createElement('img'); ghostSpring.id='springGhost';
       ghostSpring.src = springEl ? springEl.src : '';
-      Object.assign(ghostSpring.style,{position:'absolute', transformOrigin:'left center', zIndex:120, pointerEvents:'none', opacity:0.9, filter:'grayscale(1) brightness(1.15)', display:'none'});
+      Object.assign(ghostSpring.style,{position:'absolute', transformOrigin:'left.center', zIndex:120, pointerEvents:'none', opacity:0.9, filter:'grayscale(1) brightness(1.15)', display:'none'});
       stage.appendChild(ghostSpring);
     }
     const sRect=springEl.getBoundingClientRect();
