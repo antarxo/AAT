@@ -38,7 +38,7 @@
   .actor img{width:100%;height:auto;display:block;filter:drop-shadow(0 4px 6px rgba(0,0,0,.6))}
   .floor{position:absolute;left:0;bottom:calc(32vh - 8px);width:100%;height:2px;background:#888;z-index:155;pointer-events:none}
 
-  /* === ΣΤΟΙΒΑ ΤΩΝ ΘΕΑΤΩΝ / ΚΟΥΜΠΙΩΝ ===
+  /* === ΣΤΟΙΒΑ ΘΕΑΤΩΝ / ΚΟΥΜΠΙΩΝ ===
      controls: 2000
      koino.png (.audience): 1500
      viewers (avatars): 1000
@@ -364,8 +364,8 @@
 <script>
 /* ====== GLOBAL DATA HOLDERS ====== */
 const DIALOGS = {
-  gr: { act1:{}, act2:{}, foyer:[] },
-  en: { act1:{}, act2:{}, foyer:[] }
+  gr: { act1Text:{}, act2Text:{}, foyer:[] },
+  en: { act1Text:{}, act2Text:{}, foyer:[] }
 };
 
 const i18nDyn = {
@@ -390,92 +390,146 @@ let LANG = 'gr';
 
 let thoughtScriptBase = [];
 let thoughtScript     = [];
-let FOYER_META        = [];
 let ACT2_TIMELINE     = [];
 let FOYER_VIEWERS     = [];
 
-/* ====== TIMELINE / DIALOG / UI LOADERS ====== */
+/* ====== ΦΟΡΤΩΣΗ dialogs-*.json ΜΟΝΟ ====== */
+function buildAct1TimelineFromArray(arr){
+  const result=[];
+  if(!Array.isArray(arr)) return result;
+  let seqIdx=0;
+  for(const item of arr){
+    if(!item) continue;
+    const kind = item.kind || 'bubble';
+    const viewer = (typeof item.viewer==='number')
+        ? item.viewer
+        : (typeof item.v==='number' ? item.v : 0);
+    const yOffset = (typeof item.y==='number')
+        ? item.y
+        : (typeof item.yOffset==='number' ? item.yOffset : 135);
+    const xShift = (typeof item.x==='number')
+        ? item.x
+        : (typeof item.xShift==='number' ? item.xShift : 0);
+    const baseMul = (typeof item.atT==='number')
+        ? item.atT
+        : (typeof item.tMul==='number' ? item.tMul : (DEFAULT_FIRST_MUL + 0.25*seqIdx));
+
+    const ev = {
+      kind,
+      key: item.id || item.key || null,
+      viewer,
+      yOffset,
+      xShift,
+      atT: baseMul
+    };
+
+    if(item.dur != null)        ev.dur        = item.dur;
+    if(item.pauseAfter != null) ev.pauseAfter = item.pauseAfter;
+    if(item.lawText)            ev.lawText    = item.lawText;
+    if(item.law)                ev.lawText    = item.law;
+    if(item.alsoParams != null) ev.alsoParams = !!item.alsoParams;
+    if(item.showParams != null) ev.alsoParams = !!item.showParams;
+    if(item.plot)               ev.plot       = item.plot;
+    if(item.what)               ev.what       = item.what;
+
+    result.push(ev);
+    seqIdx++;
+  }
+  return result;
+}
+
+function buildAct2TimelineFromArray(arr){
+  const result=[];
+  if(!Array.isArray(arr)) return result;
+  for(const item of arr){
+    if(!item) continue;
+    const viewer = (typeof item.viewer==='number')
+        ? item.viewer
+        : (typeof item.v==='number' ? item.v : 0);
+    const yOffset = (typeof item.y==='number')
+        ? item.y
+        : (typeof item.yOffset==='number' ? item.yOffset : 135);
+    const xShift = (typeof item.x==='number')
+        ? item.x
+        : (typeof item.xShift==='number' ? item.xShift : 0);
+
+    const step = {
+      key: item.id || item.key || null,
+      v: viewer,
+      viewer,
+      y: yOffset,
+      yOffset,
+      x: xShift,
+      xShift
+    };
+
+    if(item.lawText || item.law) step.lawText = item.lawText || item.law;
+    if(item.gStart)              step.gStart  = !!item.gStart;
+    if(item.gStop)               step.gStop   = !!item.gStop;
+    if(item.dur != null)         step.dur     = item.dur;
+    if(item.pauseAfter != null)  step.pauseAfter = item.pauseAfter;
+
+    result.push(step);
+  }
+  return result;
+}
+
 async function loadDialogOverrides(lang){
   try{
     const resp = await fetch(`dialogs-${lang}.json`, {cache:'no-store'});
     if(!resp.ok) return;
-    const data = await resp.json();
-    const dlg = DIALOGS[lang] || (DIALOGS[lang]={act1:{},act2:{},foyer:[]});
+    const data = await resp.json() || {};
+    const dlg  = DIALOGS[lang] || (DIALOGS[lang]={ act1Text:{}, act2Text:{}, foyer:[] });
+
+    dlg.act1Text = {};
+    dlg.act2Text = {};
+    dlg.foyer    = [];
 
     if(Array.isArray(data.act1)){
       data.act1.forEach(item=>{
         if(item && item.id && typeof item.text==='string'){
-          dlg.act1[item.id] = item.text;
+          dlg.act1Text[item.id] = item.text;
         }
       });
+      if(lang === 'gr'){
+        thoughtScriptBase = buildAct1TimelineFromArray(data.act1);
+        thoughtScript     = [...thoughtScriptBase];
+      }
     }
+
     if(Array.isArray(data.act2)){
       data.act2.forEach(item=>{
         if(item && item.id && typeof item.text==='string'){
-          dlg.act2[item.id] = item.text;
+          dlg.act2Text[item.id] = item.text;
         }
       });
+      if(lang === 'gr'){
+        ACT2_TIMELINE = buildAct2TimelineFromArray(data.act2);
+      }
     }
+
     if(Array.isArray(data.foyer)){
       dlg.foyer = data.foyer.map(it=>({
         id: it.id || undefined,
         left: it.left || '',
         right: it.right || '',
-        viewer: (typeof it.viewer==='number'? it.viewer : undefined),
-        typeMs: (typeof it.typeMs==='number'? it.typeMs : undefined),
-        pauseMs:(typeof it.pauseMs==='number'? it.pauseMs: undefined)
+        viewer: (typeof it.viewer==='number' ? it.viewer : undefined),
+        typeMs: (typeof it.typeMs==='number' ? it.typeMs : undefined),
+        pauseMs:(typeof it.pauseMs==='number' ? it.pauseMs: undefined)
       }));
     }
-  }catch(e){}
-}
 
-async function loadTimeline(){
-  try{
-    const resp = await fetch('timeline.json', {cache:'no-store'});
-    if(!resp.ok) return;
-    const data = await resp.json() || {};
-
-    if(Array.isArray(data.act1)){
-      thoughtScriptBase = data.act1.map(ev=>({...ev}));
-      thoughtScript     = [...thoughtScriptBase];
-    }else{
-      thoughtScriptBase = [];
-      thoughtScript     = [];
+    if(Array.isArray(data.viewers)){
+      FOYER_VIEWERS = data.viewers.slice();
     }
 
-    if(Array.isArray(data.act2)){
-      ACT2_TIMELINE = data.act2.map(ev=>({...ev}));
-    }else{
-      ACT2_TIMELINE = [];
+    if(data.ui && typeof data.ui === 'object'){
+      UI[lang] = data.ui;
     }
-
-    if(Array.isArray(data.foyer)){
-      FOYER_META = data.foyer.map(ev=>({...ev}));
-    }else{
-      FOYER_META = [];
-    }
-  }catch(e){}
-}
-
-async function loadUI(lang){
-  try{
-    const resp = await fetch(`ui-${lang}.json`, {cache:'no-store'});
-    if(!resp.ok) return;
-    UI[lang] = await resp.json();
-  }catch(e){}
-}
-
-async function loadViewers(){
-  try{
-    const resp = await fetch('viewers.json', {cache:'no-store'});
-    if(!resp.ok) return;
-    const data = await resp.json();
-    if(Array.isArray(data)) FOYER_VIEWERS = data;
   }catch(e){}
 }
 
 /* ====== I18N / UI ====== */
-const langSwitch = document.getElementById('langSwitch');
 let firstLawShown = false;
 
 function setLang(lang){
@@ -555,12 +609,12 @@ function localizeTrig(txt){
 
 function getAct1BubbleText(id){
   const dlg = DIALOGS[LANG];
-  if(dlg && dlg.act1 && dlg.act1[id]) return dlg.act1[id];
+  if(dlg && dlg.act1Text && dlg.act1Text[id]) return dlg.act1Text[id];
   return '';
 }
 function getAct2BubbleText(id){
   const dlg = DIALOGS[LANG];
-  if(dlg && dlg.act2 && dlg.act2[id]) return dlg.act2[id];
+  if(dlg && dlg.act2Text && dlg.act2Text[id]) return dlg.act2Text[id];
   return '';
 }
 
@@ -605,6 +659,7 @@ const actBreak=document.getElementById('actBreak');
 const foyerBreak=document.getElementById('foyerBreak');
 const btnFoyerGo=document.getElementById('btnFoyerGo');
 const curtainUpper=document.querySelector('.curtain-upper');
+const langSwitch=document.getElementById('langSwitch');
 
 if (typeof window.foyerOpen  !== 'function') window.foyerOpen  = function(){};
 if (typeof window.foyerClose !== 'function') window.foyerClose = function(){};
@@ -806,7 +861,6 @@ class BubbleScheduler {
     this.labelEl.style.display='block';
   }
 
-  /* === Bubbles κουμπωμένα σε θεατή μέσα στο 64% === */
   placePanelNearViewer(viewer,lift=140,xShift=0){
     const W = stage.clientWidth;
     const H = stage.clientHeight;
@@ -1039,7 +1093,7 @@ function handleTimelineEvent(th){
   if(th.kind==='bubble'){
     const txt = getAct1BubbleText(th.key);
     BUBBLE.say(
-      th.viewer,
+      th.viewer || 0,
       txt,
       th.yOffset,
       th.xShift||0,
@@ -1052,7 +1106,7 @@ function handleTimelineEvent(th){
     const pa  = (typeof th.pauseAfter==='number' ? th.pauseAfter : null);
     if(th.what==='A'){
       BUBBLE.say(
-        th.viewer,
+        th.viewer || 0,
         dyn.t7A ? dyn.t7A(A_m.toFixed(2)) : '',
         th.yOffset,
         th.xShift||0,
@@ -1061,7 +1115,7 @@ function handleTimelineEvent(th){
       );
     }else if(th.what==='Tw'){
       BUBBLE.say(
-        th.viewer,
+        th.viewer || 0,
         dyn.t8Tw ? dyn.t8Tw(T.toFixed(2), omega.toFixed(3)) : '',
         th.yOffset,
         th.xShift||0,
@@ -1072,7 +1126,7 @@ function handleTimelineEvent(th){
       const x0 = x0Val().toFixed(2);
       const phi0deg=((omega*obsStartPlaybackOffset)*180/Math.PI + 360)%360;
       BUBBLE.say(
-        th.viewer,
+        th.viewer || 0,
         dyn.t9phi ? dyn.t9phi(x0, phi0deg.toFixed(1)) : '',
         th.yOffset,
         th.xShift||0,
@@ -1346,16 +1400,12 @@ function addRow(leftText, rightText, viewer, durLeftSec, durRightSec, pauseAfter
 
 let foyerIdx=0, foyerAuto=true, foyerTimer=null;
 
-/* === foyerStep με typeMs / pauseMs από dialogs-*.json === */
 function foyerStep(){
   const dlgLang = DIALOGS[LANG];
   if(!dlgLang || !Array.isArray(dlgLang.foyer)) return;
 
-  const metaArr = Array.isArray(FOYER_META) ? FOYER_META : [];
-  const lines   = dlgLang.foyer || [];
-
-  const text = lines[foyerIdx] || null;
-  const meta = metaArr[foyerIdx] || null;
+  const lines = dlgLang.foyer || [];
+  const text  = lines[foyerIdx] || null;
 
   if(!text){
     if(foyerIdx >= lines.length){
@@ -1364,29 +1414,18 @@ function foyerStep(){
     return;
   }
 
-  let viewerId;
-  if(typeof text.viewer==='number'){
-    viewerId = text.viewer;
-  }else if(meta){
-    if(typeof meta.viewer==='number') viewerId = meta.viewer;
-    else if(typeof meta.v==='number') viewerId = meta.v;
-  }
-  if(typeof viewerId!=='number') viewerId=1;
+  let viewerId = 1;
+  if(typeof text.viewer === 'number') viewerId = text.viewer;
 
   let durLeftSec, durRightSec;
-  if(typeof text.typeMs==='number'){
+  if(typeof text.typeMs === 'number'){
     durLeftSec  = text.typeMs / 1000;
     durRightSec = text.typeMs / 1000;
-  }else if(meta){
-    if(typeof meta.durLeft==='number')  durLeftSec  = meta.durLeft;
-    if(typeof meta.durRight==='number') durRightSec = meta.durRight;
   }
 
   let pauseAfterSec;
-  if(typeof text.pauseMs==='number'){
+  if(typeof text.pauseMs === 'number'){
     pauseAfterSec = text.pauseMs / 1000;
-  }else if(meta && typeof meta.pauseAfter==='number'){
-    pauseAfterSec = meta.pauseAfter;
   }
 
   foyerIdx++;
@@ -1535,9 +1574,8 @@ window.foyerClose = foyerClose;
       if(sbD && ui.sbD2) sbD.textContent = ui.sbD2;
 
       for(const step of seq){
-        if(step.lawText || step.law){
-          const lawTxt = step.lawText || step.law;
-          addLaw(lawTxt);
+        if(step.lawText){
+          addLaw(step.lawText);
           await new Promise(r=>setTimeout(r,220));
           continue;
         }
@@ -1591,10 +1629,7 @@ langSwitch.addEventListener('click', async (e)=>{
   const btn=e.target.closest('button[data-lang]'); if(!btn) return;
   [...langSwitch.querySelectorAll('button')].forEach(b=>b.classList.toggle('on', b===btn));
   const lang = btn.dataset.lang;
-  await Promise.all([
-    loadDialogOverrides(lang),
-    loadUI(lang)
-  ]);
+  await loadDialogOverrides(lang);
   setLang(lang);
 });
 
@@ -1604,12 +1639,8 @@ ro.observe(stage);
 
 /* ====== BOOTSTRAP ====== */
 (async ()=>{
-  await loadTimeline();
   await loadDialogOverrides('gr');
   await loadDialogOverrides('en');
-  await loadUI('gr');
-  await loadUI('en');
-  await loadViewers();
   setLang('gr');
   resetShow();
 })();
