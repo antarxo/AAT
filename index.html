@@ -202,6 +202,10 @@ let ghost = null;
 let ghostSpring = null;
 let ghostActive = false;
 
+/* γεωμετρία ελατηρίου */
+let springBaseWidth = null;
+let springScale0 = 1;
+
 /* helpers */
 
 function anchorX(){
@@ -209,6 +213,16 @@ function anchorX(){
 }
 function centerX(){
   return stage.clientWidth * 0.5;
+}
+
+function initSpringGeometry(){
+  const rect = springEl.getBoundingClientRect();
+  const natW = springEl.naturalWidth || rect.width || 1;
+  springBaseWidth = natW;
+  const ax = anchorX();
+  const cx = centerX();
+  const dist0 = cx - ax;
+  springScale0 = dist0 / springBaseWidth;
 }
 
 function updateRuler(){
@@ -467,8 +481,7 @@ function viewerInfo(idx1based){
   return VIEWERS[i] || VIEWERS[0] || null;
 }
 
-/* ΣΤΑΘΕΡΕΣ θέσεις θεατών / bubbles από dialogs-gr.json:
-   xFrac, avatarDy, bubbleDx, bubbleDy */
+/* ΣΤΑΘΕΡΕΣ θέσεις θεατών / bubbles από dialogs-gr.json */
 function viewerAnchor(idx1based){
   const vi = viewerInfo(idx1based);
   const leftFrac = 0.18;
@@ -509,7 +522,7 @@ function hideSpeakerChip(){
   actBubble.style.display='none';
 }
 
-/* Σταθερή θέση bubbles ανά θεατή (μόνο από viewers.*) */
+/* σταθερή θέση bubbles ανά θεατή */
 function placeBubble(idx1based){
   const {x,y,info} = viewerAnchor(idx1based);
   const dx = info && typeof info.bubbleDx==='number' ? info.bubbleDx : 0;
@@ -564,7 +577,6 @@ function showBubbleForEvent(ev){
 
     bubbleEl.style.display='block';
     bubbleEl.style.opacity='0';
-    bubbleEl.style.backgroundColor='rgba(255,255,255,0.95)';
     bubbleEl.classList.remove('closing');
     bubbleEl.classList.add('active');
     bubbleEl.style.opacity='1';
@@ -690,6 +702,9 @@ function ensureGhost(){
     img.style.height='auto';
     ghost.appendChild(img);
     stage.appendChild(ghost);
+
+    const cs = getComputedStyle(actor);
+    ghost.style.bottom = cs.bottom;
   }
   if(!ghostSpring){
     ghostSpring=document.createElement('img');
@@ -702,6 +717,10 @@ function ensureGhost(){
     ghostSpring.style.opacity='0.9';
     ghostSpring.style.filter='grayscale(1) brightness(1.15)';
     stage.appendChild(ghostSpring);
+
+    const cs2 = getComputedStyle(springEl);
+    ghostSpring.style.bottom = cs2.bottom;
+    ghostSpring.style.height = cs2.height;
   }
 }
 
@@ -981,10 +1000,12 @@ function animate(now){
 
   const hookX = cx + A_px*Math.sin(omega*playbackTime);
 
-  const springRect = springEl.getBoundingClientRect();
-  const L0 = springRect.width || 1;
+  if(!springBaseWidth){
+    initSpringGeometry();
+  }
+  const dist0 = cx - ax;
   const dist = hookX - ax;
-  const scale = dist / L0;
+  const scale = (dist / dist0) * springScale0;
   springEl.style.left = ax+'px';
   springEl.style.transform = 'scaleX('+scale+')';
 
@@ -1005,18 +1026,15 @@ function animate(now){
     const sinθ = Math.max(-1, Math.min(1,(hookX-cx)/Math.max(1,A_px)));
     const hookXg = cx + Aghost_px*sinθ;
 
-    ghost.style.bottom = actor.style.bottom;
     ghost.style.display = ghostActive?'block':'none';
     ghostSpring.style.display = ghostActive?'block':'none';
 
     if(ghostActive){
       ghost.style.left = (hookXg - hookOffset)+'px';
-      const base = L0 || 1;
       const distg = hookXg - ax;
-      const scaleg = distg/base;
-      ghostSpring.style.bottom = springEl.style.bottom;
+      const dist0g = cx - ax;
+      const scaleg = (distg / dist0g) * springScale0;
       ghostSpring.style.left = ax+'px';
-      ghostSpring.style.height = springRect.height+'px';
       ghostSpring.style.transform = 'scaleX('+scaleg+')';
     }
   }
@@ -1056,8 +1074,14 @@ async function loadDialogs(){
   initViewersAvatars();
 }
 
+window.addEventListener('resize', ()=>{
+  updateRuler();
+  initSpringGeometry();
+});
+
 window.addEventListener('load', ()=>{
   updateRuler();
+  initSpringGeometry();
   resetShow();
   loadDialogs();
 });
