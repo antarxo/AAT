@@ -400,14 +400,46 @@ window.addEventListener('resize', positionRightPanel);
 function anchorX(){ return stage.clientWidth*0.18; }
 
 /* ====== ΡΥΘΜΙΣΕΙΣ ΡΟΗΣ ====== */
-let firstThoughtMul=parseFloat(slFirst.value);
-let timelineScale=parseFloat(slScale.value);
-let bubbleDurationSec=parseFloat(slDur.value);
-let slowFactor=parseFloat(slSlow.value);
-slFirst.addEventListener('input',()=>{ firstThoughtMul=parseFloat(slFirst.value); valFirst.textContent=`${firstThoughtMul.toFixed(1)}·T`; });
-slScale.addEventListener('input',()=>{ timelineScale=parseFloat(slScale.value); valScale.textContent=`${timelineScale.toFixed(1)}×`; });
-slDur.addEventListener('input',()=>{ bubbleDurationSec=parseFloat(slDur.value); valDur.textContent=`${bubbleDurationSec.toFixed(1)}s`; });
-slSlow.addEventListener('input',()=>{ slowFactor=parseFloat(slSlow.value); valSlow.textContent=`${slowFactor.toFixed(2)}×`; });
+let firstThoughtMul = DEFAULT_FIRST_MUL;
+let timelineScale   = 1.0;
+let bubbleDurationSec = 3.0;
+let slowFactor        = 0.5;
+
+if(slFirst){
+  firstThoughtMul = parseFloat(slFirst.value) || DEFAULT_FIRST_MUL;
+  if(valFirst){ valFirst.textContent = `${firstThoughtMul.toFixed(1)}·T`; }
+  slFirst.addEventListener('input',()=>{
+    firstThoughtMul = parseFloat(slFirst.value) || DEFAULT_FIRST_MUL;
+    if(valFirst){ valFirst.textContent = `${firstThoughtMul.toFixed(1)}·T`; }
+  });
+}
+
+if(slScale){
+  timelineScale = parseFloat(slScale.value) || 1.0;
+  if(valScale){ valScale.textContent = `${timelineScale.toFixed(1)}×`; }
+  slScale.addEventListener('input',()=>{
+    timelineScale = parseFloat(slScale.value) || 1.0;
+    if(valScale){ valScale.textContent = `${timelineScale.toFixed(1)}×`; }
+  });
+}
+
+if(slDur){
+  bubbleDurationSec = parseFloat(slDur.value) || 3.0;
+  if(valDur){ valDur.textContent = `${bubbleDurationSec.toFixed(1)}s`; }
+  slDur.addEventListener('input',()=>{
+    bubbleDurationSec = parseFloat(slDur.value) || 3.0;
+    if(valDur){ valDur.textContent = `${bubbleDurationSec.toFixed(1)}s`; }
+  });
+}
+
+if(slSlow){
+  slowFactor = parseFloat(slSlow.value) || 0.5;
+  if(valSlow){ valSlow.textContent = `${slowFactor.toFixed(2)}×`; }
+  slSlow.addEventListener('input',()=>{
+    slowFactor = parseFloat(slSlow.value) || 0.5;
+    if(valSlow){ valSlow.textContent = `${slowFactor.toFixed(2)}×`; }
+  });
+}
 
 /* ====== TIMELINE STATE ====== */
 let nextThoughtIdx=0;
