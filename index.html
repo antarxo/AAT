@@ -144,13 +144,12 @@
       pointer-events:none;
     }
 
-    /* Ομιλητές / θεατές σκηνής – εικόνες PNG με διαφάνεια,
-       χωρίς ελλειπτικά περιγράμματα, με κλιμάκωση τύπου koino.png */
+    /* Ομιλητές / θεατές σκηνής – PNG με διαφάνεια, χωρίς ελλειπτικά frames */
     .viewers{
       position:absolute;
       left:18%;
       width:64%;
-      bottom:200px;                 /* ~200 px πάνω από τη βάση του κοινού */
+      bottom:200px;                 /* ~200px πάνω από τη βάση του κοινού */
       display:flex;
       justify-content:space-between;
       padding:0 4vw;
@@ -165,7 +164,7 @@
       border-radius:0;
       border:none;
       box-shadow:none;
-      background:center bottom/contain no-repeat; /* PNG με διαφάνεια */
+      background:center bottom/contain no-repeat;
     }
 
     /* Ταμπέλα τίτλου */
@@ -836,7 +835,7 @@ const foyerBubble = document.getElementById('foyerBubble');
 
 const viewersStrip = document.getElementById('viewersStrip');
 
-/* Φυσικά μεγέθη (όπως πριν) */
+/* Φυσικά μεγέθη */
 
 const m = 70;
 const T = 6.0;
@@ -864,16 +863,41 @@ let ghost = null;
 let ghostSpring = null;
 let ghostActive = false;
 
-/* Βασικό μήκος ελατηρίου (για σωστή κλιμάκωση, να μην γίνεται "ευθεία") */
+/* Βασικό μήκος ελατηρίου (για σωστή κλιμάκωση) */
 let springBaseWidth = 0;
 
-/* ---------- Χρήσιμα ---------- */
+/* ---------- Helpers ---------- */
 
 function anchorX(){
   return stage.clientWidth * 0.18;
 }
 function centerX(){
   return stage.clientWidth * 0.5;
+}
+
+/* δυναμικές τιμές που μπορεί να χρειαστούν σε κείμενα JSON */
+function x0Val(){
+  return A_m*Math.sin(omega*(0+obsStartPlaybackOffset));
+}
+
+function currentPhiDeg(){
+  return ((omega*obsStartPlaybackOffset)*180/Math.PI+360)%360;
+}
+
+/* format όλων των κειμένων: αντικατάσταση {A}, {T}, {omega}, {φ0}, {phi0}, {x0} */
+function formatText(text){
+  if(!text) return '';
+  let out = String(text);
+  const x0 = x0Val();
+  const phi0deg = currentPhiDeg();
+  out = out
+    .replaceAll('{A}', A_m.toFixed(2))
+    .replaceAll('{T}', T.toFixed(2))
+    .replaceAll('{omega}', omega.toFixed(3))
+    .replaceAll('{φ0}', phi0deg.toFixed(1))
+    .replaceAll('{phi0}', phi0deg.toFixed(1))
+    .replaceAll('{x0}', x0.toFixed(2));
+  return out;
 }
 
 function updateRuler(){
@@ -974,7 +998,7 @@ function localizeTrig(txt){
 }
 
 function addLaw(txt){
-  const t = localizeTrig(txt);
+  const t = localizeTrig(formatText(txt));
   if(!firstLawShown){
     firstLawShown = true;
     lawsPane.style.display='block';
@@ -993,7 +1017,6 @@ function sizeLawCanvas(c){
   c.style.height=h+'px';
 }
 
-/* κοινός renderer για τα 3 mini διαγράμματα, με ίδια λογική με το x–t */
 function drawLawCanvas(canvas, func, yMax, yLabel){
   if(!canvas || !yMax || yMax<=0) return;
   const ctx = canvas.getContext('2d');
@@ -1010,7 +1033,6 @@ function drawLawCanvas(canvas, func, yMax, yLabel){
   const originX = marginL;
   const originY = marginT + plotH/2;
 
-  // grid + άξονες
   ctx.save();
   ctx.strokeStyle = 'rgba(255,255,255,0.15)';
   ctx.lineWidth = 1;
@@ -1026,20 +1048,16 @@ function drawLawCanvas(canvas, func, yMax, yLabel){
   }
 
   ctx.strokeStyle = 'rgba(255,255,255,0.6)';
-  // t-άξονας
   ctx.beginPath();
   ctx.moveTo(originX, originY);
   ctx.lineTo(originX+plotW, originY);
   ctx.stroke();
-  // κάθετος άξονας
   ctx.beginPath();
   ctx.moveTo(originX, marginT);
   ctx.lineTo(originX, marginT+plotH);
   ctx.stroke();
-
   ctx.restore();
 
-  // labels
   ctx.fillStyle = '#fff';
   ctx.font = '10px "Courier New", monospace';
 
@@ -1052,7 +1070,6 @@ function drawLawCanvas(canvas, func, yMax, yLabel){
   ctx.fillText(yLabel, 0, 0);
   ctx.restore();
 
-  // αριθμητικές ενδείξεις
   ctx.textAlign = 'center';
   for(let i=0;i<=4;i++){
     const t = (T*i)/4;
@@ -1073,7 +1090,6 @@ function drawLawCanvas(canvas, func, yMax, yLabel){
     ctx.fillText(val.toFixed(1), originX-4, y+3);
   }
 
-  // καμπύλη
   ctx.beginPath();
   ctx.strokeStyle = '#ffd27a';
   ctx.lineWidth = 1.5;
@@ -1135,11 +1151,8 @@ function ensureAxChart(){
 
 /* ---------- Παράμετροι ταλάντωσης ---------- */
 
-function x0Val(){
-  return A_m*Math.sin(omega*(0+obsStartPlaybackOffset));
-}
 function showParamsBox(){
-  const phi0deg = ((omega*obsStartPlaybackOffset)*180/Math.PI+360)%360;
+  const phi0deg = currentPhiDeg();
   paramAEl.textContent = 'A = '+A_m.toFixed(2)+' m';
   paramWEl.textContent = 'ω = '+omega.toFixed(3)+' rad/s';
   paramPhiEl.textContent = 'φ₀ = '+phi0deg.toFixed(1)+'°';
@@ -1228,7 +1241,8 @@ function showBubbleForEvent(ev){
   return new Promise(resolve=>{
     const viewer = ev.viewer || 1;
     const vi = viewerInfo(viewer);
-    const html = (ev.left||'').replaceAll('\n','<br>');
+
+    const html = formatText(ev.left || '').replaceAll('\n','<br>');
     if(!html){
       hideSpeakerChip();
       bubbleEl.style.display='none';
@@ -1250,52 +1264,6 @@ function showBubbleForEvent(ev){
     const pauseMs = ev.pauseMs || 800;
 
     typeWriterHTML(bubbleTextEl, html, typeMs, ()=>{
-      setTimeout(()=>{
-        bubbleEl.classList.add('closing');
-        setTimeout(()=>{
-          bubbleEl.classList.remove('active','closing');
-          bubbleEl.style.display='none';
-          hideSpeakerChip();
-          resolve();
-        },200);
-      }, pauseMs);
-    });
-  });
-}
-
-/* Δυναμικά bubbles για A, T/ω, φ */
-
-function dynText(kind){
-  const x0 = x0Val().toFixed(2);
-  const phi0deg = ((omega*obsStartPlaybackOffset)*180/Math.PI+360)%360;
-  if(kind==='A'){
-    return '…με A='+A_m.toFixed(2)+' m!';
-  }else if(kind==='Tw'){
-    return '… και T='+T.toFixed(2)+' s και επομένως ω='+omega.toFixed(3)+' rad/s!';
-  }else if(kind==='phi'){
-    return '… όντως είναι ΑΑΤ και αφού το x₀='+x0+' m υπάρχει φ₀='+phi0deg.toFixed(1)+'°. Χαχα, ένα το κρατούμενο!';
-  }
-  return '';
-}
-
-function showDynBubble(ev){
-  return new Promise(resolve=>{
-    const viewer = ev.viewer || 1;
-    const txt = dynText(ev.param);
-
-    showSpeakerChip(viewer);
-    placeBubble(viewer, ev.xShift||0, ev.yOffset||0);
-
-    bubbleEl.style.display='block';
-    bubbleEl.style.opacity='0';
-    bubbleEl.classList.remove('closing');
-    bubbleEl.classList.add('active');
-    bubbleEl.style.opacity='1';
-
-    const typeMs = ev.typeMs || 2500;
-    const pauseMs = ev.pauseMs || 800;
-
-    typeWriterHTML(bubbleTextEl, txt, typeMs, ()=>{
       setTimeout(()=>{
         bubbleEl.classList.add('closing');
         setTimeout(()=>{
@@ -1338,14 +1306,10 @@ async function runAct1(){
       await new Promise(r=>setTimeout(r,500));
       continue;
     }
-    if(ev.right && !ev.left && !ev.viewer && !ev.param){
+    if(ev.right && !ev.left && !ev.viewer){
       addLaw(ev.right);
       if(ev.alsoParams) showParamsBox();
       await new Promise(r=>setTimeout(r,600));
-      continue;
-    }
-    if(ev.param){
-      await showDynBubble(ev);
       continue;
     }
     await showBubbleForEvent(ev);
@@ -1403,7 +1367,6 @@ async function runAct2(){
     await showBubbleForEvent(ev);
   }
 
-  // Τέλος Πράξης 2 → κλείσιμο κουρτίνας και κάλεσμα φουαγιέ
   stage.classList.remove('open');
   markerEl.style.opacity='0';
   setTimeout(()=>{
@@ -1462,7 +1425,7 @@ function setFoyerSpeaker(idx1based){
 }
 
 function typeWriterBoard(el, text, totalMs, done){
-  const src = String(text||'').replaceAll('sqrt(','√(');
+  const src = formatText(text||'').replaceAll('sqrt(','√(');
   const total = src.length || 1;
   const baseMs = (typeof totalMs==='number' && totalMs>0 ? totalMs : 3000);
   const step = Math.max(10, Math.round(baseMs/total));
@@ -1549,7 +1512,6 @@ btnPlay.addEventListener('click', ()=>{
 });
 
 function resetShow(){
-  // reset φυσικής
   t0 = performance.now();
   lastFrame = t0;
   playbackTime = 0;
@@ -1559,10 +1521,8 @@ function resetShow(){
   measureRowIdx = 0;
   setMode('run');
 
-  // reset base ελατηρίου
   springBaseWidth = 0;
 
-  // UI reset
   startBtn.style.display='block';
   countdownOverlay.style.display='none';
   measureBox.style.display='none';
@@ -1668,10 +1628,8 @@ function animate(now){
   const cx = centerX();
   const stageH = stage.clientHeight;
 
-  // τρέχουσα θέση ηθοποιού
   const hookX = cx + A_px*Math.sin(omega*playbackTime);
 
-  // βασικό μήκος ελατηρίου (μετριέται ΜΙΑ φορά, πριν εφαρμοστούν κλιμακώσεις)
   if(!springBaseWidth){
     const rect0 = springEl.getBoundingClientRect();
     if(rect0.width > 0){
@@ -1679,7 +1637,6 @@ function animate(now){
     }
   }
 
-  // ελατήριο κανονικού
   if(springBaseWidth > 0){
     const dist = hookX - ax;
     const scale = dist / springBaseWidth;
@@ -1700,7 +1657,6 @@ function animate(now){
   const xMeters = (hookX - cx)/pxPerMeter;
   logMeasurement(tObs, xMeters);
 
-  // ghost για act 2
   if(ghost && ghostSpring){
     const Aghost_m = 5.0;
     const Aghost_px = pxPerMeter*Aghost_m;
