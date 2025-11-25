@@ -838,6 +838,8 @@ const omega = 2 * Math.PI / T;
 const D = Math.round(m * omega * omega);
 const pxPerMeter = 50;
 const A_px = pxPerMeter * A_m;
+const ACTOR_WIDTH = 144;
+const ACTOR_HEIGHT = 96;
 
 let t0 = performance.now();
 let lastFrame = performance.now();
@@ -856,6 +858,10 @@ let uXT = null;
 let ghost = null;
 let ghostSpring = null;
 let ghostActive = false;
+
+/* Φυσικό μήκος ελατηρίου (σε px) */
+let springNaturalW = 1;
+let springNaturalH = 1;
 
 /* ---------- Χρήσιμα ---------- */
 
@@ -983,12 +989,63 @@ function sizeLawCanvas(c){
   c.style.height=h+'px';
 }
 
+function drawLawGraph(canvas, kind){
+  if(!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width;
+  const h = canvas.height;
+  ctx.clearRect(0,0,w,h);
+
+  const marginLeft = 24;
+  const marginRight = 6;
+  const marginTop = 6;
+  const marginBottom = 6;
+  const midY = h/2;
+
+  // Άξονες
+  ctx.strokeStyle = 'rgba(255,255,255,0.7)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(marginLeft, midY);
+  ctx.lineTo(w - marginRight, midY);
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(marginLeft, marginTop);
+  ctx.lineTo(marginLeft, h - marginBottom);
+  ctx.stroke();
+
+  // Καμπύλη
+  const N = 200;
+  const plotAmp = (h * 0.4);
+  ctx.beginPath();
+  for(let i=0;i<=N;i++){
+    const t = (i / N) * T;
+    let val = 0;
+    if(kind === 'v'){
+      val = Math.cos(omega * t);           // v ∝ cos
+    }else if(kind === 'a'){
+      val = -Math.sin(omega * t);          // a ∝ -sin
+    }else if(kind === 'ax'){
+      val = -Math.sin(omega * t);          // ΣF ∝ -sin
+    }
+    const x = marginLeft + (w - marginLeft - marginRight) * (t / T);
+    const y = midY - val * plotAmp;
+    if(i === 0) ctx.moveTo(x,y);
+    else ctx.lineTo(x,y);
+  }
+  ctx.strokeStyle = '#ffd27a';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+}
+
 function ensureVelocityChart(){
   if(!vCan){
     vCan = document.createElement('canvas');
     lawCharts.appendChild(vCan);
   }
   sizeLawCanvas(vCan);
+  drawLawGraph(vCan,'v');
 }
 function ensureAccelerationChart(){
   if(!aCan){
@@ -996,6 +1053,7 @@ function ensureAccelerationChart(){
     lawCharts.appendChild(aCan);
   }
   sizeLawCanvas(aCan);
+  drawLawGraph(aCan,'a');
 }
 function ensureAxChart(){
   if(!axCan){
@@ -1003,6 +1061,7 @@ function ensureAxChart(){
     lawCharts.appendChild(axCan);
   }
   sizeLawCanvas(axCan);
+  drawLawGraph(axCan,'ax');
 }
 
 /* ---------- Παράμετροι ταλάντωσης ---------- */
@@ -1233,6 +1292,9 @@ function ensureGhost(){
     ghost = document.createElement('div');
     ghost.id='actorGhost';
     ghost.style.position='absolute';
+    ghost.style.width = ACTOR_WIDTH+'px';
+    ghost.style.height = ACTOR_HEIGHT+'px';
+    ghost.style.bottom = 'calc(32vh + 135px)';
     ghost.style.zIndex='120';
     ghost.style.pointerEvents='none';
     ghost.style.opacity='0.85';
@@ -1249,6 +1311,7 @@ function ensureGhost(){
     ghostSpring.id='springGhost';
     ghostSpring.src = springEl.src;
     ghostSpring.style.position='absolute';
+    ghostSpring.style.bottom = 'calc(32vh + 92px)';
     ghostSpring.style.transformOrigin='left center';
     ghostSpring.style.zIndex='119';
     ghostSpring.style.pointerEvents='none';
@@ -1539,19 +1602,16 @@ function animate(now){
   const cx = centerX();
   const stageH = stage.clientHeight;
 
-  // τρέχουσα θέση ηθοποιού
+  // τρέχουσα θέση ηθοποιού (A=3 m)
   const hookX = cx + A_px*Math.sin(omega*playbackTime);
 
-  // ελατήριο
-  const springRect = springEl.getBoundingClientRect();
-  const L0 = springRect.width || 1;
+  // ελατήριο (χρησιμοποιούμε σταθερό φυσικό μήκος)
   const dist = hookX - ax;
-  const scale = dist / L0;
+  const scale = dist / springNaturalW;
   springEl.style.left = ax+'px';
   springEl.style.transform = 'scaleX('+scale+')';
 
-  const actorRect = actor.getBoundingClientRect();
-  const hookOffset = actorRect.width/2 || 40;
+  const hookOffset = ACTOR_WIDTH/2;
   actor.style.left = (hookX - hookOffset)+'px';
 
   markerEl.style.left = hookX+'px';
@@ -1561,25 +1621,20 @@ function animate(now){
   const xMeters = (hookX - cx)/pxPerMeter;
   logMeasurement(tObs, xMeters);
 
-  // ghost για act 2
+  // ghost για act 2 (ίδια φάση, A=5 m)
   if(ghost && ghostSpring){
     const Aghost_m = 5.0;
     const Aghost_px = pxPerMeter*Aghost_m;
-    const sinθ = Math.max(-1, Math.min(1,(hookX-cx)/Math.max(1,A_px)));
-    const hookXg = cx + Aghost_px*sinθ;
+    const hookXg = cx + Aghost_px*Math.sin(omega*playbackTime);
 
-    ghost.style.bottom = actor.style.bottom;
-    ghost.style.display = ghostActive?'block':'none';
-    ghostSpring.style.display = ghostActive?'block':'none';
+    ghost.style.display = ghostActive ? 'block' : 'none';
+    ghostSpring.style.display = ghostActive ? 'block' : 'none';
 
     if(ghostActive){
       ghost.style.left = (hookXg - hookOffset)+'px';
-      const base = L0 || 1;
       const distg = hookXg - ax;
-      const scaleg = distg/base;
-      ghostSpring.style.bottom = springEl.style.bottom;
+      const scaleg = distg / springNaturalW;
       ghostSpring.style.left = ax+'px';
-      ghostSpring.style.height = springRect.height+'px';
       ghostSpring.style.transform = 'scaleX('+scaleg+')';
     }
   }
@@ -1620,6 +1675,9 @@ async function loadDialogs(){
 }
 
 window.addEventListener('load', ()=>{
+  const rect = springEl.getBoundingClientRect();
+  springNaturalW = rect.width || 1;
+  springNaturalH = rect.height || 1;
   updateRuler();
   resetShow();
   loadDialogs();
