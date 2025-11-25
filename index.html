@@ -99,7 +99,7 @@
       left:10%;
       height:96px;
       width:auto;
-      z-index:700; /* μόνο στη 2η πράξη, πάνω από floor, κάτω από κοινό */
+      z-index:156; /* κάτω από κουρτίνα (160), πάνω από πάτωμα (155) */
       pointer-events:none;
       filter:drop-shadow(0 4px 6px rgba(0,0,0,.55));
       transform-origin:left center;
@@ -113,7 +113,7 @@
       width:144px;
       height:96px;
       transform:translateX(-50%);
-      z-index:110;
+      z-index:157; /* ηθοποιός > ελατήριο του */
       pointer-events:none;
     }
     .actor img{
@@ -167,11 +167,11 @@
       position:absolute;
       left:18%;
       width:64%;
-      bottom:130px; /* ~200px πάνω από κάτω κοινό, όπως είχες ζητήσει */
+      bottom:130px;
       display:flex;
       justify-content:space-between;
       padding:0 4vw;
-      z-index:2000; /* ορατοί πάνω από κοινό */
+      z-index:2000;
       pointer-events:none;
     }
     .viewer-avatar{
@@ -477,7 +477,7 @@
       padding:10px 12px 12px;
       border-radius:10px;
       box-shadow:0 6px 12px rgba(0,0,0,.4);
-      z-index:1050; /* όπως ζήτησες */
+      z-index:1050;
       pointer-events:none;
       opacity:0;
       display:none;
@@ -535,7 +535,7 @@
       z-index:1050;
     }
     .foyer-bubble{
-      z-index:2000; /* ομιλητής φουαγιέ στην κορυφή */
+      z-index:2000;
     }
 
     /* Controls */
@@ -702,7 +702,7 @@
       width:64%;
       top:0;
       height:var(--foyer-h);
-      z-index:500; /* boards κάτω από κοινό, bubble ανεξάρτητη */
+      z-index:500;
       display:none;
     }
     .foyer .wrap{
@@ -1212,7 +1212,6 @@ function typeWriterHTML(el, html, totalMs, done){
 function showBubbleForEvent(ev){
   return new Promise(resolve=>{
     const viewer = ev.viewer || 1;
-    const vi = viewerInfo(viewer);
     const html = (ev.left||'').replaceAll('\n','<br>');
 
     if(!html){
@@ -1344,7 +1343,7 @@ function ensureGhost(){
     ghost = document.createElement('div');
     ghost.id='actorGhost';
     ghost.style.position='absolute';
-    ghost.style.zIndex='710';
+    ghost.style.zIndex='157';          // ghost actor > ghost spring
     ghost.style.pointerEvents='none';
     ghost.style.opacity='0.85';
     ghost.style.filter='grayscale(1) brightness(1.2)';
@@ -1361,7 +1360,7 @@ function ensureGhost(){
     ghostSpring.src = springEl.src;
     ghostSpring.style.position='absolute';
     ghostSpring.style.transformOrigin='left center';
-    ghostSpring.style.zIndex='705';
+    ghostSpring.style.zIndex='156';    // ghost spring κάτω από ghost actor
     ghostSpring.style.pointerEvents='none';
     ghostSpring.style.opacity='0.9';
     ghostSpring.style.filter='grayscale(1) brightness(1.15)';
@@ -1379,6 +1378,7 @@ async function runAct2(){
   // Act 2 → εμφανίζουμε ελατήρια & ghost
   springEl.style.display='block';
   if(ghostSpring) ghostSpring.style.display='block';
+  markerEl.style.opacity='1'; // βέλος ορατό και στη 2η πράξη
 
   for(const ev of ACT2){
     if(ev.gStart) ghostActive = true;
@@ -1393,9 +1393,8 @@ async function runAct2(){
     await showBubbleForEvent(ev);
   }
 
-  // Τέλος Πράξης 2 → κλείσιμο κουρτίνας και κάλεσμα φουαγιέ
+  // Τέλος Πράξης 2 → κλείσιμο κουρτίνας, βέλος παραμένει ορατό
   stage.classList.remove('open');
-  markerEl.style.opacity='0';
   setTimeout(()=>{
     foyerBreak.style.display='flex';
   }, 1200);
@@ -1405,7 +1404,6 @@ async function runAct2(){
 
 function closeCurtainToAct2(){
   return new Promise(resolve=>{
-    markerEl.style.opacity='0';
     stage.classList.remove('open');
     setTimeout(()=>{
       actBreak.style.display='flex';
@@ -1695,12 +1693,11 @@ function animate(now){
   const xMeters = (hookX - cx)/pxPerMeter;
   logMeasurement(tObs, xMeters);
 
-  // ghost για act 2 (ίδιο μηδέν, A=5 m)
+  // ghost για act 2 (ίδιο μηδέν, A=5 m, ίδιο πάτωμα)
   if(ghost && ghostSpring){
     const Aghost_m  = 5.0;
     const Aghost_px = pxPerMeter*Aghost_m;
 
-    // ίδιο sinθ με κανονικό, διαφορετικό Α
     const sinθ = Math.max(-1, Math.min(1, (hookX - cx)/Math.max(1,A_px)));
     const hookXg = cx + Aghost_px*sinθ;
 
@@ -1710,6 +1707,7 @@ function animate(now){
     ghostSpring.style.display= ghostActive ? 'block' : 'none';
 
     if(ghostActive){
+      // ίδιο πάτωμα με κανονικό
       ghost.style.bottom = actorBottom;
       ghost.style.left   = (hookXg - hookOffset)+'px';
 
