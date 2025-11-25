@@ -144,26 +144,28 @@
       pointer-events:none;
     }
 
+    /* Ομιλητές / θεατές σκηνής – εικόνες PNG με διαφάνεια,
+       χωρίς ελλειπτικά περιγράμματα, με κλιμάκωση τύπου koino.png */
     .viewers{
       position:absolute;
       left:18%;
       width:64%;
-      bottom:6px;
+      bottom:200px;                 /* ~200 px πάνω από τη βάση του κοινού */
       display:flex;
       justify-content:space-between;
       padding:0 4vw;
-      z-index:1600; /* αυξημένο για να βγαίνουν σίγουρα πάνω από φόντα/φουαγιέ */
+      z-index:1600;
       pointer-events:none;
     }
     .viewer-avatar{
       position:relative;
-      width:64px;
-      height:96px;
-      overflow:hidden;
-      border-radius:999px;
-      border:2px solid rgba(0,0,0,.8);
-      box-shadow:0 4px 8px rgba(0,0,0,.8);
-      background:#111 center/cover no-repeat;
+      height:120px;
+      width:auto;
+      overflow:visible;
+      border-radius:0;
+      border:none;
+      box-shadow:none;
+      background:center bottom/contain no-repeat; /* PNG με διαφάνεια */
     }
 
     /* Ταμπέλα τίτλου */
@@ -862,6 +864,9 @@ let ghost = null;
 let ghostSpring = null;
 let ghostActive = false;
 
+/* Βασικό μήκος ελατηρίου (για σωστή κλιμάκωση, να μην γίνεται "ευθεία") */
+let springBaseWidth = 0;
+
 /* ---------- Χρήσιμα ---------- */
 
 function anchorX(){
@@ -1223,8 +1228,6 @@ function showBubbleForEvent(ev){
   return new Promise(resolve=>{
     const viewer = ev.viewer || 1;
     const vi = viewerInfo(viewer);
-    const color = vi?vi.color:'#ffffff';
-
     const html = (ev.left||'').replaceAll('\n','<br>');
     if(!html){
       hideSpeakerChip();
@@ -1356,7 +1359,7 @@ function ensureGhost(){
     ghost = document.createElement('div');
     ghost.id='actorGhost';
     ghost.style.position='absolute';
-    ghost.style.zIndex='80';           // ΠΑΝΤΑ κάτω από τον κανονικό ηθοποιό
+    ghost.style.zIndex='80';           // κάτω από τον κανονικό ηθοποιό
     ghost.style.pointerEvents='none';
     ghost.style.opacity='0.85';
     ghost.style.filter='grayscale(1) brightness(1.2)';
@@ -1373,7 +1376,7 @@ function ensureGhost(){
     ghostSpring.src = springEl.src;
     ghostSpring.style.position='absolute';
     ghostSpring.style.transformOrigin='left center';
-    ghostSpring.style.zIndex='85';     // και το ελατήριο του ghost κάτω από το κανονικό
+    ghostSpring.style.zIndex='85';     // κάτω από κανονικό ελατήριο/ηθοποιό
     ghostSpring.style.pointerEvents='none';
     ghostSpring.style.opacity='0.9';
     ghostSpring.style.filter='grayscale(1) brightness(1.15)';
@@ -1556,6 +1559,9 @@ function resetShow(){
   measureRowIdx = 0;
   setMode('run');
 
+  // reset base ελατηρίου
+  springBaseWidth = 0;
+
   // UI reset
   startBtn.style.display='block';
   countdownOverlay.style.display='none';
@@ -1665,13 +1671,23 @@ function animate(now){
   // τρέχουσα θέση ηθοποιού
   const hookX = cx + A_px*Math.sin(omega*playbackTime);
 
-  // ελατήριο
-  const springRect = springEl.getBoundingClientRect();
-  const L0 = springRect.width || 1;
-  const dist = hookX - ax;
-  const scale = dist / L0;
-  springEl.style.left = ax+'px';
-  springEl.style.transform = 'scaleX('+scale+')';
+  // βασικό μήκος ελατηρίου (μετριέται ΜΙΑ φορά, πριν εφαρμοστούν κλιμακώσεις)
+  if(!springBaseWidth){
+    const rect0 = springEl.getBoundingClientRect();
+    if(rect0.width > 0){
+      springBaseWidth = rect0.width;
+    }
+  }
+
+  // ελατήριο κανονικού
+  if(springBaseWidth > 0){
+    const dist = hookX - ax;
+    const scale = dist / springBaseWidth;
+    springEl.style.left = ax+'px';
+    springEl.style.transform = 'scaleX('+scale+')';
+  }else{
+    springEl.style.left = ax+'px';
+  }
 
   const actorRect = actor.getBoundingClientRect();
   const hookOffset = actorRect.width/2 || 40;
@@ -1697,13 +1713,18 @@ function animate(now){
 
     if(ghostActive){
       ghost.style.left = (hookXg - hookOffset)+'px';
-      const base = L0 || 1;
-      const distg = hookXg - ax;
-      const scaleg = distg/base;
-      ghostSpring.style.bottom = springEl.style.bottom;
-      ghostSpring.style.left = ax+'px';
-      ghostSpring.style.height = springRect.height+'px';
-      ghostSpring.style.transform = 'scaleX('+scaleg+')';
+
+      if(springBaseWidth > 0){
+        const distg = hookXg - ax;
+        const scaleg = distg / springBaseWidth;
+        ghostSpring.style.bottom = springEl.style.bottom;
+        ghostSpring.style.left = ax+'px';
+        const sr = springEl.getBoundingClientRect();
+        ghostSpring.style.height = (sr.height || springEl.height || 96) + 'px';
+        ghostSpring.style.transform = 'scaleX('+scaleg+')';
+      }else{
+        ghostSpring.style.left = ax+'px';
+      }
     }
   }
 
