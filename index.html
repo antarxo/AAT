@@ -86,7 +86,7 @@
       left:10%;
       height:96px;
       width:auto;
-      z-index:140; /* αρκετά μπροστά για να φαίνεται στη 2η πράξη */
+      z-index:700; /* όπως ζήτησες */
       pointer-events:none;
       filter:drop-shadow(0 4px 6px rgba(0,0,0,.55));
       transform-origin:left center;
@@ -151,14 +151,13 @@
       left:0;
       width:100%;
       bottom:200px;                /* ~200px πάνω από το koino.png */
-      /* δεν βασιζόμαστε σε flex για θέσεις, τις δίνει το JSON */
-      z-index:2000;               /* πάνω από το κοινό */
+      z-index:2000;
       pointer-events:none;
     }
     .viewer-avatar{
-      position:absolute;          /* τοποθέτηση από JS (xFrac) */
+      position:absolute;
       flex:0 0 auto;
-      height:22vh;                /* κλιμάκωση αντίστοιχη με το κοινό */
+      height:22vh;
       width:auto;
       overflow:visible;
       border-radius:0;
@@ -472,7 +471,7 @@
     }
     .foyer-bubble{
       position:absolute;
-      z-index:2001; /* πάνω από κοινό */
+      z-index:2000; /* όπως ζήτησες για το φουαγιέ */
       display:none;
       pointer-events:none;
       min-width:120px;
@@ -1021,7 +1020,6 @@ function drawLawGraph(canvas, kind){
   const marginBottom = 6;
   const midY = h/2;
 
-  // Άξονες
   ctx.strokeStyle = 'rgba(255,255,255,0.7)';
   ctx.lineWidth = 1;
   ctx.beginPath();
@@ -1034,7 +1032,6 @@ function drawLawGraph(canvas, kind){
   ctx.lineTo(marginLeft, h - marginBottom);
   ctx.stroke();
 
-  // Καμπύλη
   const N = 200;
   const plotAmp = (h * 0.4);
   ctx.beginPath();
@@ -1042,11 +1039,11 @@ function drawLawGraph(canvas, kind){
     const t = (i / N) * T;
     let val = 0;
     if(kind === 'v'){
-      val = Math.cos(omega * t);           // v ∝ cos
+      val = Math.cos(omega * t);
     }else if(kind === 'a'){
-      val = -Math.sin(omega * t);          // a ∝ -sin
+      val = -Math.sin(omega * t);
     }else if(kind === 'ax'){
-      val = -Math.sin(omega * t);          // ΣF ∝ -sin
+      val = -Math.sin(omega * t);
     }
     const x = marginLeft + (w - marginLeft - marginRight) * (t / T);
     const y = midY - val * plotAmp;
@@ -1177,7 +1174,6 @@ function typeWriterHTML(el, html, totalMs, done){
 function showBubbleForEvent(ev){
   return new Promise(resolve=>{
     const viewer = ev.viewer || 1;
-    const vi = viewerInfo(viewer);
     const html = (ev.left||'').replaceAll('\n','<br>');
     if(!html){
       hideSpeakerChip();
@@ -1330,7 +1326,7 @@ function ensureGhost(){
     ghostSpring.style.position='absolute';
     ghostSpring.style.bottom = 'calc(32vh + 92px)';
     ghostSpring.style.transformOrigin='left center';
-    ghostSpring.style.zIndex='139'; /* λίγο πίσω από κανονικό ελατήριο/ηθοποιό */
+    ghostSpring.style.zIndex='699';
     ghostSpring.style.pointerEvents='none';
     ghostSpring.style.opacity='0.9';
     ghostSpring.style.filter='grayscale(1) brightness(1.15)';
@@ -1344,7 +1340,6 @@ async function runAct2(){
   actBreak.style.display='none';
   stage.classList.add('open');
 
-  // Ελατήριο μόνο στη 2η πράξη
   springEl.style.display = 'block';
 
   for(const ev of ACT2){
@@ -1360,7 +1355,6 @@ async function runAct2(){
     await showBubbleForEvent(ev);
   }
 
-  // Τέλος Πράξης 2 → κλείσιμο κουρτίνας και κάλεσμα φουαγιέ
   stage.classList.remove('open');
   markerEl.style.opacity='0';
   setTimeout(()=>{
@@ -1512,7 +1506,6 @@ btnPlay.addEventListener('click', ()=>{
 });
 
 function resetShow(){
-  // reset φυσικής
   t0 = performance.now();
   lastFrame = t0;
   playbackTime = 0;
@@ -1522,7 +1515,6 @@ function resetShow(){
   measureRowIdx = 0;
   setMode('run');
 
-  // UI reset
   startBtn.style.display='block';
   countdownOverlay.style.display='none';
   measureBox.style.display='none';
@@ -1549,7 +1541,6 @@ function resetShow(){
   stage.classList.remove('open');
   markerEl.style.left = centerX()+'px';
 
-  // Ελατήριο κρυφό στην Πράξη 1
   springEl.style.display = 'none';
   if(ghost){
     ghost.style.display = 'none';
@@ -1637,20 +1628,17 @@ function animate(now){
   const cx = centerX();
   const stageH = stage.clientHeight;
 
-  // τρέχουσα θέση ηθοποιού (A=3 m) → "θέση βέλους"
   const hookX = cx + A_px*Math.sin(omega*playbackTime);
 
-  // ελατήριο: το ελεύθερο άκρο συμπίπτει με hookX
   const dist = hookX - ax;
   const scale = dist / springNaturalW;
   springEl.style.left = ax+'px';
   springEl.style.transform = 'scaleX('+scale+')';
 
-  // ηθοποιός: το κέντρο της εικόνας (μετά από κλιμάκωση) συμπίπτει με hookX
   const actorRect = actor.getBoundingClientRect();
   const actorWidth = actorRect.width || ACTOR_WIDTH;
-  const hookOffset = actorWidth/2;
-  actor.style.left = (hookX - hookOffset)+'px';
+
+  actor.style.left = hookX + 'px';  // μετακίνηση δεξιά κατά μισό πλάτος σε σχέση με πριν
 
   markerEl.style.left = hookX+'px';
   spotlight.style.background =
@@ -1659,7 +1647,6 @@ function animate(now){
   const xMeters = (hookX - cx)/pxPerMeter;
   logMeasurement(tObs, xMeters);
 
-  // ghost για act 2 (ίδια φάση, A=5 m)
   if(ghost && ghostSpring){
     const Aghost_m = 5.0;
     const Aghost_px = pxPerMeter*Aghost_m;
@@ -1671,9 +1658,9 @@ function animate(now){
     if(ghostActive){
       const ghostRect = ghost.getBoundingClientRect();
       const ghostWidth = ghostRect.width || ACTOR_WIDTH;
-      const ghostOffset = ghostWidth/2;
 
-      ghost.style.left = (hookXg - ghostOffset)+'px';
+      ghost.style.left = hookXg + 'px';  // ίδια λογική με τον ηθοποιό
+
       const distg = hookXg - ax;
       const scaleg = distg / springNaturalW;
       ghostSpring.style.left = ax+'px';
