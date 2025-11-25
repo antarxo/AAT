@@ -420,7 +420,7 @@
       padding:10px 12px 12px;
       border-radius:10px;
       box-shadow:0 6px 12px rgba(0,0,0,.4);
-      z-index:750;
+      z-index:1050;  /* αυξημένο όπως ζήτησες */
       pointer-events:none;
       opacity:0;
       display:none;
@@ -863,9 +863,6 @@ let ghost = null;
 let ghostSpring = null;
 let ghostActive = false;
 
-/* Βασικό μήκος ελατηρίου (για σωστή κλιμάκωση) */
-let springBaseWidth = 0;
-
 /* ---------- Helpers ---------- */
 
 function anchorX(){
@@ -873,65 +870,6 @@ function anchorX(){
 }
 function centerX(){
   return stage.clientWidth * 0.5;
-}
-
-/* δυναμικές τιμές που μπορεί να χρειαστούν σε κείμενα JSON */
-function x0Val(){
-  return A_m*Math.sin(omega*(0+obsStartPlaybackOffset));
-}
-
-function currentPhiDeg(){
-  return ((omega*obsStartPlaybackOffset)*180/Math.PI+360)%360;
-}
-
-/* format όλων των κειμένων: αντικατάσταση {A}, {T}, {omega}, {φ0}, {phi0}, {x0} */
-function formatText(text){
-  if(!text) return '';
-  let out = String(text);
-  const x0 = x0Val();
-  const phi0deg = currentPhiDeg();
-  out = out
-    .replaceAll('{A}', A_m.toFixed(2))
-    .replaceAll('{T}', T.toFixed(2))
-    .replaceAll('{omega}', omega.toFixed(3))
-    .replaceAll('{φ0}', phi0deg.toFixed(1))
-    .replaceAll('{phi0}', phi0deg.toFixed(1))
-    .replaceAll('{x0}', x0.toFixed(2));
-  return out;
-}
-
-function updateRuler(){
-  const baseLeft = stage.clientWidth * 0.18;
-  const usableW = stage.clientWidth * 0.64;
-  rulerEl.style.left = baseLeft + 'px';
-  rulerEl.style.width = usableW + 'px';
-  rulerEl.innerHTML = '';
-  const cX = stage.clientWidth / 2;
-  for(let mTick=-7;mTick<=7;mTick++){
-    const xPx = cX + mTick * pxPerMeter;
-    const rel = xPx - baseLeft;
-    const tDiv = document.createElement('div');
-    tDiv.className = 'tick';
-    tDiv.style.left = rel + 'px';
-    rulerEl.appendChild(tDiv);
-    const lbl = document.createElement('div');
-    lbl.className='tick-label';
-    lbl.textContent = (mTick===0?'0':(mTick>0? '+'+mTick:mTick))+' m';
-    lbl.style.left = rel + 'px';
-    rulerEl.appendChild(lbl);
-  }
-}
-
-function logMeasurement(tObs, xMeters){
-  if(!obsStarted || mode==='pause') return;
-  if(tObs - lastSampleObsTime < sampleInterval) return;
-  lastSampleObsTime = tObs;
-  const tr = document.createElement('tr');
-  tr.className = 'new';
-  tr.innerHTML = '<td>'+(++measureRowIdx)+'</td><td>'+tObs.toFixed(2)+'</td><td>'+xMeters.toFixed(2)+'</td>';
-  measureTBody.appendChild(tr);
-  setTimeout(()=>tr.classList.remove('new'), 650);
-  try{ tr.scrollIntoView({block:'end'}); }catch(e){}
 }
 
 /* ---------- uPlot x(t) ---------- */
@@ -998,7 +936,7 @@ function localizeTrig(txt){
 }
 
 function addLaw(txt){
-  const t = localizeTrig(formatText(txt));
+  const t = localizeTrig(txt);
   if(!firstLawShown){
     firstLawShown = true;
     lawsPane.style.display='block';
@@ -1152,7 +1090,7 @@ function ensureAxChart(){
 /* ---------- Παράμετροι ταλάντωσης ---------- */
 
 function showParamsBox(){
-  const phi0deg = currentPhiDeg();
+  const phi0deg = ((omega*obsStartPlaybackOffset)*180/Math.PI+360)%360;
   paramAEl.textContent = 'A = '+A_m.toFixed(2)+' m';
   paramWEl.textContent = 'ω = '+omega.toFixed(3)+' rad/s';
   paramPhiEl.textContent = 'φ₀ = '+phi0deg.toFixed(1)+'°';
@@ -1242,7 +1180,7 @@ function showBubbleForEvent(ev){
     const viewer = ev.viewer || 1;
     const vi = viewerInfo(viewer);
 
-    const html = formatText(ev.left || '').replaceAll('\n','<br>');
+    const html = (ev.left || '').replaceAll('\n','<br>');
     if(!html){
       hideSpeakerChip();
       bubbleEl.style.display='none';
@@ -1425,7 +1363,7 @@ function setFoyerSpeaker(idx1based){
 }
 
 function typeWriterBoard(el, text, totalMs, done){
-  const src = formatText(text||'').replaceAll('sqrt(','√(');
+  const src = String(text||'').replaceAll('sqrt(','√(');
   const total = src.length || 1;
   const baseMs = (typeof totalMs==='number' && totalMs>0 ? totalMs : 3000);
   const step = Math.max(10, Math.round(baseMs/total));
@@ -1521,8 +1459,6 @@ function resetShow(){
   measureRowIdx = 0;
   setMode('run');
 
-  springBaseWidth = 0;
-
   startBtn.style.display='block';
   countdownOverlay.style.display='none';
   measureBox.style.display='none';
@@ -1607,6 +1543,30 @@ btnFoyerGo.addEventListener('click', ()=>{
   runFoyer();
 });
 
+/* ---------- Ruler ---------- */
+
+function updateRuler(){
+  const baseLeft = stage.clientWidth * 0.18;
+  const usableW = stage.clientWidth * 0.64;
+  rulerEl.style.left = baseLeft + 'px';
+  rulerEl.style.width = usableW + 'px';
+  rulerEl.innerHTML = '';
+  const cX = stage.clientWidth / 2;
+  for(let mTick=-7;mTick<=7;mTick++){
+    const xPx = cX + mTick * pxPerMeter;
+    const rel = xPx - baseLeft;
+    const tDiv = document.createElement('div');
+    tDiv.className = 'tick';
+    tDiv.style.left = rel + 'px';
+    rulerEl.appendChild(tDiv);
+    const lbl = document.createElement('div');
+    lbl.className='tick-label';
+    lbl.textContent = (mTick===0?'0':(mTick>0? '+'+mTick:mTick))+' m';
+    lbl.style.left = rel + 'px';
+    rulerEl.appendChild(lbl);
+  }
+}
+
 /* ---------- Animation loop ---------- */
 
 function animate(now){
@@ -1630,21 +1590,12 @@ function animate(now){
 
   const hookX = cx + A_px*Math.sin(omega*playbackTime);
 
-  if(!springBaseWidth){
-    const rect0 = springEl.getBoundingClientRect();
-    if(rect0.width > 0){
-      springBaseWidth = rect0.width;
-    }
-  }
-
-  if(springBaseWidth > 0){
-    const dist = hookX - ax;
-    const scale = dist / springBaseWidth;
-    springEl.style.left = ax+'px';
-    springEl.style.transform = 'scaleX('+scale+')';
-  }else{
-    springEl.style.left = ax+'px';
-  }
+  const springRect = springEl.getBoundingClientRect();
+  const L0 = springRect.width || 1;
+  const dist = hookX - ax;
+  const scale = dist / L0;
+  springEl.style.left = ax+'px';
+  springEl.style.transform = 'scaleX('+scale+')';
 
   const actorRect = actor.getBoundingClientRect();
   const hookOffset = actorRect.width/2 || 40;
@@ -1657,6 +1608,7 @@ function animate(now){
   const xMeters = (hookX - cx)/pxPerMeter;
   logMeasurement(tObs, xMeters);
 
+  // ghost για act 2 – ίδιο κέντρο ταλάντωσης, διαφορετικό A
   if(ghost && ghostSpring){
     const Aghost_m = 5.0;
     const Aghost_px = pxPerMeter*Aghost_m;
@@ -1669,18 +1621,13 @@ function animate(now){
 
     if(ghostActive){
       ghost.style.left = (hookXg - hookOffset)+'px';
-
-      if(springBaseWidth > 0){
-        const distg = hookXg - ax;
-        const scaleg = distg / springBaseWidth;
-        ghostSpring.style.bottom = springEl.style.bottom;
-        ghostSpring.style.left = ax+'px';
-        const sr = springEl.getBoundingClientRect();
-        ghostSpring.style.height = (sr.height || springEl.height || 96) + 'px';
-        ghostSpring.style.transform = 'scaleX('+scaleg+')';
-      }else{
-        ghostSpring.style.left = ax+'px';
-      }
+      const base = L0 || 1;
+      const distg = hookXg - ax;
+      const scaleg = distg/base;
+      ghostSpring.style.bottom = springEl.style.bottom;
+      ghostSpring.style.left = ax+'px';
+      ghostSpring.style.height = springRect.height+'px';
+      ghostSpring.style.transform = 'scaleX('+scaleg+')';
     }
   }
 
@@ -1689,6 +1636,20 @@ function animate(now){
   requestAnimationFrame(animate);
 }
 requestAnimationFrame(animate);
+
+/* ---------- Μετρήσεις ---------- */
+
+function logMeasurement(tObs, xMeters){
+  if(!obsStarted || mode==='pause') return;
+  if(tObs - lastSampleObsTime < sampleInterval) return;
+  lastSampleObsTime = tObs;
+  const tr = document.createElement('tr');
+  tr.className = 'new';
+  tr.innerHTML = '<td>'+(++measureRowIdx)+'</td><td>'+tObs.toFixed(2)+'</td><td>'+xMeters.toFixed(2)+'</td>';
+  measureTBody.appendChild(tr);
+  setTimeout(()=>tr.classList.remove('new'), 650);
+  try{ tr.scrollIntoView({block:'end'}); }catch(e){}
+}
 
 /* ---------- Viewers avatars ---------- */
 
