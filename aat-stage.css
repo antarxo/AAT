@@ -255,7 +255,7 @@ body{
 .clock{
   position:absolute;
   top:10px;
-  /* left ορίζεται δυναμικά από JS */
+  /* θέση (left) ρυθμίζεται από JS */
   background:rgba(0,0,0,.5);
   color:#fff;
   padding:6px 10px;
@@ -277,7 +277,7 @@ body{
 
 .measure-box{
   position:absolute;
-  /* left/top/width/height ρυθμίζονται από το JS */
+  /* left/top/width/height τα δίνει το JS (positionRightPanel) */
   z-index:262;
   background:rgba(0,0,0,.55);
   color:#fff;
@@ -328,7 +328,7 @@ body{
 
 #xtChart{
   position:absolute;
-  /* left/top/width/height τα αναλαμβάνει το JS */
+  /* left/top/width/height ρυθμίζονται από JS */
   display:none;
   z-index:266;
   border:1px dashed rgba(255,255,255,.25);
@@ -354,7 +354,7 @@ body{
 
 .params-box{
   position:absolute;
-  /* left/top ορίζονται από JS */
+  /* θέση ορίζεται δυναμικά από JS */
   z-index:268;
   background:rgba(0,0,0,.6);
   color:#fff;
