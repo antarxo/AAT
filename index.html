@@ -481,7 +481,7 @@
       pointer-events:none;
       opacity:0;
       display:none;
-      transition:opacity .25s.ease, transform .25s ease;
+      transition:opacity .25s ease, transform .25s ease;
     }
     .thought-bubble.active{
       display:block;
@@ -1133,6 +1133,18 @@ function viewerInfo(idx1based){
 
 function viewerAnchor(idx1based){
   const vi = viewerInfo(idx1based);
+  const avatar = viewersStrip.querySelector('.viewer-avatar[data-idx="'+(idx1based-1)+'"]');
+  const sRect = stage.getBoundingClientRect();
+
+  // αν υπάρχει πραγματικό avatar, αγκύρωση πάνω του
+  if(avatar){
+    const aRect = avatar.getBoundingClientRect();
+    const x = aRect.left + aRect.width/2 - sRect.left;
+    const y = aRect.top  + aRect.height/2 - sRect.top;
+    return {x,y,info:vi};
+  }
+
+  // fallback (αν για κάποιο λόγο λείπει το avatar)
   const leftFrac  = 0.18;
   const widthFrac = 0.64;
   const frac = vi && typeof vi.xFrac==='number'
@@ -1666,7 +1678,7 @@ function animate(now){
   const cx = centerX();
   const stageH = stage.clientHeight;
 
-  // θέση ηθοποιού (κέντρο = hook)
+  // θέση hook (βέλος) για τον κανονικό
   const hookX = cx + A_px*Math.sin(omega*playbackTime);
 
   // φυσικό μήκος ελατηρίου
@@ -1679,13 +1691,14 @@ function animate(now){
   springEl.style.left      = ax+'px';
   springEl.style.transform = 'scaleX('+scale+')';
 
-  // ηθοποιός: κέντρο εικόνας = hook
+  // ηθοποιός: ΠΡΟΗΓΟΥΜΕΝΗ θέση θα ήταν κέντρο=hookX (left = hookX - actorHalf)
+  // Τώρα τον μετακινούμε δεξιότερα κατά μισό πλάτος → left = hookX
   const actorRect   = actor.getBoundingClientRect();
-  const actorHalf   = (actorRect.width || 80) / 2;
   const actorBottom = getComputedStyle(actor).bottom || 'calc(32vh + 135px)';
-  actor.style.left   = (hookX - actorHalf)+'px';
+  actor.style.left   = hookX + 'px';
   actor.style.bottom = actorBottom;
 
+  // marker (βέλος θέσης) στην ίδια x
   markerEl.style.left = hookX+'px';
   spotlight.style.background =
     'radial-gradient(220px 140px at '+hookX+'px '+(stageH*0.62)+'px, rgba(255,255,220,.65), rgba(255,255,255,0) 70%)';
@@ -1693,7 +1706,7 @@ function animate(now){
   const xMeters = (hookX - cx)/pxPerMeter;
   logMeasurement(tObs, xMeters);
 
-  // ghost για act 2 (ίδιο μηδέν, A=5 m, ίδιο πάτωμα, κέντρο εικόνας = hookXg)
+  // ghost για act 2 (ίδιο μηδέν, A=5 m, ίδιο πάτωμα, δεξιότερα κατά μισό πλάτος)
   if(ghost && ghostSpring){
     const Aghost_m  = 5.0;
     const Aghost_px = pxPerMeter*Aghost_m;
@@ -1708,11 +1721,13 @@ function animate(now){
 
     if(ghostActive){
       const ghostRect = ghost.getBoundingClientRect();
-      const ghostHalf = (ghostRect.width || actorRect.width || 80) / 2;
+      const ghostWidth = ghostRect.width || actorRect.width || 80;
 
       // ίδιο πάτωμα με κανονικό
       ghost.style.bottom = actorBottom;
-      ghost.style.left   = (hookXg - ghostHalf)+'px';
+      // προηγουμένως κέντρο=hookXg (left = hookXg - ghostHalf)
+      // τώρα δεξιότερα κατά μισό πλάτος → left = hookXg
+      ghost.style.left   = hookXg + 'px';
 
       const distg  = hookXg - ax;
       const scaleg = distg / baseL;
