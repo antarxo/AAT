@@ -98,7 +98,7 @@
       left:50%;
       width:144px;
       height:96px;
-      transform:translateX(-50%);
+      transform:translateX(-50%); /* κέντρο στο βέλος */
       z-index:1700;
       pointer-events:none;
     }
@@ -150,7 +150,7 @@
       position:absolute;
       left:0;
       width:100%;
-      bottom:200px;                /* ~200px πάνω από koino */
+      bottom:200px;                /* ~200px πάνω από το koino */
       z-index:2000;
       pointer-events:none;
     }
@@ -880,7 +880,6 @@ let ghostActive = false;
 
 /* Φυσικό μήκος ελατηρίου (σε px) */
 let springNaturalW = 1;
-let springNaturalH = 1;
 
 /* ---------- Χρήσιμα ---------- */
 
@@ -1313,6 +1312,7 @@ function ensureGhost(){
     ghost.style.pointerEvents='none';
     ghost.style.opacity='0.85';
     ghost.style.filter='grayscale(1) brightness(1.2)';
+    ghost.style.transform='translateX(-50%)';  // κέντρο ghost στο βέλος
     const img = document.createElement('img');
     img.src = actor.querySelector('img').src;
     img.style.width='100%';
@@ -1637,10 +1637,7 @@ function animate(now){
   springEl.style.left = ax+'px';
   springEl.style.transform = 'scaleX('+scale+')';
 
-  const actorRect = actor.getBoundingClientRect();
-  const actorWidth = actorRect.width || ACTOR_WIDTH;
-
-  actor.style.left = hookX + 'px';  // δένει στο βέλος (ελεύθερο άκρο)
+  actor.style.left = hookX + 'px';  // κέντρο actor στο βέλος (με translateX(-50%))
 
   markerEl.style.left = hookX+'px';
   spotlight.style.background =
@@ -1659,11 +1656,8 @@ function animate(now){
     markerGhostEl.style.opacity = ghostActive ? '1' : '0';
 
     if(ghostActive){
-      const ghostRect = ghost.getBoundingClientRect();
-      const ghostWidth = ghostRect.width || ACTOR_WIDTH;
-
-      ghost.style.left = hookXg + 'px';           // ίδιο δέσιμο με ηθοποιό
-      markerGhostEl.style.left = hookXg + 'px';   // βέλος και για ghost
+      ghost.style.left = hookXg + 'px';          // κέντρο ghost στο βέλος (translateX(-50%))
+      markerGhostEl.style.left = hookXg + 'px';  // βέλος και για ghost
 
       const distg = hookXg - ax;
       const scaleg = distg / springNaturalW;
@@ -1692,8 +1686,14 @@ function initViewersAvatars(){
     }
     const anchor = viewerAnchor(idx+1);
     div.style.left = anchor.x+'px';
-    div.style.transform = 'translateX(-50%)';
   });
+}
+
+/* ---------- Spring natural size ---------- */
+
+function computeSpringNaturalSize(){
+  const w = springEl.naturalWidth || springEl.width || springEl.getBoundingClientRect().width;
+  springNaturalW = w || 1;
 }
 
 /* ---------- Load dialogs-gr.json & bootstrap ---------- */
@@ -1713,9 +1713,11 @@ async function loadDialogs(){
 }
 
 window.addEventListener('load', ()=>{
-  const rect = springEl.getBoundingClientRect();
-  springNaturalW = rect.width || 1;
-  springNaturalH = rect.height || 1;
+  if(springEl.complete){
+    computeSpringNaturalSize();
+  }else{
+    springEl.addEventListener('load', computeSpringNaturalSize);
+  }
   updateRuler();
   resetShow();
   loadDialogs();
