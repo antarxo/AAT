@@ -86,7 +86,7 @@
       left:10%;
       height:96px;
       width:auto;
-      z-index:90;
+      z-index:140; /* αρκετά μπροστά για να φαίνεται στη 2η πράξη */
       pointer-events:none;
       filter:drop-shadow(0 4px 6px rgba(0,0,0,.55));
       transform-origin:left center;
@@ -148,17 +148,15 @@
 
     .viewers{
       position:absolute;
-      left:18%;
-      width:64%;
+      left:0;
+      width:100%;
       bottom:200px;                /* ~200px πάνω από το koino.png */
-      display:flex;
-      justify-content:space-between;
-      padding:0 4vw;
+      /* δεν βασιζόμαστε σε flex για θέσεις, τις δίνει το JSON */
       z-index:2000;               /* πάνω από το κοινό */
       pointer-events:none;
     }
     .viewer-avatar{
-      position:relative;
+      position:absolute;          /* τοποθέτηση από JS (xFrac) */
       flex:0 0 auto;
       height:22vh;                /* κλιμάκωση αντίστοιχη με το κοινό */
       width:auto;
@@ -167,6 +165,7 @@
       border:none;
       box-shadow:none;
       background:#111 center bottom/contain no-repeat;
+      transform:translateX(-50%);
     }
 
     /* Ταμπέλα τίτλου */
@@ -1331,7 +1330,7 @@ function ensureGhost(){
     ghostSpring.style.position='absolute';
     ghostSpring.style.bottom = 'calc(32vh + 92px)';
     ghostSpring.style.transformOrigin='left center';
-    ghostSpring.style.zIndex='119';
+    ghostSpring.style.zIndex='139'; /* λίγο πίσω από κανονικό ελατήριο/ηθοποιό */
     ghostSpring.style.pointerEvents='none';
     ghostSpring.style.opacity='0.9';
     ghostSpring.style.filter='grayscale(1) brightness(1.15)';
@@ -1470,7 +1469,7 @@ function addFoyerRow(item){
       if((item.right||'').trim().length>0){
         typeWriterBoard(r, item.right||'', typeMs, ()=>{
           setTimeout(()=>{
-            foyerBubble.style.display='none'; // κρύβεται όταν τελειώσει η "ατάκα"
+            foyerBubble.style.display='none';
             resolve();
           }, pauseMs);
         });
@@ -1647,8 +1646,10 @@ function animate(now){
   springEl.style.left = ax+'px';
   springEl.style.transform = 'scaleX('+scale+')';
 
-  // ηθοποιός: το κέντρο της εικόνας συμπίπτει με hookX
-  const hookOffset = ACTOR_WIDTH/2;
+  // ηθοποιός: το κέντρο της εικόνας (μετά από κλιμάκωση) συμπίπτει με hookX
+  const actorRect = actor.getBoundingClientRect();
+  const actorWidth = actorRect.width || ACTOR_WIDTH;
+  const hookOffset = actorWidth/2;
   actor.style.left = (hookX - hookOffset)+'px';
 
   markerEl.style.left = hookX+'px';
@@ -1668,7 +1669,11 @@ function animate(now){
     ghostSpring.style.display = ghostActive ? 'block' : 'none';
 
     if(ghostActive){
-      ghost.style.left = (hookXg - hookOffset)+'px';
+      const ghostRect = ghost.getBoundingClientRect();
+      const ghostWidth = ghostRect.width || ACTOR_WIDTH;
+      const ghostOffset = ghostWidth/2;
+
+      ghost.style.left = (hookXg - ghostOffset)+'px';
       const distg = hookXg - ax;
       const scaleg = distg / springNaturalW;
       ghostSpring.style.left = ax+'px';
@@ -1692,6 +1697,9 @@ function initViewersAvatars(){
     if(v.img){
       div.style.backgroundImage = 'url("'+v.img+'")';
     }
+    const anchor = viewerAnchor(idx+1);
+    div.style.left = anchor.x+'px';
+    div.style.transform = 'translateX(-50%)';
   });
 }
 
