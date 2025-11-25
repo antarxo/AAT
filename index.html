@@ -86,7 +86,7 @@
       left:10%;
       height:96px;
       width:auto;
-      z-index:700; /* όπως ζήτησες */
+      z-index:1600; /* πάνω από το κοινό */
       pointer-events:none;
       filter:drop-shadow(0 4px 6px rgba(0,0,0,.55));
       transform-origin:left center;
@@ -99,7 +99,7 @@
       width:144px;
       height:96px;
       transform:translateX(-50%);
-      z-index:110;
+      z-index:1700;
       pointer-events:none;
     }
     .actor img{
@@ -140,23 +140,22 @@
       object-fit:contain;
       object-position:bottom center;
       opacity:.9;
-      z-index:980;
+      z-index:1490;
       pointer-events:none;
     }
 
-    /* Ομιλητές / θεατές: κανονικές εικόνες, όχι ελλείψεις */
+    /* Ομιλητές / θεατές: κανονικές εικόνες */
 
     .viewers{
       position:absolute;
       left:0;
       width:100%;
-      bottom:200px;                /* ~200px πάνω από το koino.png */
+      bottom:200px;                /* ~200px πάνω από koino */
       z-index:2000;
       pointer-events:none;
     }
     .viewer-avatar{
       position:absolute;
-      flex:0 0 auto;
       height:22vh;
       width:auto;
       overflow:visible;
@@ -377,7 +376,7 @@
       height:80px;
       transform:translateX(-50%);
       pointer-events:none;
-      z-index:275;
+      z-index:1750;
       opacity:0;
       transition:opacity .3s;
     }
@@ -420,7 +419,7 @@
       padding:10px 12px 12px;
       border-radius:10px;
       box-shadow:0 6px 12px rgba(0,0,0,.4);
-      z-index:750;
+      z-index:1800; /* πάνω από κοινό */
       pointer-events:none;
       opacity:0;
       display:none;
@@ -453,7 +452,7 @@
 
     .act-bubble{
       position:absolute;
-      z-index:760;
+      z-index:1800;
       display:none;
       pointer-events:none;
       min-width:120px;
@@ -471,7 +470,7 @@
     }
     .foyer-bubble{
       position:absolute;
-      z-index:2000; /* όπως ζήτησες για το φουαγιέ */
+      z-index:2000; /* ομιλητής στο φουαγιέ πολύ πάνω */
       display:none;
       pointer-events:none;
       min-width:120px;
@@ -726,6 +725,7 @@
 
   <div class="ruler" id="ruler"></div>
   <div class="marker" id="marker"><div class="marker-line"></div><div class="marker-tip"></div></div>
+  <div class="marker" id="markerGhost"><div class="marker-line"></div><div class="marker-tip"></div></div>
 
   <img id="spring" class="spring" src="spring.png" alt="ελατήριο">
   <div class="actor" id="actor"><img src="skater.png" alt="Skater"></div>
@@ -807,6 +807,7 @@ const actor   = document.getElementById('actor');
 const spotlight = document.getElementById('spotlight');
 const rulerEl = document.getElementById('ruler');
 const markerEl = document.getElementById('marker');
+const markerGhostEl = document.getElementById('markerGhost');
 const clockEl = document.getElementById('clock');
 const slowHint = document.getElementById('slowHint');
 const measureBox = document.getElementById('measureBox');
@@ -1308,7 +1309,7 @@ function ensureGhost(){
     ghost.style.width = ACTOR_WIDTH+'px';
     ghost.style.height = ACTOR_HEIGHT+'px';
     ghost.style.bottom = 'calc(32vh + 135px)';
-    ghost.style.zIndex='120';
+    ghost.style.zIndex='1690';
     ghost.style.pointerEvents='none';
     ghost.style.opacity='0.85';
     ghost.style.filter='grayscale(1) brightness(1.2)';
@@ -1326,7 +1327,7 @@ function ensureGhost(){
     ghostSpring.style.position='absolute';
     ghostSpring.style.bottom = 'calc(32vh + 92px)';
     ghostSpring.style.transformOrigin='left center';
-    ghostSpring.style.zIndex='699';
+    ghostSpring.style.zIndex='1590';
     ghostSpring.style.pointerEvents='none';
     ghostSpring.style.opacity='0.9';
     ghostSpring.style.filter='grayscale(1) brightness(1.15)';
@@ -1341,6 +1342,7 @@ async function runAct2(){
   stage.classList.add('open');
 
   springEl.style.display = 'block';
+  markerEl.style.opacity = '1';     // βέλος και στη 2η πράξη
 
   for(const ev of ACT2){
     if(ev.gStart) ghostActive = true;
@@ -1356,7 +1358,6 @@ async function runAct2(){
   }
 
   stage.classList.remove('open');
-  markerEl.style.opacity='0';
   setTimeout(()=>{
     foyerBreak.style.display='flex';
   }, 1200);
@@ -1366,7 +1367,6 @@ async function runAct2(){
 
 function closeCurtainToAct2(){
   return new Promise(resolve=>{
-    markerEl.style.opacity='0';
     stage.classList.remove('open');
     setTimeout(()=>{
       actBreak.style.display='flex';
@@ -1520,6 +1520,7 @@ function resetShow(){
   measureBox.style.display='none';
   clockEl.style.display='none';
   markerEl.style.opacity='0';
+  markerGhostEl.style.opacity='0';
   paramsBoxEl.style.display='none';
   lawsPane.style.display='none';
   lawsBody.innerHTML='';
@@ -1540,6 +1541,7 @@ function resetShow(){
   xtChartEl.style.display='none';
   stage.classList.remove('open');
   markerEl.style.left = centerX()+'px';
+  markerGhostEl.style.left = centerX()+'px';
 
   springEl.style.display = 'none';
   if(ghost){
@@ -1638,7 +1640,7 @@ function animate(now){
   const actorRect = actor.getBoundingClientRect();
   const actorWidth = actorRect.width || ACTOR_WIDTH;
 
-  actor.style.left = hookX + 'px';  // μετακίνηση δεξιά κατά μισό πλάτος σε σχέση με πριν
+  actor.style.left = hookX + 'px';  // δένει στο βέλος (ελεύθερο άκρο)
 
   markerEl.style.left = hookX+'px';
   spotlight.style.background =
@@ -1650,22 +1652,26 @@ function animate(now){
   if(ghost && ghostSpring){
     const Aghost_m = 5.0;
     const Aghost_px = pxPerMeter*Aghost_m;
-    const hookXg = cx + Aghost_px*Math.sin(omega*playbackTime);
+    const hookXg = cx + Aghost_px*Math.sin(omega*playbackTime); // ίδιο μηδέν, άλλη Α
 
     ghost.style.display = ghostActive ? 'block' : 'none';
     ghostSpring.style.display = ghostActive ? 'block' : 'none';
+    markerGhostEl.style.opacity = ghostActive ? '1' : '0';
 
     if(ghostActive){
       const ghostRect = ghost.getBoundingClientRect();
       const ghostWidth = ghostRect.width || ACTOR_WIDTH;
 
-      ghost.style.left = hookXg + 'px';  // ίδια λογική με τον ηθοποιό
+      ghost.style.left = hookXg + 'px';           // ίδιο δέσιμο με ηθοποιό
+      markerGhostEl.style.left = hookXg + 'px';   // βέλος και για ghost
 
       const distg = hookXg - ax;
       const scaleg = distg / springNaturalW;
       ghostSpring.style.left = ax+'px';
       ghostSpring.style.transform = 'scaleX('+scaleg+')';
     }
+  }else{
+    markerGhostEl.style.opacity = '0';
   }
 
   if(uXT) drawXTChart();
