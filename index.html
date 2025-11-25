@@ -144,26 +144,29 @@
       pointer-events:none;
     }
 
+    /* Ομιλητές / θεατές: κανονικές εικόνες, όχι ελλείψεις */
+
     .viewers{
       position:absolute;
       left:18%;
       width:64%;
-      bottom:6px;
+      bottom:200px;                /* ~200px πάνω από το koino.png */
       display:flex;
       justify-content:space-between;
       padding:0 4vw;
-      z-index:1000;
+      z-index:2000;               /* πάνω από το κοινό */
       pointer-events:none;
     }
     .viewer-avatar{
       position:relative;
-      width:64px;
-      height:96px;
-      overflow:hidden;
-      border-radius:999px;
-      border:2px solid rgba(0,0,0,.8);
-      box-shadow:0 4px 8px rgba(0,0,0,.8);
-      background:#111 center/cover no-repeat;
+      flex:0 0 auto;
+      height:22vh;                /* κλιμάκωση αντίστοιχη με το κοινό */
+      width:auto;
+      overflow:visible;
+      border-radius:0;
+      border:none;
+      box-shadow:none;
+      background:#111 center bottom/contain no-repeat;
     }
 
     /* Ταμπέλα τίτλου */
@@ -1635,15 +1638,16 @@ function animate(now){
   const cx = centerX();
   const stageH = stage.clientHeight;
 
-  // τρέχουσα θέση ηθοποιού (A=3 m)
+  // τρέχουσα θέση ηθοποιού (A=3 m) → "θέση βέλους"
   const hookX = cx + A_px*Math.sin(omega*playbackTime);
 
-  // ελατήριο (σταθερό φυσικό μήκος, μόνο όταν είναι ορατό)
+  // ελατήριο: το ελεύθερο άκρο συμπίπτει με hookX
   const dist = hookX - ax;
   const scale = dist / springNaturalW;
   springEl.style.left = ax+'px';
   springEl.style.transform = 'scaleX('+scale+')';
 
+  // ηθοποιός: το κέντρο της εικόνας συμπίπτει με hookX
   const hookOffset = ACTOR_WIDTH/2;
   actor.style.left = (hookX - hookOffset)+'px';
 
