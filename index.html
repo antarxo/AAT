@@ -90,7 +90,7 @@
       pointer-events:none;
       filter:drop-shadow(0 4px 6px rgba(0,0,0,.55));
       transform-origin:left center;
-      display:block;
+      display:none; /* ΚΡΥΦΟ ΣΤΗΝ ΑΡΧΗ & ΣΤΗΝ 1η ΠΡΑΞΗ */
     }
     .actor{
       position:absolute;
@@ -879,7 +879,7 @@ let ghostSpring = null;
 let ghostActive = false;
 
 /* Φυσικό μήκος ελατηρίου (σε px) */
-let springNaturalW = 1;
+let springNaturalW = null;
 
 /* ---------- Χρήσιμα ---------- */
 
@@ -1331,6 +1331,7 @@ function ensureGhost(){
     ghostSpring.style.pointerEvents='none';
     ghostSpring.style.opacity='0.9';
     ghostSpring.style.filter='grayscale(1) brightness(1.15)';
+    ghostSpring.style.display='none';
     stage.appendChild(ghostSpring);
   }
 }
@@ -1632,10 +1633,13 @@ function animate(now){
 
   const hookX = cx + A_px*Math.sin(omega*playbackTime);
 
-  const dist = hookX - ax;
-  const scale = dist / springNaturalW;
-  springEl.style.left = ax+'px';
-  springEl.style.transform = 'scaleX('+scale+')';
+  // κλιμάκωση ελατηρίου – ΜΟΝΟ όταν έχουμε αξιόπιστο μήκος
+  if(springNaturalW && springNaturalW > 5){
+    const dist = hookX - ax;
+    const scale = dist / springNaturalW;
+    springEl.style.left = ax+'px';
+    springEl.style.transform = 'scaleX('+scale+')';
+  }
 
   actor.style.left = hookX + 'px';  // κέντρο actor στο βέλος (με translateX(-50%))
 
@@ -1656,13 +1660,15 @@ function animate(now){
     markerGhostEl.style.opacity = ghostActive ? '1' : '0';
 
     if(ghostActive){
-      ghost.style.left = hookXg + 'px';          // κέντρο ghost στο βέλος (translateX(-50%))
-      markerGhostEl.style.left = hookXg + 'px';  // βέλος και για ghost
+      ghost.style.left = hookXg + 'px';          // κέντρο ghost στο βέλος
+      markerGhostEl.style.left = hookXg + 'px';
 
-      const distg = hookXg - ax;
-      const scaleg = distg / springNaturalW;
-      ghostSpring.style.left = ax+'px';
-      ghostSpring.style.transform = 'scaleX('+scaleg+')';
+      if(springNaturalW && springNaturalW > 5){
+        const distg = hookXg - ax;
+        const scaleg = distg / springNaturalW;
+        ghostSpring.style.left = ax+'px';
+        ghostSpring.style.transform = 'scaleX('+scaleg+')';
+      }
     }
   }else{
     markerGhostEl.style.opacity = '0';
@@ -1692,8 +1698,22 @@ function initViewersAvatars(){
 /* ---------- Spring natural size ---------- */
 
 function computeSpringNaturalSize(){
-  const w = springEl.naturalWidth || springEl.width || springEl.getBoundingClientRect().width;
+  // μετράμε το "ηρεμο" πλάτος όπως εμφανίζεται στη σκηνή
+  const prevDisplay = springEl.style.display;
+  const prevTransform = springEl.style.transform;
+
+  springEl.style.display = 'block';
+  springEl.style.transform = 'none';
+
+  const rect = springEl.getBoundingClientRect();
+  let w = rect.width;
+  if(!w || w <= 0){
+    w = springEl.naturalWidth || 1;
+  }
   springNaturalW = w || 1;
+
+  springEl.style.display = prevDisplay;
+  springEl.style.transform = prevTransform;
 }
 
 /* ---------- Load dialogs-gr.json & bootstrap ---------- */
