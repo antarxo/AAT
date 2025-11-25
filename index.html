@@ -113,7 +113,7 @@
       width:144px;
       height:96px;
       transform:translateX(-50%);
-      z-index:157; /* ηθοποιός > ελατήριο του */
+      z-index:157; /* ηθοποιός > ελατήριο */
       pointer-events:none;
     }
     .actor img{
@@ -433,7 +433,7 @@
       height:80px;
       transform:translateX(-50%);
       pointer-events:none;
-      z-index:275;
+      z-index:158; /* πάνω από ηθοποιό (157), κάτω από κουρτίνα (160) */
       opacity:0;
       transition:opacity .3s;
     }
@@ -481,7 +481,7 @@
       pointer-events:none;
       opacity:0;
       display:none;
-      transition:opacity .25s ease, transform .25s ease;
+      transition:opacity .25s.ease, transform .25s ease;
     }
     .thought-bubble.active{
       display:block;
@@ -1393,7 +1393,7 @@ async function runAct2(){
     await showBubbleForEvent(ev);
   }
 
-  // Τέλος Πράξης 2 → κλείσιμο κουρτίνας, βέλος παραμένει ορατό
+  // Τέλος Πράξης 2 → κλείσιμο κουρτίνας, βέλος παραμένει ορατό όσο είναι ανοικτή
   stage.classList.remove('open');
   setTimeout(()=>{
     foyerBreak.style.display='flex';
@@ -1681,9 +1681,9 @@ function animate(now){
 
   // ηθοποιός: κέντρο εικόνας = hook
   const actorRect   = actor.getBoundingClientRect();
-  const hookOffset  = (actorRect.width || 80)/2;
+  const actorHalf   = (actorRect.width || 80) / 2;
   const actorBottom = getComputedStyle(actor).bottom || 'calc(32vh + 135px)';
-  actor.style.left   = (hookX - hookOffset)+'px';
+  actor.style.left   = (hookX - actorHalf)+'px';
   actor.style.bottom = actorBottom;
 
   markerEl.style.left = hookX+'px';
@@ -1693,7 +1693,7 @@ function animate(now){
   const xMeters = (hookX - cx)/pxPerMeter;
   logMeasurement(tObs, xMeters);
 
-  // ghost για act 2 (ίδιο μηδέν, A=5 m, ίδιο πάτωμα)
+  // ghost για act 2 (ίδιο μηδέν, A=5 m, ίδιο πάτωμα, κέντρο εικόνας = hookXg)
   if(ghost && ghostSpring){
     const Aghost_m  = 5.0;
     const Aghost_px = pxPerMeter*Aghost_m;
@@ -1707,9 +1707,12 @@ function animate(now){
     ghostSpring.style.display= ghostActive ? 'block' : 'none';
 
     if(ghostActive){
+      const ghostRect = ghost.getBoundingClientRect();
+      const ghostHalf = (ghostRect.width || actorRect.width || 80) / 2;
+
       // ίδιο πάτωμα με κανονικό
       ghost.style.bottom = actorBottom;
-      ghost.style.left   = (hookXg - hookOffset)+'px';
+      ghost.style.left   = (hookXg - ghostHalf)+'px';
 
       const distg  = hookXg - ax;
       const scaleg = distg / baseL;
