@@ -6,8 +6,8 @@
       "color": "#ffcc00",
       "xFrac": 0.16,
       "bubbleDx": 140,
-      "bubbleDy": 180,
-      "avatarDy": 120,
+      "bubbleDy": 160,
+      "avatarDy": 100,
       "avatarScale": 0.4,
       "img": "viewer1.png"
     },
@@ -699,6 +699,7 @@
     }
   ]
 }
+
 
 
 
