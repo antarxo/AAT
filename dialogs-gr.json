@@ -5,8 +5,8 @@
       "name_en": "Viewer 1",
       "color": "#ffcc00",
       "xFrac": 0.10,
-      "bubbleDx": 140,
-      "bubbleDy": 160,
+      "bubbleDx": 200,
+      "bubbleDy": 100,
       "avatarDy": 100,
       "avatarScale": 0.27,
       "img": "viewer1.png"
@@ -699,6 +699,7 @@
     }
   ]
 }
+
 
 
 
