@@ -7,8 +7,8 @@
       "xFrac": 0.16,
       "bubbleDx": 140,
       "bubbleDy": 160,
-      "avatarDy": 40,
-      "avatarScale": 0.25,
+      "avatarDy": 100,
+      "avatarScale": 0.2,
       "img": "viewer1.png"
     },
     {
@@ -699,6 +699,7 @@
     }
   ]
 }
+
 
 
 
