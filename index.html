@@ -1164,8 +1164,6 @@ function initViewersAvatars(){
 
   const leftBand  = 0.18;
   const widthBand = 0.64;
-  const baseWidthPx = 140;
-  const refScale    = 0.35;
 
   items.forEach((div, idx) => {
     const v = VIEWERS[idx];
@@ -1178,21 +1176,25 @@ function initViewersAvatars(){
       div.style.backgroundImage = 'url("'+v.img+'")';
     }
 
-    // Σμίκρυνση / μέγεθος avatar από JSON (avatarScale)
-    const scaleVal = (typeof v.avatarScale === 'number') ? v.avatarScale : refScale;
-    const widthPx  = baseWidthPx * (scaleVal / refScale);
-    div.style.width = widthPx + 'px';
-
-    // Ύψος container σε vh, επίσης παραμετροποιήσιμο
+    // Ύψος avatar σε vh (προαιρετικά από JSON)
     const baseHvh = 22;
     const hVh = (typeof v.heightVh === 'number') ? v.heightVh : baseHvh;
     div.style.height = hVh + 'vh';
 
-    // Κάθετη θέση (πάνω–κάτω) από JSON
-    const bottomPx = (typeof v.bottomPx === 'number') ? v.bottomPx : 130;
-    div.style.bottom = bottomPx + 'px';
+    // Οριζόντια κλίμακα από JSON (avatarScale), με ref = 0.35 -> 140px
+    const baseWpx   = 140;
+    const refScale  = 0.35;
+    const scale     = (typeof v.avatarScale === 'number') ? v.avatarScale : refScale;
+    const widthPx   = baseWpx * (scale / refScale);
+    div.style.width = widthPx + 'px';
 
-    // Οριζόντια θέση από xFrac
+    // Κάθετη θέση: base + avatarDy (σε px) από JSON
+    // baseBottomPx = 90 ώστε avatarDy = 40 να δίνει περίπου την παλιά θέση (~130px)
+    const baseBottomPx = 90;
+    const dy = (typeof v.avatarDy === 'number') ? v.avatarDy : 40;
+    div.style.bottom = (baseBottomPx + dy) + 'px';
+
+    // Οριζόντια θέση με xFrac (0–1) από JSON
     const fracDefault = (idx + 1) / (items.length + 1);
     const xFrac = (typeof v.xFrac === 'number') ? v.xFrac : fracDefault;
     const x = (leftBand + widthBand * xFrac) * stageW;
