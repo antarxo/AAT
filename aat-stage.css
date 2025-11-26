@@ -152,30 +152,31 @@ body{
 
 /* Ομιλητές / θεατές */
 
+/* Ομιλητές / θεατές */
 .viewers{
   position:absolute;
   left:18%;
   width:64%;
-  bottom:6px;              /* ίδιο «πάτωμα» με το κοινό */
+  bottom:0; /* ίδιο "πάτωμα" με το κοινό */
   display:flex;
   justify-content:space-between;
+  align-items:flex-end;
   padding:0 4vw;
-  z-index:1400;            /* πίσω από το koino.png (1500) */
+  z-index:1400; /* πίσω από το koino.png (1500) */
   pointer-events:none;
 }
+
 .viewer-avatar{
   position:relative;
   width:140px;
-  height:22vh;             /* ίδια κλιμάκωση με το κοινό */
+  height:22vh; /* ίδια λογική κλίμακας με το κοινό */
   overflow:visible;
   border-radius:0;
   border:none;
   box-shadow:none;
-  background:transparent;  /* διαφάνεια, φαίνεται το PNG όπως είναι */
-  background-position:bottom center;
-  background-repeat:no-repeat;
-  background-size:contain;
+  background:transparent center bottom/contain no-repeat; /* PNG διαφάνεια */
 }
+
 
 /* Ταμπέλα τίτλου */
 
@@ -731,3 +732,4 @@ body{
   box-shadow:0 0 0 1px rgba(0,0,0,0.35) inset;
   background:rgba(8,8,18,0.95)!important;
 }
+
