@@ -8,14 +8,14 @@
       "bubbleDx": 140,
       "bubbleDy": 160,
       "avatarDy": 100,
-      "avatarScale": 0.3,
+      "avatarScale": 0.27,
       "img": "viewer1.png"
     },
     {
       "name_gr": "Θεατής 2",
       "name_en": "Viewer 2",
       "color": "#66ccff",
-      "xFrac": 0.30,
+      "xFrac": 0.27,
       "bubbleDx": 140,
       "bubbleDy": 180,
       "avatarDy": 100,
@@ -30,7 +30,7 @@
       "bubbleDx": 40,
       "bubbleDy": -80,
       "avatarDy": 100,
-      "avatarScale": 0.3,
+      "avatarScale": 0.27,
       "img": "viewer3.png"
     },
     {
@@ -41,7 +41,7 @@
       "bubbleDx": 40,
       "bubbleDy": -80,
       "avatarDy": 100,
-      "avatarScale": 0.36,
+      "avatarScale": 0.3,
       "img": "viewer4.png"
     },
     {
@@ -52,7 +52,7 @@
       "bubbleDx": 40,
       "bubbleDy": -80,
       "avatarDy": 100,
-      "avatarScale": 0.3,
+      "avatarScale": 0.27,
       "img": "viewer5.png"
     }
   ],
@@ -699,6 +699,7 @@
     }
   ]
 }
+
 
 
 
