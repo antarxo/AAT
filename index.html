@@ -112,7 +112,6 @@
       left:50%;
       width:144px;
       height:96px;
-      /* χωρίς translateX – κέντρο από JS */
       z-index:157; /* ηθοποιός > ελατήριο */
       pointer-events:none;
     }
@@ -171,13 +170,13 @@
       display:flex;
       justify-content:space-between;
       padding:0 4vw;
-      z-index:2200; /* πολύ πάνω για debug */
+      z-index:2200; /* ψηλά για να φαίνονται σίγουρα */
       pointer-events:none;
     }
     .viewer-avatar{
       position:relative;
       width:140px;
-      height:22vh; /* σταθερό ύψος για να ΜΗΝ είναι 0 */
+      height:22vh; /* μη μηδενικό, ίδια κλίμακα με το κοινό */
       overflow:visible;
       border-radius:0;
       border:none;
@@ -433,7 +432,7 @@
       height:80px;
       transform:translateX(-50%);
       pointer-events:none;
-      z-index:158; /* πάνω από ηθοποιό (157), κάτω από κουρτίνα (160) */
+      z-index:158; /* πάνω από ηθοποιούς, κάτω από κουρτίνα */
       opacity:0;
       transition:opacity .3s;
     }
@@ -785,7 +784,14 @@
   <div id="lawCharts" class="law-charts"></div>
 
   <div class="ruler" id="ruler"></div>
+
+  <!-- βέλος κανονικού -->
   <div class="marker" id="marker">
+    <div class="marker-line"></div>
+    <div class="marker-tip"></div>
+  </div>
+  <!-- βέλος ghost -->
+  <div class="marker" id="markerGhost">
     <div class="marker-line"></div>
     <div class="marker-tip"></div>
   </div>
@@ -871,6 +877,7 @@ const actor        = document.getElementById('actor');
 const spotlight    = document.getElementById('spotlight');
 const rulerEl      = document.getElementById('ruler');
 const markerEl     = document.getElementById('marker');
+const markerGhostEl= document.getElementById('markerGhost');
 const clockEl      = document.getElementById('clock');
 const slowHint     = document.getElementById('slowHint');
 const measureBox   = document.getElementById('measureBox');
@@ -1368,7 +1375,7 @@ function ensureGhost(){
     ghost = document.createElement('div');
     ghost.id='actorGhost';
     ghost.style.position='absolute';
-    ghost.style.zIndex='157';          // ghost actor > ghost spring
+    ghost.style.zIndex='157';
     ghost.style.pointerEvents='none';
     ghost.style.opacity='0.85';
     ghost.style.filter='grayscale(1) brightness(1.2)';
@@ -1389,7 +1396,7 @@ function ensureGhost(){
     ghostSpring.src = springEl.src;
     ghostSpring.style.position='absolute';
     ghostSpring.style.transformOrigin='left center';
-    ghostSpring.style.zIndex='156';    // ghost spring κάτω από ghost actor
+    ghostSpring.style.zIndex='156';
     ghostSpring.style.pointerEvents='none';
     ghostSpring.style.opacity='0.9';
     ghostSpring.style.filter='grayscale(1) brightness(1.15)';
@@ -1407,6 +1414,7 @@ async function runAct2(){
   springEl.style.display='block';
   if(ghostSpring) ghostSpring.style.display='block';
   markerEl.style.opacity='1';
+  markerGhostEl.style.opacity='0';
 
   for(const ev of ACT2){
     if(ev.gStart) ghostActive = true;
@@ -1573,34 +1581,36 @@ function resetShow(){
   measureRowIdx      = 0;
   setMode('run');
 
-  startBtn.style.display     ='block';
+  startBtn.style.display       ='block';
   countdownOverlay.style.display='none';
-  measureBox.style.display   ='none';
-  clockEl.style.display      ='none';
-  markerEl.style.opacity     ='0';
-  paramsBoxEl.style.display  ='none';
-  lawsPane.style.display     ='none';
-  lawsBody.innerHTML         ='';
-  firstLawShown              = false;
-  lawCharts.innerHTML        ='';
-  vCan = aCan = axCan        = null;
-  actBreak.style.display     ='none';
-  foyerBreak.style.display   ='none';
-  foyerEl.style.display      ='none';
-  foyerBubble.style.display  ='none';
-  boardLeft.innerHTML        ='';
-  boardRight.innerHTML       ='';
-  bubbleEl.style.display     ='none';
+  measureBox.style.display     ='none';
+  clockEl.style.display        ='none';
+  markerEl.style.opacity       ='0';
+  markerGhostEl.style.opacity  ='0';
+  paramsBoxEl.style.display    ='none';
+  lawsPane.style.display       ='none';
+  lawsBody.innerHTML           ='';
+  firstLawShown                = false;
+  lawCharts.innerHTML          ='';
+  vCan = aCan = axCan          = null;
+  actBreak.style.display       ='none';
+  foyerBreak.style.display     ='none';
+  foyerEl.style.display        ='none';
+  foyerBubble.style.display    ='none';
+  boardLeft.innerHTML          ='';
+  boardRight.innerHTML         ='';
+  bubbleEl.style.display       ='none';
   bubbleEl.classList.remove('active','closing');
-  actBubble.style.display    ='none';
-  measureTBody.innerHTML     ='';
+  actBubble.style.display      ='none';
+  measureTBody.innerHTML       ='';
   if(uXT){
     try{uXT.destroy();}catch(e){}
     uXT=null;
   }
-  xtChartEl.style.display    ='none';
+  xtChartEl.style.display      ='none';
   stage.classList.remove('open');
-  markerEl.style.left = centerX()+'px';
+  markerEl.style.left          = centerX()+'px';
+  markerGhostEl.style.left     = centerX()+'px';
 
   springEl.style.display = 'none';
   if(ghost){
@@ -1626,6 +1636,7 @@ function beginObservation(){
   clockEl.style.display   ='block';
   measureBox.style.display='block';
   markerEl.style.opacity  ='1';
+  markerGhostEl.style.opacity='0';
   updateRuler();
   runAct1();
 }
@@ -1670,6 +1681,13 @@ btnFoyerGo.addEventListener('click', ()=>{
 });
 
 /* ---------- Animation loop ---------- */
+
+function ensureActorFloorBottom(){
+  if(actorFloorBottomPx != null) return;
+  const sb = getComputedStyle(actor).bottom;
+  const val = parseFloat(sb);
+  if(!Number.isNaN(val)) actorFloorBottomPx = val;
+}
 
 function animate(now){
   const realDt = (now-lastFrame)/1000;
@@ -1725,14 +1743,13 @@ function animate(now){
 
     const springBottom = getComputedStyle(springEl).bottom || 'calc(32vh + 92px)';
 
-    ghost.style.display      = ghostActive ? 'block' : 'none';
-    ghostSpring.style.display= ghostActive ? 'block' : 'none';
-
     if(ghostActive){
+      ghost.style.display      = 'block';
+      ghostSpring.style.display= 'block';
+
       const ghostRect  = ghost.getBoundingClientRect();
       const ghostWidth = ghostRect.width || actorWidth || 80;
 
-      // ίδιο πάτωμα με ηθοποιό
       ghost.style.bottom = bottomPx+'px';
       ghost.style.left   = (hookXg - ghostWidth/2) + 'px';
 
@@ -1743,7 +1760,16 @@ function animate(now){
       ghostSpring.style.left     = ax+'px';
       ghostSpring.style.height   = springNaturalHeight ? (springNaturalHeight+'px') : springRect.height+'px';
       ghostSpring.style.transform= 'scaleX('+scaleg+')';
+
+      markerGhostEl.style.left   = hookXg+'px';
+      markerGhostEl.style.opacity= '1';
+    }else{
+      ghost.style.display        = 'none';
+      ghostSpring.style.display  = 'none';
+      markerGhostEl.style.opacity= '0';
     }
+  }else{
+    markerGhostEl.style.opacity = '0';
   }
 
   if(uXT) drawXTChart();
