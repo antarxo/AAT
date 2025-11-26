@@ -152,24 +152,23 @@ body{
 
 .viewers{
   position:absolute;
-  left:18%;
-  width:64%;
-  bottom:130px;
-  display:flex;
-  justify-content:space-between;
-  padding:0 4vw;
-  z-index:2200; /* ψηλά για να φαίνονται σίγουρα */
+  left:0;
+  width:100%;
+  bottom:0;
+  z-index:2200; /* πάνω από κοινό, για να φαίνονται καθαρά */
   pointer-events:none;
 }
+
 .viewer-avatar{
-  position:relative;
-  width:140px;
-  height:22vh; /* μη μηδενικό, ίδια κλίμακα με το κοινό */
+  position:absolute;
+  width:auto;
+  height:22vh; /* default, μπορεί να αλλάξει από JSON */
   overflow:visible;
   border-radius:0;
   border:none;
   box-shadow:none;
-  background:center bottom/contain no-repeat; /* διάφανο φόντο, μόνο εικόνα PNG */
+  background:transparent center bottom/contain no-repeat; /* PNG διαφανή */
+  transform:translateX(-50%); /* το left ορίζει το κέντρο */
 }
 
 /* Ταμπέλα τίτλου */
