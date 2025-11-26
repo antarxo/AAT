@@ -4,7 +4,7 @@
       "name_gr": "Θεατής 1",
       "name_en": "Viewer 1",
       "color": "#ffcc00",
-      "xFrac": 0.12,
+      "xFrac": 0.10,
       "bubbleDx": 140,
       "bubbleDy": 160,
       "avatarDy": 100,
@@ -37,18 +37,18 @@
       "name_gr": "Θεατής 4",
       "name_en": "Viewer 4",
       "color": "#99ff99",
-      "xFrac": 0.68,
+      "xFrac": 0.70,
       "bubbleDx": 40,
       "bubbleDy": -80,
       "avatarDy": 100,
-      "avatarScale": 0.4,
+      "avatarScale": 0.36,
       "img": "viewer4.png"
     },
     {
       "name_gr": "Θεατής 5",
       "name_en": "Viewer 5",
       "color": "#ff9966",
-      "xFrac": 0.88,
+      "xFrac": 0.90,
       "bubbleDx": 40,
       "bubbleDy": -80,
       "avatarDy": 100,
@@ -699,6 +699,7 @@
     }
   ]
 }
+
 
 
 
