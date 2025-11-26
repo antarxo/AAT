@@ -156,19 +156,17 @@ body{
   position:absolute;
   left:18%;
   width:64%;
-  bottom:0;                         /* ίδιο πάτωμα με το κοινό */
+  bottom:130px;           /* ΕΠΙΣΤΡΟΦΗ ΣΤΗΝ ΠΑΛΙΑ ΤΙΜΗ */
   display:flex;
-  justify-content:space-evenly;     /* ομοιόμορφη κατανομή μέσα στο koino.png */
-  align-items:flex-end;
-  padding:0;                        /* χωρίς extra 4vw που τους έσπρωχνε */
-  z-index:1400;                     /* πίσω από koino.png (1500) */
+  justify-content:space-between;
+  padding:0 4vw;
+  z-index:1400;           /* πίσω από koino.png (1500) */
   pointer-events:none;
 }
 .viewer-avatar{
   position:relative;
-  flex:0 1 auto;
-  width:90px;                       /* μικρότερο πλάτος για να χωράνε όλοι */
-  height:18vh;                      /* κλίμακα συμβατή με το koino.png */
+  width:140px;
+  height:22vh;            /* ίδια κλίμακα με το κοινό */
   overflow:visible;
   border-radius:0;
   border:none;
