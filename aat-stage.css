@@ -155,7 +155,7 @@ body{
   left:0;
   width:100%;
   bottom:0;
-  height:260px;          /* ΣΤΑΘΕΡΟ ΥΨΟΣ ώστε τα avatars να «χωράνε» */
+  height:260px;          /* Σταθερό ύψος ώστε να χωράνε τα avatars */
   z-index:2200;          /* πάνω από κοινό */
   pointer-events:none;
   overflow:visible;
@@ -163,7 +163,7 @@ body{
 
 .viewer-avatar{
   position:absolute;
-  width:auto;
+  width:140px;           /* ΣΗΜΑΝΤΙΚΟ: όχι auto, αλλιώς 0px και εξαφανίζονται */
   height:22vh;           /* default, μπορεί να αλλάξει από JSON */
   overflow:visible;
   border-radius:0;
