@@ -8,7 +8,7 @@
       "bubbleDx": 140,
       "bubbleDy": 160,
       "avatarDy": 40,
-      "avatarScale": 0.35,
+      "avatarScale": 0.25,
       "img": "viewer1.png"
     },
     {
@@ -699,6 +699,7 @@
     }
   ]
 }
+
 
 
 
