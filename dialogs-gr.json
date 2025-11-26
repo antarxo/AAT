@@ -4,7 +4,7 @@
       "name_gr": "Θεατής 1",
       "name_en": "Viewer 1",
       "color": "#ffcc00",
-      "xFrac": 0.16,
+      "xFrac": 0.12,
       "bubbleDx": 140,
       "bubbleDy": 160,
       "avatarDy": 100,
@@ -15,7 +15,7 @@
       "name_gr": "Θεατής 2",
       "name_en": "Viewer 2",
       "color": "#66ccff",
-      "xFrac": 0.32,
+      "xFrac": 0.30,
       "bubbleDx": 140,
       "bubbleDy": 180,
       "avatarDy": 100,
@@ -48,7 +48,7 @@
       "name_gr": "Θεατής 5",
       "name_en": "Viewer 5",
       "color": "#ff9966",
-      "xFrac": 0.84,
+      "xFrac": 0.88,
       "bubbleDx": 40,
       "bubbleDy": -80,
       "avatarDy": 100,
@@ -699,6 +699,7 @@
     }
   ]
 }
+
 
 
 
