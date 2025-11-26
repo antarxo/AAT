@@ -1167,10 +1167,8 @@ function initViewersAvatars(){
   const leftBand  = 0.18;
   const widthBand = 0.64;
 
-  const baseHvh      = 22;
-  const baseWpx      = 140;
-  const refScale     = 0.35; // η τιμή που αντιστοιχεί στο «τρέχον» μέγεθος
-  const baseBottomPx = 90;   // περίπου ώστε avatarDy=40 => ~130px όπως πριν
+  const baseWidthPx  = 140; // CSS default (ό,τι γράφει το aat-stage.css)
+  const refScale     = 0.35; // “κανονική” τιμή από το JSON
 
   items.forEach((div, idx) => {
     const v = VIEWERS[idx];
@@ -1179,24 +1177,34 @@ function initViewersAvatars(){
       return;
     }
 
+    // εικόνα από JSON
     if (v.img) {
       div.style.backgroundImage = 'url("'+v.img+'")';
     }
 
-    // Ύψος σε vh (προαιρετικό από JSON)
-    const hVh = (typeof v.heightVh === 'number') ? v.heightVh : baseHvh;
-    div.style.height = hVh + 'vh';
+    // Ύψος: μόνο αν δίνεται ρητά από JSON (αλλιώς αφήνουμε το CSS)
+    if (typeof v.heightVh === 'number') {
+      div.style.height = v.heightVh + 'vh';
+    } else {
+      div.style.height = ''; // καθάρισε ό,τι παλιό inline
+    }
 
-    // Σμίκρυνση από avatarScale
-    const scaleVal = (typeof v.avatarScale === 'number') ? v.avatarScale : refScale;
-    const widthPx  = baseWpx * (scaleVal / refScale);
-    div.style.width = widthPx + 'px';
+    // Κάθετη θέση: ΑΠΟΚΛΕΙΣΤΙΚΑ από avatarDy (px)
+    if (typeof v.avatarDy === 'number') {
+      div.style.bottom = v.avatarDy + 'px';
+    } else {
+      div.style.bottom = ''; // αν λείπει, θα “φωνάζει” => bug εμφανές
+    }
 
-    // Κάθετη θέση από avatarDy
-    const dy = (typeof v.avatarDy === 'number') ? v.avatarDy : 40;
-    div.style.bottom = (baseBottomPx + dy) + 'px';
+    // Σμίκρυνση / μεγέθυνση: avatarScale
+    if (typeof v.avatarScale === 'number') {
+      const widthPx = baseWidthPx * (v.avatarScale / refScale);
+      div.style.width = widthPx + 'px';
+    } else {
+      div.style.width = ''; // άσε το CSS default 140px
+    }
 
-    // Οριζόντια θέση από xFrac
+    // Οριζόντια θέση: xFrac από JSON, αλλιώς ένα τίμιο fallback
     const fracDefault = (idx + 1) / (items.length + 1);
     const xFrac = (typeof v.xFrac === 'number') ? v.xFrac : fracDefault;
     const x = (leftBand + widthBand * xFrac) * stageW;
@@ -1205,6 +1213,7 @@ function initViewersAvatars(){
     div.style.display = 'block';
   });
 }
+
 
 /* ---------- Load dialogs-gr.json & bootstrap ---------- */
 
