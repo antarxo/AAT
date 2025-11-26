@@ -156,7 +156,7 @@ body{
   width:100%;
   bottom:0;
   height:260px;          /* Σταθερό ύψος ώστε να χωράνε τα avatars */
-  z-index:2200;          /* πάνω από κοινό */
+  z-index:1000;          /* πάνω από κοινό */
   pointer-events:none;
   overflow:visible;
 }
@@ -727,3 +727,4 @@ body{
   box-shadow:0 0 0 1px rgba(0,0,0,0.35) inset;
   background:rgba(8,8,18,0.95)!important;
 }
+
