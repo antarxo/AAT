@@ -112,7 +112,7 @@
       left:50%;
       width:144px;
       height:96px;
-      /* ΧΩΡΙΣ translateX πλέον – η μετατόπιση γίνεται μόνο από JS */
+      /* ΧΩΡΙΣ translateX – η κέντρωση γίνεται από JS */
       z-index:157; /* ηθοποιός > ελατήριο */
       pointer-events:none;
     }
@@ -171,13 +171,13 @@
       display:flex;
       justify-content:space-between;
       padding:0 4vw;
-      z-index:2200; /* ΠΑΝΩ απ’ όλα για να τους δούμε σίγουρα */
+      z-index:2200; /* ψηλά για να τους δούμε σίγουρα */
       pointer-events:none;
     }
     .viewer-avatar{
       position:relative;
-      height:120px;
-      width:auto;
+      width:140px;          /* σταθερό πλάτος για να είναι ορατοί */
+      height:auto;
       overflow:visible;
       border-radius:0;
       border:none;
@@ -1694,9 +1694,10 @@ function animate(now){
   springEl.style.transform = 'scaleX('+scale+')';
 
   const actorRect = actor.getBoundingClientRect();
+  const actorWidth = actorRect.width || 80;
 
   actor.style.bottom = bottomPx+'px';
-  actor.style.left   = hookX + 'px';
+  actor.style.left   = (hookX - actorWidth/2) + 'px';
 
   markerEl.style.left = hookX+'px';
   spotlight.style.background =
@@ -1719,10 +1720,11 @@ function animate(now){
 
     if(ghostActive){
       const ghostRect  = ghost.getBoundingClientRect();
-      const ghostWidth = ghostRect.width || actorRect.width || 80;
+      const ghostWidth = ghostRect.width || actorWidth || 80;
 
-      ghost.style.bottom = bottomPx+'px';   // ίδιο πάτωμα με ηθοποιό
-      ghost.style.left   = hookXg + 'px';
+      // ίδιο πάτωμα με ηθοποιό
+      ghost.style.bottom = getComputedStyle(actor).bottom;
+      ghost.style.left   = (hookXg - ghostWidth/2) + 'px';
 
       const distg  = hookXg - ax;
       const scaleg = distg / baseL;
