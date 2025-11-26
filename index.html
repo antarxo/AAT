@@ -112,7 +112,7 @@
       left:50%;
       width:144px;
       height:96px;
-      /* ΧΩΡΙΣ translateX – η κέντρωση γίνεται από JS */
+      /* χωρίς translateX – κέντρο από JS */
       z-index:157; /* ηθοποιός > ελατήριο */
       pointer-events:none;
     }
@@ -171,13 +171,13 @@
       display:flex;
       justify-content:space-between;
       padding:0 4vw;
-      z-index:2200; /* ψηλά για να τους δούμε σίγουρα */
+      z-index:2200; /* πολύ πάνω για debug */
       pointer-events:none;
     }
     .viewer-avatar{
       position:relative;
-      width:140px;          /* σταθερό πλάτος για να είναι ορατοί */
-      height:auto;
+      width:140px;
+      height:22vh; /* σταθερό ύψος για να ΜΗΝ είναι 0 */
       overflow:visible;
       border-radius:0;
       border:none;
@@ -951,15 +951,15 @@ function measureSpringNaturalSize(){
   const prevDisplay   = springEl.style.display;
   const prevTransform = springEl.style.transform;
 
-  springEl.style.display  = 'block';
-  springEl.style.transform= 'none';
+  springEl.style.display   = 'block';
+  springEl.style.transform = 'none';
 
   const rect = springEl.getBoundingClientRect();
   springNaturalWidth  = rect.width || 1;
   springNaturalHeight = rect.height || 1;
 
-  springEl.style.display  = prevDisplay;
-  springEl.style.transform= prevTransform;
+  springEl.style.display   = prevDisplay;
+  springEl.style.transform = prevTransform;
 }
 
 /* ---------- Χρήσιμα ---------- */
@@ -1141,7 +1141,7 @@ function viewerAnchor(idx1based){
   if(avatar){
     const aRect = avatar.getBoundingClientRect();
     const x = aRect.left + aRect.width/2 - sRect.left;
-    const y = aRect.top  + aRect.height/2 - sRect.top; // κέντρο avatar (τελική κλίμακα)
+    const y = aRect.top  + aRect.height/2 - sRect.top; // κέντρο τελικής εικόνας
     return {x,y,info:vi};
   }
 
@@ -1350,8 +1350,21 @@ async function runAct1(){
 
 /* Ghost setup για Act 2 */
 
+function ensureActorFloorBottom(){
+  if(actorFloorBottomPx != null) return;
+  const sb = getComputedStyle(actor).bottom;
+  const val = parseFloat(sb);
+  if(!Number.isNaN(val)) actorFloorBottomPx = val;
+}
+
 function ensureGhost(){
+  ensureActorFloorBottom();
+
   if(!ghost){
+    const ar = actor.getBoundingClientRect();
+    const aw = ar.width  || 144;
+    const ah = ar.height || 96;
+
     ghost = document.createElement('div');
     ghost.id='actorGhost';
     ghost.style.position='absolute';
@@ -1359,6 +1372,10 @@ function ensureGhost(){
     ghost.style.pointerEvents='none';
     ghost.style.opacity='0.85';
     ghost.style.filter='grayscale(1) brightness(1.2)';
+    ghost.style.width  = aw+'px';
+    ghost.style.height = ah+'px';
+    ghost.style.bottom = (actorFloorBottomPx ?? 0)+'px';
+
     const img = document.createElement('img');
     img.src = actor.querySelector('img').src;
     img.style.width='100%';
@@ -1654,13 +1671,6 @@ btnFoyerGo.addEventListener('click', ()=>{
 
 /* ---------- Animation loop ---------- */
 
-function ensureActorFloorBottom(){
-  if(actorFloorBottomPx != null) return;
-  const sb = getComputedStyle(actor).bottom;
-  const val = parseFloat(sb);
-  if(!Number.isNaN(val)) actorFloorBottomPx = val;
-}
-
 function animate(now){
   const realDt = (now-lastFrame)/1000;
   lastFrame = now;
@@ -1723,7 +1733,7 @@ function animate(now){
       const ghostWidth = ghostRect.width || actorWidth || 80;
 
       // ίδιο πάτωμα με ηθοποιό
-      ghost.style.bottom = getComputedStyle(actor).bottom;
+      ghost.style.bottom = bottomPx+'px';
       ghost.style.left   = (hookXg - ghostWidth/2) + 'px';
 
       const distg  = hookXg - ax;
