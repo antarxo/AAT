@@ -41,7 +41,7 @@
       "bubbleDx": 40,
       "bubbleDy": -80,
       "avatarDy": 100,
-      "avatarScale": 0.35,
+      "avatarScale": 0.4,
       "img": "viewer4.png"
     },
     {
@@ -699,6 +699,7 @@
     }
   ]
 }
+
 
 
 
