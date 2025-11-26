@@ -156,24 +156,22 @@ body{
   position:absolute;
   left:18%;
   width:64%;
-  bottom:130px;
+  bottom:6px;              /* ίδιο «πάτωμα» με το κοινό */
   display:flex;
   justify-content:space-between;
   padding:0 4vw;
-  z-index:1400;         /* ΠΙΣΩ από το koino.png (1500) */
+  z-index:1400;            /* πίσω από το koino.png (1500) */
   pointer-events:none;
-  /* ΔΕΝ κόβουμε τις εικόνες − να φαίνονται ολόκληρες */
-  /* overflow:hidden;  ΑΦΑΙΡΕΙΤΑΙ */
 }
 .viewer-avatar{
   position:relative;
   width:140px;
-  height:22vh;          /* ίδια κλίμακα με το κοινό */
+  height:22vh;             /* ίδια κλιμάκωση με το κοινό */
   overflow:visible;
   border-radius:0;
   border:none;
   box-shadow:none;
-  background:transparent;
+  background:transparent;  /* διαφάνεια, φαίνεται το PNG όπως είναι */
   background-position:bottom center;
   background-repeat:no-repeat;
   background-size:contain;
