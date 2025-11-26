@@ -89,6 +89,7 @@ body{
 }
 
 /* Σκηνή – ελατήριο, ηθοποιός, δάπεδο */
+/* ΔΕΝ πειράζω τις τιμές που δουλεύουν */
 
 .spring{
   position:absolute;
@@ -134,8 +135,7 @@ body{
 
 /* Κοινό */
 
-.audience,
-#audienceMain{
+.audience-main{
   position:absolute;
   left:18%;
   width:64%;
@@ -143,7 +143,7 @@ body{
   height:auto;
   object-fit:contain;
   object-position:bottom center;
-  z-index:1500; /* όπως ζητήθηκε */
+  z-index:1500;
   pointer-events:none;
 }
 
@@ -156,44 +156,36 @@ body{
   object-fit:contain;
   object-position:bottom center;
   opacity:.9;
-  z-index:980; /* όπως ζητήθηκε */
+  z-index:980;
   pointer-events:none;
 }
 
-/* Ομιλητές / θεατές (εικόνες, όχι ελλείψεις) */
+/* Ομιλητές / θεατές (εικόνες .png με διαφάνεια, χωρίς ellipse) */
 
 .viewers{
   position:absolute;
   left:18%;
   width:64%;
-  bottom:130px;
+  bottom:130px;             /* ~200px πάνω από κάτω άκρο του κοινού */
   display:flex;
   justify-content:space-between;
   padding:0 4vw;
-  z-index:2000; /* όπως ζητήθηκε */
+  z-index:2200;              /* πολύ πάνω από κοινό, κάτω από controls αν χρειαστεί */
   pointer-events:none;
-}
-
-.viewer{
-  position:relative;
-  width:80px;
-  height:120px;
-  overflow:visible;
-  border-radius:0;
-  border:none;
-  box-shadow:none;
-  background:#111 center bottom/contain no-repeat;
 }
 
 .viewer-avatar{
   position:relative;
-  height:120px;
-  width:auto;
+  width:140px;
+  height:22vh;
   overflow:visible;
   border-radius:0;
   border:none;
   box-shadow:none;
-  background:#111 center bottom/contain no-repeat;
+  background-color:transparent;      /* κρατάμε τη διαφάνεια του PNG */
+  background-position:center bottom;
+  background-repeat:no-repeat;
+  background-size:contain;
 }
 
 /* Ταμπέλα τίτλου */
@@ -255,7 +247,7 @@ body{
 .clock{
   position:absolute;
   top:10px;
-  /* θέση (left) ρυθμίζεται από JS */
+  right:10px;
   background:rgba(0,0,0,.5);
   color:#fff;
   padding:6px 10px;
@@ -277,7 +269,9 @@ body{
 
 .measure-box{
   position:absolute;
-  /* left/top/width/height τα δίνει το JS (positionRightPanel) */
+  right:10px;
+  top:44px;
+  width:220px;
   z-index:262;
   background:rgba(0,0,0,.55);
   color:#fff;
@@ -285,6 +279,7 @@ body{
   border-radius:8px;
   padding:6px 8px;
   display:none;
+  max-height:46vh;
   overflow-y:auto;
   font-size:12px;
 }
@@ -328,7 +323,10 @@ body{
 
 #xtChart{
   position:absolute;
-  /* left/top/width/height ρυθμίζονται από JS */
+  right:10px;
+  bottom:10px;
+  width:240px;
+  height:180px;
   display:none;
   z-index:266;
   border:1px dashed rgba(255,255,255,.25);
@@ -354,7 +352,8 @@ body{
 
 .params-box{
   position:absolute;
-  /* θέση ορίζεται δυναμικά από JS */
+  right:10px;
+  top:calc(44px + 46vh + 10px);
   z-index:268;
   background:rgba(0,0,0,.6);
   color:#fff;
@@ -397,6 +396,8 @@ body{
   background:rgba(255,210,122,.15);
 }
 
+/* container για mini γραφήματα v(t), a(t), ΣF(x) */
+
 .law-charts{
   position:absolute;
   left:10px;
@@ -408,8 +409,9 @@ body{
 .law-charts canvas{
   display:block;
   margin-top:6px;
-  background:rgba(0,0,0,.5);
+  background:rgba(0,0,0,.6);
   border-radius:6px;
+  border:1px solid rgba(255,255,255,.25);
 }
 
 /* Ruler & marker */
@@ -454,6 +456,8 @@ body{
   white-space:nowrap;
 }
 
+/* Βέλος θέσης – κάτω από την κουρτίνα (z < 160), αλλά πάνω από ruler */
+
 .marker{
   position:absolute;
   bottom:calc(32vh - 8px + 1px);
@@ -461,7 +465,7 @@ body{
   height:80px;
   transform:translateX(-50%);
   pointer-events:none;
-  z-index:275;
+  z-index:158;     /* μικρότερο από curtain-upper (160) */
   opacity:0;
   transition:opacity .3s;
 }
@@ -508,7 +512,7 @@ body{
   padding:10px 12px 12px;
   border-radius:10px;
   box-shadow:0 6px 12px rgba(0,0,0,.4);
-  z-index:1800; /* bubbles πάνω από κοινό, κάτω από controls */
+  z-index:1050;              /* όπως ζητήθηκε, πάνω από κοινό/θεατές, κάτω από controls */
   pointer-events:none;
   opacity:0;
   display:none;
@@ -551,7 +555,6 @@ body{
 .act-bubble,
 .foyer-bubble{
   position:absolute;
-  z-index:1800; /* όπως ζήτησες: bubbles ομιλητών */
   display:none;
   pointer-events:none;
   min-width:120px;
@@ -568,6 +571,16 @@ body{
   background:rgba(0,0,0,.7);
 }
 
+/* act-bubble (Πράξεις 1 & 2) πάνω από κοινό, κάτω από controls */
+.act-bubble{
+  z-index:1050;
+}
+
+/* foyer-bubble πάνω από τα boards του φουαγιέ */
+.foyer-bubble{
+  z-index:2000;
+}
+
 /* Controls */
 
 .controls{
@@ -581,7 +594,7 @@ body{
   padding:6px 8px;
   display:flex;
   gap:8px;
-  z-index:2000; /* controls κορυφή */
+  z-index:2500;   /* κορυφή */
 }
 
 .controls button{
@@ -605,7 +618,7 @@ body{
   position:absolute;
   bottom:12px;
   right:12px;
-  z-index:2000;
+  z-index:2500;
   background:#333;
   border:1px solid rgba(255,255,255,.25);
   color:#fff;
@@ -618,7 +631,7 @@ body{
   position:absolute;
   bottom:12px;
   left:12px;
-  z-index:2000;
+  z-index:2500;
   background:#333;
   border:1px solid rgba(255,255,255,.25);
   color:#fff;
@@ -634,7 +647,7 @@ body{
   top:50%;
   left:50%;
   transform:translate(-50%,-50%);
-  z-index:1000;
+  z-index:2000;
   background:#700;
   color:#fff;
   border:none;
@@ -657,7 +670,7 @@ body{
   align-items:center;
   justify-content:center;
   text-align:center;
-  z-index:900;
+  z-index:1900;
   pointer-events:none;
   font-family:Inter,system-ui,sans-serif;
 }
@@ -697,7 +710,7 @@ body{
   height:44%;
   background:rgba(0,0,0,.55);
   color:#fff;
-  z-index:410;
+  z-index:1800;
   display:none;
   align-items:center;
   justify-content:center;
@@ -742,7 +755,7 @@ body{
   width:64%;
   top:0;
   height:var(--foyer-h);
-  z-index:500; /* κάτω από κοινό/ομιλητές, ώστε να φαίνονται στο φόντο */
+  z-index:500;
   display:none;
 }
 
