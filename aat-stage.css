@@ -1,3 +1,5 @@
+/* aat-stage.css */
+
 :root{
   --foyer-h: 445px;
 }
@@ -152,25 +154,24 @@ body{
 
 .viewers{
   position:absolute;
-  left:0;
-  width:100%;
-  bottom:0;
-  height:260px;          /* Σταθερό ύψος ώστε να χωράνε τα avatars */
-  z-index:2200;          /* πάνω από κοινό */
+  left:18%;
+  width:64%;
+  bottom:130px;
+  display:flex;
+  justify-content:space-between;
+  padding:0 4vw;
+  z-index:1400; /* ΠΙΣΩ από το koino.png (1500) */
   pointer-events:none;
-  overflow:visible;
 }
-
 .viewer-avatar{
-  position:absolute;
-  width:140px;           /* ΣΗΜΑΝΤΙΚΟ: όχι auto, αλλιώς 0px και εξαφανίζονται */
-  height:22vh;           /* default, μπορεί να αλλάξει από JSON */
+  position:relative;
+  width:140px;
+  height:22vh; /* μη μηδενικό, ίδια κλίμακα με το κοινό */
   overflow:visible;
   border-radius:0;
   border:none;
   box-shadow:none;
-  background:transparent center bottom/contain no-repeat; /* PNG διαφανή */
-  transform:translateX(-50%); /* το left ορίζει το κέντρο */
+  background:#111 center bottom/contain no-repeat;
 }
 
 /* Ταμπέλα τίτλου */
