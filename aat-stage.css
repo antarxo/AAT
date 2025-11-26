@@ -156,12 +156,13 @@ body{
   position:absolute;
   left:18%;
   width:64%;
-  bottom:6px;              /* ίδιο “πάτωμα” με το κοινό */
+  bottom:6px;              /* σχεδόν ίδιο “πάτωμα” με το κοινό */
   display:flex;
   justify-content:space-between;
   padding:0 4vw;
   z-index:1400;            /* πίσω από το koino.png (1500) */
   pointer-events:none;
+  overflow:hidden;         /* ΠΕΡΙΟΡΙΣΜΟΣ μέσα στο 18%–82% */
 }
 .viewer-avatar{
   position:relative;
