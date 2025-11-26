@@ -112,7 +112,7 @@
       left:50%;
       width:144px;
       height:96px;
-      transform:translateX(-50%);
+      /* ΧΩΡΙΣ translateX πλέον – η μετατόπιση γίνεται μόνο από JS */
       z-index:157; /* ηθοποιός > ελατήριο */
       pointer-events:none;
     }
@@ -161,7 +161,7 @@
       pointer-events:none;
     }
 
-    /* Ομιλητές / θεατές (εικόνες, όχι ελλείψεις) */
+    /* Ομιλητές / θεατές */
 
     .viewers{
       position:absolute;
@@ -171,7 +171,7 @@
       display:flex;
       justify-content:space-between;
       padding:0 4vw;
-      z-index:2000;
+      z-index:2200; /* ΠΑΝΩ απ’ όλα για να τους δούμε σίγουρα */
       pointer-events:none;
     }
     .viewer-avatar{
@@ -943,12 +943,14 @@ let ghostActive = false;
 let springNaturalWidth  = null;
 let springNaturalHeight = null;
 
+/* Πάτωμα ηθοποιού σε px (κοινό με ghost) */
+let actorFloorBottomPx = null;
+
 function measureSpringNaturalSize(){
   if(!springEl) return;
   const prevDisplay   = springEl.style.display;
   const prevTransform = springEl.style.transform;
 
-  // εμφανίζουμε προσωρινά χωρίς κλιμάκωση για μέτρηση
   springEl.style.display  = 'block';
   springEl.style.transform= 'none';
 
@@ -1136,15 +1138,13 @@ function viewerAnchor(idx1based){
   const avatar = viewersStrip.querySelector('.viewer-avatar[data-idx="'+(idx1based-1)+'"]');
   const sRect = stage.getBoundingClientRect();
 
-  // αν υπάρχει πραγματικό avatar, αγκύρωση πάνω του
   if(avatar){
     const aRect = avatar.getBoundingClientRect();
     const x = aRect.left + aRect.width/2 - sRect.left;
-    const y = aRect.top  + aRect.height/2 - sRect.top;
+    const y = aRect.top  + aRect.height/2 - sRect.top; // κέντρο avatar (τελική κλίμακα)
     return {x,y,info:vi};
   }
 
-  // fallback (αν για κάποιο λόγο λείπει το avatar)
   const leftFrac  = 0.18;
   const widthFrac = 0.64;
   const frac = vi && typeof vi.xFrac==='number'
@@ -1184,8 +1184,8 @@ function placeBubble(idx1based, xShift, yOffset){
   const dy = (info && typeof info.bubbleDy==='number'? info.bubbleDy:0) + (yOffset||0);
   const left = x + dx;
   const top  = y - dy;
-  bubbleEl.style.left = (left)+'px';
-  bubbleEl.style.top  = (top)+'px';
+  bubbleEl.style.left = left+'px';
+  bubbleEl.style.top  = top +'px';
 }
 
 function typeWriterHTML(el, html, totalMs, done){
@@ -1387,10 +1387,9 @@ async function runAct2(){
   actBreak.style.display='none';
   stage.classList.add('open');
 
-  // Act 2 → εμφανίζουμε ελατήρια & ghost
   springEl.style.display='block';
   if(ghostSpring) ghostSpring.style.display='block';
-  markerEl.style.opacity='1'; // βέλος ορατό και στη 2η πράξη
+  markerEl.style.opacity='1';
 
   for(const ev of ACT2){
     if(ev.gStart) ghostActive = true;
@@ -1405,7 +1404,6 @@ async function runAct2(){
     await showBubbleForEvent(ev);
   }
 
-  // Τέλος Πράξης 2 → κλείσιμο κουρτίνας, βέλος παραμένει ορατό όσο είναι ανοικτή
   stage.classList.remove('open');
   setTimeout(()=>{
     foyerBreak.style.display='flex';
@@ -1549,7 +1547,6 @@ btnPlay.addEventListener('click', ()=>{
 });
 
 function resetShow(){
-  // reset φυσικής
   t0        = performance.now();
   lastFrame = t0;
   playbackTime = 0;
@@ -1559,7 +1556,6 @@ function resetShow(){
   measureRowIdx      = 0;
   setMode('run');
 
-  // UI reset
   startBtn.style.display     ='block';
   countdownOverlay.style.display='none';
   measureBox.style.display   ='none';
@@ -1589,7 +1585,6 @@ function resetShow(){
   stage.classList.remove('open');
   markerEl.style.left = centerX()+'px';
 
-  // κρύβουμε ελατήρια & ghost για Act 1
   springEl.style.display = 'none';
   if(ghost){
     ghost.style.display = 'none';
@@ -1659,6 +1654,13 @@ btnFoyerGo.addEventListener('click', ()=>{
 
 /* ---------- Animation loop ---------- */
 
+function ensureActorFloorBottom(){
+  if(actorFloorBottomPx != null) return;
+  const sb = getComputedStyle(actor).bottom;
+  const val = parseFloat(sb);
+  if(!Number.isNaN(val)) actorFloorBottomPx = val;
+}
+
 function animate(now){
   const realDt = (now-lastFrame)/1000;
   lastFrame = now;
@@ -1674,31 +1676,28 @@ function animate(now){
   const tObs = obsStarted ? (playbackTime-obsStartPlaybackOffset) : 0;
   clockEl.textContent = 't = '+tObs.toFixed(2)+' s';
 
+  ensureActorFloorBottom();
+  const bottomPx = actorFloorBottomPx ?? 0;
+
   const ax = anchorX();
   const cx = centerX();
   const stageH = stage.clientHeight;
 
-  // θέση hook (βέλος) για τον κανονικό
   const hookX = cx + A_px*Math.sin(omega*playbackTime);
 
-  // φυσικό μήκος ελατηρίου
   const springRect = springEl.getBoundingClientRect();
   const baseL = springNaturalWidth || springRect.width || 1;
 
-  // ελατήριο κανονικού
   const dist = hookX - ax;
   const scale = dist / baseL;
   springEl.style.left      = ax+'px';
   springEl.style.transform = 'scaleX('+scale+')';
 
-  // ηθοποιός: ΠΡΟΗΓΟΥΜΕΝΗ θέση θα ήταν κέντρο=hookX (left = hookX - actorHalf)
-  // Τώρα τον μετακινούμε δεξιότερα κατά μισό πλάτος → left = hookX
-  const actorRect   = actor.getBoundingClientRect();
-  const actorBottom = getComputedStyle(actor).bottom || 'calc(32vh + 135px)';
-  actor.style.left   = hookX + 'px';
-  actor.style.bottom = actorBottom;
+  const actorRect = actor.getBoundingClientRect();
 
-  // marker (βέλος θέσης) στην ίδια x
+  actor.style.bottom = bottomPx+'px';
+  actor.style.left   = hookX + 'px';
+
   markerEl.style.left = hookX+'px';
   spotlight.style.background =
     'radial-gradient(220px 140px at '+hookX+'px '+(stageH*0.62)+'px, rgba(255,255,220,.65), rgba(255,255,255,0) 70%)';
@@ -1706,7 +1705,6 @@ function animate(now){
   const xMeters = (hookX - cx)/pxPerMeter;
   logMeasurement(tObs, xMeters);
 
-  // ghost για act 2 (ίδιο μηδέν, A=5 m, ίδιο πάτωμα, δεξιότερα κατά μισό πλάτος)
   if(ghost && ghostSpring){
     const Aghost_m  = 5.0;
     const Aghost_px = pxPerMeter*Aghost_m;
@@ -1720,13 +1718,10 @@ function animate(now){
     ghostSpring.style.display= ghostActive ? 'block' : 'none';
 
     if(ghostActive){
-      const ghostRect = ghost.getBoundingClientRect();
+      const ghostRect  = ghost.getBoundingClientRect();
       const ghostWidth = ghostRect.width || actorRect.width || 80;
 
-      // ίδιο πάτωμα με κανονικό
-      ghost.style.bottom = actorBottom;
-      // προηγουμένως κέντρο=hookXg (left = hookXg - ghostHalf)
-      // τώρα δεξιότερα κατά μισό πλάτος → left = hookXg
+      ghost.style.bottom = bottomPx+'px';   // ίδιο πάτωμα με ηθοποιό
       ghost.style.left   = hookXg + 'px';
 
       const distg  = hookXg - ax;
@@ -1781,6 +1776,7 @@ async function loadDialogs(){
 window.addEventListener('load', ()=>{
   updateRuler();
   measureSpringNaturalSize();
+  ensureActorFloorBottom();
   resetShow();
   loadDialogs();
 });
