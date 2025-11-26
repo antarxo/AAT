@@ -1,1372 +1,729 @@
-<!DOCTYPE html>
-<html lang="el">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Θεατρική Σκηνή — Ενιαία Έκδοση (Act I + Act II + Φουαγιέ)</title>
-
-  <!-- uPlot για το x–t διάγραμμα -->
-  <link rel="stylesheet" href="https://unpkg.com/uplot@1.6.30/dist/uPlot.min.css">
-  <script src="https://unpkg.com/uplot@1.6.30/dist/uPlot.iife.min.js"></script>
-
-  <!-- Σκηνή CSS -->
-  <link rel="stylesheet" href="aat-stage.css">
-</head>
-<body>
-<div class="stage" id="stage">
-  <div class="curtain-top"></div>
-  <div class="curtain-upper"></div>
-  <div class="curtain-side left"></div>
-  <div class="curtain-side right"></div>
-
-  <div class="spotlight" id="spotlight"></div>
-
-  <div class="signboard">
-    <h1>Πράξη 1η: Η Κινηματική στα ... Αλγεβρικά</h1>
-    <div class="sb-lineA">Πρωταγωνιστεί ο ταλαντωτής (m₁, D₁) και οι θεαποιοί(*)</div>
-    <div class="sb-lineB">στον μονόλογο <span class="hl">«ατέλειωτο πήγαινε έλα»</span>... επί σκηνής!</div>
-    <div class="sb-lineC">Παραγωγή-Σκηνοθεσία: Εμηχ. Ενεργειούλης</div>
-    <div class="sb-lineD">(*) ... εσείς</div>
-  </div>
-
-  <div class="clock" id="clock">t = 0.00 s<span class="hint" id="slowHint"></span></div>
-
-  <div class="measure-box" id="measureBox">
-    <div class="mb-title">Μετρήσεις</div>
-    <table>
-      <thead>
-        <tr><th>α/α</th><th>t (s)</th><th>x (m)</th></tr>
-      </thead>
-      <tbody id="measureTBody"></tbody>
-    </table>
-  </div>
-
-  <div id="xtChart"></div>
-
-  <div class="params-box" id="paramsBox">
-    <div id="paramA"></div>
-    <div id="paramW"></div>
-    <div id="paramPhi"></div>
-  </div>
-
-  <div class="laws" id="laws">
-    <h4 id="lawsTitle">Νόμοι Α.Α.Τ.</h4>
-    <div id="lawsBody" class="laws-body"></div>
-  </div>
-  <div id="lawCharts" class="law-charts"></div>
-
-  <div class="ruler" id="ruler"></div>
-
-  <!-- βέλος κανονικού -->
-  <div class="marker" id="marker">
-    <div class="marker-line"></div>
-    <div class="marker-tip"></div>
-  </div>
-  <!-- βέλος ghost -->
-  <div class="marker" id="markerGhost">
-    <div class="marker-line"></div>
-    <div class="marker-tip"></div>
-  </div>
-
-  <img id="spring" class="spring" src="spring.png" alt="ελατήριο">
-  <div class="actor" id="actor"><img src="skater.png" alt="Skater"></div>
-  <div class="floor"></div>
-
-  <img class="audience-extra" id="audienceExtra" src="koino_extra.png" alt="έξτρα κοινό">
-  <img class="audience-main" src="koino.png" alt="κοινό">
-
-  <div class="viewers" id="viewersStrip">
-    <div class="viewer-avatar" data-idx="0"></div>
-    <div class="viewer-avatar" data-idx="1"></div>
-    <div class="viewer-avatar" data-idx="2"></div>
-    <div class="viewer-avatar" data-idx="3"></div>
-    <div class="viewer-avatar" data-idx="4"></div>
-  </div>
-
-  <div class="thought-bubble" id="bubble0">
-    <div class="text"></div>
-    <div class="checkmark">✓</div>
-  </div>
-  <div class="act-bubble" id="actBubble">ΘΕΑΤΗΣ</div>
-
-  <div class="controls" id="controls">
-    <button id="btnPause" title="παύση">⏸</button>
-    <button id="btnPlay" title="κανονικά">▶</button>
-    <button id="btnReset" title="reset">↺</button>
-  </div>
-  <button class="btn-end" id="btnEndShow">Τέλος Παράστασης</button>
-  <button class="btn-foyer" id="btnFoyer" title="Φουαγιέ">Φουαγιέ</button>
-
-  <button class="start-btn" id="startBtn">Έναρξη</button>
-
-  <div class="countdown-overlay" id="countdownOverlay">
-    <div class="countdown-box">
-      <div class="countdown-main">Η παράσταση αρχίζει...</div>
-      <div class="countdown-sub">ώρα να χρησιμοποιήσετε χαρτί και μολύβι!</div>
-      <div class="countdown-timer" id="countdownTimer">5</div>
-    </div>
-  </div>
-
-  <div class="actbreak" id="actBreak">
-    <div class="box">
-      <h3 id="actBreakTitle">Τέλος Πράξης 1</h3>
-      <p id="actBreakMsg">Ο (m₁,D₁) συνεχίζει. Είστε έτοιμοι για τη Δεύτερη Πράξη;</p>
-      <button id="btnAct2">Έναρξη Πράξης 2</button>
-    </div>
-  </div>
-
-  <div class="foyerbreak" id="foyerBreak">
-    <div class="box">
-      <h3 id="foyerBreakTitle">Τέλος Πράξης 2</h3>
-      <p id="foyerBreakMsg">Θέλετε να περάσετε στο φουαγιέ για τη συζήτηση;</p>
-      <button id="btnFoyerGo">Μετάβαση στο Φουαγιέ</button>
-    </div>
-  </div>
-
-  <div class="foyer" id="foyer">
-    <div class="wrap">
-      <div class="board-left"  id="boardLeft"></div>
-      <div class="board-right" id="boardRight"></div>
-    </div>
-  </div>
-
-  <div class="foyer-bubble" id="foyerBubble">ΘΕΑΤΗΣ</div>
-</div>
-
-<script>
-/* ---------- ΔΕΔΟΜΕΝΑ ΑΠΟ dialogs-gr.json ---------- */
-
-let VIEWERS = [];
-let ACT1 = [];
-let ACT2 = [];
-let FOYER = [];
-
-/* ---------- Φυσική / σκηνή ---------- */
-
-const stage        = document.getElementById('stage');
-const springEl     = document.getElementById('spring');
-const actor        = document.getElementById('actor');
-const spotlight    = document.getElementById('spotlight');
-const rulerEl      = document.getElementById('ruler');
-const markerEl     = document.getElementById('marker');
-const markerGhostEl= document.getElementById('markerGhost');
-markerGhostEl.style.zIndex = '159'; // βέλος ghost: 1 πάνω από τον ghost
-
-const clockEl      = document.getElementById('clock');
-const slowHint     = document.getElementById('slowHint');
-const measureBox   = document.getElementById('measureBox');
-const measureTBody = document.getElementById('measureTBody');
-const paramsBoxEl  = document.getElementById('paramsBox');
-const paramAEl     = document.getElementById('paramA');
-const paramWEl     = document.getElementById('paramW');
-const paramPhiEl   = document.getElementById('paramPhi');
-const lawsPane     = document.getElementById('laws');
-const lawsBody     = document.getElementById('lawsBody');
-const lawCharts    = document.getElementById('lawCharts');
-const xtChartEl    = document.getElementById('xtChart');
-const audienceExtra= document.getElementById('audienceExtra');
-
-const bubbleEl     = document.getElementById('bubble0');
-const bubbleTextEl = bubbleEl.querySelector('.text');
-const actBubble    = document.getElementById('actBubble');
-
-const startBtn          = document.getElementById('startBtn');
-const countdownOverlay  = document.getElementById('countdownOverlay');
-const countdownTimerEl  = document.getElementById('countdownTimer');
-
-const btnPause   = document.getElementById('btnPause');
-const btnPlay    = document.getElementById('btnPlay');
-const btnReset   = document.getElementById('btnReset');
-const btnEndShow = document.getElementById('btnEndShow');
-const btnFoyer   = document.getElementById('btnFoyer');
-
-const actBreak   = document.getElementById('actBreak');
-const btnAct2    = document.getElementById('btnAct2');
-const foyerBreak = document.getElementById('foyerBreak');
-const btnFoyerGo = document.getElementById('btnFoyerGo');
-
-const foyerEl     = document.getElementById('foyer');
-const boardLeft   = document.getElementById('boardLeft');
-const boardRight  = document.getElementById('boardRight');
-const foyerBubble = document.getElementById('foyerBubble');
-
-const viewersStrip = document.getElementById('viewersStrip');
-
-/* Φυσικά μεγέθη */
-
-const m        = 70;
-const T        = 6.0;
-const A_m      = 3.0;
-const omega    = 2 * Math.PI / T;
-const D        = Math.round(m * omega * omega);
-const pxPerMeter = 50;
-const A_px       = pxPerMeter * A_m;
-
-let t0                   = performance.now();
-let lastFrame            = performance.now();
-let playbackTime         = 0;
-let obsStarted           = false;
-let obsStartPlaybackOffset = 0;
-let mode                 = 'run'; // 'run' | 'pause'
-let lastSampleObsTime    = -Infinity;
-const sampleInterval     = 0.25;
-let measureRowIdx        = 0;
-
-let uXT = null;
-
-/* Ghost actor για 2η πράξη */
-
-let ghost       = null;
-let ghostSpring = null;
-let ghostActive = false;
-
-/* Φυσικό μήκος ελατηρίου (κοινό για κανονικό & ghost) */
-let springNaturalWidth  = null;
-let springNaturalHeight = null;
-
-/* Πάτωμα ηθοποιού σε px (κοινό με ghost) */
-let actorFloorBottomPx = null;
-
-function measureSpringNaturalSize(){
-  if(!springEl) return;
-  const prevDisplay   = springEl.style.display;
-  const prevTransform = springEl.style.transform;
-
-  springEl.style.display   = 'block';
-  springEl.style.transform = 'none';
-
-  const rect = springEl.getBoundingClientRect();
-  springNaturalWidth  = rect.width || 1;
-  springNaturalHeight = rect.height || 1;
-
-  springEl.style.display   = prevDisplay;
-  springEl.style.transform = prevTransform;
+:root{
+  --foyer-h: 445px;
 }
 
-/* ---------- Χρήσιμα ---------- */
-
-function anchorX(){
-  return stage.clientWidth * 0.18;
-}
-function centerX(){
-  return stage.clientWidth * 0.5;
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
 }
 
-function updateRuler(){
-  const baseLeft = stage.clientWidth * 0.18;
-  const usableW  = stage.clientWidth * 0.64;
-  rulerEl.style.left  = baseLeft + 'px';
-  rulerEl.style.width = usableW + 'px';
-  rulerEl.innerHTML   = '';
-  const cX = stage.clientWidth / 2;
-  for(let mTick=-7; mTick<=7; mTick++){
-    const xPx = cX + mTick * pxPerMeter;
-    const rel = xPx - baseLeft;
-    const tDiv = document.createElement('div');
-    tDiv.className = 'tick';
-    tDiv.style.left = rel + 'px';
-    rulerEl.appendChild(tDiv);
-    const lbl = document.createElement('div');
-    lbl.className = 'tick-label';
-    lbl.textContent = (mTick===0 ? '0' : (mTick>0? '+'+mTick : mTick)) + ' m';
-    lbl.style.left = rel + 'px';
-    rulerEl.appendChild(lbl);
-  }
+body{
+  margin:0;
+  background:radial-gradient(circle at center,#222 0%,#000 100%);
+  overflow:hidden;
+  font-family:Inter,system-ui,sans-serif;
+  color:#fff;
 }
 
-function logMeasurement(tObs, xMeters){
-  if(!obsStarted || mode==='pause') return;
-  if(tObs - lastSampleObsTime < sampleInterval) return;
-  lastSampleObsTime = tObs;
-  const tr = document.createElement('tr');
-  tr.className = 'new';
-  tr.innerHTML =
-    '<td>'+(++measureRowIdx)+'</td>'+
-    '<td>'+tObs.toFixed(2)+'</td>'+
-    '<td>'+xMeters.toFixed(2)+'</td>';
-  measureTBody.appendChild(tr);
-  setTimeout(()=>tr.classList.remove('new'), 650);
-  try{ tr.scrollIntoView({block:'end'}); }catch(e){}
+.stage{
+  position:relative;
+  width:100vw;
+  height:100vh;
+  overflow:hidden;
 }
 
-/* ---------- uPlot x(t) ---------- */
-
-function buildSeriesData(){
-  const N = 240;
-  const tArr = new Array(N+1);
-  const xArr = new Array(N+1);
-  for(let i=0;i<=N;i++){
-    const tloc = (i/N)*T;
-    tArr[i] = tloc;
-    xArr[i] = A_m*Math.sin(omega*(tloc+obsStartPlaybackOffset));
-  }
-  return [tArr,xArr];
+/* Κουρτίνες */
+.curtain-top,
+.curtain-upper,
+.curtain-side{
+  position:absolute;
+  transition:transform 1.2s cubic-bezier(.2,.9,.2,1),opacity 1s;
+}
+.curtain-top{
+  top:0;
+  left:0;
+  width:100%;
+  height:calc(26% - 22px);
+  background:linear-gradient(to bottom,#230000,#180000);
+  box-shadow:0 5px 18px rgba(0,0,0,.8);
+  z-index:160;
+}
+.curtain-upper{
+  top:calc(26% - 16px);
+  left:0;
+  width:100%;
+  height:calc(44% + 24px);
+  background:
+    url('courtin.png') center top/cover no-repeat,
+    linear-gradient(to bottom,#8b0000,#400000);
+  transform-origin:top;
+  z-index:160;
+}
+.stage.open .curtain-upper{
+  transform:translateY(calc(-100% + 10px));
+}
+.curtain-side{
+  top:0;
+  height:100%;
+  width:18%;
+  z-index:160;
+}
+.curtain-side.left{
+  left:0;
+  background:linear-gradient(to right,#300000,#1a0000);
+  box-shadow:inset -6px 0 10px rgba(0,0,0,.6);
+}
+.curtain-side.right{
+  right:0;
+  background:linear-gradient(to left,#300000,#1a0000);
+  box-shadow:inset 6px 0 10px rgba(0,0,0,.6);
 }
 
-function initXTChart(){
-  if(uXT) return;
-  xtChartEl.style.display='block';
-  const w = Math.max(220, xtChartEl.clientWidth || 220);
-  const h = Math.max(160, xtChartEl.clientHeight || 160);
-  const data = buildSeriesData();
-  const opts = {
-    width:w,
-    height:h,
-    scales:{
-      x:{time:false,range:[0,T]},
-      y:{range:[-A_m*1.1,A_m*1.1]}
-    },
-    axes:[
-      {
-        stroke:"#fff",
-        grid:{show:true,stroke:"rgba(255,255,255,0.25)"},
-        values:(u,vals)=>vals.map(v=>v.toFixed(1)+" s"),
-        label:"t (s)",
-        labelSize:18,
-        labelGap:6
-      },
-      {
-        stroke:"#fff",
-        grid:{show:true,stroke:"rgba(255,255,255,0.25)"},
-        values:(u,vals)=>vals.map(v=>v.toFixed(1)+" m"),
-        label:"x (m)",
-        labelSize:18,
-        labelGap:8
-      }
-    ],
-    series:[{}, {label:"x(t)", stroke:"#ffd27a", width:2}]
-  };
-  uXT = new uPlot(opts, data, xtChartEl);
-}
-function drawXTChart(){
-  if(uXT) uXT.setData(buildSeriesData());
+.spotlight{
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  z-index:150;
+  opacity:.25;
+  background:radial-gradient(200px 120px at 50% 60%, rgba(255,255,220,.65), rgba(255,255,220,0) 70%);
 }
 
-/* ---------- Νόμοι / διαγράμματα ---------- */
+/* Σκηνή – ελατήριο, ηθοποιός, δάπεδο */
 
-let firstLawShown = false;
-let vCan = null, aCan = null, axCan = null;
-
-function localizeTrig(txt){
-  if(!txt) return txt;
-  return txt.replaceAll('sin','ημ').replaceAll('cos','συν');
+.spring{
+  position:absolute;
+  bottom:calc(32vh + 92px);
+  left:10%;
+  height:96px;
+  width:auto;
+  z-index:156; /* κάτω από κουρτίνα (160), πάνω από πάτωμα (155) */
+  pointer-events:none;
+  filter:drop-shadow(0 4px 6px rgba(0,0,0,.55));
+  transform-origin:left center;
+  display:none; /* Act 2 μόνο */
 }
 
-function addLaw(txt){
-  const t = localizeTrig(txt);
-  if(!firstLawShown){
-    firstLawShown = true;
-    lawsPane.style.display='block';
-  }
-  const div = document.createElement('div');
-  div.className='law-line';
-  div.textContent = t;
-  lawsBody.appendChild(div);
+.actor{
+  position:absolute;
+  bottom:calc(32vh + 135px);
+  left:50%;
+  width:144px;
+  height:96px;
+  z-index:157; /* ηθοποιός > ελατήριο */
+  pointer-events:none;
+}
+.actor img{
+  width:100%;
+  height:auto;
+  display:block;
+  filter:drop-shadow(0 4px 6px rgba(0,0,0,.6));
 }
 
-function sizeLawCanvas(c){
-  const w = 210;
-  const h = 120;
-  c.width=w; c.height=h;
-  c.style.width=w+'px';
-  c.style.height=h+'px';
+.floor{
+  position:absolute;
+  left:18%;
+  width:64%;
+  bottom:calc(32vh - 8px);
+  height:2px;
+  background:#aaa;
+  z-index:155;
+  pointer-events:none;
 }
 
-/* mini γραφήματα v(t), a(t), a–x με πλέγμα & τιμές */
+/* Κοινό */
 
-function drawVelocityChart(){
-  if(!vCan) return;
-  const ctx = vCan.getContext('2d');
-  const w = vCan.width;
-  const h = vCan.height;
-  ctx.clearRect(0,0,w,h);
-
-  const margin = 18;
-  const x0 = margin;
-  const x1 = w - margin;
-  const y0 = h/2;
-
-  const vmax = omega * A_m;
-  const yAmp = (h/2 - margin);
-  const scaleV = yAmp / (1.1*vmax);
-
-  // πλέγμα
-  ctx.save();
-  ctx.strokeStyle = 'rgba(255,255,255,0.18)';
-  ctx.lineWidth = 1;
-  ctx.setLineDash([3,3]);
-
-  // κάθετες (t)
-  const tTicks = [0, T/2, T];
-  tTicks.forEach(t=>{
-    const xf = x0 + (x1-x0)*(t/T);
-    ctx.beginPath();
-    ctx.moveTo(xf, margin);
-    ctx.lineTo(xf, h-margin);
-    ctx.stroke();
-  });
-
-  // οριζόντιες (v)
-  const vTicks = [-vmax, -vmax/2, 0, vmax/2, vmax];
-  vTicks.forEach(v=>{
-    const yf = y0 - v*scaleV;
-    ctx.beginPath();
-    ctx.moveTo(x0, yf);
-    ctx.lineTo(x1, yf);
-    ctx.stroke();
-  });
-
-  ctx.restore();
-
-  // άξονες
-  ctx.strokeStyle = 'rgba(255,255,255,0.6)';
-  ctx.lineWidth = 1;
-  ctx.setLineDash([]);
-  ctx.beginPath();
-  ctx.moveTo(x0,y0);
-  ctx.lineTo(x1,y0);
-  ctx.moveTo(x0,margin);
-  ctx.lineTo(x0,h-margin);
-  ctx.stroke();
-
-  // καμπύλη v(t)
-  const N = 200;
-  ctx.strokeStyle = '#ffd27a';
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  for(let i=0;i<=N;i++){
-    const t = (i/N)*T;
-    const v = vmax * Math.cos(omega*(t+obsStartPlaybackOffset));
-    const xf = x0 + (x1-x0)*(t/T);
-    const yf = y0 - v*scaleV;
-    if(i===0) ctx.moveTo(xf,yf); else ctx.lineTo(xf,yf);
-  }
-  ctx.stroke();
-
-  // labels
-  ctx.fillStyle = '#fff';
-  ctx.font = '11px system-ui';
-  ctx.fillText('υ(t)', x0+4, margin+10);
-
-  ctx.font = '10px system-ui';
-  ctx.fillText('0', x0-10, y0+4);
-  ctx.fillText('t', x1-6, y0+12);
-  ctx.fillText('υ (m/s)', x0+4, margin-4);
-
-  ctx.fillText('υmax ≈ '+vmax.toFixed(2), x0+4, h-margin+4);
+.audience-main{
+  position:absolute;
+  left:18%;
+  width:64%;
+  bottom:0;
+  height:auto;
+  object-fit:contain;
+  object-position:bottom center;
+  z-index:1500;
+  pointer-events:none;
 }
 
-function drawAccelerationChart(){
-  if(!aCan) return;
-  const ctx = aCan.getContext('2d');
-  const w = aCan.width;
-  const h = aCan.height;
-  ctx.clearRect(0,0,w,h);
-
-  const margin = 18;
-  const x0 = margin;
-  const x1 = w - margin;
-  const y0 = h/2;
-
-  const amax = omega * omega * A_m;
-  const yAmp = (h/2 - margin);
-  const scaleA = yAmp / (1.1*amax);
-
-  // πλέγμα
-  ctx.save();
-  ctx.strokeStyle = 'rgba(255,255,255,0.18)';
-  ctx.lineWidth = 1;
-  ctx.setLineDash([3,3]);
-
-  const tTicks = [0, T/2, T];
-  tTicks.forEach(t=>{
-    const xf = x0 + (x1-x0)*(t/T);
-    ctx.beginPath();
-    ctx.moveTo(xf, margin);
-    ctx.lineTo(xf, h-margin);
-    ctx.stroke();
-  });
-
-  const aTicks = [-amax, -amax/2, 0, amax/2, amax];
-  aTicks.forEach(a=>{
-    const yf = y0 - a*scaleA;
-    ctx.beginPath();
-    ctx.moveTo(x0, yf);
-    ctx.lineTo(x1, yf);
-    ctx.stroke();
-  });
-
-  ctx.restore();
-
-  // άξονες
-  ctx.strokeStyle = 'rgba(255,255,255,0.6)';
-  ctx.lineWidth = 1;
-  ctx.setLineDash([]);
-  ctx.beginPath();
-  ctx.moveTo(x0,y0);
-  ctx.lineTo(x1,y0);
-  ctx.moveTo(x0,margin);
-  ctx.lineTo(x0,h-margin);
-  ctx.stroke();
-
-  // καμπύλη a(t)
-  const N = 200;
-  ctx.strokeStyle = '#ffd27a';
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  for(let i=0;i<=N;i++){
-    const t = (i/N)*T;
-    const a = -amax * Math.sin(omega*(t+obsStartPlaybackOffset));
-    const xf = x0 + (x1-x0)*(t/T);
-    const yf = y0 - a*scaleA;
-    if(i===0) ctx.moveTo(xf,yf); else ctx.lineTo(xf,yf);
-  }
-  ctx.stroke();
-
-  // labels
-  ctx.fillStyle = '#fff';
-  ctx.font = '11px system-ui';
-  ctx.fillText('a(t)', x0+4, margin+10);
-
-  ctx.font = '10px system-ui';
-  ctx.fillText('0', x0-10, y0+4);
-  ctx.fillText('t', x1-6, y0+12);
-  ctx.fillText('a (m/s²)', x0+4, margin-4);
-
-  ctx.fillText('amax ≈ '+amax.toFixed(2), x0+4, h-margin+4);
+.audience-extra{
+  position:absolute;
+  left:18%;
+  width:64%;
+  bottom:0;
+  height:auto;
+  object-fit:contain;
+  object-position:bottom center;
+  opacity:.9;
+  z-index:980;
+  pointer-events:none;
 }
 
-/* Τρίτο: a–x γράφημα (a = -ω² x) με πλέγμα & τιμές */
-function drawAxChart(){
-  if(!axCan) return;
-  const ctx = axCan.getContext('2d');
-  const w = axCan.width;
-  const h = axCan.height;
-  ctx.clearRect(0,0,w,h);
+/* Ομιλητές / θεατές */
 
-  const margin = 22;
-  const x0 = margin;
-  const x1 = w - margin;
-  const y0 = margin;
-  const y1 = h - margin;
-
-  const xMid = (x0 + x1)/2;
-  const yMid = (y0 + y1)/2;
-
-  const amax = omega * omega * A_m;
-
-  // κλίμακες
-  const pxPerX = (x1 - x0) / (2 * A_m);      // από -A έως +A
-  const pxPerA = (y1 - y0) / (2 * amax);     // από -amax έως +amax
-
-  function toCanvas(x,a){
-    const cx = xMid + x * pxPerX;
-    const cy = yMid - a * pxPerA;
-    return {cx,cy};
-  }
-
-  // πλέγμα
-  ctx.save();
-  ctx.strokeStyle = 'rgba(255,255,255,0.18)';
-  ctx.lineWidth = 1;
-  ctx.setLineDash([3,3]);
-
-  const xTicks = [-A_m, -A_m/2, 0, A_m/2, A_m];
-  xTicks.forEach(x=>{
-    const p = toCanvas(x,0);
-    ctx.beginPath();
-    ctx.moveTo(p.cx, y0);
-    ctx.lineTo(p.cx, y1);
-    ctx.stroke();
-  });
-
-  const aTicks = [-amax, -amax/2, 0, amax/2, amax];
-  aTicks.forEach(a=>{
-    const p = toCanvas(0,a);
-    ctx.beginPath();
-    ctx.moveTo(x0, p.cy);
-    ctx.lineTo(x1, p.cy);
-    ctx.stroke();
-  });
-
-  ctx.restore();
-
-  // άξονες
-  ctx.strokeStyle = 'rgba(255,255,255,0.6)';
-  ctx.lineWidth = 1;
-  ctx.setLineDash([]);
-  ctx.beginPath();
-  ctx.moveTo(x0, yMid);
-  ctx.lineTo(x1, yMid);
-  ctx.moveTo(xMid, y0);
-  ctx.lineTo(xMid, y1);
-  ctx.stroke();
-
-  // ευθεία a = -ω² x από -A έως +A
-  const xL = -A_m;
-  const aL = -omega*omega*xL;
-  const xR =  A_m;
-  const aR = -omega*omega*xR;
-
-  const pL = toCanvas(xL,aL);
-  const pR = toCanvas(xR,aR);
-
-  ctx.strokeStyle = '#ffd27a';
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.moveTo(pL.cx, pL.cy);
-  ctx.lineTo(pR.cx, pR.cy);
-  ctx.stroke();
-
-  // labels
-  ctx.fillStyle = '#fff';
-  ctx.font = '11px system-ui';
-  ctx.fillText('a–x', x0+4, y0+10);
-
-  ctx.font = '10px system-ui';
-  ctx.fillText('x (m)', x1-32, yMid-4);
-  ctx.fillText('a (m/s²)', xMid+6, y0+10);
-
-  ctx.fillText('a = -ω²·x', x0+4, y1-4);
-  ctx.fillText('A = '+A_m.toFixed(2)+' m', x0+4, y1-18);
-  ctx.fillText('amax ≈ '+amax.toFixed(2), x0+4, y1-32);
+.viewers{
+  position:absolute;
+  left:0;
+  width:100%;
+  bottom:0;
+  height:260px;          /* Σταθερό ύψος ώστε να χωράνε τα avatars */
+  z-index:2200;          /* πάνω από κοινό */
+  pointer-events:none;
+  overflow:visible;
 }
 
-function ensureVelocityChart(){
-  if(!vCan){
-    vCan = document.createElement('canvas');
-    lawCharts.appendChild(vCan);
-  }
-  sizeLawCanvas(vCan);
-  drawVelocityChart();
-}
-function ensureAccelerationChart(){
-  if(!aCan){
-    aCan = document.createElement('canvas');
-    lawCharts.appendChild(aCan);
-  }
-  sizeLawCanvas(aCan);
-  drawAccelerationChart();
-}
-function ensureAxChart(){
-  if(!axCan){
-    axCan = document.createElement('canvas');
-    lawCharts.appendChild(axCan);
-  }
-  sizeLawCanvas(axCan);
-  drawAxChart();
+.viewer-avatar{
+  position:absolute;
+  width:140px;           /* ΣΗΜΑΝΤΙΚΟ: όχι auto, αλλιώς 0px και εξαφανίζονται */
+  height:22vh;           /* default, μπορεί να αλλάξει από JSON */
+  overflow:visible;
+  border-radius:0;
+  border:none;
+  box-shadow:none;
+  background:transparent center bottom/contain no-repeat; /* PNG διαφανή */
+  transform:translateX(-50%); /* το left ορίζει το κέντρο */
 }
 
-/* ---------- Παράμετροι ταλάντωσης ---------- */
+/* Ταμπέλα τίτλου */
 
-function x0Val(){
-  return A_m*Math.sin(omega*(0+obsStartPlaybackOffset));
+.signboard{
+  position:absolute;
+  top:0;
+  left:50%;
+  transform:translateX(-50%);
+  background:rgba(0,0,0,.4);
+  border-radius:10px;
+  padding:12px 18px;
+  color:#ddd;
+  font-family:'Georgia',serif;
+  text-align:center;
+  z-index:170;
+  line-height:1.25;
 }
-function showParamsBox(){
-  const phi0deg = ((omega*obsStartPlaybackOffset)*180/Math.PI+360)%360;
-  paramAEl.textContent  = 'A = '+A_m.toFixed(2)+' m';
-  paramWEl.textContent  = 'ω = '+omega.toFixed(3)+' rad/s';
-  paramPhiEl.textContent= 'φ₀ = '+phi0deg.toFixed(1)+'°';
-  paramsBoxEl.style.display='block';
+.signboard h1{
+  font-size:28px;
+  margin:0;
+  color:#fff;
 }
-
-/* ---------- Bubbles (πράξεις) ---------- */
-
-function viewerInfo(idx1based){
-  const i = (idx1based||1)-1;
-  return VIEWERS[i] || VIEWERS[0] || null;
+.signboard .sb-lineA{
+  font-size:16px;
+  font-style:italic;
+  margin-top:2px;
+  color:#ddd;
 }
-
-function viewerAnchor(idx1based){
-  const vi = viewerInfo(idx1based);
-  const avatar = viewersStrip.querySelector('.viewer-avatar[data-idx="'+(idx1based-1)+'"]');
-  const sRect = stage.getBoundingClientRect();
-
-  if(avatar){
-    const aRect = avatar.getBoundingClientRect();
-    const x = aRect.left + aRect.width/2 - sRect.left;
-    const y = aRect.top  + aRect.height/2 - sRect.top; // κέντρο τελικής εικόνας
-    return {x,y,info:vi};
-  }
-
-  const leftFrac  = 0.18;
-  const widthFrac = 0.64;
-  const frac = vi && typeof vi.xFrac==='number'
-    ? vi.xFrac
-    : (idx1based/(VIEWERS.length+1 || 2));
-  const x = (leftFrac + widthFrac*frac)*stage.clientWidth;
-  const y = stage.clientHeight*0.60;
-  return {x,y,info:vi};
+.signboard .sb-lineB{
+  font-size:16px;
+  margin-top:2px;
 }
-
-function tint(hex, alpha){
-  const c = (hex||'#ffffff').replace('#','');
-  const r = parseInt(c.slice(0,2),16) || 255;
-  const g = parseInt(c.slice(2,4),16) || 255;
-  const b = parseInt(c.slice(4,6),16) || 255;
-  return 'rgba('+r+','+g+','+b+','+alpha+')';
+.signboard .sb-lineB .hl{
+  color:#ffd27a;
+  font-weight:600;
+}
+.signboard .sb-lineC{
+  font-size:15px;
+  margin-top:2px;
+  font-weight:700;
+  color:#fff;
+}
+.signboard .sb-lineD{
+  font-size:13px;
+  margin-top:2px;
+  font-style:italic;
+  opacity:.9;
 }
 
-function showSpeakerChip(idx1based){
-  const {x,y,info} = viewerAnchor(idx1based);
-  if(!info) return;
-  actBubble.textContent = info.name_gr || ('ΘΕΑΤΗΣ '+idx1based);
-  actBubble.style.left = x+'px';
-  actBubble.style.top  = (y-130)+'px';
-  actBubble.style.transform='translateX(-50%)';
-  actBubble.style.backgroundColor = tint(info.color,0.9);
-  actBubble.style.display='block';
+/* Ρολόι / Μετρήσεις / x–t */
+
+.clock{
+  position:absolute;
+  top:10px;
+  right:10px;
+  background:rgba(0,0,0,.5);
+  color:#fff;
+  padding:6px 10px;
+  font-size:15px;
+  font-family:"Courier New",monospace;
+  border-radius:6px;
+  border:1px solid rgba(255,255,255,.3);
+  z-index:265;
+  pointer-events:none;
+  display:none;
+}
+.clock .hint{
+  font-size:10px;
+  color:#ffd27a;
+  opacity:.9;
+  margin-left:6px;
 }
 
-function hideSpeakerChip(){
-  actBubble.style.display='none';
+.measure-box{
+  position:absolute;
+  right:10px;
+  top:44px;
+  width:220px;
+  z-index:262;
+  background:rgba(0,0,0,.55);
+  color:#fff;
+  border:1px solid rgba(255,255,255,.25);
+  border-radius:8px;
+  padding:6px 8px;
+  display:none;
+  max-height:46vh;
+  overflow-y:auto;
+  font-size:12px;
+}
+.measure-box .mb-title{
+  font-weight:700;
+  margin:0 0 6px 0;
+  font-size:13px;
+}
+.measure-box table{
+  width:100%;
+  border-collapse:separate;
+  border-spacing:0;
+  font-size:12px;
+}
+.measure-box thead th{
+  position:sticky;
+  top:0;
+  background:rgba(0,0,0,.8);
+  z-index:1;
+}
+.measure-box th,
+.measure-box td{
+  border-bottom:1px solid rgba(255,255,255,.2);
+  padding:2px 4px;
+  text-align:right;
+}
+.measure-box th:first-child,
+.measure-box td:first-child{
+  text-align:center;
+}
+.measure-box tr.new td{
+  background:rgba(255,210,122,.2);
+  transition:background .6s ease;
 }
 
-function placeBubble(idx1based, xShift, yOffset){
-  const {x,y,info} = viewerAnchor(idx1based);
-  const dx = (info && typeof info.bubbleDx==='number'? info.bubbleDx:0) + (xShift||0);
-  const dy = (info && typeof info.bubbleDy==='number'? info.bubbleDy:0) + (yOffset||0);
-  const left = x + dx;
-  const top  = y - dy;
-  bubbleEl.style.left = left+'px';
-  bubbleEl.style.top  = top +'px';
+#xtChart{
+  position:absolute;
+  right:10px;
+  bottom:10px;
+  width:240px;
+  height:180px;
+  display:none;
+  z-index:266;
+  border:1px dashed rgba(255,255,255,.25);
+  pointer-events:none;
+}
+.uplot{
+  background:rgba(0,0,0,.2);
+  border-radius:6px;
+}
+.u-legend{
+  display:none!important;
+}
+.u-axis text{
+  fill:#fff;
+}
+.u-grid line{
+  stroke:rgba(255,255,255,.25);
 }
 
-function typeWriterHTML(el, html, totalMs, done){
-  el.innerHTML = html || '';
-  const textNodes = [];
-  function collect(node){
-    if(node.nodeType===3){
-      textNodes.push({node,text:node.textContent});
-      node.textContent='';
-    }else if(node.nodeType===1){
-      for(const ch of node.childNodes) collect(ch);
-    }
-  }
-  collect(el);
-  const totalChars = textNodes.reduce((s,o)=>s+o.text.length,0) || 1;
-  const baseMs = (typeof totalMs==='number' && totalMs>0? totalMs : 2500);
-  const step = Math.max(15, Math.min(80, Math.round(baseMs/totalChars)));
-  let i=0;
-  (function tick(){
-    let rem=i;
-    for(const obj of textNodes){
-      if(rem>obj.text.length){
-        obj.node.textContent = obj.text;
-        rem -= obj.text.length;
-      }else{
-        obj.node.textContent = obj.text.slice(0,rem);
-        rem=0;
-      }
-    }
-    i++;
-    if(i<=totalChars) setTimeout(tick, step);
-    else if(typeof done==='function') done();
-  })();
+.params-box{
+  position:absolute;
+  right:10px;
+  top:calc(44px + 46vh + 10px);
+  z-index:268;
+  background:rgba(0,0,0,.6);
+  color:#fff;
+  border:1px solid rgba(255,255,255,.25);
+  border-radius:8px;
+  padding:6px 10px;
+  font-size:13px;
+  line-height:1.45;
+  display:none;
+  min-width:220px;
 }
 
-function showBubbleForEvent(ev){
-  return new Promise(resolve=>{
-    const viewer = ev.viewer || 1;
-    const html = (ev.left||'').replaceAll('\n','<br>');
+/* Νόμοι & mini διαγράμματα */
 
-    if(!html){
-      hideSpeakerChip();
-      bubbleEl.style.display='none';
-      resolve();
-      return;
-    }
-
-    showSpeakerChip(viewer);
-    placeBubble(viewer, ev.xShift||0, ev.yOffset||0);
-
-    bubbleEl.style.display='block';
-    bubbleEl.style.opacity='0';
-    bubbleEl.classList.remove('closing');
-    bubbleEl.classList.add('active');
-    bubbleEl.style.opacity='1';
-
-    const typeMs  = ev.typeMs  || 2500;
-    const pauseMs = ev.pauseMs || 800;
-
-    typeWriterHTML(bubbleTextEl, html, typeMs, ()=>{
-      setTimeout(()=>{
-        bubbleEl.classList.add('closing');
-        setTimeout(()=>{
-          bubbleEl.classList.remove('active','closing');
-          bubbleEl.style.display='none';
-          hideSpeakerChip();
-          resolve();
-        },200);
-      }, pauseMs);
-    });
-  });
+.laws{
+  position:absolute;
+  left:10px;
+  top:44px;
+  width:210px;
+  background:rgba(20,0,0,.7);
+  color:#fff;
+  border:1px solid rgba(255,200,200,.3);
+  border-radius:8px;
+  padding:6px 8px;
+  font-size:14px;
+  line-height:1.45;
+  z-index:260;
+  display:none;
+}
+.laws h4{
+  margin:0 0 6px 0;
+  font-size:14px;
+}
+.laws-body .law-line{
+  padding:4px 6px;
+  margin:2px 0;
+  border-left:3px solid rgba(255,210,122,.7);
+  background:rgba(255,210,122,.15);
+}
+.law-charts{
+  position:absolute;
+  left:10px;
+  top:calc(44px + 220px);
+  width:210px;
+  z-index:259;
+}
+.law-charts canvas{
+  display:block;
+  margin-top:6px;
+  background:rgba(0,0,0,.5);
+  border-radius:6px;
 }
 
-/* Δυναμικά bubbles για A, T/ω, φ */
+/* Ruler & marker */
 
-function dynText(kind){
-  const x0 = x0Val().toFixed(2);
-  const phi0deg = ((omega*obsStartPlaybackOffset)*180/Math.PI+360)%360;
-  if(kind==='A'){
-    return '…με A='+A_m.toFixed(2)+' m!';
-  }else if(kind==='Tw'){
-    return '… και T='+T.toFixed(2)+' s και επομένως ω='+omega.toFixed(3)+' rad/s!';
-  }else if(kind==='phi'){
-    return '… όντως είναι ΑΑΤ και αφού το x₀='+x0+' m υπάρχει φ₀='+phi0deg.toFixed(1)+'°. Χαχα, ένα το κρατούμενο!';
-  }
-  return '';
+.ruler{
+  position:absolute;
+  left:18%;
+  width:64%;
+  bottom:calc(32vh - 8px + 1px);
+  height:24px;
+  font-size:10px;
+  font-family:"Courier New",monospace;
+  color:#aaa;
+  pointer-events:none;
+  z-index:270;
+}
+.ruler::before{
+  content:'';
+  position:absolute;
+  left:0;
+  right:0;
+  bottom:0;
+  height:1px;
+  background:#aaa;
+}
+.tick{
+  position:absolute;
+  bottom:0;
+  width:1px;
+  height:10px;
+  background:#aaa;
+}
+.tick-label{
+  position:absolute;
+  bottom:12px;
+  transform:translateX(-50%);
+  font-size:10px;
+  color:#aaa;
+  white-space:nowrap;
 }
 
-function showDynBubble(ev){
-  return new Promise(resolve=>{
-    const viewer = ev.viewer || 1;
-    const txt = dynText(ev.param);
-
-    showSpeakerChip(viewer);
-    placeBubble(viewer, ev.xShift||0, ev.yOffset||0);
-
-    bubbleEl.style.display='block';
-    bubbleEl.style.opacity='0';
-    bubbleEl.classList.remove('closing');
-    bubbleEl.classList.add('active');
-    bubbleEl.style.opacity='1';
-
-    const typeMs  = ev.typeMs  || 2500;
-    const pauseMs = ev.pauseMs || 800;
-
-    typeWriterHTML(bubbleTextEl, txt, typeMs, ()=>{
-      setTimeout(()=>{
-        bubbleEl.classList.add('closing');
-        setTimeout(()=>{
-          bubbleEl.classList.remove('active','closing');
-          bubbleEl.style.display='none';
-          hideSpeakerChip();
-          resolve();
-        },200);
-      }, pauseMs);
-    });
-  });
+.marker{
+  position:absolute;
+  bottom:calc(32vh - 8px + 1px);
+  width:0;
+  height:80px;
+  transform:translateX(-50%);
+  pointer-events:none;
+  z-index:158; /* πάνω από ηθοποιούς, κάτω από κουρτίνα */
+  opacity:0;
+  transition:opacity .3s;
+}
+.marker-line{
+  position:absolute;
+  left:50%;
+  bottom:8px;
+  width:2px;
+  height:70px;
+  background:#ffd27a;
+  box-shadow:0 0 4px rgba(255,210,122,.8);
+  transform:translateX(-50%);
+}
+.marker-tip{
+  position:absolute;
+  left:50%;
+  bottom:0;
+  width:0;
+  height:0;
+  border-left:6px solid transparent;
+  border-right:6px solid transparent;
+  border-top:8px solid #ffd27a;
+  filter:drop-shadow(0 2px 2px rgba(255,210,122,.8));
+  transform:translateX(-50%);
 }
 
-/* ---------- Act 1 / Act 2 sequences ---------- */
+/* Bubbles */
 
-async function runAct1(){
-  for(const ev of ACT1){
-    if(ev.close){
-      await closeCurtainToAct2();
-      return;
-    }
-    if(ev.graph==='xt'){
-      initXTChart();
-      drawXTChart();
-      await new Promise(r=>setTimeout(r,600));
-      continue;
-    }
-    if(ev.plot==='v'){
-      ensureVelocityChart();
-      await new Promise(r=>setTimeout(r,500));
-      continue;
-    }
-    if(ev.plot==='a'){
-      ensureAccelerationChart();
-      await new Promise(r=>setTimeout(r,500));
-      continue;
-    }
-    if(ev.plot==='ax'){
-      ensureAxChart();
-      await new Promise(r=>setTimeout(r,500));
-      continue;
-    }
-    if(ev.right && !ev.left && !ev.viewer && !ev.param){
-      addLaw(ev.right);
-      if(ev.alsoParams) showParamsBox();
-      await new Promise(r=>setTimeout(r,600));
-      continue;
-    }
-    if(ev.param){
-      await showDynBubble(ev);
-      continue;
-    }
-    await showBubbleForEvent(ev);
-  }
+@keyframes popIn{
+  0%{transform:scale(.9);opacity:0}
+  60%{transform:scale(1.04);opacity:1}
+  100%{transform:scale(1);opacity:1}
+}
+.thought-bubble{
+  position:absolute;
+  max-width:420px;
+  background:rgba(255,255,255,.95);
+  color:#000;
+  font-size:15px;
+  line-height:1.45;
+  padding:10px 12px 12px;
+  border-radius:10px;
+  box-shadow:0 6px 12px rgba(0,0,0,.4);
+  z-index:1050;
+  pointer-events:none;
+  opacity:0;
+  display:none;
+  transition:opacity .25s ease, transform .25s ease;
+}
+.thought-bubble.active{
+  display:block;
+  opacity:1;
+  animation:popIn .25s ease;
+}
+.thought-bubble.closing{
+  opacity:0;
+}
+.thought-bubble .text{
+  word-wrap:break-word;
+}
+.thought-bubble .checkmark{
+  position:absolute;
+  top:-8px;
+  right:-8px;
+  background:#2ecc71;
+  color:#fff;
+  font-size:11px;
+  line-height:1;
+  border-radius:50%;
+  border:1px solid rgba(0,0,0,.4);
+  width:18px;
+  height:18px;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  font-family:system-ui,sans-serif;
+  font-weight:600;
 }
 
-/* Ghost setup για Act 2 */
-
-function ensureActorFloorBottom(){
-  if(actorFloorBottomPx != null) return;
-  const sb = getComputedStyle(actor).bottom;
-  const val = parseFloat(sb);
-  if(!Number.isNaN(val)) actorFloorBottomPx = val;
+.act-bubble,
+.foyer-bubble{
+  position:absolute;
+  display:none;
+  pointer-events:none;
+  min-width:120px;
+  text-align:center;
+  color:#fff;
+  font-weight:800;
+  font-size:13px;
+  padding:6px 12px;
+  border-radius:999px;
+  border:2px solid rgba(255,255,255,.65);
+  box-shadow:0 6px 14px rgba(0,0,0,.5);
+  letter-spacing:0.03em;
+  text-shadow:0 1px 2px rgba(0,0,0,.7);
+  background:rgba(0,0,0,.7);
+}
+.act-bubble{
+  z-index:1050;
+}
+.foyer-bubble{
+  z-index:2000;
 }
 
-function ensureGhost(){
-  ensureActorFloorBottom();
+/* Controls */
 
-  if(!ghost){
-    const ar = actor.getBoundingClientRect();
-    const aw = ar.width  || 144;
-    const ah = ar.height || 96;
-
-    ghost = document.createElement('div');
-    ghost.id='actorGhost';
-    ghost.style.position='absolute';
-    ghost.style.zIndex='158';              // ghost: 1 πάνω από ελατήριο ghost
-    ghost.style.pointerEvents='none';
-    ghost.style.opacity='0.85';
-    ghost.style.filter='grayscale(1) brightness(1.2)';
-    ghost.style.width  = aw+'px';
-    ghost.style.height = ah+'px';
-    ghost.style.bottom = (actorFloorBottomPx ?? 0)+'px';
-
-    const img = document.createElement('img');
-    img.src = actor.querySelector('img').src;
-    img.style.width='100%';
-    img.style.height='auto';
-    ghost.appendChild(img);
-    stage.appendChild(ghost);
-  }
-  if(!ghostSpring){
-    ghostSpring = document.createElement('img');
-    ghostSpring.id='springGhost';
-    ghostSpring.src = springEl.src;
-    ghostSpring.style.position='absolute';
-    ghostSpring.style.transformOrigin='left center';
-    ghostSpring.style.zIndex='157';        // ελατήριο ghost: 1 κάτω από ghost
-    ghostSpring.style.pointerEvents='none';
-    ghostSpring.style.opacity='0.9';
-    ghostSpring.style.filter='grayscale(1) brightness(1.15)';
-    ghostSpring.style.display='none';
-    stage.appendChild(ghostSpring);
-  }
+.controls{
+  position:absolute;
+  bottom:12px;
+  left:50%;
+  transform:translateX(-50%);
+  background:rgba(0,0,0,.7);
+  border:1px solid rgba(255,255,255,.25);
+  border-radius:8px;
+  padding:6px 8px;
+  display:flex;
+  gap:8px;
+  z-index:2000;
+}
+.controls button{
+  background:none;
+  border:0;
+  color:#fff;
+  font-size:16px;
+  line-height:1;
+  cursor:pointer;
+  min-width:32px;
+  min-height:32px;
+  border-radius:4px;
+  padding:4px 6px;
+}
+.controls button.active{
+  background:rgba(255,255,255,.2);
 }
 
-async function runAct2(){
-  ensureGhost();
-  ghostActive=false;
-  actBreak.style.display='none';
-  stage.classList.add('open');
-
-  springEl.style.display='block';
-  if(ghostSpring) ghostSpring.style.display='block';
-  markerEl.style.opacity='1';
-  markerGhostEl.style.opacity='0';
-
-  for(const ev of ACT2){
-    if(ev.gStart) ghostActive = true;
-    if(ev.gStop)  ghostActive = false;
-
-    if(ev.right && !ev.left && !ev.viewer){
-      addLaw(ev.right);
-      await new Promise(r=>setTimeout(r,600));
-      continue;
-    }
-
-    await showBubbleForEvent(ev);
-  }
-
-  stage.classList.remove('open');
-  setTimeout(()=>{
-    foyerBreak.style.display='flex';
-  }, 1200);
+.btn-end{
+  position:absolute;
+  bottom:12px;
+  right:12px;
+  z-index:2000;
+  background:#333;
+  border:1px solid rgba(255,255,255,.25);
+  color:#fff;
+  border-radius:8px;
+  padding:8px 12px;
+  cursor:pointer;
 }
 
-/* ---------- Κουρτίνα / μεταβάσεις ---------- */
-
-function closeCurtainToAct2(){
-  return new Promise(resolve=>{
-    stage.classList.remove('open');
-    setTimeout(()=>{
-      actBreak.style.display='flex';
-      resolve();
-    }, 1400);
-  });
+.btn-foyer{
+  position:absolute;
+  bottom:12px;
+  left:12px;
+  z-index:2000;
+  background:#333;
+  border:1px solid rgba(255,255,255,.25);
+  color:#fff;
+  border-radius:8px;
+  padding:8px 12px;
+  cursor:pointer;
 }
 
-/* ---------- Foyer ---------- */
+/* Start + countdown */
 
-function isFormulaBlock(text){
-  const s = String(text||'').trim();
-  if(!s) return false;
-  if(/^\(\d+\)/.test(s)) return true;
-  if(/[ΑA]\.[ΔD]\.[ΜM]\.[ΕE]\.[ΤT]/.test(s)) return true;
-  if(/M\.E\.C/.test(s)) return true;
-  if(/[⇒⇔]/.test(s)) return true;
-  if(/Νόμος του Νεύτωνα/i.test(s) || /Newton’s law/i.test(s)) return true;
-  return false;
+.start-btn{
+  position:absolute;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  z-index:1000;
+  background:#700;
+  color:#fff;
+  border:none;
+  border-radius:8px;
+  padding:12px 24px;
+  font-size:18px;
+  cursor:pointer;
+  box-shadow:0 0 10px #300;
 }
 
-function setFoyerSpeaker(idx1based){
-  const vi = viewerInfo(idx1based);
-  if(!vi) return;
-  foyerBubble.textContent = vi.name_gr || ('Θεατής '+idx1based);
-  foyerBubble.style.backgroundColor = tint(vi.color,0.85);
-  foyerBubble.style.borderColor = 'rgba(255,255,255,.9)';
-
-  // ίδια λογική / ίδια σημεία με 1η–2η πράξη
-  const {x,y} = viewerAnchor(idx1based);
-  foyerBubble.style.left = x+'px';
-  foyerBubble.style.top  = (y-130)+'px';
-  foyerBubble.style.transform='translateX(-50%)';
-  foyerBubble.style.display='block';
+.countdown-overlay{
+  position:absolute;
+  left:0;
+  top:0;
+  width:100%;
+  height:100%;
+  background:rgba(0,0,0,.65);
+  color:#fff;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  z-index:900;
+  pointer-events:none;
+  font-family:Inter,system-ui,sans-serif;
+}
+.countdown-box{
+  max-width:80%;
+}
+.countdown-main{
+  font-size:24px;
+  font-weight:600;
+  margin-bottom:8px;
+  color:#fff;
+}
+.countdown-sub{
+  font-size:14px;
+  color:#ffd27a;
+  margin-bottom:16px;
+}
+.countdown-timer{
+  font-family:"Courier New",monospace;
+  font-size:40px;
+  font-weight:700;
+  color:#fff;
 }
 
-function typeWriterBoard(el, text, totalMs, done){
-  const src = String(text||'').replaceAll('sqrt(','√(');
-  const total = src.length || 1;
-  const baseMs = (typeof totalMs==='number' && totalMs>0 ? totalMs : 3000);
-  const step = Math.max(10, Math.round(baseMs/total));
-  let i=0;
-  (function tick(){
-    el.innerHTML = src.slice(0,i).replaceAll('\n','<br>');
-    try{
-      boardLeft.scrollTop  = boardLeft.scrollHeight;
-      boardRight.scrollTop = boardRight.scrollHeight;
-    }catch(e){}
-    i++;
-    if(i<=src.length) setTimeout(tick, step);
-    else if(typeof done==='function') done();
-  })();
+/* Act break / foyer break */
+
+.actbreak,
+.foyerbreak{
+  position:absolute;
+  left:18%;
+  width:64%;
+  top:26%;
+  height:44%;
+  background:rgba(0,0,0,.55);
+  color:#fff;
+  z-index:410;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+}
+.actbreak .box,
+.foyerbreak .box{
+  background:rgba(0,0,0,.7);
+  border:1px solid rgba(255,255,255,.25);
+  border-radius:12px;
+  padding:16px 20px;
+  max-width:520px;
+}
+.actbreak h3,
+.foyerbreak h3{
+  margin-bottom:8px;
+}
+.actbreak p,
+.foyerbreak p{
+  margin-bottom:16px;
+}
+.actbreak button,
+.foyerbreak button{
+  background:#700;
+  color:#fff;
+  border:none;
+  border-radius:8px;
+  padding:10px 16px;
+  font-size:16px;
+  cursor:pointer;
 }
 
-function addFoyerRow(item){
-  return new Promise(resolve=>{
-    const viewer = item.viewer || 1;
-    const vi = viewerInfo(viewer) || {};
-    const bgLeft  = tint(vi.color||'#ffffff',0.22);
-    const bgRight = tint(vi.color||'#ffffff',0.16);
+/* Φουαγιέ */
 
-    const l = document.createElement('div');
-    l.className='cell';
-    l.style.background = bgLeft;
-    l.style.borderLeft = '4px solid '+tint(vi.color||'#ffffff',0.85);
-
-    const r = document.createElement('div');
-    r.className='cell';
-    r.style.background = bgRight;
-    r.style.borderLeft = '4px solid '+tint(vi.color||'#ffffff',0.55);
-
-    if(isFormulaBlock(item.right)){
-      r.classList.add('formula');
-    }
-
-    boardLeft.appendChild(l);
-    boardRight.appendChild(r);
-
-    setFoyerSpeaker(viewer);
-
-    const typeMs  = item.typeMs  || 4000;
-    const pauseMs = item.pauseMs || 1500;
-
-    typeWriterBoard(l, item.left||'', typeMs, ()=>{
-      if((item.right||'').trim().length>0){
-        typeWriterBoard(r, item.right||'', typeMs, ()=>{
-          setTimeout(resolve, pauseMs);
-        });
-      }else{
-        setTimeout(resolve, pauseMs);
-      }
-    });
-  });
+.foyer{
+  position:absolute;
+  left:18%;
+  width:64%;
+  top:0;
+  height:var(--foyer-h);
+  z-index:500;
+  display:none;
 }
-
-async function runFoyer(){
-  foyerEl.style.display='block';
-  boardLeft.innerHTML  = '';
-  boardRight.innerHTML = '';
-  foyerBubble.style.display='none';
-
-  for(const item of FOYER){
-    await addFoyerRow(item);
-  }
+.foyer .wrap{
+  position:absolute;
+  inset:0;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  border-radius:10px;
+  overflow:hidden;
+  border:1px solid rgba(255,255,255,.25);
 }
-
-/* ---------- Κουμπιά / modes ---------- */
-
-function setMode(newMode){
-  mode = newMode;
-  btnPlay.classList.toggle('active', mode==='run');
-  btnPause.classList.toggle('active', mode==='pause');
-  slowHint.textContent = '';
+.board-left,
+.board-right{
+  background:#0d2a1e;
+  color:#fff;
+  padding:8px 10px;
+  overflow:auto;
+  scroll-behavior:smooth;
+  font-size:14px;
+  line-height:1.35;
 }
-
-btnPause.addEventListener('click', ()=>{
-  setMode(mode==='pause' ? 'run' : 'pause');
-});
-
-btnPlay.addEventListener('click', ()=>{
-  setMode('run');
-});
-
-function resetShow(){
-  t0        = performance.now();
-  lastFrame = t0;
-  playbackTime = 0;
-  obsStarted = false;
-  obsStartPlaybackOffset = 0;
-  lastSampleObsTime = -Infinity;
-  measureRowIdx      = 0;
-  setMode('run');
-
-  startBtn.style.display       ='block';
-  countdownOverlay.style.display='none';
-  measureBox.style.display     ='none';
-  clockEl.style.display        ='none';
-  markerEl.style.opacity       ='0';
-  markerGhostEl.style.opacity  ='0';
-  paramsBoxEl.style.display    ='none';
-  lawsPane.style.display       ='none';
-  lawsBody.innerHTML           ='';
-  firstLawShown                = false;
-  lawCharts.innerHTML          ='';
-  vCan = aCan = axCan          = null;
-  actBreak.style.display       ='none';
-  foyerBreak.style.display     ='none';
-  foyerEl.style.display        ='none';
-  foyerBubble.style.display    ='none';
-  boardLeft.innerHTML          ='';
-  boardRight.innerHTML         ='';
-  bubbleEl.style.display       ='none';
-  bubbleEl.classList.remove('active','closing');
-  actBubble.style.display      ='none';
-  measureTBody.innerHTML       ='';
-  if(uXT){
-    try{uXT.destroy();}catch(e){}
-    uXT=null;
-  }
-  xtChartEl.style.display      ='none';
-  stage.classList.remove('open');
-  markerEl.style.left          = centerX()+'px';
-  markerGhostEl.style.left     = centerX()+'px';
-
-  springEl.style.display = 'none';
-  if(ghost){
-    ghost.style.display = 'none';
-  }
-  if(ghostSpring){
-    ghostSpring.style.display = 'none';
-  }
-  ghostActive = false;
+.board-left{
+  border-right:1px solid rgba(255,255,255,.25);
 }
-
-btnReset.addEventListener('click', resetShow);
-btnEndShow.addEventListener('click', resetShow);
-
-/* ---------- Έναρξη με countdown ---------- */
-
-function beginObservation(){
-  stage.classList.add('open');
-  if(!obsStarted){
-    obsStarted = true;
-    obsStartPlaybackOffset = playbackTime;
-  }
-  clockEl.style.display   ='block';
-  measureBox.style.display='block';
-  markerEl.style.opacity  ='1';
-  markerGhostEl.style.opacity='0';
-  updateRuler();
-  runAct1();
+.cell{
+  padding:6px 10px;
+  border-bottom:1px dashed rgba(255,255,255,.18);
+  white-space:pre-wrap;
 }
-
-function startShowCountdown(){
-  startBtn.style.display    ='none';
-  countdownOverlay.style.display='flex';
-  const seconds = 5;
-  const end = performance.now()+seconds*1000;
-  function tick(){
-    const now = performance.now();
-    const remain = Math.max(0, Math.ceil((end-now)/1000));
-    countdownTimerEl.textContent = remain;
-    if(now>=end){
-      countdownOverlay.style.display='none';
-      beginObservation();
-    }else{
-      requestAnimationFrame(tick);
-    }
-  }
-  requestAnimationFrame(tick);
+.cell.formula{
+  color:#fffde7;
+  border-left-width:6px!important;
+  font-weight:600;
+  box-shadow:0 0 0 1px rgba(0,0,0,0.35) inset;
+  background:rgba(8,8,18,0.95)!important;
 }
-
-startBtn.addEventListener('click', startShowCountdown);
-
-/* Πράξη 2 κουμπί */
-
-btnAct2.addEventListener('click', ()=>{
-  actBreak.style.display='none';
-  runAct2();
-});
-
-/* Φουαγιέ κουμπιά */
-
-btnFoyer.addEventListener('click', ()=>{
-  runFoyer();
-});
-
-btnFoyerGo.addEventListener('click', ()=>{
-  foyerBreak.style.display='none';
-  runFoyer();
-});
-
-/* ---------- Animation loop ---------- */
-
-function animate(now){
-  const realDt = (now-lastFrame)/1000;
-  lastFrame = now;
-
-  updateRuler();
-
-  const tPhys = (now-t0)/1000;
-  if(!obsStarted){
-    playbackTime = tPhys;
-  }else{
-    if(mode==='run') playbackTime += realDt;
-  }
-  const tObs = obsStarted ? (playbackTime-obsStartPlaybackOffset) : 0;
-  clockEl.textContent = 't = '+tObs.toFixed(2)+' s';
-
-  ensureActorFloorBottom();
-  const bottomPx = actorFloorBottomPx ?? 0;
-
-  const ax = anchorX();
-  const cx = centerX();
-  const stageH = stage.clientHeight;
-
-  const hookX = cx + A_px*Math.sin(omega*playbackTime);
-
-  const springRect = springEl.getBoundingClientRect();
-  const baseL = springNaturalWidth || springRect.width || 1;
-
-  const dist = hookX - ax;
-  const scale = dist / baseL;
-  springEl.style.left      = ax+'px';
-  springEl.style.transform = 'scaleX('+scale+')';
-
-  const actorRect = actor.getBoundingClientRect();
-  const actorWidth = actorRect.width || 80;
-
-  actor.style.bottom = bottomPx+'px';
-  actor.style.left   = (hookX - actorWidth/2) + 'px';
-
-  markerEl.style.left = hookX+'px';
-  spotlight.style.background =
-    'radial-gradient(220px 140px at '+hookX+'px '+(stageH*0.62)+'px, rgba(255,255,220,.65), rgba(255,255,255,0) 70%)';
-
-  const xMeters = (hookX - cx)/pxPerMeter;
-  logMeasurement(tObs, xMeters);
-
-  if(ghost && ghostSpring){
-    const Aghost_m  = 5.0;
-    const Aghost_px = pxPerMeter*Aghost_m;
-
-    const sinθ = Math.max(-1, Math.min(1, (hookX - cx)/Math.max(1,A_px)));
-    const hookXg = cx + Aghost_px*sinθ;
-
-    const springBottom = getComputedStyle(springEl).bottom || 'calc(32vh + 92px)';
-
-    if(ghostActive){
-      ghost.style.display      = 'block';
-      ghostSpring.style.display= 'block';
-
-      const ghostRect  = ghost.getBoundingClientRect();
-      const ghostWidth = ghostRect.width || actorWidth || 80;
-
-      ghost.style.bottom = bottomPx+'px';
-      ghost.style.left   = (hookXg - ghostWidth/2) + 'px';
-
-      const distg  = hookXg - ax;
-      const scaleg = distg / baseL;
-
-      ghostSpring.style.bottom   = springBottom;
-      ghostSpring.style.left     = ax+'px';
-      ghostSpring.style.height   = springNaturalHeight ? (springNaturalHeight+'px') : springRect.height+'px';
-      ghostSpring.style.transform= 'scaleX('+scaleg+')';
-
-      markerGhostEl.style.left   = hookXg+'px';
-      markerGhostEl.style.opacity= '1';
-    }else{
-      ghost.style.display        = 'none';
-      ghostSpring.style.display  = 'none';
-      markerGhostEl.style.opacity= '0';
-    }
-  }else{
-    markerGhostEl.style.opacity = '0';
-  }
-
-  if(uXT){
-    drawXTChart();
-    if(vCan)  drawVelocityChart();
-    if(aCan)  drawAccelerationChart();
-    if(axCan) drawAxChart();
-  }
-
-  requestAnimationFrame(animate);
-}
-requestAnimationFrame(animate);
-
-/* ---------- Viewers avatars ---------- */
-
-function initViewersAvatars(){
-  const items = viewersStrip.querySelectorAll('.viewer-avatar');
-  const stageW = stage.clientWidth || window.innerWidth;
-
-  const leftBand  = 0.18;
-  const widthBand = 0.64;
-
-  items.forEach((div, idx) => {
-    const v = VIEWERS[idx];
-    if (!v) {
-      div.style.display = 'none';
-      return;
-    }
-
-    if (v.img) {
-      div.style.backgroundImage = 'url("'+v.img+'")';
-    }
-
-    const baseHvh = 22;
-    const hVh = (typeof v.heightVh === 'number') ? v.heightVh : baseHvh;
-    div.style.height = hVh + 'vh';
-
-    const bottomPx = (typeof v.bottomPx === 'number') ? v.bottomPx : 130;
-    div.style.bottom = bottomPx + 'px';
-
-    const fracDefault = (idx + 1) / (items.length + 1);
-    const xFrac = (typeof v.xFrac === 'number') ? v.xFrac : fracDefault;
-    const x = (leftBand + widthBand * xFrac) * stageW;
-    div.style.left = x + 'px';
-
-    div.style.display = 'block';
-  });
-}
-
-/* ---------- Load dialogs-gr.json & bootstrap ---------- */
-
-async function loadDialogs(){
-  try{
-    const resp = await fetch('dialogs-gr.json',{cache:'no-store'});
-    if(!resp.ok){
-      console.error('Δε βρέθηκε dialogs-gr.json');
-      return;
-    }
-    const data = await resp.json();
-    VIEWERS = data.viewers || [];
-    ACT1    = data.act1    || [];
-    ACT2    = data.act2    || [];
-    FOYER   = data.foyer   || [];
-    initViewersAvatars();
-  }catch(e){
-    console.error(e);
-  }
-}
-
-window.addEventListener('load', ()=>{
-  updateRuler();
-  measureSpringNaturalSize();
-  ensureActorFloorBottom();
-  resetShow();
-  loadDialogs();
-});
-</script>
-</body>
-</html>
