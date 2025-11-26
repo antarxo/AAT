@@ -169,7 +169,7 @@ body{
   border-radius:0;
   border:none;
   box-shadow:none;
-  background:#111 center bottom/contain no-repeat;
+  background:center bottom/contain no-repeat; /* διάφανο φόντο, μόνο εικόνα PNG */
 }
 
 /* Ταμπέλα τίτλου */
