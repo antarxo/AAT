@@ -907,22 +907,27 @@ function typeWriterBoard(el, text, totalMs, done){
   let i = 0;
 
   (function tick(){
-    el.innerHTML = src.slice(0, i).replaceAll('\n','<br>');
+    // Γράψε μέχρι τον i-οστό χαρακτήρα
+    el.innerHTML = src.slice(0,i).replaceAll('\n','<br>');
 
     try{
-      // auto–scroll πάντα με βάση το boardLeft, δεξιά ακολουθεί
-      boardLeft.scrollTop = boardLeft.scrollHeight;
-      boardRight.scrollTop = boardLeft.scrollTop;
+      // Το αριστερό είναι το "master" scroll
+      const maxScrollLeft = Math.max(0, boardLeft.scrollHeight - boardLeft.clientHeight);
+      const targetScroll  = maxScrollLeft;
+
+      boardLeft.scrollTop  = targetScroll;
+      boardRight.scrollTop = targetScroll;  // παίρνει ΑΚΡΙΒΩΣ το ίδιο offset
     }catch(e){}
 
     i++;
-    if (i <= src.length){
+    if(i <= src.length){
       setTimeout(tick, step);
-    } else if (typeof done === 'function'){
+    }else if(typeof done === 'function'){
       done();
     }
   })();
 }
+
 
 function addFoyerRow(item){
   return new Promise(resolve=>{
