@@ -5,12 +5,12 @@
       "name_en": "Viewer 1",
       "color": "#ffcc00",
       "xFrac": 0.10,
-      "bubbleDx": 20,
+      "bubbleDx": 80,
       "bubbleDy": 5,
       "avatarDy": 100,
       "avatarScale": 0.27,
        "chipDx": 60,
-      "chipDy": 600,
+      "chipDy": 60,
       "img": "viewer1.png"
     },
     {
@@ -708,6 +708,7 @@
     }
   ]
 }
+
 
 
 
