@@ -70,8 +70,8 @@
   "act1": [
     {
       "viewer": 1,
-      "xShift": 40,
-      "yOffset": 10,
+      "xShift": 0,
+      "yOffset": 0,
       "typeMs": 0,
       "pauseMs": 0,
       "left": "Ο m<sub>1</sub>D<sub>1</sub> ήταν ήδη σε κίνηση!",
@@ -79,8 +79,8 @@
     },
     {
       "viewer": 2,
-      "xShift": -20,
-      "yOffset": 125,
+      "xShift": 0,
+      "yOffset": 0,
       "typeMs": 0,
       "pauseMs": 0,
       "left": "…χρονική στιγμή t<sub>0</sub>=0 με το άνοιγμα της κουρτίνας!",
@@ -709,6 +709,7 @@
     }
   ]
 }
+
 
 
 
