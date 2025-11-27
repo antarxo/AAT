@@ -22,11 +22,11 @@
   <div class="spotlight" id="spotlight"></div>
 
   <div class="signboard">
-    <h1>Πράξη 1η: Η Κινηματική στα . Αλγεβρικά</h1>
+    <h1>Πράξη 1η: Η Κινηματική στα ... Αλγεβρικά</h1>
     <div class="sb-lineA">Πρωταγωνιστεί ο ταλαντωτής (m₁, D₁) και οι θεαποιοί(*)</div>
-    <div class="sb-lineB">στον μονόλογο <span class="hl">«ατέλειωτο πήγαινε έλα»</span>. επί σκηνής!</div>
+    <div class="sb-lineB">στον μονόλογο <span class="hl">«ατέλειωτο πήγαινε έλα»</span>... επί σκηνής!</div>
     <div class="sb-lineC">Παραγωγή-Σκηνοθεσία: Εμηχ. Ενεργειούλης</div>
-    <div class="sb-lineD">(*) . εσείς</div>
+    <div class="sb-lineD">(*) ... εσείς</div>
   </div>
 
   <div class="clock" id="clock">t = 0.00 s<span class="hint" id="slowHint"></span></div>
@@ -345,9 +345,12 @@ function drawXTChart(){
 
 function sizeLawCanvas(can){
   const w = lawCharts.clientWidth || 210;
+  const h = 150;
   can.width  = w;
-  can.height = 120;
+  can.height = h;
 }
+
+/* mini γραφήματα v(t), a(t), a–x με πλέγμα & τιμές */
 
 function drawVelocityChart(){
   if(!vCan) return;
@@ -356,43 +359,69 @@ function drawVelocityChart(){
   const h = vCan.height;
   ctx.clearRect(0,0,w,h);
 
-  const x0 = 40;
-  const y0 = 20;
-  const x1 = w-16;
-  const y1 = h-24;
+  const margin = 18;
+  const x0 = margin;
+  const x1 = w - margin;
+  const y0 = h/2;
 
-  ctx.strokeStyle = '#fff';
+  const vmax = omega * A_m;
+  const yAmp = (h/2 - margin);
+  const scaleV = yAmp / (1.1*vmax);
+
+  // πλέγμα
+  ctx.save();
+  ctx.strokeStyle = 'rgba(255,255,255,0.18)';
   ctx.lineWidth = 1;
-  ctx.strokeRect(x0,y0,x1-x0,y1-y0);
+  ctx.setLineDash([3,3]);
 
-  const midY = (y0+y1)/2;
+  // κάθετες (t)
+  const gridN = 6;
+  for(let i=0;i<=gridN;i++){
+    const gx = x0 + (i/gridN)*(x1-x0);
+    ctx.beginPath();
+    ctx.moveTo(gx, margin/2);
+    ctx.lineTo(gx, h-margin/2);
+    ctx.stroke();
+  }
+  // οριζόντιες (v)
+  for(let j=-2;j<=2;j++){
+    const gy = y0 - j*scaleV;
+    ctx.beginPath();
+    ctx.moveTo(x0, gy);
+    ctx.lineTo(x1, gy);
+    ctx.stroke();
+  }
+  ctx.restore();
 
-  const N = 200;
+  // άξονες
+  ctx.strokeStyle = '#fff';
+  ctx.lineWidth = 1.2;
   ctx.beginPath();
+  ctx.moveTo(x0, y0);
+  ctx.lineTo(x1, y0);
+  ctx.stroke();
+
+  // καμπύλη v(t)
+  ctx.beginPath();
+  const N = 240;
   for(let i=0;i<=N;i++){
     const tloc = (i/N)*T;
+    const vx   = omega*A_m*Math.cos(omega*(tloc+obsStartPlaybackOffset));
     const x = x0 + (tloc/T)*(x1-x0);
-    const v = omega*A_m*Math.cos(omega*(tloc+obsStartPlaybackOffset));
-    const maxV = omega*A_m;
-    const y = midY - (v/maxV)*(y1-y0)/2;
+    const y = y0 - vx*scaleV;
     if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
   }
   ctx.strokeStyle = '#90caf9';
   ctx.lineWidth = 2;
   ctx.stroke();
-  ctx.beginPath();
-  ctx.moveTo(x0,midY);
-  ctx.lineTo(x1,midY);
-  ctx.strokeStyle = 'rgba(255,255,255,0.4)';
-  ctx.lineWidth = 1;
-  ctx.stroke();
 
+  // labels
   ctx.fillStyle = '#fff';
   ctx.font = '11px system-ui';
-  ctx.fillText('υ–t', x0+4, y0+10);
+  ctx.fillText('υ–t', x0+4, margin);
   ctx.font = '10px system-ui';
-  ctx.fillText('t (s)', x1-32, y1+10);
-  ctx.fillText('υ (m/s)', x0-4, y0+10);
+  ctx.fillText('t (s)', x1-32, h-margin/3);
+  ctx.fillText('υ (m/s)', x0, margin);
 }
 
 function drawAccelerationChart(){
@@ -402,44 +431,66 @@ function drawAccelerationChart(){
   const h = aCan.height;
   ctx.clearRect(0,0,w,h);
 
-  const x0 = 40;
-  const y0 = 20;
-  const x1 = w-16;
-  const y1 = h-24;
+  const margin = 18;
+  const x0 = margin;
+  const x1 = w - margin;
+  const y0 = h/2;
 
-  ctx.strokeStyle = '#fff';
+  const amax = omega * omega * A_m;
+  const yAmp = (h/2 - margin);
+  const scaleA = yAmp / (1.1*amax);
+
+  // πλέγμα
+  ctx.save();
+  ctx.strokeStyle = 'rgba(255,255,255,0.18)';
   ctx.lineWidth = 1;
-  ctx.strokeRect(x0,y0,x1-x0,y1-y0);
+  ctx.setLineDash([3,3]);
 
-  const midY = (y0+y1)/2;
-  const N = 200;
+  const gridN = 6;
+  for(let i=0;i<=gridN;i++){
+    const gx = x0 + (i/gridN)*(x1-x0);
+    ctx.beginPath();
+    ctx.moveTo(gx, margin/2);
+    ctx.lineTo(gx, h-margin/2);
+    ctx.stroke();
+  }
+  for(let j=-2;j<=2;j++){
+    const gy = y0 - j*scaleA;
+    ctx.beginPath();
+    ctx.moveTo(x0, gy);
+    ctx.lineTo(x1, gy);
+    ctx.stroke();
+  }
+  ctx.restore();
 
+  // άξονες
+  ctx.strokeStyle = '#fff';
+  ctx.lineWidth = 1.2;
   ctx.beginPath();
+  ctx.moveTo(x0, y0);
+  ctx.lineTo(x1, y0);
+  ctx.stroke();
+
+  // καμπύλη a(t)
+  ctx.beginPath();
+  const N = 240;
   for(let i=0;i<=N;i++){
     const tloc = (i/N)*T;
+    const axv  = -omega*omega*A_m*Math.sin(omega*(tloc+obsStartPlaybackOffset));
     const x = x0 + (tloc/T)*(x1-x0);
-    const a = -omega*omega*A_m*Math.sin(omega*(tloc+obsStartPlaybackOffset));
-    const maxA = omega*omega*A_m;
-    const y = midY - (a/maxA)*(y1-y0)/2;
+    const y = y0 - axv*scaleA;
     if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
   }
   ctx.strokeStyle = '#ffab91';
   ctx.lineWidth = 2;
   ctx.stroke();
 
-  ctx.beginPath();
-  ctx.moveTo(x0,midY);
-  ctx.lineTo(x1,midY);
-  ctx.strokeStyle = 'rgba(255,255,255,0.4)';
-  ctx.lineWidth = 1;
-  ctx.stroke();
-
   ctx.fillStyle = '#fff';
   ctx.font = '11px system-ui';
-  ctx.fillText('α–t', x0+4, y0+10);
+  ctx.fillText('α–t', x0+4, margin);
   ctx.font = '10px system-ui';
-  ctx.fillText('t (s)', x1-32, y1+10);
-  ctx.fillText('α (m/s²)', x0-4, y0+10);
+  ctx.fillText('t (s)', x1-32, h-margin/3);
+  ctx.fillText('α (m/s²)', x0, margin);
 }
 
 function drawAxChart(){
@@ -449,64 +500,83 @@ function drawAxChart(){
   const h = axCan.height;
   ctx.clearRect(0,0,w,h);
 
-  const x0 = 40;
-  const y0 = 20;
-  const x1 = w-16;
-  const y1 = h-24;
+  const margin = 24;
+  const x0 = margin;
+  const x1 = w - margin;
+  const y0 = h - margin;
+  const y1 = margin;
+
+  const Amax = A_m;
+  const amax = omega*omega*A_m;
+
+  // πλέγμα
+  ctx.save();
+  ctx.strokeStyle = 'rgba(255,255,255,0.18)';
+  ctx.lineWidth = 1;
+  ctx.setLineDash([3,3]);
+
+  const gridN = 6;
+  for(let i=0;i<=gridN;i++){
+    const gx = x0 + (i/gridN)*(x1-x0);
+    ctx.beginPath();
+    ctx.moveTo(gx, y1);
+    ctx.lineTo(gx, y0);
+    ctx.stroke();
+  }
+  for(let j=0;j<=gridN;j++){
+    const gy = y0 - (j/gridN)*(y0-y1);
+    ctx.beginPath();
+    ctx.moveTo(x0, gy);
+    ctx.lineTo(x1, gy);
+    ctx.stroke();
+  }
+  ctx.restore();
+
+  // άξονες
+  const xMid = x0 + (x1-x0)/2;
+  const yMid = y0 - (y0-y1)/2;
 
   ctx.strokeStyle = '#fff';
-  ctx.lineWidth = 1;
-  ctx.strokeRect(x0,y0,x1-x0,y1-y0);
-
-  const xMid = (x0+x1)/2;
-  const yMid = (y0+y1)/2;
-
+  ctx.lineWidth = 1.2;
   ctx.beginPath();
-  ctx.moveTo(xMid,y0);
-  ctx.lineTo(xMid,y1);
-  ctx.moveTo(x0,yMid);
-  ctx.lineTo(x1,yMid);
-  ctx.strokeStyle = 'rgba(255,255,255,0.4)';
-  ctx.lineWidth = 1;
+  ctx.moveTo(xMid, y1);
+  ctx.lineTo(xMid, y0);
   ctx.stroke();
 
-  const Amax = omega*omega*A_m;
-  const amax = Amax;
+  ctx.beginPath();
+  ctx.moveTo(x0, yMid);
+  ctx.lineTo(x1, yMid);
+  ctx.stroke();
 
-  const xL = -A_m;
-  const aL = +omega*omega*xL;
-  const xR =  A_m;
-  const aR = -omega*omega*xR;
-
-  function toCanvas(x,a){
-    const nx = (x + A_m)/(2*A_m);
-    const ny = (a/amax + 1)/2;
+  // ευθεία a = -ω² x
+  ctx.beginPath();
+  const pts = [
+    {x:-Amax, a:+omega*omega*(-Amax)},
+    {x:+Amax, a:-omega*omega*(+Amax)}
+  ];
+  for(let i=0;i<pts.length;i++){
+    const px = pts[i].x;
+    const pa = pts[i].a;
+    const nx = (px + Amax)/(2*Amax);
+    const ny = (pa/amax + 1)/2;
     const cx = x0 + nx*(x1-x0);
-    const cy = y1 - ny*(y1-y0);
-    return {cx,cy};
+    const cy = y0 - ny*(y0-y1);
+    if(i===0) ctx.moveTo(cx,cy); else ctx.lineTo(cx,cy);
   }
-
-  const pL = toCanvas(xL,aL);
-  const pR = toCanvas(xR,aR);
-
   ctx.strokeStyle = '#ffd27a';
   ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.moveTo(pL.cx, pL.cy);
-  ctx.lineTo(pR.cx, pR.cy);
   ctx.stroke();
 
+  // labels
   ctx.fillStyle = '#fff';
   ctx.font = '11px system-ui';
-  ctx.fillText('a–x', x0+4, y0+10);
-
+  ctx.fillText('a–x', x0+4, y1+4);
   ctx.font = '10px system-ui';
   ctx.fillText('x (m)', x1-32, yMid-4);
-  ctx.fillText('a (m/s²)', xMid+6, y0+10);
-
-  ctx.fillText('a = -ω²·x', x0+4, y1-4);
-  ctx.fillText('A = '+A_m.toFixed(2)+' m', x0+4, y1-18);
-  ctx.fillText('amax ≈ '+amax.toFixed(2), x0+4, y1-32);
+  ctx.fillText('a (m/s²)', xMid+6, y1+4);
+  ctx.fillText('a = -ω²·x', x0+4, y1+18);
+  ctx.fillText('A = '+A_m.toFixed(2)+' m', x0+4, y1+32);
+  ctx.fillText('amax ≈ '+(omega*omega*A_m).toFixed(2), x0+4, y1+46);
 }
 
 function ensureVelocityChart(){
@@ -915,11 +985,13 @@ function addFoyerRow(item){
 
     const l = document.createElement('td');
     l.className = 'cell cell-left';
+    l.style.width = '60%';
     l.style.background = bgLeft;
     l.style.borderLeft = '4px solid '+tint(vi.color||'#ffffff',0.85);
 
     const r = document.createElement('td');
     r.className = 'cell cell-right';
+    r.style.width = '40%';
     r.style.background = bgRight;
     r.style.borderLeft = '4px solid '+tint(vi.color||'#ffffff',0.55);
 
@@ -957,8 +1029,14 @@ async function runFoyer(){
   boardRight.innerHTML = '';
   foyerBubble.style.display='none';
 
+  // ενιαίος μαυροπίνακας: ο boardLeft απλώνεται σε όλο το πλάτος
+  boardLeft.style.gridColumn = '1 / span 2';
+  boardRight.style.display   = 'none';
+
   const table = document.createElement('table');
   table.className = 'foyer-table';
+  table.style.width = '100%';
+  table.style.tableLayout = 'fixed';
   foyerTBody = document.createElement('tbody');
   table.appendChild(foyerTBody);
   boardLeft.appendChild(table);
