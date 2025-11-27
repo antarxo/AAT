@@ -60,8 +60,8 @@
   "act1": [
     {
       "viewer": 1,
-      "xShift": -40,
-      "yOffset": 120,
+      "xShift": 40,
+      "yOffset": 10,
       "typeMs": 0,
       "pauseMs": 0,
       "left": "Ο m<sub>1</sub>D<sub>1</sub> ήταν ήδη σε κίνηση!",
@@ -699,6 +699,7 @@
     }
   ]
 }
+
 
 
 
