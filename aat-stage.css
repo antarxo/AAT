@@ -457,7 +457,7 @@ body{
 }
 .thought-bubble{
   position:absolute;
-  max-width:420px;
+  max-width:520px;
   background:rgba(255,255,255,.95);
   color:#000;
   font-size:15px;
@@ -727,4 +727,5 @@ body{
   box-shadow:0 0 0 1px rgba(0,0,0,0.35) inset;
   background:rgba(8,8,18,0.95)!important;
 }
+
 
