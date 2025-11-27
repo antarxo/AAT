@@ -223,11 +223,30 @@ let ghost = null;
 let ghostSpring = null;
 let ghostActive = false;
 
-let actorFloorBottomPx = null;
-let springNaturalWidth  = 0;
-let springNaturalHeight = 0;
+/* φυσικό μήκος ελατηρίου σε px */
+let springNaturalWidth  = null;
+let springNaturalHeight = null;
 
-/* ---------- Χρήσιμα για σκηνή ---------- */
+/* Πάτωμα ηθοποιού σε px (κοινό με ghost) */
+let actorFloorBottomPx = null;
+
+function measureSpringNaturalSize(){
+  if(!springEl) return;
+  const prevDisplay   = springEl.style.display;
+  const prevTransform = springEl.style.transform;
+
+  springEl.style.display   = 'block';
+  springEl.style.transform = 'none';
+
+  const rect = springEl.getBoundingClientRect();
+  springNaturalWidth  = rect.width || 1;
+  springNaturalHeight = rect.height || 1;
+
+  springEl.style.display   = prevDisplay;
+  springEl.style.transform = prevTransform;
+}
+
+/* ---------- Χρήσιμα ---------- */
 
 function anchorX(){
   return stage.clientWidth * 0.18;
@@ -860,6 +879,7 @@ function setFoyerSpeaker(idx1based){
   foyerBubble.style.backgroundColor = tint(vi.color,0.85);
   foyerBubble.style.borderColor = 'rgba(255,255,255,.9)';
 
+  // ίδια λογική / ίδια σημεία με 1η–2η πράξη
   const {x,y} = viewerAnchor(idx1based);
   foyerBubble.style.left = x+'px';
   foyerBubble.style.top  = (y-130)+'px';
@@ -910,7 +930,9 @@ function addFoyerRow(item){
     row.appendChild(l);
     row.appendChild(r);
 
-    foyerTBody.appendChild(row);
+    if(foyerTBody){
+      foyerTBody.appendChild(row);
+    }
 
     setFoyerSpeaker(viewer);
 
@@ -991,7 +1013,7 @@ function resetShow(){
   foyerBubble.style.display    ='none';
   boardLeft.innerHTML          ='';
   boardRight.innerHTML         ='';
-  foyerTBody = null;
+  foyerTBody                   = null;
   bubbleEl.style.display       ='none';
   bubbleEl.classList.remove('active','closing');
   actBubble.style.display      ='none';
@@ -1099,9 +1121,7 @@ function animate(now){
 
   const hookX = cx + A_px*Math.sin(omega*playbackTime);
 
-  const springRect = springEl.getBoundingClientRect();
-  const baseL = springNaturalWidth || springRect.width || 1;
-
+  const baseL = springNaturalWidth || (springEl.getBoundingClientRect().width || 1);
   const dist = hookX - ax;
   const scale = dist / baseL;
   springEl.style.left      = ax+'px';
@@ -1144,7 +1164,7 @@ function animate(now){
 
       ghostSpring.style.bottom   = springBottom;
       ghostSpring.style.left     = ax+'px';
-      ghostSpring.style.height   = springNaturalHeight ? (springNaturalHeight+'px') : springRect.height+'px';
+      ghostSpring.style.height   = springNaturalHeight ? (springNaturalHeight+'px') : (springEl.getBoundingClientRect().height || 1)+'px';
       ghostSpring.style.transform= 'scaleX('+scaleg+')';
 
       markerGhostEl.style.left   = hookXg+'px';
@@ -1178,7 +1198,7 @@ function initViewersAvatars(){
   const leftBand  = 0.18;
   const widthBand = 0.64;
 
-  const baseWidthPx  = 140; // CSS default (ό,τι γράφει το aat-stage.css)
+  const baseWidthPx  = 140; // CSS default
   const refScale     = 0.5; // “κανονική” τιμή από το JSON
 
   items.forEach((div, idx) => {
@@ -1188,34 +1208,29 @@ function initViewersAvatars(){
       return;
     }
 
-    // εικόνα από JSON
     if (v.img) {
       div.style.backgroundImage = 'url("'+v.img+'")';
     }
 
-    // Ύψος: μόνο αν δίνεται ρητά από JSON (αλλιώς αφήνουμε το CSS)
     if (typeof v.heightVh === 'number') {
       div.style.height = v.heightVh + 'vh';
     } else {
-      div.style.height = ''; // καθάρισε ό,τι παλιό inline
+      div.style.height = '';
     }
 
-    // Κάθετη θέση: ΑΠΟΚΛΕΙΣΤΙΚΑ από avatarDy (px)
     if (typeof v.avatarDy === 'number') {
       div.style.bottom = v.avatarDy + 'px';
     } else {
-      div.style.bottom = ''; // αν λείπει, θα “φωνάζει” => bug εμφανές
+      div.style.bottom = '';
     }
 
-    // Σμίκρυνση / μεγέθυνση: avatarScale
     if (typeof v.avatarScale === 'number') {
       const widthPx = baseWidthPx * (v.avatarScale / refScale);
       div.style.width = widthPx + 'px';
     } else {
-      div.style.width = ''; // άσε το CSS default 140px
+      div.style.width = '';
     }
 
-    // Οριζόντια θέση: xFrac από JSON, αλλιώς ένα τίμιο fallback
     const fracDefault = (idx + 1) / (items.length + 1);
     const xFrac = (typeof v.xFrac === 'number') ? v.xFrac : fracDefault;
     const x = (leftBand + widthBand * xFrac) * stageW;
