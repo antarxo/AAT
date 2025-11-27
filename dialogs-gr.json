@@ -44,11 +44,11 @@
       "name_en": "Viewer 4",
       "color": "#99ff99",
       "xFrac": 0.70,
-      "bubbleDx": -180,
+      "bubbleDx": 70,
       "bubbleDy": 25,
       "avatarDy": 100,
       "avatarScale": 0.3,
-      "chipDx": 80,  
+      "chipDx": 70,  
       "chipDy": 60,
       "img": "viewer4.png"
     },
@@ -57,11 +57,11 @@
       "name_en": "Viewer 5",
       "color": "#ff9966",
       "xFrac": 0.90,
-      "bubbleDx":-250,
+      "bubbleDx":70,
       "bubbleDy": 25,
       "avatarDy": 100,
       "avatarScale": 0.27,
-      "chipDx": -150,
+      "chipDx": 70,
       "chipDy": 60,
       "img": "viewer5.png"
     }
@@ -264,7 +264,7 @@
     {
       "viewer": 3,
       "xShift": 0,
-      "yOffset": 130,
+      "yOffset": 0,
       "typeMs": 0,
       "pauseMs": 0,
       "left": "<b>Τέλεια! όλο το σετ των νόμων της Α.Α.Τ!</b>",
@@ -730,6 +730,7 @@
     }
   ]
 }
+
 
 
 
