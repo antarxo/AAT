@@ -573,12 +573,21 @@ function tint(hex, alpha){
   return 'rgba('+r+','+g+','+b+','+alpha+')';
 }
 
+/* 👉 ΕΔΩ: actBubble θέση από JSON (chipDx, chipDy) */
 function showSpeakerChip(idx1based){
-  const {x,y,info} = viewerAnchor(idx1based);
+  const anchor = viewerAnchor(idx1based);
+  const info = anchor.info;
   if(!info) return;
+
+  const x = anchor.x;
+  const y = anchor.y;
+
+  const chipDx = (typeof info.chipDx === 'number') ? info.chipDx : 0;
+  const chipDy = (typeof info.chipDy === 'number') ? info.chipDy : 130;
+
   actBubble.textContent = info.name_gr || ('ΘΕΑΤΗΣ '+idx1based);
-  actBubble.style.left = x+'px';
-  actBubble.style.top  = (y-130)+'px';
+  actBubble.style.left = (x + chipDx) + 'px';
+  actBubble.style.top  = (y - chipDy) + 'px';
   actBubble.style.transform='translateX(-50%)';
   actBubble.style.backgroundColor = tint(info.color,0.9);
   actBubble.style.display='block';
@@ -895,6 +904,7 @@ function isFormulaBlock(text){
   return false;
 }
 
+/* 👉 ΕΔΩ: foyerBubble θέση από JSON (chipDx, chipDy) */
 function setFoyerSpeaker(idx1based){
   const vi = viewerInfo(idx1based);
   if(!vi) return;
@@ -902,9 +912,15 @@ function setFoyerSpeaker(idx1based){
   foyerBubble.style.backgroundColor = tint(vi.color,0.85);
   foyerBubble.style.borderColor = 'rgba(255,255,255,9)';
 
-  const {x,y} = viewerAnchor(idx1based);
-  foyerBubble.style.left = x+'px';
-  foyerBubble.style.top  = (y-130)+'px';
+  const anchor = viewerAnchor(idx1based);
+  const x = anchor.x;
+  const y = anchor.y;
+
+  const chipDx = (typeof vi.chipDx === 'number') ? vi.chipDx : 0;
+  const chipDy = (typeof vi.chipDy === 'number') ? vi.chipDy : 130;
+
+  foyerBubble.style.left = (x + chipDx) + 'px';
+  foyerBubble.style.top  = (y - chipDy) + 'px';
   foyerBubble.style.transform='translateX(-50%)';
   foyerBubble.style.display='block';
 }
