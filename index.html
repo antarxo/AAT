@@ -980,39 +980,23 @@ function addFoyerRow(item){
     const bgLeft  = tint(vi.color||'#ffffff',0.22);
     const bgRight = tint(vi.color||'#ffffff',0.16);
 
-    // Σπάμε σε γραμμές
-    const leftLines  = String(item.left  || '').split('\n');
-    const rightLines = String(item.right || '').split('\n');
-    const nLines = Math.max(leftLines.length, rightLines.length);
+    // Δημιουργία ενός block-κελιού ανά πλευρά
+    const l = document.createElement('div');
+    l.className = 'cell';
+    l.style.background = bgLeft;
+    l.style.borderLeft = '4px solid ' + tint(vi.color||'#ffffff',0.85);
 
-    const leftCells  = [];
-    const rightCells = [];
+    const r = document.createElement('div');
+    r.className = 'cell';
+    r.style.background = bgRight;
+    r.style.borderLeft = '4px solid ' + tint(vi.color||'#ffffff',0.55);
 
-    // Αν το block δεξιά είναι "τύποι", κρατάμε την πληροφορία
-    const isFormula = isFormulaBlock(item.right);
-
-    // Δημιουργούμε nLines "σειρές" και στις δύο πλευρές
-    for(let i=0; i<nLines; i++){
-      const l = document.createElement('div');
-      l.className = 'cell';
-      l.style.background = bgLeft;
-      l.style.borderLeft = '4px solid ' + tint(vi.color||'#ffffff',0.85);
-
-      const r = document.createElement('div');
-      r.className = 'cell';
-      r.style.background = bgRight;
-      r.style.borderLeft = '4px solid ' + tint(vi.color||'#ffffff',0.55);
-
-      if(isFormula){
-        r.classList.add('formula');
-      }
-
-      boardLeft.appendChild(l);
-      boardRight.appendChild(r);
-
-      leftCells.push(l);
-      rightCells.push(r);
+    if (isFormulaBlock(item.right)) {
+      r.classList.add('formula');
     }
+
+    boardLeft.appendChild(l);
+    boardRight.appendChild(r);
 
     // "Μπαλονάκι" ομιλητή
     setFoyerSpeaker(viewer);
@@ -1020,30 +1004,32 @@ function addFoyerRow(item){
     const typeMs  = item.typeMs  || 4000;
     const pauseMs = item.pauseMs || 1500;
 
-    // Typewriter ανά γραμμή, σειριακά
-    function typeLines(cells, lines, idx){
-      if(idx >= nLines) return Promise.resolve();
-      const txt = lines[idx] || '';
-      if(!txt.trim()){
-        // κενή γραμμή -> προχώρα στην επόμενη χωρίς animation
-        return typeLines(cells, lines, idx+1);
-      }
-      return new Promise(res=>{
-        // typeWriterBoard ήδη κρατά sync το scroll αριστερά–δεξιά
-        typeWriterBoard(cells[idx], txt, typeMs, res);
-      }).then(()=> typeLines(cells, lines, idx+1));
-    }
-
-    // Πρώτα ο λόγος (αριστερά), μετά οι σχέσεις (δεξιά)
-    typeLines(leftCells, leftLines, 0)
-      .then(()=>{
-        if((item.right || '').trim().length > 0){
-          return typeLines(rightCells, rightLines, 0);
+    // Όταν τελειώσουν ΚΑΙ τα δύο, ευθυγραμμίζουμε τα ύψη
+    function finalizeBlock(){
+      // Δίνουμε ένα frame να "κάτσει" το layout
+      requestAnimationFrame(()=>{
+        const lh = l.offsetHeight;
+        const rh = r.offsetHeight;
+        const maxH = Math.max(lh, rh);
+        if (maxH > 0) {
+          l.style.minHeight = maxH + 'px';
+          r.style.minHeight = maxH + 'px';
         }
-      })
-      .then(()=>{
         setTimeout(resolve, pauseMs);
       });
+    }
+
+    // Πρώτα γράφουμε αριστερά, μετά δεξιά (αν υπάρχει)
+    typeWriterBoard(l, item.left || '', typeMs, ()=>{
+      const hasRight = (item.right || '').trim().length > 0;
+      if (hasRight) {
+        typeWriterBoard(r, item.right, typeMs, ()=>{
+          finalizeBlock();
+        });
+      } else {
+        finalizeBlock();
+      }
+    });
   });
 }
 
