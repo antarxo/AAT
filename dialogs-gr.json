@@ -5,7 +5,7 @@
       "name_en": "Viewer 1",
       "color": "#ffcc00",
       "xFrac": 0.10,
-      "bubbleDx": 60,
+      "bubbleDx": 40,
       "bubbleDy": 25,
       "avatarDy": 100,
       "avatarScale": 0.27,
@@ -18,7 +18,7 @@
       "name_en": "Viewer 2",
       "color": "#66ccff",
       "xFrac": 0.27,
-      "bubbleDx": 60,
+      "bubbleDx": 40,
       "bubbleDy": 25,
       "avatarDy": 100,
       "avatarScale": 0.27,
@@ -31,7 +31,7 @@
       "name_en": "Viewer 3",
       "color": "#ff99cc",
       "xFrac": 0.5,
-      "bubbleDx": 70,
+      "bubbleDx": 40,
       "bubbleDy": 25,
       "avatarDy": 100,
       "avatarScale": 0.27,
@@ -44,7 +44,7 @@
       "name_en": "Viewer 4",
       "color": "#99ff99",
       "xFrac": 0.70,
-      "bubbleDx": 70,
+      "bubbleDx": 30,
       "bubbleDy": 25,
       "avatarDy": 100,
       "avatarScale": 0.3,
@@ -57,7 +57,7 @@
       "name_en": "Viewer 5",
       "color": "#ff9966",
       "xFrac": 0.90,
-      "bubbleDx":70,
+      "bubbleDx":30,
       "bubbleDy": 25,
       "avatarDy": 100,
       "avatarScale": 0.27,
@@ -730,6 +730,7 @@
     }
   ]
 }
+
 
 
 
