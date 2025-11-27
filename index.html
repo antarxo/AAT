@@ -321,13 +321,34 @@ function drawXTChart(){
   uXT.setData(data);
 }
 
-/* ---------- Mini διαγράμματα νόμων ---------- */
+/* ---------- Νόμοι & mini διαγράμματα ---------- */
 
-function sizeLawCanvas(can){
-  const w = lawCharts.clientWidth || 210;
-  can.width  = w;
-  can.height = 120;
+function localizeTrig(txt){
+  return String(txt||'')
+    .replace(/sin/g,'ημ')
+    .replace(/cos/g,'συν')
+    .replace(/tan/g,'εφ');
 }
+
+function addLaw(txt){
+  const t = localizeTrig(txt);
+  if(!firstLawShown){
+    firstLawShown = true;
+    lawsPane.style.display='block';
+  }
+  const div = document.createElement('div');
+  div.className='law-line';
+  div.textContent = t;
+  lawsBody.appendChild(div);
+}
+
+function sizeLawCanvas(c){
+  const w = 210;
+  const h = 120;
+  c.width=w; c.height=h;
+}
+
+/* mini γραφήματα v(t), a(t), a–x με πλέγμα & τιμές */
 
 function drawVelocityChart(){
   if(!vCan) return;
@@ -336,14 +357,30 @@ function drawVelocityChart(){
   const h = vCan.height;
   ctx.clearRect(0,0,w,h);
 
-  const x0 = 40;
-  const y0 = 20;
-  const x1 = w-16;
-  const y1 = h-24;
+  const margin = 18;
+  const x0 = margin;
+  const x1 = w - margin;
+  const y0 = margin;
+  const y1 = h - margin;
 
-  ctx.strokeStyle = '#fff';
+  ctx.strokeStyle = 'rgba(255,255,255,0.4)';
   ctx.lineWidth = 1;
-  ctx.strokeRect(x0,y0,x1-x0,y1-y0);
+
+  const gridN = 4;
+  for(let i=0;i<=gridN;i++){
+    const gx = x0 + (i/gridN)*(x1-x0);
+    ctx.beginPath();
+    ctx.moveTo(gx,y0);
+    ctx.lineTo(gx,y1);
+    ctx.stroke();
+  }
+  for(let j=0;j<=gridN;j++){
+    const gy = y0 + (j/gridN)*(y1-y0);
+    ctx.beginPath();
+    ctx.moveTo(x0,gy);
+    ctx.lineTo(x1,gy);
+    ctx.stroke();
+  }
 
   const midY = (y0+y1)/2;
 
@@ -360,19 +397,23 @@ function drawVelocityChart(){
   ctx.strokeStyle = '#90caf9';
   ctx.lineWidth = 2;
   ctx.stroke();
+
   ctx.beginPath();
   ctx.moveTo(x0,midY);
   ctx.lineTo(x1,midY);
-  ctx.strokeStyle = 'rgba(255,255,255,0.4)';
-  ctx.lineWidth = 1;
+  ctx.strokeStyle = 'rgba(255,255,255,0.7)';
+  ctx.lineWidth = 1.2;
   ctx.stroke();
+
+  ctx.strokeStyle = '#fff';
+  ctx.strokeRect(x0,y0,x1-x0,y1-y0);
 
   ctx.fillStyle = '#fff';
   ctx.font = '11px system-ui';
-  ctx.fillText('υ–t', x0+4, y0+10);
+  ctx.fillText('υ–t', x0+4, y0+12);
   ctx.font = '10px system-ui';
-  ctx.fillText('t (s)', x1-32, y1+10);
-  ctx.fillText('υ (m/s)', x0-4, y0+10);
+  ctx.fillText('t (s)', x1-30, y1+12);
+  ctx.fillText('υ (m/s)', x0-2, y0+12);
 }
 
 function drawAccelerationChart(){
@@ -382,14 +423,30 @@ function drawAccelerationChart(){
   const h = aCan.height;
   ctx.clearRect(0,0,w,h);
 
-  const x0 = 40;
-  const y0 = 20;
-  const x1 = w-16;
-  const y1 = h-24;
+  const margin = 18;
+  const x0 = margin;
+  const x1 = w - margin;
+  const y0 = margin;
+  const y1 = h - margin;
 
-  ctx.strokeStyle = '#fff';
+  ctx.strokeStyle = 'rgba(255,255,255,0.4)';
   ctx.lineWidth = 1;
-  ctx.strokeRect(x0,y0,x1-x0,y1-y0);
+
+  const gridN = 4;
+  for(let i=0;i<=gridN;i++){
+    const gx = x0 + (i/gridN)*(x1-x0);
+    ctx.beginPath();
+    ctx.moveTo(gx,y0);
+    ctx.lineTo(gx,y1);
+    ctx.stroke();
+  }
+  for(let j=0;j<=gridN;j++){
+    const gy = y0 + (j/gridN)*(y1-y0);
+    ctx.beginPath();
+    ctx.moveTo(x0,gy);
+    ctx.lineTo(x1,gy);
+    ctx.stroke();
+  }
 
   const midY = (y0+y1)/2;
   const N = 200;
@@ -410,16 +467,19 @@ function drawAccelerationChart(){
   ctx.beginPath();
   ctx.moveTo(x0,midY);
   ctx.lineTo(x1,midY);
-  ctx.strokeStyle = 'rgba(255,255,255,0.4)';
-  ctx.lineWidth = 1;
+  ctx.strokeStyle = 'rgba(255,255,255,0.7)';
+  ctx.lineWidth = 1.2;
   ctx.stroke();
+
+  ctx.strokeStyle = '#fff';
+  ctx.strokeRect(x0,y0,x1-x0,y1-y0);
 
   ctx.fillStyle = '#fff';
   ctx.font = '11px system-ui';
-  ctx.fillText('α–t', x0+4, y0+10);
+  ctx.fillText('α–t', x0+4, y0+12);
   ctx.font = '10px system-ui';
-  ctx.fillText('t (s)', x1-32, y1+10);
-  ctx.fillText('α (m/s²)', x0-4, y0+10);
+  ctx.fillText('t (s)', x1-30, y1+12);
+  ctx.fillText('α (m/s²)', x0-2, y0+12);
 }
 
 function drawAxChart(){
@@ -429,14 +489,30 @@ function drawAxChart(){
   const h = axCan.height;
   ctx.clearRect(0,0,w,h);
 
-  const x0 = 40;
-  const y0 = 20;
-  const x1 = w-16;
-  const y1 = h-24;
+  const margin = 20;
+  const x0 = margin;
+  const x1 = w - margin;
+  const y0 = margin;
+  const y1 = h - margin;
 
-  ctx.strokeStyle = '#fff';
+  ctx.strokeStyle = 'rgba(255,255,255,0.4)';
   ctx.lineWidth = 1;
-  ctx.strokeRect(x0,y0,x1-x0,y1-y0);
+
+  const gridN = 4;
+  for(let i=0;i<=gridN;i++){
+    const gx = x0 + (i/gridN)*(x1-x0);
+    ctx.beginPath();
+    ctx.moveTo(gx,y0);
+    ctx.lineTo(gx,y1);
+    ctx.stroke();
+  }
+  for(let j=0;j<=gridN;j++){
+    const gy = y0 + (j/gridN)*(y1-y0);
+    ctx.beginPath();
+    ctx.moveTo(x0,gy);
+    ctx.lineTo(x1,gy);
+    ctx.stroke();
+  }
 
   const xMid = (x0+x1)/2;
   const yMid = (y0+y1)/2;
@@ -446,8 +522,8 @@ function drawAxChart(){
   ctx.lineTo(xMid,y1);
   ctx.moveTo(x0,yMid);
   ctx.lineTo(x1,yMid);
-  ctx.strokeStyle = 'rgba(255,255,255,0.4)';
-  ctx.lineWidth = 1;
+  ctx.strokeStyle = 'rgba(255,255,255,0.8)';
+  ctx.lineWidth = 1.2;
   ctx.stroke();
 
   const Amax = omega*omega*A_m;
@@ -478,11 +554,11 @@ function drawAxChart(){
 
   ctx.fillStyle = '#fff';
   ctx.font = '11px system-ui';
-  ctx.fillText('a–x', x0+4, y0+10);
+  ctx.fillText('a–x', x0+4, y0+12);
 
   ctx.font = '10px system-ui';
-  ctx.fillText('x (m)', x1-32, yMid-4);
-  ctx.fillText('a (m/s²)', xMid+6, y0+10);
+  ctx.fillText('x (m)', x1-30, yMid-4);
+  ctx.fillText('a (m/s²)', xMid+6, y0+12);
 
   ctx.fillText('a = -ω²·x', x0+4, y1-4);
   ctx.fillText('A = '+A_m.toFixed(2)+' m', x0+4, y1-18);
@@ -492,25 +568,25 @@ function drawAxChart(){
 function ensureVelocityChart(){
   if(!vCan){
     vCan = document.createElement('canvas');
+    sizeLawCanvas(vCan);
     lawCharts.appendChild(vCan);
   }
-  sizeLawCanvas(vCan);
   drawVelocityChart();
 }
 function ensureAccelerationChart(){
   if(!aCan){
     aCan = document.createElement('canvas');
+    sizeLawCanvas(aCan);
     lawCharts.appendChild(aCan);
   }
-  sizeLawCanvas(aCan);
   drawAccelerationChart();
 }
 function ensureAxChart(){
   if(!axCan){
     axCan = document.createElement('canvas');
+    sizeLawCanvas(axCan);
     lawCharts.appendChild(axCan);
   }
-  sizeLawCanvas(axCan);
   drawAxChart();
 }
 
@@ -564,13 +640,15 @@ function tint(hex, alpha){
   return 'rgba('+r+','+g+','+b+','+alpha+')';
 }
 
-/* --- ΕΔΩ: actBubble παίρνει chipDx/chipDy από JSON, αλλιώς παλιό behavior --- */
+/* === ΕΔΩ: actBubble παίρνει chipDx/chipDy από JSON, αλλιώς παλιά συμπεριφορά === */
 function showSpeakerChip(idx1based){
   const {x,y,info} = viewerAnchor(idx1based);
   if(!info) return;
 
-  const dx = (typeof info.chipDx === 'number') ? info.chipDx : 0;
-  const dy = (typeof info.chipDy === 'number') ? info.chipDy : 130;
+  // Προαιρετικά offsets από το JSON (viewers[].chipDx / chipDy).
+  // Αν δεν δοθούν, κρατάμε την παλιά συμπεριφορά: στο ίδιο x, 130px πάνω.
+  const dx = (info && typeof info.chipDx === 'number') ? info.chipDx : 0;
+  const dy = (info && typeof info.chipDy === 'number') ? info.chipDy : 130;
 
   actBubble.textContent = info.name_gr || ('ΘΕΑΤΗΣ '+idx1based);
   actBubble.style.left = (x + dx) + 'px';
@@ -862,11 +940,13 @@ function setFoyerSpeaker(idx1based){
   if(!vi) return;
   foyerBubble.textContent = vi.name_gr || ('Θεατής '+idx1based);
   foyerBubble.style.backgroundColor = tint(vi.color,0.85);
-  foyerBubble.style.borderColor = 'rgba(255,255,255,9)';
+  foyerBubble.style.borderColor = 'rgba(255,255,255,.9)';
 
+  // ίδια λογική / ίδια σημεία με 1η–2η πράξη,
+  // αλλά με δυνατότητα μικρομετακίνησης από το JSON (viewers[].chipDx / chipDy)
   const {x,y} = viewerAnchor(idx1based);
-  const dx = (typeof vi.chipDx === 'number') ? vi.chipDx : 0;
-  const dy = (typeof vi.chipDy === 'number') ? vi.chipDy : 130;
+  const dx = (vi && typeof vi.chipDx === 'number') ? vi.chipDx : 0;
+  const dy = (vi && typeof vi.chipDy === 'number') ? vi.chipDy : 130;
 
   foyerBubble.style.left = (x + dx) + 'px';
   foyerBubble.style.top  = (y - dy) + 'px';
@@ -1113,7 +1193,7 @@ function animate(now){
 
   markerEl.style.left = hookX+'px';
   spotlight.style.background =
-    'radial-gradient(220px 140px at '+hookX+'px '+(stageH*0.62)+'px, rgba(255,255,220,65), rgba(255,255,255,0) 70%)';
+    'radial-gradient(220px 140px at '+hookX+'px '+(stageH*0.62)+'px, rgba(255,255,220,.65), rgba(255,255,255,0) 70%)';
 
   const xMeters = (hookX - cx)/pxPerMeter;
   logMeasurement(tObs, xMeters);
