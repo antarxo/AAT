@@ -191,6 +191,8 @@ const boardRight  = document.getElementById('boardRight');
 const foyerBubble = document.getElementById('foyerBubble');
 
 const viewersStrip = document.getElementById('viewersStrip');
+let foyerScrollLinked = false; // για να μη ξαναδένουμε event listeners
+  
 
 let t0 = performance.now();
 let lastFrame = t0;
@@ -954,6 +956,33 @@ function setFoyerSpeaker(idx1based){
   foyerBubble.style.display='block';
 }
 
+function linkFoyerScroll(){
+  if (foyerScrollLinked) return;
+  foyerScrollLinked = true;
+
+  let syncingFromLeft = false;
+  let syncingFromRight = false;
+
+  boardLeft.addEventListener('scroll', () => {
+    if (syncingFromRight) {
+      syncingFromRight = false;
+      return;
+    }
+    syncingFromLeft = true;
+    boardRight.scrollTop = boardLeft.scrollTop;
+  });
+
+  boardRight.addEventListener('scroll', () => {
+    if (syncingFromLeft) {
+      syncingFromLeft = false;
+      return;
+    }
+    syncingFromRight = true;
+    boardLeft.scrollTop = boardRight.scrollTop;
+  });
+}
+
+  
 function typeWriterBoard(el, text, totalMs, done){
   const src = String(text||'').replaceAll('sqrt(','√(');
   const total = src.length || 1;
@@ -1035,6 +1064,7 @@ function addFoyerRow(item){
 
 
 async function runFoyer(){
+  linkFoyerScroll();   // Δένει ΜΙΑ ΦΟΡΑ τα scrolls αριστερά–δεξιά
   foyerEl.style.display='block';
   boardLeft.innerHTML  = '';
   boardRight.innerHTML = '';
