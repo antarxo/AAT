@@ -18,12 +18,12 @@
       "name_en": "Viewer 2",
       "color": "#66ccff",
       "xFrac": 0.27,
-      "bubbleDx": 0,
-      "bubbleDy": 50,
+      "bubbleDx": 60,
+      "bubbleDy": 25,
       "avatarDy": 100,
       "avatarScale": 0.27,
       "chipDx": 70,
-        "chipDy": 70,    
+        "chipDy": 60,    
       "img": "viewer2.png"
     },
     {
@@ -31,12 +31,12 @@
       "name_en": "Viewer 3",
       "color": "#ff99cc",
       "xFrac": 0.5,
-      "bubbleDx": 0,
-      "bubbleDy": 50,
+      "bubbleDx": 60,
+      "bubbleDy": 25,
       "avatarDy": 100,
       "avatarScale": 0.27,
       "chipDy": 70,
-      "chipDx": 70,
+      "chipDx": 60,
       "img": "viewer3.png"
     },
     {
@@ -44,12 +44,12 @@
       "name_en": "Viewer 4",
       "color": "#99ff99",
       "xFrac": 0.70,
-      "bubbleDx": 80,
-      "bubbleDy": 50,
+      "bubbleDx": -180,
+      "bubbleDy": 25,
       "avatarDy": 100,
       "avatarScale": 0.3,
-      "chipDy": 100,
-      "chipDx": 50,
+      "chipDy": 70,
+      "chipDx": -50,
       "img": "viewer4.png"
     },
     {
@@ -57,12 +57,12 @@
       "name_en": "Viewer 5",
       "color": "#ff9966",
       "xFrac": 0.90,
-      "bubbleDx":80,
-      "bubbleDy": 50,
+      "bubbleDx":-180,
+      "bubbleDy": 25,
       "avatarDy": 100,
       "avatarScale": 0.27,
-      "chipDy": 100,
-      "chipDx": 50,
+      "chipDy": 70,
+      "chipDx": -50,
       "img": "viewer5.png"
     }
   ],
@@ -708,6 +708,7 @@
     }
   ]
 }
+
 
 
 
