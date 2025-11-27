@@ -192,6 +192,11 @@ const foyerBubble = document.getElementById('foyerBubble');
 
 const viewersStrip = document.getElementById('viewersStrip');
 
+/* z-index για “σκέψεις” / ετικέτες */
+bubbleEl.style.zIndex = '1950';
+actBubble.style.zIndex = '1950';
+foyerBubble.style.zIndex = '1950';
+
 let t0 = performance.now();
 let lastFrame = t0;
 let playbackTime = 0;
@@ -342,10 +347,15 @@ function addLaw(txt){
   lawsBody.appendChild(div);
 }
 
+/* Πλάτος mini–διαγραμμάτων: μοιράζουμε τον χώρο δεξιά/αριστερά ομοιόμορφα */
 function sizeLawCanvas(c){
-  const w = 210;
+  const totalW = lawCharts.clientWidth || 630;
+  const count = 3;   // v(t), a(t), a–x
+  const gap   = 16;
+  const w = Math.max(180, Math.floor((totalW - gap*(count-1)) / count));
   const h = 120;
-  c.width=w; c.height=h;
+  c.width  = w;
+  c.height = h;
 }
 
 /* mini γραφήματα v(t), a(t), a–x με πλέγμα & τιμές */
@@ -640,13 +650,11 @@ function tint(hex, alpha){
   return 'rgba('+r+','+g+','+b+','+alpha+')';
 }
 
-/* === ΕΔΩ: actBubble παίρνει chipDx/chipDy από JSON, αλλιώς παλιά συμπεριφορά === */
+/* actBubble: θέση από JSON (chipDx/chipDy), αλλιώς παλιά συμπεριφορά */
 function showSpeakerChip(idx1based){
   const {x,y,info} = viewerAnchor(idx1based);
   if(!info) return;
 
-  // Προαιρετικά offsets από το JSON (viewers[].chipDx / chipDy).
-  // Αν δεν δοθούν, κρατάμε την παλιά συμπεριφορά: στο ίδιο x, 130px πάνω.
   const dx = (info && typeof info.chipDx === 'number') ? info.chipDx : 0;
   const dy = (info && typeof info.chipDy === 'number') ? info.chipDy : 130;
 
@@ -942,8 +950,6 @@ function setFoyerSpeaker(idx1based){
   foyerBubble.style.backgroundColor = tint(vi.color,0.85);
   foyerBubble.style.borderColor = 'rgba(255,255,255,.9)';
 
-  // ίδια λογική / ίδια σημεία με 1η–2η πράξη,
-  // αλλά με δυνατότητα μικρομετακίνησης από το JSON (viewers[].chipDx / chipDy)
   const {x,y} = viewerAnchor(idx1based);
   const dx = (vi && typeof vi.chipDx === 'number') ? vi.chipDx : 0;
   const dy = (vi && typeof vi.chipDy === 'number') ? vi.chipDy : 130;
@@ -972,13 +978,14 @@ function typeWriterBoard(el, text, totalMs, done){
   })();
 }
 
+/* Πλήρης οριζόντιος συγχρονισμός: ίδια σειρά, ίδιο χρώμα, ταυτόχρονο typewriter */
 function addFoyerRow(item){
   return new Promise(resolve=>{
     const viewer = item.viewer || 1;
     const vi = viewerInfo(viewer) || {};
 
-    const bgLeft  = tint(vi.color||'#ffffff',0.22);
-    const bgRight = tint(vi.color||'#ffffff',0.16);
+    const bgLeft  = tint(vi.color||'#ffffff',0.30);
+    const bgRight = tint(vi.color||'#ffffff',0.22);
 
     const l = document.createElement('div');
     l.className='cell';
@@ -1002,15 +1009,28 @@ function addFoyerRow(item){
     const typeMs  = item.typeMs  || 4000;
     const pauseMs = item.pauseMs || 1500;
 
-    typeWriterBoard(l, item.left||'', typeMs, ()=>{
-      if((item.right||'').trim().length>0){
-        typeWriterBoard(r, item.right||'', typeMs, ()=>{
-          setTimeout(resolve, pauseMs);
-        });
-      }else{
+    const rightText = (item.right||'').trim();
+    let doneL = false;
+    let doneR = !rightText;
+
+    function tryResolve(){
+      if(doneL && doneR){
         setTimeout(resolve, pauseMs);
       }
+    }
+
+    // ταυτόχρονο "γράψιμο" αριστερά–δεξιά, ίδια σειρά
+    typeWriterBoard(l, item.left||'', typeMs, ()=>{
+      doneL = true;
+      tryResolve();
     });
+
+    if(rightText){
+      typeWriterBoard(r, item.right||'', typeMs, ()=>{
+        doneR = true;
+        tryResolve();
+      });
+    }
   });
 }
 
@@ -1275,14 +1295,14 @@ function initViewersAvatars(){
     if (typeof v.heightVh === 'number') {
       div.style.height = v.heightVh + 'vh';
     } else {
-      div.style.height = ''; // καθάρισε ό,τι παλιό inline
+      div.style.height = '';
     }
 
-    // Κάθετη θέση: ΑΠΟΚΛΕΙΣΤΙΚΑ από avatarDy (px)
+    // Κάθετη θέση: αποκλειστικά από avatarDy (px)
     if (typeof v.avatarDy === 'number') {
       div.style.bottom = v.avatarDy + 'px';
     } else {
-      div.style.bottom = ''; // αν λείπει, θα “φωνάζει” => bug εμφανές
+      div.style.bottom = '';
     }
 
     // Σμίκρυνση / μεγέθυνση: avatarScale
@@ -1290,10 +1310,10 @@ function initViewersAvatars(){
       const widthPx = baseWidthPx * (v.avatarScale / refScale);
       div.style.width = widthPx + 'px';
     } else {
-      div.style.width = ''; // άσε το CSS default 140px
+      div.style.width = '';
     }
 
-    // Οριζόντια θέση: xFrac από JSON, αλλιώς ένα τίμιο fallback
+    // Οριζόντια θέση: xFrac από JSON, αλλιώς τίμιο fallback
     const fracDefault = (idx + 1) / (items.length + 1);
     const xFrac = (typeof v.xFrac === 'number') ? v.xFrac : fracDefault;
     const x = (leftBand + widthBand * xFrac) * stageW;
