@@ -988,16 +988,38 @@ function typeWriterBoard(el, text, totalMs, done){
   const total = src.length || 1;
   const baseMs = (typeof totalMs==='number' && totalMs>0 ? totalMs : 3000);
   const step = Math.max(10, Math.round(baseMs/total));
-  let i=0;
+  let i = 0;
+
   (function tick(){
-    el.innerHTML = src.slice(0,i).replaceAll('\n','<br>');
+    el.innerHTML = src.slice(0, i).replaceAll('\n','<br>');
+
     try{
-      boardLeft.scrollTop  = boardLeft.scrollHeight;
-      boardRight.scrollTop = boardRight.scrollHeight;
+      // σε ποιο board ανήκει αυτό το κελί;
+      const parent = el.parentElement;
+      const isLeftCell  = (parent === boardLeft);
+      const isRightCell = (parent === boardRight);
+
+      if (isLeftCell){
+        // αφήνουμε το αριστερό να πάει στο "πάτο" του...
+        boardLeft.scrollTop = boardLeft.scrollHeight;
+        // ...και ο δεξιός πίνακας ακολουθεί την ίδια κατακόρυφη θέση
+        boardRight.scrollTop = boardLeft.scrollTop;
+      } else if (isRightCell){
+        boardRight.scrollTop = boardRight.scrollHeight;
+        boardLeft.scrollTop  = boardRight.scrollTop;
+      } else {
+        // fallback, σε περίπτωση που το el δεν είναι direct child
+        boardLeft.scrollTop  = boardLeft.scrollHeight;
+        boardRight.scrollTop = boardLeft.scrollTop;
+      }
     }catch(e){}
+
     i++;
-    if(i<=src.length) setTimeout(tick, step);
-    else if(typeof done==='function') done();
+    if (i <= src.length){
+      setTimeout(tick, step);
+    } else if (typeof done === 'function'){
+      done();
+    }
   })();
 }
 
