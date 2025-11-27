@@ -9,7 +9,7 @@
       "bubbleDy": 25,
       "avatarDy": 100,
       "avatarScale": 0.27,
-       "chipDx": 70,
+      "chipDx": 70,
       "chipDy": 60,
       "img": "viewer1.png"
     },
@@ -22,8 +22,8 @@
       "bubbleDy": 25,
       "avatarDy": 100,
       "avatarScale": 0.27,
-      "chipDx": 70,
-        "chipDy": 60,    
+      "chipDx": 80,
+      "chipDy": 60,    
       "img": "viewer2.png"
     },
     {
@@ -31,12 +31,12 @@
       "name_en": "Viewer 3",
       "color": "#ff99cc",
       "xFrac": 0.5,
-      "bubbleDx": 60,
+      "bubbleDx": 70,
       "bubbleDy": 25,
       "avatarDy": 100,
       "avatarScale": 0.27,
-      "chipDy": 70,
-      "chipDx": 60,
+      "chipDx": 90,    
+      "chipDy": 60,
       "img": "viewer3.png"
     },
     {
@@ -48,8 +48,8 @@
       "bubbleDy": 25,
       "avatarDy": 100,
       "avatarScale": 0.3,
-      "chipDy": 70,
-      "chipDx": -50,
+      "chipDx": -250,  
+      "chipDy": 60,
       "img": "viewer4.png"
     },
     {
@@ -57,12 +57,12 @@
       "name_en": "Viewer 5",
       "color": "#ff9966",
       "xFrac": 0.90,
-      "bubbleDx":-180,
+      "bubbleDx":-250,
       "bubbleDy": 25,
       "avatarDy": 100,
       "avatarScale": 0.27,
-      "chipDy": 70,
-      "chipDx": -50,
+      "chipDx": -250,
+      "chipDy": 60,
       "img": "viewer5.png"
     }
   ],
@@ -708,6 +708,7 @@
     }
   ]
 }
+
 
 
 
