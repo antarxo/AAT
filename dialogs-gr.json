@@ -10,7 +10,7 @@
       "avatarDy": 100,
       "avatarScale": 0.27,
        "chipDx": 70,
-      "chipDy": 50,
+      "chipDy": 70,
       "img": "viewer1.png"
     },
     {
@@ -18,12 +18,12 @@
       "name_en": "Viewer 2",
       "color": "#66ccff",
       "xFrac": 0.27,
-      "bubbleDx": 140,
-      "bubbleDy": 180,
+      "bubbleDx": 0,
+      "bubbleDy": 50,
       "avatarDy": 100,
       "avatarScale": 0.27,
-      "chipDy": 150,
-      "chipDx": -20,
+      "chipDx": 70,
+        "chipDy": 70,    
       "img": "viewer2.png"
     },
     {
@@ -31,12 +31,12 @@
       "name_en": "Viewer 3",
       "color": "#ff99cc",
       "xFrac": 0.5,
-      "bubbleDx": 40,
-      "bubbleDy": -80,
+      "bubbleDx": 0,
+      "bubbleDy": 50,
       "avatarDy": 100,
       "avatarScale": 0.27,
-      "chipDy": 150,
-      "chipDx": -20,
+      "chipDy": 70,
+      "chipDx": 70,
       "img": "viewer3.png"
     },
     {
@@ -44,12 +44,12 @@
       "name_en": "Viewer 4",
       "color": "#99ff99",
       "xFrac": 0.70,
-      "bubbleDx": 40,
-      "bubbleDy": -80,
+      "bubbleDx": 80,
+      "bubbleDy": 50,
       "avatarDy": 100,
       "avatarScale": 0.3,
-      "chipDy": 150,
-      "chipDx": -20,
+      "chipDy": 100,
+      "chipDx": 50,
       "img": "viewer4.png"
     },
     {
@@ -57,12 +57,12 @@
       "name_en": "Viewer 5",
       "color": "#ff9966",
       "xFrac": 0.90,
-      "bubbleDx": 40,
-      "bubbleDy": -80,
+      "bubbleDx":80,
+      "bubbleDy": 50,
       "avatarDy": 100,
       "avatarScale": 0.27,
-      "chipDy": 150,
-      "chipDx": -20,
+      "chipDy": 100,
+      "chipDx": 50,
       "img": "viewer5.png"
     }
   ],
@@ -88,8 +88,8 @@
     },
     {
       "viewer": 4,
-      "xShift": 10,
-      "yOffset": 130,
+      "xShift": 0,
+      "yOffset": 0,
       "typeMs": 0,
       "pauseMs": 0,
       "left": "… και η κίνηση είναι ευθύγραμμη και παλινδρομική!",
@@ -97,8 +97,8 @@
     },
     {
       "viewer": 5,
-      "xShift": 30,
-      "yOffset": 130,
+      "xShift": 0,
+      "yOffset": 0,
       "typeMs": 0,
       "pauseMs": 0,
       "left": "… και επαναλαμβανόμενη, περιοδική, άρα ταλάντωση!",
@@ -106,8 +106,8 @@
     },
     {
       "viewer": 3,
-      "xShift": -30,
-      "yOffset": 135,
+      "xShift": 0,
+      "yOffset": 0,
       "typeMs": 0,
       "pauseMs": 0,
       "left": "Μήπως είναι Απλή Αρμονική Ταλάντωση;",
@@ -115,8 +115,8 @@
     },
     {
       "viewer": 2,
-      "xShift": -10,
-      "yOffset": 135,
+      "xShift": 0,
+      "yOffset": 0,
       "typeMs": 0,
       "pauseMs": 0,
       "left": "… αν είναι Α.Α.Τ. τότε οι τιμές που μετράμε πρέπει να επαληθεύουν την χ=Αημ(ωt+φ₀)!",
@@ -124,14 +124,23 @@
     },
     {
       "viewer": 4,
-      "xShift": 10,
-      "yOffset": 135,
+      "xShift": 0,
+      "yOffset": 0,
       "typeMs": 0,
       "pauseMs": 0,
       "left": "… αν κάνουμε διάγραμμα x–t, πρέπει να το επιβεβαιώσει!",
       "right": ""
     },
-
+    {
+      "viewer": null,
+      "xShift": 0,
+      "yOffset": 0,
+      "typeMs": 0,
+      "pauseMs": 0,
+      "left": "",
+      "right": "",
+      "graph": "xt"
+    },
     {
       "viewer": 1,
       "xShift": -20,
@@ -163,16 +172,6 @@
       "param": "Tw"
     },
 
-    {
-      "viewer": null,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 0,
-      "left": "",
-      "right": "",
-      "graph": "xt"
-    },
 
     {
       "viewer": null,
@@ -181,13 +180,13 @@
       "typeMs": 0,
       "pauseMs": 0,
       "left": "",
-      "right": "x=Αημ(ωt+φ0) (1)",
+      "right": "x=Αημ(ωt+φ₀) (1)",
       "alsoParams": true
     },
     {
       "viewer": 2,
-      "xShift": -20,
-      "yOffset": 130,
+      "xShift": 0,
+      "yOffset": 0,
       "typeMs": 0,
       "pauseMs": 0,
       "left": "… επομένως η ταχύτητα δίνεται από τον νόμο v=ωA·συν(ωt+φ₀)!",
@@ -200,7 +199,7 @@
       "typeMs": 0,
       "pauseMs": 0,
       "left": "",
-      "right": "v=ωA·συν(ωt+φ0) (2)"
+      "right": "v=ωA·συν(ωt+φ₀) (2)"
     },
     {
       "viewer": null,
@@ -709,6 +708,7 @@
     }
   ]
 }
+
 
 
 
