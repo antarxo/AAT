@@ -125,7 +125,8 @@
 
   <div class="foyer" id="foyer">
     <div class="wrap">
-      <div class="board-left" id="boardLeft"></div>
+      <div class="board-left"  id="boardLeft"></div>
+      <div class="board-right" id="boardRight"></div>
     </div>
   </div>
 
@@ -139,6 +140,7 @@ let VIEWERS = [];
 let ACT1 = [];
 let ACT2 = [];
 let FOYER = [];
+let foyerTBody = null;
 
 /* ---------- Φυσική / σκηνή ---------- */
 
@@ -186,6 +188,7 @@ const btnFoyerGo = document.getElementById('btnFoyerGo');
 
 const foyerEl     = document.getElementById('foyer');
 const boardLeft   = document.getElementById('boardLeft');
+const boardRight  = document.getElementById('boardRight');
 const foyerBubble = document.getElementById('foyerBubble');
 
 const viewersStrip = document.getElementById('viewersStrip');
@@ -873,7 +876,7 @@ function typeWriterBoard(el, text, totalMs, done){
   (function tick(){
     el.innerHTML = src.slice(0,i).replaceAll('\n','<br>');
     try{
-      boardLeft.scrollTop  = boardLeft.scrollHeight;
+      boardLeft.scrollTop = boardLeft.scrollHeight;
     }catch(e){}
     i++;
     if(i<=src.length) setTimeout(tick, step);
@@ -888,13 +891,15 @@ function addFoyerRow(item){
     const bgLeft  = tint(vi.color||'#ffffff',0.22);
     const bgRight = tint(vi.color||'#ffffff',0.16);
 
-    const l = document.createElement('div');
-    l.className='cell cell-left';
+    const row = document.createElement('tr');
+
+    const l = document.createElement('td');
+    l.className = 'cell cell-left';
     l.style.background = bgLeft;
     l.style.borderLeft = '4px solid '+tint(vi.color||'#ffffff',0.85);
 
-    const r = document.createElement('div');
-    r.className='cell cell-right';
+    const r = document.createElement('td');
+    r.className = 'cell cell-right';
     r.style.background = bgRight;
     r.style.borderLeft = '4px solid '+tint(vi.color||'#ffffff',0.55);
 
@@ -902,8 +907,10 @@ function addFoyerRow(item){
       r.classList.add('formula');
     }
 
-    boardLeft.appendChild(l);
-    boardLeft.appendChild(r);
+    row.appendChild(l);
+    row.appendChild(r);
+
+    foyerTBody.appendChild(row);
 
     setFoyerSpeaker(viewer);
 
@@ -925,7 +932,14 @@ function addFoyerRow(item){
 async function runFoyer(){
   foyerEl.style.display='block';
   boardLeft.innerHTML  = '';
+  boardRight.innerHTML = '';
   foyerBubble.style.display='none';
+
+  const table = document.createElement('table');
+  table.className = 'foyer-table';
+  foyerTBody = document.createElement('tbody');
+  table.appendChild(foyerTBody);
+  boardLeft.appendChild(table);
 
   for(const item of FOYER){
     await addFoyerRow(item);
@@ -976,6 +990,8 @@ function resetShow(){
   foyerEl.style.display        ='none';
   foyerBubble.style.display    ='none';
   boardLeft.innerHTML          ='';
+  boardRight.innerHTML         ='';
+  foyerTBody = null;
   bubbleEl.style.display       ='none';
   bubbleEl.classList.remove('active','closing');
   actBubble.style.display      ='none';
@@ -1237,22 +1253,6 @@ window.addEventListener('load', ()=>{
   resetShow();
   loadDialogs();
 });
-
-/* ---------- Μέτρηση φυσικού μήκους ελατηρίου ---------- */
-
-function measureSpringNaturalSize(){
-  const prevDisplay = springEl.style.display;
-  const prevTransform = springEl.style.transform;
-  springEl.style.display   = 'block';
-  springEl.style.transform = 'none';
-
-  const rect = springEl.getBoundingClientRect();
-  springNaturalWidth  = rect.width || 1;
-  springNaturalHeight = rect.height || 1;
-
-  springEl.style.display   = prevDisplay;
-  springEl.style.transform = prevTransform;
-}
 </script>
 </body>
 </html>
