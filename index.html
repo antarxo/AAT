@@ -530,38 +530,29 @@ function showParamsBox(){
 /* ---------- Bubbles (πράξεις) ---------- */
 
 function viewerInfo(idx1based){
-  if(!Number.isInteger(idx1based) || idx1based < 1 || idx1based > VIEWERS.length){
-    console.warn('viewerInfo: invalid viewer index', idx1based);
-    return null;
-  }
-  return VIEWERS[idx1based - 1] || null;
+  const i = (idx1based||1)-1;
+  return VIEWERS[i] || VIEWERS[0] || null;
 }
 
 function viewerAnchor(idx1based){
   const vi = viewerInfo(idx1based);
+  const avatar = viewersStrip.querySelector('.viewer-avatar[data-idx="'+(idx1based-1)+'"]');
   const sRect = stage.getBoundingClientRect();
 
-  if(vi){
-    const avatar = viewersStrip.querySelector('.viewer-avatar[data-idx="'+(idx1based-1)+'"]');
-    if(avatar){
-      const aRect = avatar.getBoundingClientRect();
-      const x = aRect.left + aRect.width/2 - sRect.left;
-      const y = aRect.top  + aRect.height/2 - sRect.top;
-      return {x,y,info:vi};
-    }
-
-    if(typeof vi.xFrac === 'number'){
-      const leftFrac  = 0.18;
-      const widthFrac = 0.64;
-      const x = (leftFrac + widthFrac*vi.xFrac)*stage.clientWidth;
-      const y = stage.clientHeight*0.60;
-      return {x,y,info:vi};
-    }
+  if(avatar){
+    const aRect = avatar.getBoundingClientRect();
+    const x = aRect.left + aRect.width/2 - sRect.left;
+    const y = aRect.top  + aRect.height/2 - sRect.top; // κέντρο τελικής εικόνας
+    return {x,y,info:vi};
   }
 
-  console.warn('viewerAnchor: no valid viewer/avatar/xFrac for index', idx1based);
-  const x = stage.clientWidth*0.5;
-  const y = stage.clientHeight*0.5;
+  const leftFrac  = 0.18;
+  const widthFrac = 0.64;
+  const frac = vi && typeof vi.xFrac==='number'
+    ? vi.xFrac
+    : (idx1based/(VIEWERS.length+1 || 2));
+  const x = (leftFrac + widthFrac*frac)*stage.clientWidth;
+  const y = stage.clientHeight*0.60;
   return {x,y,info:vi};
 }
 
@@ -573,21 +564,17 @@ function tint(hex, alpha){
   return 'rgba('+r+','+g+','+b+','+alpha+')';
 }
 
-/* 👉 ΕΔΩ: actBubble θέση από JSON (chipDx, chipDy) */
+/* --- ΕΔΩ: actBubble παίρνει chipDx/chipDy από JSON, αλλιώς παλιό behavior --- */
 function showSpeakerChip(idx1based){
-  const anchor = viewerAnchor(idx1based);
-  const info = anchor.info;
+  const {x,y,info} = viewerAnchor(idx1based);
   if(!info) return;
 
-  const x = anchor.x;
-  const y = anchor.y;
-
-  const chipDx = (typeof info.chipDx === 'number') ? info.chipDx : 0;
-  const chipDy = (typeof info.chipDy === 'number') ? info.chipDy : 130;
+  const dx = (typeof info.chipDx === 'number') ? info.chipDx : 0;
+  const dy = (typeof info.chipDy === 'number') ? info.chipDy : 130;
 
   actBubble.textContent = info.name_gr || ('ΘΕΑΤΗΣ '+idx1based);
-  actBubble.style.left = (x + chipDx) + 'px';
-  actBubble.style.top  = (y - chipDy) + 'px';
+  actBubble.style.left = (x + dx) + 'px';
+  actBubble.style.top  = (y - dy) + 'px';
   actBubble.style.transform='translateX(-50%)';
   actBubble.style.backgroundColor = tint(info.color,0.9);
   actBubble.style.display='block';
@@ -598,25 +585,13 @@ function hideSpeakerChip(){
 }
 
 function placeBubble(idx1based, xShift, yOffset){
-  const anchor = viewerAnchor(idx1based);
-  const info = anchor.info;
-  if(!info){
-    console.warn('placeBubble: no viewer info for index', idx1based);
-    bubbleEl.style.display = 'none';
-    return;
-  }
-
-  const x = anchor.x;
-  const y = anchor.y;
-
-  const extraX = (typeof xShift === 'number') ? xShift : 0;
-  const extraY = (typeof yOffset === 'number') ? yOffset : 0;
-
-  const dx = (typeof info.bubbleDx === 'number' ? info.bubbleDx : 0) + extraX;
-  const dy = (typeof info.bubbleDy === 'number' ? info.bubbleDy : 0) + extraY;
-
-  bubbleEl.style.left = (x + dx) + 'px';
-  bubbleEl.style.top  = (y - dy) + 'px';
+  const {x,y,info} = viewerAnchor(idx1based);
+  const dx = (info && typeof info.bubbleDx==='number'? info.bubbleDx:0) + (xShift||0);
+  const dy = (info && typeof info.bubbleDy==='number'? info.bubbleDy:0) + (yOffset||0);
+  const left = x + dx;
+  const top  = y - dy;
+  bubbleEl.style.left = left+'px';
+  bubbleEl.style.top  = top +'px';
 }
 
 function typeWriterHTML(el, html, totalMs, done){
@@ -654,7 +629,7 @@ function typeWriterHTML(el, html, totalMs, done){
 
 function showBubbleForEvent(ev){
   return new Promise(resolve=>{
-    const viewer = ev.viewer;
+    const viewer = ev.viewer || 1;
     const html = (ev.left||'').replaceAll('\n','<br>');
 
     if(!html){
@@ -664,19 +639,8 @@ function showBubbleForEvent(ev){
       return;
     }
 
-    if(!Number.isInteger(viewer) || viewer < 1 || viewer > VIEWERS.length){
-      console.warn('showBubbleForEvent: invalid or missing viewer', viewer, ev);
-      hideSpeakerChip();
-      bubbleEl.style.display='none';
-      resolve();
-      return;
-    }
-
-    const xShift = (typeof ev.xShift === 'number') ? ev.xShift : 0;
-    const yOffset = (typeof ev.yOffset === 'number') ? ev.yOffset : 0;
-
     showSpeakerChip(viewer);
-    placeBubble(viewer, xShift, yOffset);
+    placeBubble(viewer, ev.xShift||0, ev.yOffset||0);
 
     bubbleEl.style.display='block';
     bubbleEl.style.opacity='0';
@@ -718,22 +682,11 @@ function dynText(kind){
 
 function showDynBubble(ev){
   return new Promise(resolve=>{
-    const viewer = ev.viewer;
-
-    if(!Number.isInteger(viewer) || viewer < 1 || viewer > VIEWERS.length){
-      console.warn('showDynBubble: invalid or missing viewer', viewer, ev);
-      hideSpeakerChip();
-      bubbleEl.style.display='none';
-      resolve();
-      return;
-    }
-
+    const viewer = ev.viewer || 1;
     const txt = dynText(ev.param);
-    const xShift = (typeof ev.xShift === 'number') ? ev.xShift : 0;
-    const yOffset = (typeof ev.yOffset === 'number') ? ev.yOffset : 0;
 
     showSpeakerChip(viewer);
-    placeBubble(viewer, xShift, yOffset);
+    placeBubble(viewer, ev.xShift||0, ev.yOffset||0);
 
     bubbleEl.style.display='block';
     bubbleEl.style.opacity='0';
@@ -904,7 +857,6 @@ function isFormulaBlock(text){
   return false;
 }
 
-/* 👉 ΕΔΩ: foyerBubble θέση από JSON (chipDx, chipDy) */
 function setFoyerSpeaker(idx1based){
   const vi = viewerInfo(idx1based);
   if(!vi) return;
@@ -912,15 +864,12 @@ function setFoyerSpeaker(idx1based){
   foyerBubble.style.backgroundColor = tint(vi.color,0.85);
   foyerBubble.style.borderColor = 'rgba(255,255,255,9)';
 
-  const anchor = viewerAnchor(idx1based);
-  const x = anchor.x;
-  const y = anchor.y;
+  const {x,y} = viewerAnchor(idx1based);
+  const dx = (typeof vi.chipDx === 'number') ? vi.chipDx : 0;
+  const dy = (typeof vi.chipDy === 'number') ? vi.chipDy : 130;
 
-  const chipDx = (typeof vi.chipDx === 'number') ? vi.chipDx : 0;
-  const chipDy = (typeof vi.chipDy === 'number') ? vi.chipDy : 130;
-
-  foyerBubble.style.left = (x + chipDx) + 'px';
-  foyerBubble.style.top  = (y - chipDy) + 'px';
+  foyerBubble.style.left = (x + dx) + 'px';
+  foyerBubble.style.top  = (y - dy) + 'px';
   foyerBubble.style.transform='translateX(-50%)';
   foyerBubble.style.display='block';
 }
@@ -945,28 +894,21 @@ function typeWriterBoard(el, text, totalMs, done){
 
 function addFoyerRow(item){
   return new Promise(resolve=>{
-    const viewer = item.viewer;
-    let vi = null;
+    const viewer = item.viewer || 1;
+    const vi = viewerInfo(viewer) || {};
 
-    if(Number.isInteger(viewer) && viewer >= 1 && viewer <= VIEWERS.length){
-      vi = viewerInfo(viewer);
-    }else{
-      console.warn('addFoyerRow: invalid or missing viewer', viewer, item);
-    }
-
-    const baseColor = vi && vi.color ? vi.color : '#ffffff';
-    const bgLeft  = tint(baseColor,0.22);
-    const bgRight = tint(baseColor,0.16);
+    const bgLeft  = tint(vi.color||'#ffffff',0.22);
+    const bgRight = tint(vi.color||'#ffffff',0.16);
 
     const l = document.createElement('div');
     l.className='cell';
     l.style.background = bgLeft;
-    l.style.borderLeft = '4px solid '+tint(baseColor,0.85);
+    l.style.borderLeft = '4px solid '+tint(vi.color||'#ffffff',0.85);
 
     const r = document.createElement('div');
     r.className='cell';
     r.style.background = bgRight;
-    r.style.borderLeft = '4px solid '+tint(baseColor,0.55);
+    r.style.borderLeft = '4px solid '+tint(vi.color||'#ffffff',0.55);
 
     if(isFormulaBlock(item.right)){
       r.classList.add('formula');
@@ -975,11 +917,7 @@ function addFoyerRow(item){
     boardLeft.appendChild(l);
     boardRight.appendChild(r);
 
-    if(vi){
-      setFoyerSpeaker(viewer);
-    }else{
-      foyerBubble.style.display='none';
-    }
+    setFoyerSpeaker(viewer);
 
     const typeMs  = item.typeMs  || 4000;
     const pauseMs = item.pauseMs || 1500;
