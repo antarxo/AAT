@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Θεατρική Σκηνή — Ενιαία Έκδοση (Act I + Act II + Φουαγιέ)</title>
 
-  <!-- uPlot για το x–t διάγραμμα (μένει φορτωμένο, δεν το χρησιμοποιούμε πλέον) -->
+  <!-- uPlot για το x–t διάγραμμα -->
   <link rel="stylesheet" href="https://unpkg.com/uplot@1.6.30/dist/uPlot.min.css">
   <script src="https://unpkg.com/uplot@1.6.30/dist/uPlot.iife.min.js"></script>
 
@@ -206,7 +206,7 @@ let measureRowIdx = 0;
 
 let mode = 'run';
 
-let uXT = null;  // ΤΩΡΑ: canvas για x–t, όχι uPlot instance
+let uXT = null;  // canvas για x–t
 let vCan = null;
 let aCan = null;
 let axCan = null;
@@ -827,8 +827,12 @@ function showSpeakerChip(idx1based){
   const {x,y,info} = viewerAnchor(idx1based);
   if(!info) return;
   actBubble.textContent = info.name_gr || ('ΘΕΑΤΗΣ '+idx1based);
-  actBubble.style.left = x+'px';
-  actBubble.style.top  = (y-130)+'px';
+
+  const dx = (info && typeof info.chipDx === 'number') ? info.chipDx : 0;
+  const dy = (info && typeof info.chipDy === 'number') ? info.chipDy : 0;
+
+  actBubble.style.left = (x + dx) + 'px';
+  actBubble.style.top  = (y - dy) + 'px';
   actBubble.style.transform='translateX(-50%)';
   actBubble.style.backgroundColor = tint(info.color,0.9);
   actBubble.style.display='block';
@@ -921,23 +925,38 @@ function showBubbleForEvent(ev){
 
 /* Δυναμικά bubbles για A, T/ω, φ */
 
-function dynText(kind){
+function dynDefault(kind){
   const x0 = x0Val().toFixed(2);
   const phi0deg = ((omega*obsStartPlaybackOffset)*180/Math.PI+360)%360;
   if(kind==='A'){
-    return '…με A='+A_m.toFixed(2)+' m!';
+    return '…με A={A} m!';
   }else if(kind==='Tw'){
-    return '… και T='+T.toFixed(2)+' s και επομένως ω='+omega.toFixed(3)+' rad/s!';
+    return '… και T={T} s και επομένως ω={omega} rad/s!';
   }else if(kind==='phi'){
-    return '… όντως είναι ΑΑΤ και αφού το x₀='+x0+' m υπάρχει φ₀='+phi0deg.toFixed(1)+'°. Χαχα, ένα το κρατούμενο!';
+    return '… όντως είναι ΑΑΤ και αφού το x₀={x0} m υπάρχει φ₀={phi0}°. Χαχα, ένα το κρατούμενο!';
   }
   return '';
+}
+
+function expandDynTemplate(tpl){
+  if(!tpl) return '';
+  const x0 = x0Val().toFixed(2);
+  const phi0deg = ((omega*obsStartPlaybackOffset)*180/Math.PI+360)%360;
+  return String(tpl)
+    .replaceAll('{A}', A_m.toFixed(2))
+    .replaceAll('{T}', T.toFixed(2))
+    .replaceAll('{omega}', omega.toFixed(3))
+    .replaceAll('{x0}', x0)
+    .replaceAll('{phi0}', phi0deg.toFixed(1));
 }
 
 function showDynBubble(ev){
   return new Promise(resolve=>{
     const viewer = ev.viewer || 1;
-    const txt = dynText(ev.param);
+    const base = (ev.left && ev.left.trim().length)
+      ? ev.left
+      : dynDefault(ev.param);
+    const txt = expandDynTemplate(base);
 
     showSpeakerChip(viewer);
     placeBubble(viewer, ev.xShift||0, ev.yOffset||0);
