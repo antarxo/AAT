@@ -374,7 +374,6 @@ function drawVelocityChart(){
   ctx.lineWidth = 1;
   ctx.setLineDash([3,3]);
 
-  // κάθετες (t)
   const gridN = 6;
   for(let i=0;i<=gridN;i++){
     const gx = x0 + (i/gridN)*(x1-x0);
@@ -383,7 +382,6 @@ function drawVelocityChart(){
     ctx.lineTo(gx, h-margin/2);
     ctx.stroke();
   }
-  // οριζόντιες (v)
   for(let j=-2;j<=2;j++){
     const gy = y0 - j*scaleV;
     ctx.beginPath();
@@ -393,7 +391,7 @@ function drawVelocityChart(){
   }
   ctx.restore();
 
-  // άξονες
+  // άξονας
   ctx.strokeStyle = '#fff';
   ctx.lineWidth = 1.2;
   ctx.beginPath();
@@ -463,7 +461,7 @@ function drawAccelerationChart(){
   }
   ctx.restore();
 
-  // άξονες
+  // άξονας
   ctx.strokeStyle = '#fff';
   ctx.lineWidth = 1.2;
   ctx.beginPath();
@@ -632,7 +630,7 @@ function viewerAnchor(idx1based){
   if(avatar){
     const aRect = avatar.getBoundingClientRect();
     const x = aRect.left + aRect.width/2 - sRect.left;
-    const y = aRect.top  + aRect.height/2 - sRect.top; // κέντρο τελικής εικόνας
+    const y = aRect.top  + aRect.height/2 - sRect.top;
     return {x,y,info:vi};
   }
 
@@ -796,6 +794,19 @@ function showDynBubble(ev){
   });
 }
 
+/* ---------- Laws helper (έλειπε) ---------- */
+
+function addLaw(text){
+  const lawText = String(text || '').trim();
+  if(!lawText) return;
+  lawsPane.style.display = 'block';
+  firstLawShown = true;
+  const div = document.createElement('div');
+  div.className = 'law-row';
+  div.innerHTML = lawText.replaceAll('\n','<br>');
+  lawsBody.appendChild(div);
+}
+
 /* ---------- Act 1 / Act 2 sequences ---------- */
 
 async function runAct1(){
@@ -949,7 +960,6 @@ function setFoyerSpeaker(idx1based){
   foyerBubble.style.backgroundColor = tint(vi.color,0.85);
   foyerBubble.style.borderColor = 'rgba(255,255,255,.9)';
 
-  // ίδια λογική / ίδια σημεία με 1η–2η πράξη
   const {x,y} = viewerAnchor(idx1based);
   foyerBubble.style.left = x+'px';
   foyerBubble.style.top  = (y-130)+'px';
@@ -978,21 +988,20 @@ function addFoyerRow(item){
   return new Promise(resolve=>{
     const viewer = item.viewer || 1;
     const vi = viewerInfo(viewer) || {};
-    const bgLeft  = tint(vi.color||'#ffffff',0.22);
-    const bgRight = tint(vi.color||'#ffffff',0.16);
+    const bgBase = tint(vi.color||'#ffffff',0.22);
 
     const row = document.createElement('tr');
 
     const l = document.createElement('td');
     l.className = 'cell cell-left';
     l.style.width = '60%';
-    l.style.background = bgLeft;
+    l.style.background = bgBase;
     l.style.borderLeft = '4px solid '+tint(vi.color||'#ffffff',0.85);
 
     const r = document.createElement('td');
     r.className = 'cell cell-right';
     r.style.width = '40%';
-    r.style.background = bgRight;
+    r.style.background = bgBase; // ίδιο φόντο με τον θεατή-ομιλητή
     r.style.borderLeft = '4px solid '+tint(vi.color||'#ffffff',0.55);
 
     if(isFormulaBlock(item.right)){
@@ -1029,7 +1038,6 @@ async function runFoyer(){
   boardRight.innerHTML = '';
   foyerBubble.style.display='none';
 
-  // ενιαίος μαυροπίνακας: ο boardLeft απλώνεται σε όλο το πλάτος
   boardLeft.style.gridColumn = '1 / span 2';
   boardRight.style.display   = 'none';
 
@@ -1276,8 +1284,8 @@ function initViewersAvatars(){
   const leftBand  = 0.18;
   const widthBand = 0.64;
 
-  const baseWidthPx  = 140; // CSS default
-  const refScale     = 0.5; // “κανονική” τιμή από το JSON
+  const baseWidthPx  = 140;
+  const refScale     = 0.5;
 
   items.forEach((div, idx) => {
     const v = VIEWERS[idx];
