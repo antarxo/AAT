@@ -192,8 +192,6 @@ const foyerBubble = document.getElementById('foyerBubble');
 
 const viewersStrip = document.getElementById('viewersStrip');
 
-let foyerScrollLinked = false;
-
 let t0 = performance.now();
 let lastFrame = t0;
 let playbackTime = 0;
@@ -843,32 +841,6 @@ function closeCurtainToAct2(){
 
 /* ---------- Foyer ---------- */
 
-function linkFoyerScroll(){
-  if (foyerScrollLinked) return;
-  foyerScrollLinked = true;
-
-  let syncingFromLeft = false;
-  let syncingFromRight = false;
-
-  boardLeft.addEventListener('scroll', () => {
-    if (syncingFromRight) {
-      syncingFromRight = false;
-      return;
-    }
-    syncingFromLeft = true;
-    boardRight.scrollTop = boardLeft.scrollTop;
-  });
-
-  boardRight.addEventListener('scroll', () => {
-    if (syncingFromLeft) {
-      syncingFromLeft = false;
-      return;
-    }
-    syncingFromRight = true;
-    boardLeft.scrollTop = boardRight.scrollTop;
-  });
-}
-
 function isFormulaBlock(text){
   const s = String(text||'').trim();
   if(!s) return false;
@@ -904,30 +876,18 @@ function typeWriterBoard(el, text, totalMs, done){
   const total = src.length || 1;
   const baseMs = (typeof totalMs==='number' && totalMs>0 ? totalMs : 3000);
   const step = Math.max(10, Math.round(baseMs/total));
-  let i = 0;
-
+  let i=0;
   (function tick(){
-    // Γράψε μέχρι τον i-οστό χαρακτήρα
     el.innerHTML = src.slice(0,i).replaceAll('\n','<br>');
-
     try{
-      // Το αριστερό είναι το "master" scroll
-      const maxScrollLeft = Math.max(0, boardLeft.scrollHeight - boardLeft.clientHeight);
-      const targetScroll  = maxScrollLeft;
-
-      boardLeft.scrollTop  = targetScroll;
-      boardRight.scrollTop = targetScroll;  // παίρνει ΑΚΡΙΒΩΣ το ίδιο offset
+      boardLeft.scrollTop  = boardLeft.scrollHeight;
+      boardRight.scrollTop = boardRight.scrollHeight;
     }catch(e){}
-
     i++;
-    if(i <= src.length){
-      setTimeout(tick, step);
-    }else if(typeof done === 'function'){
-      done();
-    }
+    if(i<=src.length) setTimeout(tick, step);
+    else if(typeof done==='function') done();
   })();
 }
-
 
 function addFoyerRow(item){
   return new Promise(resolve=>{
@@ -937,18 +897,17 @@ function addFoyerRow(item){
     const bgLeft  = tint(vi.color||'#ffffff',0.22);
     const bgRight = tint(vi.color||'#ffffff',0.16);
 
-    // Ένα block–κελί ανά πλευρά
     const l = document.createElement('div');
-    l.className = 'cell';
+    l.className='cell';
     l.style.background = bgLeft;
-    l.style.borderLeft = '4px solid ' + tint(vi.color||'#ffffff',0.85);
+    l.style.borderLeft = '4px solid '+tint(vi.color||'#ffffff',0.85);
 
     const r = document.createElement('div');
-    r.className = 'cell';
+    r.className='cell';
     r.style.background = bgRight;
-    r.style.borderLeft = '4px solid ' + tint(vi.color||'#ffffff',0.55);
+    r.style.borderLeft = '4px solid '+tint(vi.color||'#ffffff',0.55);
 
-    if (isFormulaBlock(item.right)){
+    if(isFormulaBlock(item.right)){
       r.classList.add('formula');
     }
 
@@ -960,43 +919,45 @@ function addFoyerRow(item){
     const typeMs  = item.typeMs  || 4000;
     const pauseMs = item.pauseMs || 1500;
 
-    // Όταν τελειώσουν ΚΑΙ τα δύο, φροντίζουμε να έχουν ίδιο "ύψος μπλοκ"
-    function finalizeBlock(){
-      requestAnimationFrame(()=>{
-        const lh = l.offsetHeight;
-        const rh = r.offsetHeight;
-        const maxH = Math.max(lh, rh);
-        if (maxH > 0){
-          l.style.minHeight = maxH + 'px';
-          r.style.minHeight = maxH + 'px';
-        }
-        setTimeout(resolve, pauseMs);
-      });
-    }
-
-    // Πρώτα ο λόγος (αριστερά), μετά οι σχέσεις (δεξιά, αν υπάρχουν)
-    typeWriterBoard(l, item.left || '', typeMs, ()=>{
-      const hasRight = (item.right || '').trim().length > 0;
-      if (hasRight){
-        typeWriterBoard(r, item.right, typeMs, ()=>{
-          finalizeBlock();
+    typeWriterBoard(l, item.left||'', typeMs, ()=>{
+      if((item.right||'').trim().length>0){
+        typeWriterBoard(r, item.right||'', typeMs, ()=>{
+          setTimeout(resolve, pauseMs);
         });
-      } else {
-        finalizeBlock();
+      }else{
+        setTimeout(resolve, pauseMs);
       }
     });
   });
 }
 
-async function runFoyer(){
-  linkFoyerScroll();
+/* ΝΕΟ: δέσιμο scroll μεταξύ boardLeft / boardRight */
+let foyerScrollBound = false;
+function bindFoyerScrollSync(){
+  if(foyerScrollBound) return;
+  if(!boardLeft || !boardRight) return;
+  foyerScrollBound = true;
 
+  let syncing = false;
+  function link(from, to){
+    from.addEventListener('scroll', ()=>{
+      if(syncing) return;
+      syncing = true;
+      to.scrollTop = from.scrollTop;
+      syncing = false;
+    });
+  }
+  link(boardLeft, boardRight);
+  link(boardRight, boardLeft);
+}
+
+async function runFoyer(){
   foyerEl.style.display='block';
   boardLeft.innerHTML  = '';
   boardRight.innerHTML = '';
   foyerBubble.style.display='none';
-  boardLeft.scrollTop  = 0;
-  boardRight.scrollTop = 0;
+
+  bindFoyerScrollSync();
 
   for(const item of FOYER){
     await addFoyerRow(item);
@@ -1171,7 +1132,7 @@ function animate(now){
 
   markerEl.style.left = hookX+'px';
   spotlight.style.background =
-    'radial-gradient(220px 140px at '+hookX+'px '+(stageH*0.62)+'px, rgba(255,255,220,65), rgba(255,255,255,0) 70%)';
+    'radial-gradient(220px 140px at '+hookX+'px '+(stageH*0.62)+'px, rgba(255,255,220,0.65), rgba(255,255,255,0) 70%)';
 
   const xMeters = (hookX - cx)/pxPerMeter;
   logMeasurement(tObs, xMeters);
@@ -1253,14 +1214,14 @@ function initViewersAvatars(){
     if (typeof v.heightVh === 'number') {
       div.style.height = v.heightVh + 'vh';
     } else {
-      div.style.height = ''; // καθάρισε ό,τι παλιό inline
+      div.style.height = '';
     }
 
     // Κάθετη θέση: ΑΠΟΚΛΕΙΣΤΙΚΑ από avatarDy (px)
     if (typeof v.avatarDy === 'number') {
       div.style.bottom = v.avatarDy + 'px';
     } else {
-      div.style.bottom = ''; // αν λείπει, bug εμφανές
+      div.style.bottom = '';
     }
 
     // Σμίκρυνση / μεγέθυνση: avatarScale
@@ -1268,10 +1229,10 @@ function initViewersAvatars(){
       const widthPx = baseWidthPx * (v.avatarScale / refScale);
       div.style.width = widthPx + 'px';
     } else {
-      div.style.width = ''; // άσε το CSS default 140px
+      div.style.width = '';
     }
 
-    // Οριζόντια θέση: xFrac από JSON, αλλιώς fallback
+    // Οριζόντια θέση: xFrac από JSON, αλλιώς ένα τίμιο fallback
     const fracDefault = (idx + 1) / (items.length + 1);
     const xFrac = (typeof v.xFrac === 'number') ? v.xFrac : fracDefault;
     const x = (leftBand + widthBand * xFrac) * stageW;
