@@ -125,8 +125,7 @@
 
   <div class="foyer" id="foyer">
     <div class="wrap">
-      <div class="board-left"  id="boardLeft"></div>
-      <div class="board-right" id="boardRight"></div>
+      <div class="board-left" id="boardLeft"></div>
     </div>
   </div>
 
@@ -187,7 +186,6 @@ const btnFoyerGo = document.getElementById('btnFoyerGo');
 
 const foyerEl     = document.getElementById('foyer');
 const boardLeft   = document.getElementById('boardLeft');
-const boardRight  = document.getElementById('boardRight');
 const foyerBubble = document.getElementById('foyerBubble');
 
 const viewersStrip = document.getElementById('viewersStrip');
@@ -859,14 +857,9 @@ function setFoyerSpeaker(idx1based){
   foyerBubble.style.backgroundColor = tint(vi.color,0.85);
   foyerBubble.style.borderColor = 'rgba(255,255,255,.9)';
 
-  // ίδια λογική / ίδια σημεία με 1η–2η πράξη,
-  // αλλά με δυνατότητα μικρομετακίνησης από το JSON (viewers[].chipDx / chipDy)
   const {x,y} = viewerAnchor(idx1based);
-  const dx = (vi && typeof vi.chipDx === 'number') ? vi.chipDx : 0;
-  const dy = (vi && typeof vi.chipDy === 'number') ? vi.chipDy : 130;
-
-  foyerBubble.style.left = (x + dx) + 'px';
-  foyerBubble.style.top  = (y - dy) + 'px';
+  foyerBubble.style.left = x+'px';
+  foyerBubble.style.top  = (y-130)+'px';
   foyerBubble.style.transform='translateX(-50%)';
   foyerBubble.style.display='block';
 }
@@ -881,7 +874,6 @@ function typeWriterBoard(el, text, totalMs, done){
     el.innerHTML = src.slice(0,i).replaceAll('\n','<br>');
     try{
       boardLeft.scrollTop  = boardLeft.scrollHeight;
-      boardRight.scrollTop = boardRight.scrollHeight;
     }catch(e){}
     i++;
     if(i<=src.length) setTimeout(tick, step);
@@ -893,17 +885,16 @@ function addFoyerRow(item){
   return new Promise(resolve=>{
     const viewer = item.viewer || 1;
     const vi = viewerInfo(viewer) || {};
-
     const bgLeft  = tint(vi.color||'#ffffff',0.22);
     const bgRight = tint(vi.color||'#ffffff',0.16);
 
     const l = document.createElement('div');
-    l.className='cell';
+    l.className='cell cell-left';
     l.style.background = bgLeft;
     l.style.borderLeft = '4px solid '+tint(vi.color||'#ffffff',0.85);
 
     const r = document.createElement('div');
-    r.className='cell';
+    r.className='cell cell-right';
     r.style.background = bgRight;
     r.style.borderLeft = '4px solid '+tint(vi.color||'#ffffff',0.55);
 
@@ -912,7 +903,7 @@ function addFoyerRow(item){
     }
 
     boardLeft.appendChild(l);
-    boardRight.appendChild(r);
+    boardLeft.appendChild(r);
 
     setFoyerSpeaker(viewer);
 
@@ -931,33 +922,10 @@ function addFoyerRow(item){
   });
 }
 
-/* ΝΕΟ: δέσιμο scroll μεταξύ boardLeft / boardRight */
-let foyerScrollBound = false;
-function bindFoyerScrollSync(){
-  if(foyerScrollBound) return;
-  if(!boardLeft || !boardRight) return;
-  foyerScrollBound = true;
-
-  let syncing = false;
-  function link(from, to){
-    from.addEventListener('scroll', ()=>{
-      if(syncing) return;
-      syncing = true;
-      to.scrollTop = from.scrollTop;
-      syncing = false;
-    });
-  }
-  link(boardLeft, boardRight);
-  link(boardRight, boardLeft);
-}
-
 async function runFoyer(){
   foyerEl.style.display='block';
   boardLeft.innerHTML  = '';
-  boardRight.innerHTML = '';
   foyerBubble.style.display='none';
-
-  bindFoyerScrollSync();
 
   for(const item of FOYER){
     await addFoyerRow(item);
@@ -1008,7 +976,6 @@ function resetShow(){
   foyerEl.style.display        ='none';
   foyerBubble.style.display    ='none';
   boardLeft.innerHTML          ='';
-  boardRight.innerHTML         ='';
   bubbleEl.style.display       ='none';
   bubbleEl.classList.remove('active','closing');
   actBubble.style.display      ='none';
@@ -1214,14 +1181,14 @@ function initViewersAvatars(){
     if (typeof v.heightVh === 'number') {
       div.style.height = v.heightVh + 'vh';
     } else {
-      div.style.height = '';
+      div.style.height = ''; // καθάρισε ό,τι παλιό inline
     }
 
     // Κάθετη θέση: ΑΠΟΚΛΕΙΣΤΙΚΑ από avatarDy (px)
     if (typeof v.avatarDy === 'number') {
       div.style.bottom = v.avatarDy + 'px';
     } else {
-      div.style.bottom = '';
+      div.style.bottom = ''; // αν λείπει, θα “φωνάζει” => bug εμφανές
     }
 
     // Σμίκρυνση / μεγέθυνση: avatarScale
@@ -1229,7 +1196,7 @@ function initViewersAvatars(){
       const widthPx = baseWidthPx * (v.avatarScale / refScale);
       div.style.width = widthPx + 'px';
     } else {
-      div.style.width = '';
+      div.style.width = ''; // άσε το CSS default 140px
     }
 
     // Οριζόντια θέση: xFrac από JSON, αλλιώς ένα τίμιο fallback
