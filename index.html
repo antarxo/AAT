@@ -191,8 +191,8 @@ const boardRight  = document.getElementById('boardRight');
 const foyerBubble = document.getElementById('foyerBubble');
 
 const viewersStrip = document.getElementById('viewersStrip');
-let foyerScrollLinked = false; // για να μη ξαναδένουμε event listeners
-  
+
+let foyerScrollLinked = false;
 
 let t0 = performance.now();
 let lastFrame = t0;
@@ -323,34 +323,13 @@ function drawXTChart(){
   uXT.setData(data);
 }
 
-/* ---------- Νόμοι & mini διαγράμματα ---------- */
+/* ---------- Mini διαγράμματα νόμων ---------- */
 
-function localizeTrig(txt){
-  return String(txt||'')
-    .replace(/sin/g,'ημ')
-    .replace(/cos/g,'συν')
-    .replace(/tan/g,'εφ');
+function sizeLawCanvas(can){
+  const w = lawCharts.clientWidth || 210;
+  can.width  = w;
+  can.height = 120;
 }
-
-function addLaw(txt){
-  const t = localizeTrig(txt);
-  if(!firstLawShown){
-    firstLawShown = true;
-    lawsPane.style.display='block';
-  }
-  const div = document.createElement('div');
-  div.className='law-line';
-  div.textContent = t;
-  lawsBody.appendChild(div);
-}
-
-function sizeLawCanvas(c){
-  const w = 210;
-  const h = 120;
-  c.width=w; c.height=h;
-}
-
-/* mini γραφήματα v(t), a(t), a–x με πλέγμα & τιμές */
 
 function drawVelocityChart(){
   if(!vCan) return;
@@ -359,30 +338,14 @@ function drawVelocityChart(){
   const h = vCan.height;
   ctx.clearRect(0,0,w,h);
 
-  const margin = 18;
-  const x0 = margin;
-  const x1 = w - margin;
-  const y0 = margin;
-  const y1 = h - margin;
+  const x0 = 40;
+  const y0 = 20;
+  const x1 = w-16;
+  const y1 = h-24;
 
-  ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+  ctx.strokeStyle = '#fff';
   ctx.lineWidth = 1;
-
-  const gridN = 4;
-  for(let i=0;i<=gridN;i++){
-    const gx = x0 + (i/gridN)*(x1-x0);
-    ctx.beginPath();
-    ctx.moveTo(gx,y0);
-    ctx.lineTo(gx,y1);
-    ctx.stroke();
-  }
-  for(let j=0;j<=gridN;j++){
-    const gy = y0 + (j/gridN)*(y1-y0);
-    ctx.beginPath();
-    ctx.moveTo(x0,gy);
-    ctx.lineTo(x1,gy);
-    ctx.stroke();
-  }
+  ctx.strokeRect(x0,y0,x1-x0,y1-y0);
 
   const midY = (y0+y1)/2;
 
@@ -399,23 +362,19 @@ function drawVelocityChart(){
   ctx.strokeStyle = '#90caf9';
   ctx.lineWidth = 2;
   ctx.stroke();
-
   ctx.beginPath();
   ctx.moveTo(x0,midY);
   ctx.lineTo(x1,midY);
-  ctx.strokeStyle = 'rgba(255,255,255,0.7)';
-  ctx.lineWidth = 1.2;
+  ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+  ctx.lineWidth = 1;
   ctx.stroke();
-
-  ctx.strokeStyle = '#fff';
-  ctx.strokeRect(x0,y0,x1-x0,y1-y0);
 
   ctx.fillStyle = '#fff';
   ctx.font = '11px system-ui';
-  ctx.fillText('υ–t', x0+4, y0+12);
+  ctx.fillText('υ–t', x0+4, y0+10);
   ctx.font = '10px system-ui';
-  ctx.fillText('t (s)', x1-30, y1+12);
-  ctx.fillText('υ (m/s)', x0-2, y0+12);
+  ctx.fillText('t (s)', x1-32, y1+10);
+  ctx.fillText('υ (m/s)', x0-4, y0+10);
 }
 
 function drawAccelerationChart(){
@@ -425,30 +384,14 @@ function drawAccelerationChart(){
   const h = aCan.height;
   ctx.clearRect(0,0,w,h);
 
-  const margin = 18;
-  const x0 = margin;
-  const x1 = w - margin;
-  const y0 = margin;
-  const y1 = h - margin;
+  const x0 = 40;
+  const y0 = 20;
+  const x1 = w-16;
+  const y1 = h-24;
 
-  ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+  ctx.strokeStyle = '#fff';
   ctx.lineWidth = 1;
-
-  const gridN = 4;
-  for(let i=0;i<=gridN;i++){
-    const gx = x0 + (i/gridN)*(x1-x0);
-    ctx.beginPath();
-    ctx.moveTo(gx,y0);
-    ctx.lineTo(gx,y1);
-    ctx.stroke();
-  }
-  for(let j=0;j<=gridN;j++){
-    const gy = y0 + (j/gridN)*(y1-y0);
-    ctx.beginPath();
-    ctx.moveTo(x0,gy);
-    ctx.lineTo(x1,gy);
-    ctx.stroke();
-  }
+  ctx.strokeRect(x0,y0,x1-x0,y1-y0);
 
   const midY = (y0+y1)/2;
   const N = 200;
@@ -469,19 +412,16 @@ function drawAccelerationChart(){
   ctx.beginPath();
   ctx.moveTo(x0,midY);
   ctx.lineTo(x1,midY);
-  ctx.strokeStyle = 'rgba(255,255,255,0.7)';
-  ctx.lineWidth = 1.2;
+  ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+  ctx.lineWidth = 1;
   ctx.stroke();
-
-  ctx.strokeStyle = '#fff';
-  ctx.strokeRect(x0,y0,x1-x0,y1-y0);
 
   ctx.fillStyle = '#fff';
   ctx.font = '11px system-ui';
-  ctx.fillText('α–t', x0+4, y0+12);
+  ctx.fillText('α–t', x0+4, y0+10);
   ctx.font = '10px system-ui';
-  ctx.fillText('t (s)', x1-30, y1+12);
-  ctx.fillText('α (m/s²)', x0-2, y0+12);
+  ctx.fillText('t (s)', x1-32, y1+10);
+  ctx.fillText('α (m/s²)', x0-4, y0+10);
 }
 
 function drawAxChart(){
@@ -491,30 +431,14 @@ function drawAxChart(){
   const h = axCan.height;
   ctx.clearRect(0,0,w,h);
 
-  const margin = 20;
-  const x0 = margin;
-  const x1 = w - margin;
-  const y0 = margin;
-  const y1 = h - margin;
+  const x0 = 40;
+  const y0 = 20;
+  const x1 = w-16;
+  const y1 = h-24;
 
-  ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+  ctx.strokeStyle = '#fff';
   ctx.lineWidth = 1;
-
-  const gridN = 4;
-  for(let i=0;i<=gridN;i++){
-    const gx = x0 + (i/gridN)*(x1-x0);
-    ctx.beginPath();
-    ctx.moveTo(gx,y0);
-    ctx.lineTo(gx,y1);
-    ctx.stroke();
-  }
-  for(let j=0;j<=gridN;j++){
-    const gy = y0 + (j/gridN)*(y1-y0);
-    ctx.beginPath();
-    ctx.moveTo(x0,gy);
-    ctx.lineTo(x1,gy);
-    ctx.stroke();
-  }
+  ctx.strokeRect(x0,y0,x1-x0,y1-y0);
 
   const xMid = (x0+x1)/2;
   const yMid = (y0+y1)/2;
@@ -524,8 +448,8 @@ function drawAxChart(){
   ctx.lineTo(xMid,y1);
   ctx.moveTo(x0,yMid);
   ctx.lineTo(x1,yMid);
-  ctx.strokeStyle = 'rgba(255,255,255,0.8)';
-  ctx.lineWidth = 1.2;
+  ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+  ctx.lineWidth = 1;
   ctx.stroke();
 
   const Amax = omega*omega*A_m;
@@ -556,11 +480,11 @@ function drawAxChart(){
 
   ctx.fillStyle = '#fff';
   ctx.font = '11px system-ui';
-  ctx.fillText('a–x', x0+4, y0+12);
+  ctx.fillText('a–x', x0+4, y0+10);
 
   ctx.font = '10px system-ui';
-  ctx.fillText('x (m)', x1-30, yMid-4);
-  ctx.fillText('a (m/s²)', xMid+6, y0+12);
+  ctx.fillText('x (m)', x1-32, yMid-4);
+  ctx.fillText('a (m/s²)', xMid+6, y0+10);
 
   ctx.fillText('a = -ω²·x', x0+4, y1-4);
   ctx.fillText('A = '+A_m.toFixed(2)+' m', x0+4, y1-18);
@@ -570,25 +494,25 @@ function drawAxChart(){
 function ensureVelocityChart(){
   if(!vCan){
     vCan = document.createElement('canvas');
-    sizeLawCanvas(vCan);
     lawCharts.appendChild(vCan);
   }
+  sizeLawCanvas(vCan);
   drawVelocityChart();
 }
 function ensureAccelerationChart(){
   if(!aCan){
     aCan = document.createElement('canvas');
-    sizeLawCanvas(aCan);
     lawCharts.appendChild(aCan);
   }
+  sizeLawCanvas(aCan);
   drawAccelerationChart();
 }
 function ensureAxChart(){
   if(!axCan){
     axCan = document.createElement('canvas');
-    sizeLawCanvas(axCan);
     lawCharts.appendChild(axCan);
   }
+  sizeLawCanvas(axCan);
   drawAxChart();
 }
 
@@ -642,19 +566,12 @@ function tint(hex, alpha){
   return 'rgba('+r+','+g+','+b+','+alpha+')';
 }
 
-/* === ΕΔΩ: actBubble παίρνει chipDx/chipDy από JSON, αλλιώς παλιά συμπεριφορά === */
 function showSpeakerChip(idx1based){
   const {x,y,info} = viewerAnchor(idx1based);
   if(!info) return;
-
-  // Προαιρετικά offsets από το JSON (viewers[].chipDx / chipDy).
-  // Αν δεν δοθούν, κρατάμε την παλιά συμπεριφορά: στο ίδιο x, 130px πάνω.
-  const dx = (info && typeof info.chipDx === 'number') ? info.chipDx : 0;
-  const dy = (info && typeof info.chipDy === 'number') ? info.chipDy : 130;
-
   actBubble.textContent = info.name_gr || ('ΘΕΑΤΗΣ '+idx1based);
-  actBubble.style.left = (x + dx) + 'px';
-  actBubble.style.top  = (y - dy) + 'px';
+  actBubble.style.left = x+'px';
+  actBubble.style.top  = (y-130)+'px';
   actBubble.style.transform='translateX(-50%)';
   actBubble.style.backgroundColor = tint(info.color,0.9);
   actBubble.style.display='block';
@@ -926,6 +843,32 @@ function closeCurtainToAct2(){
 
 /* ---------- Foyer ---------- */
 
+function linkFoyerScroll(){
+  if (foyerScrollLinked) return;
+  foyerScrollLinked = true;
+
+  let syncingFromLeft = false;
+  let syncingFromRight = false;
+
+  boardLeft.addEventListener('scroll', () => {
+    if (syncingFromRight) {
+      syncingFromRight = false;
+      return;
+    }
+    syncingFromLeft = true;
+    boardRight.scrollTop = boardLeft.scrollTop;
+  });
+
+  boardRight.addEventListener('scroll', () => {
+    if (syncingFromLeft) {
+      syncingFromLeft = false;
+      return;
+    }
+    syncingFromRight = true;
+    boardLeft.scrollTop = boardRight.scrollTop;
+  });
+}
+
 function isFormulaBlock(text){
   const s = String(text||'').trim();
   if(!s) return false;
@@ -956,33 +899,6 @@ function setFoyerSpeaker(idx1based){
   foyerBubble.style.display='block';
 }
 
-function linkFoyerScroll(){
-  if (foyerScrollLinked) return;
-  foyerScrollLinked = true;
-
-  let syncingFromLeft = false;
-  let syncingFromRight = false;
-
-  boardLeft.addEventListener('scroll', () => {
-    if (syncingFromRight) {
-      syncingFromRight = false;
-      return;
-    }
-    syncingFromLeft = true;
-    boardRight.scrollTop = boardLeft.scrollTop;
-  });
-
-  boardRight.addEventListener('scroll', () => {
-    if (syncingFromLeft) {
-      syncingFromLeft = false;
-      return;
-    }
-    syncingFromRight = true;
-    boardLeft.scrollTop = boardRight.scrollTop;
-  });
-}
-
-  
 function typeWriterBoard(el, text, totalMs, done){
   const src = String(text||'').replaceAll('sqrt(','√(');
   const total = src.length || 1;
@@ -994,24 +910,9 @@ function typeWriterBoard(el, text, totalMs, done){
     el.innerHTML = src.slice(0, i).replaceAll('\n','<br>');
 
     try{
-      // σε ποιο board ανήκει αυτό το κελί;
-      const parent = el.parentElement;
-      const isLeftCell  = (parent === boardLeft);
-      const isRightCell = (parent === boardRight);
-
-      if (isLeftCell){
-        // αφήνουμε το αριστερό να πάει στο "πάτο" του...
-        boardLeft.scrollTop = boardLeft.scrollHeight;
-        // ...και ο δεξιός πίνακας ακολουθεί την ίδια κατακόρυφη θέση
-        boardRight.scrollTop = boardLeft.scrollTop;
-      } else if (isRightCell){
-        boardRight.scrollTop = boardRight.scrollHeight;
-        boardLeft.scrollTop  = boardRight.scrollTop;
-      } else {
-        // fallback, σε περίπτωση που το el δεν είναι direct child
-        boardLeft.scrollTop  = boardLeft.scrollHeight;
-        boardRight.scrollTop = boardLeft.scrollTop;
-      }
+      // auto–scroll πάντα με βάση το boardLeft, δεξιά ακολουθεί
+      boardLeft.scrollTop = boardLeft.scrollHeight;
+      boardRight.scrollTop = boardLeft.scrollTop;
     }catch(e){}
 
     i++;
@@ -1031,7 +932,7 @@ function addFoyerRow(item){
     const bgLeft  = tint(vi.color||'#ffffff',0.22);
     const bgRight = tint(vi.color||'#ffffff',0.16);
 
-    // Δημιουργία ενός block-κελιού ανά πλευρά
+    // Ένα block–κελί ανά πλευρά
     const l = document.createElement('div');
     l.className = 'cell';
     l.style.background = bgLeft;
@@ -1042,27 +943,25 @@ function addFoyerRow(item){
     r.style.background = bgRight;
     r.style.borderLeft = '4px solid ' + tint(vi.color||'#ffffff',0.55);
 
-    if (isFormulaBlock(item.right)) {
+    if (isFormulaBlock(item.right)){
       r.classList.add('formula');
     }
 
     boardLeft.appendChild(l);
     boardRight.appendChild(r);
 
-    // "Μπαλονάκι" ομιλητή
     setFoyerSpeaker(viewer);
 
     const typeMs  = item.typeMs  || 4000;
     const pauseMs = item.pauseMs || 1500;
 
-    // Όταν τελειώσουν ΚΑΙ τα δύο, ευθυγραμμίζουμε τα ύψη
+    // Όταν τελειώσουν ΚΑΙ τα δύο, φροντίζουμε να έχουν ίδιο "ύψος μπλοκ"
     function finalizeBlock(){
-      // Δίνουμε ένα frame να "κάτσει" το layout
       requestAnimationFrame(()=>{
         const lh = l.offsetHeight;
         const rh = r.offsetHeight;
         const maxH = Math.max(lh, rh);
-        if (maxH > 0) {
+        if (maxH > 0){
           l.style.minHeight = maxH + 'px';
           r.style.minHeight = maxH + 'px';
         }
@@ -1070,10 +969,10 @@ function addFoyerRow(item){
       });
     }
 
-    // Πρώτα γράφουμε αριστερά, μετά δεξιά (αν υπάρχει)
+    // Πρώτα ο λόγος (αριστερά), μετά οι σχέσεις (δεξιά, αν υπάρχουν)
     typeWriterBoard(l, item.left || '', typeMs, ()=>{
       const hasRight = (item.right || '').trim().length > 0;
-      if (hasRight) {
+      if (hasRight){
         typeWriterBoard(r, item.right, typeMs, ()=>{
           finalizeBlock();
         });
@@ -1084,13 +983,15 @@ function addFoyerRow(item){
   });
 }
 
-
 async function runFoyer(){
-  linkFoyerScroll();   // Δένει ΜΙΑ ΦΟΡΑ τα scrolls αριστερά–δεξιά
+  linkFoyerScroll();
+
   foyerEl.style.display='block';
   boardLeft.innerHTML  = '';
   boardRight.innerHTML = '';
   foyerBubble.style.display='none';
+  boardLeft.scrollTop  = 0;
+  boardRight.scrollTop = 0;
 
   for(const item of FOYER){
     await addFoyerRow(item);
@@ -1265,7 +1166,7 @@ function animate(now){
 
   markerEl.style.left = hookX+'px';
   spotlight.style.background =
-    'radial-gradient(220px 140px at '+hookX+'px '+(stageH*0.62)+'px, rgba(255,255,220,.65), rgba(255,255,255,0) 70%)';
+    'radial-gradient(220px 140px at '+hookX+'px '+(stageH*0.62)+'px, rgba(255,255,220,65), rgba(255,255,255,0) 70%)';
 
   const xMeters = (hookX - cx)/pxPerMeter;
   logMeasurement(tObs, xMeters);
@@ -1354,7 +1255,7 @@ function initViewersAvatars(){
     if (typeof v.avatarDy === 'number') {
       div.style.bottom = v.avatarDy + 'px';
     } else {
-      div.style.bottom = ''; // αν λείπει, θα “φωνάζει” => bug εμφανές
+      div.style.bottom = ''; // αν λείπει, bug εμφανές
     }
 
     // Σμίκρυνση / μεγέθυνση: avatarScale
@@ -1365,7 +1266,7 @@ function initViewersAvatars(){
       div.style.width = ''; // άσε το CSS default 140px
     }
 
-    // Οριζόντια θέση: xFrac από JSON, αλλιώς ένα τίμιο fallback
+    // Οριζόντια θέση: xFrac από JSON, αλλιώς fallback
     const fracDefault = (idx + 1) / (items.length + 1);
     const xFrac = (typeof v.xFrac === 'number') ? v.xFrac : fracDefault;
     const x = (leftBand + widthBand * xFrac) * stageW;
@@ -1421,4 +1322,4 @@ function measureSpringNaturalSize(){
 }
 </script>
 </body>
-</html
+</html>
