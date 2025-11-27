@@ -141,7 +141,7 @@ let ACT1 = [];
 let ACT2 = [];
 let FOYER = [];
 
-/* ---------- Στοιχεία σκηνής ---------- */
+/* ---------- Φυσική / σκηνή ---------- */
 
 const stage        = document.getElementById('stage');
 const springEl     = document.getElementById('spring');
@@ -192,28 +192,17 @@ const foyerBubble = document.getElementById('foyerBubble');
 
 const viewersStrip = document.getElementById('viewersStrip');
 
-let foyerScrollLinked = false;
-
-/* Φυσικά μεγέθη */
-
-const m        = 70;
-const T        = 6.0;
-const A_m      = 3.0;
-const omega    = 2 * Math.PI / T;
-const D        = Math.round(m * omega * omega);
-const pxPerMeter = 50;
-const A_px       = pxPerMeter * A_m;
-
-let t0                   = performance.now();
-let lastFrame            = performance.now();
-let playbackTime         = 0;
-let obsStarted           = false;
+let t0 = performance.now();
+let lastFrame = t0;
+let playbackTime = 0;
+let obsStarted = false;
 let obsStartPlaybackOffset = 0;
-let mode                 = 'run';
 
-let lastSampleObsTime    = -Infinity;
-let sampleInterval       = 0.4;
-let measureRowIdx        = 0;
+let lastSampleObsTime = -Infinity;
+let sampleInterval = 0.4;
+let measureRowIdx = 0;
+
+let mode = 'run';
 
 let uXT = null;
 let vCan = null;
@@ -222,9 +211,16 @@ let axCan = null;
 
 let firstLawShown = false;
 
-let ghost        = null;
-let ghostSpring  = null;
-let ghostActive  = false;
+const m   = 70;
+const T   = 6.0;
+const A_m = 3.0;
+const pxPerMeter = 50;
+const omega = 2*Math.PI/T;
+const A_px  = A_m*pxPerMeter;
+
+let ghost = null;
+let ghostSpring = null;
+let ghostActive = false;
 
 let actorFloorBottomPx = null;
 let springNaturalWidth  = 0;
@@ -325,36 +321,13 @@ function drawXTChart(){
   uXT.setData(data);
 }
 
-/* ---------- Νόμοι & mini διαγράμματα ---------- */
+/* ---------- Mini διαγράμματα νόμων ---------- */
 
-function localizeTrig(txt){
-  return String(txt||'')
-    .replace(/sin/g,'ημ')
-    .replace(/cos/g,'συν')
-    .replace(/tan/g,'εφ');
+function sizeLawCanvas(can){
+  const w = lawCharts.clientWidth || 210;
+  can.width  = w;
+  can.height = 120;
 }
-
-function addLaw(txt){
-  const t = localizeTrig(txt);
-  if(!firstLawShown){
-    firstLawShown = true;
-    lawsPane.style.display='block';
-  }
-  const div = document.createElement('div');
-  div.className='law-line';
-  div.textContent = t;
-  lawsBody.appendChild(div);
-}
-
-function sizeLawCanvas(c){
-  const w = 210;
-  const h = 120;
-  c.width=w; c.height=h;
-  c.style.width=w+'px';
-  c.style.height=h+'px';
-}
-
-/* mini γραφήματα v(t), a(t), a–x με πλέγμα & τιμές */
 
 function drawVelocityChart(){
   if(!vCan) return;
@@ -363,76 +336,43 @@ function drawVelocityChart(){
   const h = vCan.height;
   ctx.clearRect(0,0,w,h);
 
-  const margin = 18;
-  const x0 = margin;
-  const x1 = w - margin;
-  const y0 = h/2;
+  const x0 = 40;
+  const y0 = 20;
+  const x1 = w-16;
+  const y1 = h-24;
 
-  const vmax = omega * A_m;
-  const yAmp = (h/2 - margin);
-  const scaleV = yAmp / (1.1*vmax);
-
-  // πλέγμα
-  ctx.save();
-  ctx.strokeStyle = 'rgba(255,255,255,0.18)';
+  ctx.strokeStyle = '#fff';
   ctx.lineWidth = 1;
-  ctx.setLineDash([3,3]);
+  ctx.strokeRect(x0,y0,x1-x0,y1-y0);
 
-  // κάθετες (t)
-  const tTicks = [0, T/2, T];
-  tTicks.forEach(t=>{
-    const xf = x0 + (x1-x0)*(t/T);
-    ctx.beginPath();
-    ctx.moveTo(xf,margin);
-    ctx.lineTo(xf,h-margin);
-    ctx.stroke();
-  });
+  const midY = (y0+y1)/2;
 
-  // οριζόντιες (v)
-  const vTicks = [-vmax,0,+vmax];
-  vTicks.forEach(v=>{
-    const yf = y0 - v*scaleV;
-    ctx.beginPath();
-    ctx.moveTo(x0,yf);
-    ctx.lineTo(x1,yf);
-    ctx.stroke();
-  });
-
-  ctx.restore();
-
-  // άξονες
-  ctx.strokeStyle = 'rgba(255,255,255,0.6)';
-  ctx.lineWidth = 1;
-  ctx.setLineDash([]);
-  ctx.beginPath();
-  ctx.moveTo(x0,y0);
-  ctx.lineTo(x1,y0);
-  ctx.moveTo(x0,margin);
-  ctx.lineTo(x0,h-margin);
-  ctx.stroke();
-
-  // καμπύλη v(t)
   const N = 200;
-  ctx.strokeStyle = '#ffd27a';
-  ctx.lineWidth = 2;
   ctx.beginPath();
   for(let i=0;i<=N;i++){
     const tloc = (i/N)*T;
+    const x = x0 + (tloc/T)*(x1-x0);
     const v = omega*A_m*Math.cos(omega*(tloc+obsStartPlaybackOffset));
-    const x = x0 + (x1-x0)*(tloc/T);
-    const y = y0 - v*scaleV;
+    const maxV = omega*A_m;
+    const y = midY - (v/maxV)*(y1-y0)/2;
     if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
   }
+  ctx.strokeStyle = '#90caf9';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(x0,midY);
+  ctx.lineTo(x1,midY);
+  ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+  ctx.lineWidth = 1;
   ctx.stroke();
 
-  // labels
   ctx.fillStyle = '#fff';
   ctx.font = '11px system-ui';
-  ctx.fillText('υ–t', x0+4, margin+10);
-
+  ctx.fillText('υ–t', x0+4, y0+10);
   ctx.font = '10px system-ui';
-  ctx.fillText('t (s)', x1-30, h-margin+10);
-  ctx.fillText('υ (m/s)', x0-2, margin+10);
+  ctx.fillText('t (s)', x1-32, y1+10);
+  ctx.fillText('υ (m/s)', x0-4, y0+10);
 }
 
 function drawAccelerationChart(){
@@ -442,74 +382,44 @@ function drawAccelerationChart(){
   const h = aCan.height;
   ctx.clearRect(0,0,w,h);
 
-  const margin = 18;
-  const x0 = margin;
-  const x1 = w - margin;
-  const y0 = h/2;
+  const x0 = 40;
+  const y0 = 20;
+  const x1 = w-16;
+  const y1 = h-24;
 
-  const amax = omega*omega*A_m;
-  const yAmp = (h/2 - margin);
-  const scaleA = yAmp / (1.1*amax);
-
-  // πλέγμα
-  ctx.save();
-  ctx.strokeStyle = 'rgba(255,255,255,0.18)';
+  ctx.strokeStyle = '#fff';
   ctx.lineWidth = 1;
-  ctx.setLineDash([3,3]);
+  ctx.strokeRect(x0,y0,x1-x0,y1-y0);
 
-  const tTicks = [0, T/2, T];
-  tTicks.forEach(t=>{
-    const xf = x0 + (x1-x0)*(t/T);
-    ctx.beginPath();
-    ctx.moveTo(xf,margin);
-    ctx.lineTo(xf,h-margin);
-    ctx.stroke();
-  });
-
-  const aTicks = [-amax,0,+amax];
-  aTicks.forEach(a=>{
-    const yf = y0 - a*scaleA;
-    ctx.beginPath();
-    ctx.moveTo(x0,yf);
-    ctx.lineTo(x1,yf);
-    ctx.stroke();
-  });
-
-  ctx.restore();
-
-  // άξονες
-  ctx.strokeStyle = 'rgba(255,255,255,0.6)';
-  ctx.lineWidth = 1;
-  ctx.setLineDash([]);
-  ctx.beginPath();
-  ctx.moveTo(x0,y0);
-  ctx.lineTo(x1,y0);
-  ctx.moveTo(x0,margin);
-  ctx.lineTo(x0,h-margin);
-  ctx.stroke();
-
-  // καμπύλη a(t)
+  const midY = (y0+y1)/2;
   const N = 200;
-  ctx.strokeStyle = '#ffab91';
-  ctx.lineWidth = 2;
+
   ctx.beginPath();
   for(let i=0;i<=N;i++){
     const tloc = (i/N)*T;
+    const x = x0 + (tloc/T)*(x1-x0);
     const a = -omega*omega*A_m*Math.sin(omega*(tloc+obsStartPlaybackOffset));
-    const x = x0 + (x1-x0)*(tloc/T);
-    const y = y0 - a*scaleA;
+    const maxA = omega*omega*A_m;
+    const y = midY - (a/maxA)*(y1-y0)/2;
     if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
   }
+  ctx.strokeStyle = '#ffab91';
+  ctx.lineWidth = 2;
   ctx.stroke();
 
-  // labels
+  ctx.beginPath();
+  ctx.moveTo(x0,midY);
+  ctx.lineTo(x1,midY);
+  ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
   ctx.fillStyle = '#fff';
   ctx.font = '11px system-ui';
-  ctx.fillText('α–t', x0+4, margin+10);
-
+  ctx.fillText('α–t', x0+4, y0+10);
   ctx.font = '10px system-ui';
-  ctx.fillText('t (s)', x1-30, h-margin+10);
-  ctx.fillText('α (m/s²)', x0-2, margin+10);
+  ctx.fillText('t (s)', x1-32, y1+10);
+  ctx.fillText('α (m/s²)', x0-4, y0+10);
 }
 
 function drawAxChart(){
@@ -519,69 +429,53 @@ function drawAxChart(){
   const h = axCan.height;
   ctx.clearRect(0,0,w,h);
 
-  const margin = 20;
-  const x0 = margin;
-  const x1 = w - margin;
-  const y0 = margin;
-  const y1 = h - margin;
+  const x0 = 40;
+  const y0 = 20;
+  const x1 = w-16;
+  const y1 = h-24;
 
-  const xMid = (x0 + x1)/2;
-  const yMid = (y0 + y1)/2;
-
-  const amax = omega * omega * A_m;
-
-  // κλίμακες
-  const pxPerX = (x1 - x0) / (2 * A_m);      // από -A έως +A
-  const pxPerA = (y1 - y0) / (2 * amax);     // από -amax έως +amax
-
-  // πλέγμα
-  ctx.save();
-  ctx.strokeStyle = 'rgba(255,255,255,0.18)';
+  ctx.strokeStyle = '#fff';
   ctx.lineWidth = 1;
-  ctx.setLineDash([3,3]);
+  ctx.strokeRect(x0,y0,x1-x0,y1-y0);
 
-  const xTicks = [-A_m, -A_m/2, 0, A_m/2, A_m];
-  xTicks.forEach(x=>{
-    const cx = xMid + x*pxPerX;
-    ctx.beginPath();
-    ctx.moveTo(cx,y0);
-    ctx.lineTo(cx,y1);
-    ctx.stroke();
-  });
+  const xMid = (x0+x1)/2;
+  const yMid = (y0+y1)/2;
 
-  const aTicks = [-amax, -amax/2, 0, amax/2, amax];
-  aTicks.forEach(a=>{
-    const cy = yMid - a*pxPerA;
-    ctx.beginPath();
-    ctx.moveTo(x0,cy);
-    ctx.lineTo(x1,cy);
-    ctx.stroke();
-  });
-
-  ctx.restore();
-
-  // άξονες
-  ctx.strokeStyle = 'rgba(255,255,255,0.6)';
-  ctx.lineWidth = 1;
-  ctx.setLineDash([]);
   ctx.beginPath();
   ctx.moveTo(xMid,y0);
   ctx.lineTo(xMid,y1);
   ctx.moveTo(x0,yMid);
   ctx.lineTo(x1,yMid);
+  ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+  ctx.lineWidth = 1;
   ctx.stroke();
 
-  // ευθεία a = -ω² x
+  const Amax = omega*omega*A_m;
+  const amax = Amax;
+
+  const xL = -A_m;
+  const aL = +omega*omega*xL;
+  const xR =  A_m;
+  const aR = -omega*omega*xR;
+
+  function toCanvas(x,a){
+    const nx = (x + A_m)/(2*A_m);
+    const ny = (a/amax + 1)/2;
+    const cx = x0 + nx*(x1-x0);
+    const cy = y1 - ny*(y1-y0);
+    return {cx,cy};
+  }
+
+  const pL = toCanvas(xL,aL);
+  const pR = toCanvas(xR,aR);
+
   ctx.strokeStyle = '#ffd27a';
   ctx.lineWidth = 2;
   ctx.beginPath();
-  const xL = -A_m;
-  const xR = +A_m;
-  ctx.moveTo(xMid + xL*pxPerX, yMid - (-omega*omega*xL)*pxPerA);
-  ctx.lineTo(xMid + xR*pxPerX, yMid - (-omega*omega*xR)*pxPerA);
+  ctx.moveTo(pL.cx, pL.cy);
+  ctx.lineTo(pR.cx, pR.cy);
   ctx.stroke();
 
-  // labels
   ctx.fillStyle = '#fff';
   ctx.font = '11px system-ui';
   ctx.fillText('a–x', x0+4, y0+10);
@@ -963,41 +857,13 @@ function setFoyerSpeaker(idx1based){
   if(!vi) return;
   foyerBubble.textContent = vi.name_gr || ('Θεατής '+idx1based);
   foyerBubble.style.backgroundColor = tint(vi.color,0.85);
-  foyerBubble.style.borderColor = 'rgba(255,255,255,.9)';
+  foyerBubble.style.borderColor = 'rgba(255,255,255,9)';
 
   const {x,y} = viewerAnchor(idx1based);
   foyerBubble.style.left = x+'px';
   foyerBubble.style.top  = (y-130)+'px';
   foyerBubble.style.transform='translateX(-50%)';
   foyerBubble.style.display='block';
-}
-
-/* Δέσιμο scrolling αριστερού–δεξιού πίνακα στο φουαγιέ */
-
-function linkFoyerScroll(){
-  if(foyerScrollLinked) return;
-  foyerScrollLinked = true;
-
-  let syncingFromLeft = false;
-  let syncingFromRight = false;
-
-  boardLeft.addEventListener('scroll', ()=>{
-    if(syncingFromRight){
-      syncingFromRight = false;
-      return;
-    }
-    syncingFromLeft = true;
-    boardRight.scrollTop = boardLeft.scrollTop;
-  });
-
-  boardRight.addEventListener('scroll', ()=>{
-    if(syncingFromLeft){
-      syncingFromLeft = false;
-      return;
-    }
-    syncingFromRight = true;
-    boardLeft.scrollTop = boardRight.scrollTop;
-  });
 }
 
 function typeWriterBoard(el, text, totalMs, done){
@@ -1022,7 +888,6 @@ function addFoyerRow(item){
   return new Promise(resolve=>{
     const viewer = item.viewer || 1;
     const vi = viewerInfo(viewer) || {};
-
     const bgLeft  = tint(vi.color||'#ffffff',0.22);
     const bgRight = tint(vi.color||'#ffffff',0.16);
 
@@ -1061,7 +926,6 @@ function addFoyerRow(item){
 }
 
 async function runFoyer(){
-  linkFoyerScroll();
   foyerEl.style.display='block';
   boardLeft.innerHTML  = '';
   boardRight.innerHTML = '';
@@ -1091,7 +955,7 @@ btnPlay.addEventListener('click', ()=>{
 
 function resetShow(){
   t0        = performance.now();
-  lastFrame = performance.now();
+  lastFrame = t0;
   playbackTime = 0;
   obsStarted = false;
   obsStartPlaybackOffset = 0;
@@ -1240,7 +1104,7 @@ function animate(now){
 
   markerEl.style.left = hookX+'px';
   spotlight.style.background =
-    'radial-gradient(220px 140px at '+hookX+'px '+(stageH*0.62)+'px, rgba(255,255,220,.65), rgba(255,255,255,0) 70%)';
+    'radial-gradient(220px 140px at '+hookX+'px '+(stageH*0.62)+'px, rgba(255,255,220,65), rgba(255,255,255,0) 70%)';
 
   const xMeters = (hookX - cx)/pxPerMeter;
   logMeasurement(tObs, xMeters);
@@ -1303,7 +1167,7 @@ function initViewersAvatars(){
   const leftBand  = 0.18;
   const widthBand = 0.64;
 
-  const baseWidthPx  = 140; // CSS default
+  const baseWidthPx  = 140; // CSS default (ό,τι γράφει το aat-stage.css)
   const refScale     = 0.5; // “κανονική” τιμή από το JSON
 
   items.forEach((div, idx) => {
@@ -1313,29 +1177,34 @@ function initViewersAvatars(){
       return;
     }
 
+    // εικόνα από JSON
     if (v.img) {
       div.style.backgroundImage = 'url("'+v.img+'")';
     }
 
+    // Ύψος: μόνο αν δίνεται ρητά από JSON (αλλιώς αφήνουμε το CSS)
     if (typeof v.heightVh === 'number') {
       div.style.height = v.heightVh + 'vh';
     } else {
-      div.style.height = '';
+      div.style.height = ''; // καθάρισε ό,τι παλιό inline
     }
 
+    // Κάθετη θέση: ΑΠΟΚΛΕΙΣΤΙΚΑ από avatarDy (px)
     if (typeof v.avatarDy === 'number') {
       div.style.bottom = v.avatarDy + 'px';
     } else {
-      div.style.bottom = '';
+      div.style.bottom = ''; // αν λείπει, θα “φωνάζει” => bug εμφανές
     }
 
+    // Σμίκρυνση / μεγέθυνση: avatarScale
     if (typeof v.avatarScale === 'number') {
       const widthPx = baseWidthPx * (v.avatarScale / refScale);
       div.style.width = widthPx + 'px';
     } else {
-      div.style.width = '';
+      div.style.width = ''; // άσε το CSS default 140px
     }
 
+    // Οριζόντια θέση: xFrac από JSON, αλλιώς ένα τίμιο fallback
     const fracDefault = (idx + 1) / (items.length + 1);
     const xFrac = (typeof v.xFrac === 'number') ? v.xFrac : fracDefault;
     const x = (leftBand + widthBand * xFrac) * stageW;
@@ -1344,6 +1213,7 @@ function initViewersAvatars(){
     div.style.display = 'block';
   });
 }
+
 
 /* ---------- Load dialogs-gr.json & bootstrap ---------- */
 
