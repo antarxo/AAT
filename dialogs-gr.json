@@ -67,149 +67,156 @@
     }
   ],
 
-  "act1": [
-    {
-      "viewer": 1,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 0,
-      "left": "Ο m<sub>1</sub>D<sub>1</sub> ήταν ήδη σε κίνηση!",
-      "right": ""
-    },
-    {
-      "viewer": 2,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 0,
-      "left": "…χρονική στιγμή t<sub>0</sub>=0 με το άνοιγμα της κουρτίνας!",
-      "right": ""
-    },
-    {
-      "viewer": 4,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 0,
-      "left": "… και η κίνηση είναι ευθύγραμμη και παλινδρομική!",
-      "right": ""
-    },
-    {
-      "viewer": 5,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 0,
-      "left": "… και επαναλαμβανόμενη, περιοδική, άρα ταλάντωση!",
-      "right": ""
-    },
-    {
-      "viewer": 3,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 0,
-      "left": "Μήπως είναι Απλή Αρμονική Ταλάντωση;",
-      "right": ""
-    },
-    {
-      "viewer": 2,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 0,
-      "left": "… αν είναι Α.Α.Τ. τότε οι τιμές που μετράμε πρέπει να επαληθεύουν την <b>x=Αημ(ωt+φ₀)!</b>",
-      "right": "",
-      "alsoParams": true
-      },
-    {
-      "viewer": 4,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 0,
-      "left": "… αν κάνουμε διάγραμμα x–t, πρέπει να το επιβεβαιώσει!",
-      "right": "",
-      "graph": "xt"
-    },
-{
-  "viewer": 3,
-  "xShift": 0,
-  "yOffset": 0,
-  "typeMs": 0,
-  "pauseMs": 0,
-  "left": "…όντως είναι ΑΑΤ με A={{A}} m!",
-  "right": ""
-},
-{
-  "viewer": 5,
-  "xShift": 0,
-  "yOffset": 0,
-  "typeMs": 0,
-  "pauseMs": 0,
-  "left": "… και T={{T}} s και επομένως ω={{omega}} rad/s!",
-  "right": ""
-},
+ "act1": [
   {
-  "viewer": 1,
-  "xShift": 0,
-  "yOffset": 0,
-  "typeMs": 0,
-  "pauseMs": 0,
-  "left": "…  και αφού το x₀={{x0}} m υπάρχει φ₀={{phi_deg}}°. Χαχα, ένα το κρατούμενο!",
-  "right": "x=Αημ(ωt+φ₀) (1)"
-},
-      {
-      "viewer": 2,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 400,
-      "left": "… επομένως η ταχύτητα δίνεται από τον νόμο <b>v=ωA·συν(ωt+φ₀)!</b>",
-      "right": "v=ωA·συν(ωt+φ₀) (2)",
-      "plot": "v"
-    },
-    {
-      "viewer": 4,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 400,
-      "left": "…και η επιτάχυνση από τον Νόμο <b>a=−ω²A·ημ(ωt+φ₀)!</b>",
-      "right": "a=−ω²A·ημ(ωt+φ₀) (3)",
-      "plot": "a"
-    },
-    {
-      "viewer": 1,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 0,
-      "left": "Αλλά η σχέση <b>x=Αημ(ωt+φο)(1)</b> περιέχεται στην (3) α= -ω²<b>Αημ(ωt+φο)</b>=-ω²<b>x</b>! Δηλαδή ο νέος νόμος γράφεται στη μορφή <b>α(x)= -ω²x</b>",
-      "right": "a(x)=−ω²·x (4)",
-      "plot": "ax"
-    },
-    {
-      "viewer": 3,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 0,
-      "left": "<b>Τέλεια! όλο το σετ των νόμων της Α.Α.Τ!</b>",
-      "right": ""
-    },
-    {
-      "viewer": null,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 0,
-      "left": "",
-      "right": "",
-      "close": true
-    }
-  ],
+    "viewer": 1,
+    "xShift": 0,
+    "yOffset": 0,
+    "typeMs": 0,
+    "pauseMs": 0,
+    "left": "Ο m<sub>1</sub>D<sub>1</sub> ήταν ήδη σε κίνηση!",
+    "right": ""
+  },
+  {
+    "viewer": 2,
+    "xShift": 0,
+    "yOffset": 0,
+    "typeMs": 0,
+    "pauseMs": 0,
+    "left": "…χρονική στιγμή t<sub>0</sub>=0 με το άνοιγμα της κουρτίνας!",
+    "right": ""
+  },
+  {
+    "viewer": 4,
+    "xShift": 0,
+    "yOffset": 0,
+    "typeMs": 0,
+    "pauseMs": 0,
+    "left": "… και η κίνηση είναι ευθύγραμμη και παλινδρομική!",
+    "right": ""
+  },
+  {
+    "viewer": 5,
+    "xShift": 0,
+    "yOffset": 0,
+    "typeMs": 0,
+    "pauseMs": 0,
+    "left": "… και επαναλαμβανόμενη, περιοδική, άρα ταλάντωση!",
+    "right": ""
+  },
+  {
+    "viewer": 3,
+    "xShift": 0,
+    "yOffset": 0,
+    "typeMs": 0,
+    "pauseMs": 0,
+    "left": "Μήπως είναι Απλή Αρμονική Ταλάντωση;",
+    "right": ""
+  },
+  {
+    "viewer": 2,
+    "xShift": 0,
+    "yOffset": 0,
+    "typeMs": 0,
+    "pauseMs": 0,
+    "left": "… αν είναι Α.Α.Τ. τότε οι τιμές που μετράμε πρέπει να επαληθεύουν την <b>x=Αημ(ωt+φ₀)!</b>",
+    "right": ""
+  },
+  {
+    "viewer": 4,
+    "xShift": 0,
+    "yOffset": 0,
+    "typeMs": 0,
+    "pauseMs": 0,
+    "left": "… αν κάνουμε διάγραμμα x–t, πρέπει να το επιβεβαιώσει!",
+    "right": "",
+    "graph": "xt"
+  },
+
+  <!-- ΔΥΝΑΜΙΚΑ BUBBLES ΜΕ LIVE ΤΙΜΕΣ -->
+
+  {
+    "viewer": 3,
+    "xShift": 0,
+    "yOffset": 0,
+    "typeMs": 2500,
+    "pauseMs": 800,
+    "param": "A",
+    "left": "…όντως είναι ΑΑΤ με A={A} m!",
+    "right": ""
+  },
+  {
+    "viewer": 5,
+    "xShift": 0,
+    "yOffset": 0,
+    "typeMs": 2500,
+    "pauseMs": 800,
+    "param": "Tw",
+    "left": "… και T={T} s και επομένως ω={omega} rad/s!",
+    "right": ""
+  },
+  {
+    "viewer": 1,
+    "xShift": 0,
+    "yOffset": 0,
+    "typeMs": 2500,
+    "pauseMs": 400,
+    "param": "phi",
+    "left": "… και αφού το x₀={x0} m υπάρχει φ₀={phi0}°. Χαχα, ένα το κρατούμενο!",
+    "right": "x=Αημ(ωt+φ₀) (1)",
+    "alsoParams": true
+  },
+
+  {
+    "viewer": 2,
+    "xShift": 0,
+    "yOffset": 0,
+    "typeMs": 0,
+    "pauseMs": 400,
+    "left": "… επομένως η ταχύτητα δίνεται από τον νόμο <b>v=ωA·συν(ωt+φ₀)!</b>",
+    "right": "v=ωA·συν(ωt+φ₀) (2)",
+    "plot": "v"
+  },
+  {
+    "viewer": 4,
+    "xShift": 0,
+    "yOffset": 0,
+    "typeMs": 0,
+    "pauseMs": 400,
+    "left": "…και η επιτάχυνση από τον Νόμο <b>a=−ω²A·ημ(ωt+φ₀)!</b>",
+    "right": "a=−ω²A·ημ(ωt+φ₀) (3)",
+    "plot": "a"
+  },
+  {
+    "viewer": 1,
+    "xShift": 0,
+    "yOffset": 0,
+    "typeMs": 0,
+    "pauseMs": 0,
+    "left": "Αλλά η σχέση <b>x=Αημ(ωt+φ₀) (1)</b> περιέχεται στην (3): a = -ω²<b>Αημ(ωt+φ₀)</b> = -ω²<b>x</b>! Δηλαδή ο νέος νόμος γράφεται στη μορφή <b>a(x)= -ω²x</b>",
+    "right": "a(x)=−ω²·x (4)",
+    "plot": "ax"
+  },
+  {
+    "viewer": 3,
+    "xShift": 0,
+    "yOffset": 0,
+    "typeMs": 0,
+    "pauseMs": 0,
+    "left": "<b>Τέλεια! όλο το σετ των νόμων της Α.Α.Τ!</b>",
+    "right": ""
+  },
+  {
+    "viewer": null,
+    "xShift": 0,
+    "yOffset": 0,
+    "typeMs": 0,
+    "pauseMs": 0,
+    "left": "",
+    "right": "",
+    "close": true
+  }
+]
 
   "act2": [
     {
@@ -621,6 +628,7 @@
     }
   ]
 }
+
 
 
 
