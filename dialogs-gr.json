@@ -132,48 +132,35 @@
       "right": "",
       "graph": "xt"
     },
-
-    {
-      "viewer": 1,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 0,
-      "left": "",
-      "right": "",
-      "param": "phi"
-    },
-    {
-      "viewer": 3,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 0,
-      "left": "",
-      "right": "",
-      "param": "A"
-    },
-    {
-      "viewer": 5,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 0,
-      "left": "",
-      "right": "",
-      "param": "Tw"
-    },
-    {
-      "viewer": null,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 0,
-      "left": "",
-      "right": "x=Αημ(ωt+φ₀) (1)",
-      "alsoParams": true
-    },
-    {
+{
+  "viewer": 3,
+  "xShift": 0,
+  "yOffset": 0,
+  "typeMs": 0,
+  "pauseMs": 0,
+  "left": "…όντως είναι ΑΑΤ με A={{A}} m!",
+  "right": ""
+},
+{
+  "viewer": 5,
+  "xShift": 0,
+  "yOffset": 0,
+  "typeMs": 0,
+  "pauseMs": 0,
+  "left": "… και T={{T}} s και επομένως ω={{omega}} rad/s!",
+  "right": ""
+},
+  {
+  "viewer": 1,
+  "xShift": 0,
+  "yOffset": 0,
+  "typeMs": 0,
+  "pauseMs": 0,
+  "left": "…  και αφού το x₀={{x0}} m υπάρχει φ₀={{phi_deg}}°. Χαχα, ένα το κρατούμενο!",
+  "right": "x=Αημ(ωt+φ₀) (1)"
+    "plot": "x"
+},
+      {
       "viewer": 2,
       "xShift": 0,
       "yOffset": 0,
@@ -634,6 +621,7 @@
     }
   ]
 }
+
 
 
 
