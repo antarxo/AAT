@@ -1131,15 +1131,18 @@ function isFormulaBlock(text){
 }
 
 function setFoyerSpeaker(idx1based){
-  const vi = viewerInfo(idx1based);
-  if(!vi) return;
-  foyerBubble.textContent = vi.name_gr || ('Θεατής '+idx1based);
-  foyerBubble.style.backgroundColor = tint(vi.color,0.85);
+  const {x,y,info} = viewerAnchor(idx1based);
+  if(!info) return;
+
+  foyerBubble.textContent = info.name_gr || ('Θεατής '+idx1based);
+  foyerBubble.style.backgroundColor = tint(info.color,0.85);
   foyerBubble.style.borderColor = 'rgba(255,255,255,.9)';
 
-  const {x,y} = viewerAnchor(idx1based);
-  foyerBubble.style.left = x+'px';
-  foyerBubble.style.top  = (y-130)+'px';
+  const dx = (info && typeof info.chipDx === 'number') ? info.chipDx : 0;
+  const dy = (info && typeof info.chipDy === 'number') ? info.chipDy : 0;
+
+  foyerBubble.style.left = (x + dx) + 'px';
+  foyerBubble.style.top  = (y - dy) + 'px';
   foyerBubble.style.transform='translateX(-50%)';
   foyerBubble.style.display='block';
 }
