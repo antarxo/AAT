@@ -131,7 +131,7 @@
       "left": "… αν κάνουμε διάγραμμα x–t, πρέπει να το επιβεβαιώσει!",
       "right": "",
       "graph": "xt",
-      "alsoParams: "true"
+      "alsoParams": true
     },
 {
   "viewer": 3,
@@ -621,6 +621,7 @@
     }
   ]
 }
+
 
 
 
