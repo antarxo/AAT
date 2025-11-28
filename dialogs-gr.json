@@ -129,18 +129,10 @@
       "typeMs": 0,
       "pauseMs": 0,
       "left": "… αν κάνουμε διάγραμμα x–t, πρέπει να το επιβεβαιώσει!",
-      "right": ""
-    },
-    {
-      "viewer": null,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 0,
-      "left": "",
       "right": "",
       "graph": "xt"
     },
+
     {
       "viewer": 1,
       "xShift": 0,
@@ -642,6 +634,7 @@
     }
   ]
 }
+
 
 
 
