@@ -23,7 +23,7 @@
       "avatarDy": 100,
       "avatarScale": 0.27,
       "chipDx": 80,
-      "chipDy": 60,    
+      "chipDy": 60,
       "img": "viewer2.png"
     },
     {
@@ -35,7 +35,7 @@
       "bubbleDy": 25,
       "avatarDy": 100,
       "avatarScale": 0.27,
-      "chipDx": 90,    
+      "chipDx": 90,
       "chipDy": 60,
       "img": "viewer3.png"
     },
@@ -48,7 +48,7 @@
       "bubbleDy": 25,
       "avatarDy": 100,
       "avatarScale": 0.3,
-      "chipDx": 90,  
+      "chipDx": 90,
       "chipDy": 60,
       "img": "viewer4.png"
     },
@@ -171,8 +171,6 @@
       "right": "",
       "param": "Tw"
     },
-
-
     {
       "viewer": null,
       "xShift": 0,
@@ -190,28 +188,9 @@
       "typeMs": 0,
       "pauseMs": 400,
       "left": "… επομένως η ταχύτητα δίνεται από τον νόμο <b>v=ωA·συν(ωt+φ₀)!</b>",
-      "right": "v=ωA·συν(ωt+φ₀) (2)"
-    },
-    {
-      "viewer": null,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 400,
-      "left": "",
-      "right": "v=ωA·συν(ωt+φ₀) (2)"
-    },
-    {
-      "viewer": null,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 0,
-      "left": "",
-      "right": "",
+      "right": "v=ωA·συν(ωt+φ₀) (2)",
       "plot": "v"
     },
-
     {
       "viewer": 4,
       "xShift": 0,
@@ -219,28 +198,9 @@
       "typeMs": 0,
       "pauseMs": 400,
       "left": "…και η επιτάχυνση από τον Νόμο <b>a=−ω²A·ημ(ωt+φ₀)!</b>",
-      "right": "a=−ω²A·ημ(ωt+φ₀) (3)"
-    },
-    {
-      "viewer": null,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 0,
-      "left": "",
-      "right": "a=−ω²A·ημ(ωt+φ₀) (3)"
-    },
-    {
-      "viewer": null,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 0,
-      "left": "",
-      "right": "",
+      "right": "a=−ω²A·ημ(ωt+φ₀) (3)",
       "plot": "a"
     },
-
     {
       "viewer": null,
       "xShift": 0,
@@ -248,19 +208,9 @@
       "typeMs": 0,
       "pauseMs": 0,
       "left": "",
-      "right": "a(x)=−ω²·x (4)"
-    },
-    {
-      "viewer": null,
-      "xShift": 0,
-      "yOffset": 0,
-      "typeMs": 0,
-      "pauseMs": 0,
-      "left": "",
-      "right": "",
+      "right": "a(x)=−ω²·x (4)",
       "plot": "ax"
     },
-
     {
       "viewer": 3,
       "xShift": 0,
@@ -270,7 +220,6 @@
       "left": "<b>Τέλεια! όλο το σετ των νόμων της Α.Α.Τ!</b>",
       "right": ""
     },
-
     {
       "viewer": null,
       "xShift": 0,
@@ -526,7 +475,6 @@
       "gStart": false,
       "gStop": false
     }
-
   ],
 
   "foyer": [
@@ -694,52 +642,3 @@
     }
   ]
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
