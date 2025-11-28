@@ -211,9 +211,6 @@ let vCan = null;
 let aCan = null;
 let axCan = null;
 
-let xtShown = false;
-let paramsShownEver = false;
-
 const m   = 70;
 const T   = 6.0;
 const A_m = 3.0;
@@ -320,7 +317,6 @@ function initXTChart(){
   xtChartEl.innerHTML = '';
   xtChartEl.appendChild(c);
   uXT = c;
-  xtShown = true;
 
   drawXTChart();
 }
@@ -791,7 +787,6 @@ function showParamsBox(){
   paramWEl.textContent  = 'ω = '+omega.toFixed(3)+' rad/s';
   paramPhiEl.textContent= 'φ₀ = '+phi0deg.toFixed(1)+'°';
   paramsBoxEl.style.display='block';
-  paramsShownEver = true;
 }
 
 /* ---------- Bubbles (πράξεις) ---------- */
@@ -997,17 +992,17 @@ function showDynBubble(ev){
   });
 }
 
-/* ---------- Act 1 / Act 2 sequences ---------- */
+/* ---------- Act 1 / Act 2 sequences ----------
+   ΣΗΜΕΙΩΣΗ: όλα τα "συμβάντα" έρχονται από το JSON:
+   - ev.param: 'A' | 'Tw' | 'phi' → δυναμικό bubble με live τιμές
+   - ev.right + alsoParams: true → δείξε πλαίσιο A, ω, φ₀
+   - ev.graph: 'xt' → άναψε x–t
+   - ev.plot: 'v' | 'a' | 'ax' → άναψε mini grafs
+*/
 
 async function runAct1(){
   for(const ev of ACT1){
     if(ev.close){
-      // safety: αν μέχρι το τέλος δεν είδαμε ΠΟΤΕ params / x–t, τα εμφανίζουμε εδώ
-      if(!paramsShownEver) showParamsBox();
-      if(!xtShown){
-        initXTChart();
-        drawXTChart();
-      }
       await closeCurtainToAct2();
       return;
     }
@@ -1396,9 +1391,6 @@ function resetShow(){
   lastSampleObsTime = -Infinity;
   measureRowIdx      = 0;
   setMode('run');
-
-  xtShown = false;
-  paramsShownEver = false;
 
   startBtn.style.display       ='block';
   countdownOverlay.style.display='none';
