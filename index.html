@@ -1014,22 +1014,35 @@ async function runAct1(){
       continue;
     }
 
-    // ΝΕΑ ΛΟΓΙΚΗ: ό,τι υπάρχει στο right → νόμος
+    // 1) param bubble → πρώτα bubble, μετά νόμος (αν υπάρχει)
+    if(ev.param){
+      await showDynBubble(ev);
+      if(ev.right){
+        addLaw(ev.right);
+        if(ev.alsoParams) showParamsBox();
+      }
+      continue;
+    }
+
+    // 2) κανονικό bubble (left/viewer) → πρώτα bubble, μετά νόμος (αν υπάρχει)
+    if(ev.left || ev.viewer){
+      await showBubbleForEvent(ev);
+      if(ev.right){
+        addLaw(ev.right);
+        if(ev.alsoParams) showParamsBox();
+      }
+      continue;
+    }
+
+    // 3) σκέτος νόμος (χωρίς left/viewer/param)
     if(ev.right){
       addLaw(ev.right);
       if(ev.alsoParams) showParamsBox();
-      // law-only events (χωρίς θεατή / κείμενο) όπως πριν
-      if(!ev.left && !ev.viewer && !ev.param){
-        await new Promise(r=>setTimeout(r,600));
-        continue;
-      }
-    }
-
-    if(ev.param){
-      await showDynBubble(ev);
+      await new Promise(r=>setTimeout(r,600));
       continue;
     }
-    await showBubbleForEvent(ev);
+
+    // αν δεν έχει τίποτα από αυτά, απλά προχώρα
   }
 }
 
@@ -1096,17 +1109,23 @@ async function runAct2(){
     if(ev.gStart) ghostActive = true;
     if(ev.gStop)  ghostActive = false;
 
-    // ίδια λογική με Act1: right ⇒ νόμος
-    if(ev.right){
-      addLaw(ev.right);
-      // law-only events (viewer null, χωρίς left) όπως πριν
-      if(!ev.left && !ev.viewer){
-        await new Promise(r=>setTimeout(r,600));
-        continue;
+    // 1) Αν έχει κείμενο / viewer → πρώτα bubble, μετά νόμος (αν υπάρχει)
+    if(ev.left || ev.viewer){
+      await showBubbleForEvent(ev);
+      if(ev.right){
+        addLaw(ev.right);
+        if(ev.alsoParams) showParamsBox();
       }
+      continue;
     }
 
-    await showBubbleForEvent(ev);
+    // 2) Σκέτος νόμος (viewer null, χωρίς left)
+    if(ev.right){
+      addLaw(ev.right);
+      if(ev.alsoParams) showParamsBox();
+      await new Promise(r=>setTimeout(r,600));
+      continue;
+    }
   }
 
   stage.classList.remove('open');
