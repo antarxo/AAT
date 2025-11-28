@@ -1013,12 +1013,18 @@ async function runAct1(){
       await new Promise(r=>setTimeout(r,500));
       continue;
     }
-    if(ev.right && !ev.left && !ev.viewer && !ev.param){
+
+    // ΝΕΑ ΛΟΓΙΚΗ: ό,τι υπάρχει στο right → νόμος
+    if(ev.right){
       addLaw(ev.right);
       if(ev.alsoParams) showParamsBox();
-      await new Promise(r=>setTimeout(r,600));
-      continue;
+      // law-only events (χωρίς θεατή / κείμενο) όπως πριν
+      if(!ev.left && !ev.viewer && !ev.param){
+        await new Promise(r=>setTimeout(r,600));
+        continue;
+      }
     }
+
     if(ev.param){
       await showDynBubble(ev);
       continue;
@@ -1090,10 +1096,14 @@ async function runAct2(){
     if(ev.gStart) ghostActive = true;
     if(ev.gStop)  ghostActive = false;
 
-    if(ev.right && !ev.left && !ev.viewer){
+    // ίδια λογική με Act1: right ⇒ νόμος
+    if(ev.right){
       addLaw(ev.right);
-      await new Promise(r=>setTimeout(r,600));
-      continue;
+      // law-only events (viewer null, χωρίς left) όπως πριν
+      if(!ev.left && !ev.viewer){
+        await new Promise(r=>setTimeout(r,600));
+        continue;
+      }
     }
 
     await showBubbleForEvent(ev);
