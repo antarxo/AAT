@@ -9,7 +9,7 @@
       "bubbleDy": 25,
       "avatarDy": 100,
       "avatarScale": 0.27,
-      "chipDx": 70,
+      "chipDx": 80,
       "chipDy": 60,
       "img": "viewer1.png"
     },
@@ -31,11 +31,11 @@
       "name_en": "Viewer 3",
       "color": "#ff99cc",
       "xFrac": 0.5,
-      "bubbleDx": 40,
+      "bubbleDx": 50,
       "bubbleDy": 25,
       "avatarDy": 100,
       "avatarScale": 0.27,
-      "chipDx": 80,    
+      "chipDx": 90,    
       "chipDy": 60,
       "img": "viewer3.png"
     },
@@ -44,11 +44,11 @@
       "name_en": "Viewer 4",
       "color": "#99ff99",
       "xFrac": 0.70,
-      "bubbleDx": 30,
+      "bubbleDx": 50,
       "bubbleDy": 25,
       "avatarDy": 100,
       "avatarScale": 0.3,
-      "chipDx": 70,  
+      "chipDx": 90,  
       "chipDy": 60,
       "img": "viewer4.png"
     },
@@ -57,11 +57,11 @@
       "name_en": "Viewer 5",
       "color": "#ff9966",
       "xFrac": 0.90,
-      "bubbleDx":30,
+      "bubbleDx": 50,
       "bubbleDy": 25,
       "avatarDy": 100,
       "avatarScale": 0.27,
-      "chipDx": 70,
+      "chipDx": 80,
       "chipDy": 60,
       "img": "viewer5.png"
     }
@@ -190,7 +190,7 @@
       "typeMs": 0,
       "pauseMs": 0,
       "left": "… επομένως η ταχύτητα δίνεται από τον νόμο <b>v=ωA·συν(ωt+φ₀)!</b>",
-      "right": ""
+      "right": "v=ωA·συν(ωt+φ₀) (2)"
     },
     {
       "viewer": null,
@@ -219,7 +219,7 @@
       "typeMs": 0,
       "pauseMs": 0,
       "left": "…και η επιτάχυνση από τον Νόμο <b>a=−ω²A·ημ(ωt+φ₀)!</b>",
-      "right": ""
+      "right": "a=−ω²A·ημ(ωt+φ₀) (3)"
     },
     {
       "viewer": null,
@@ -730,6 +730,7 @@
     }
   ]
 }
+
 
 
 
