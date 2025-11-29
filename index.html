@@ -11,6 +11,33 @@
 
   <!-- Σκηνή CSS -->
   <link rel="stylesheet" href="aat-stage.css">
+
+  <!-- Μικρό inline style μόνο για τα κουμπιά γλώσσας -->
+  <style>
+    .lang-switch {
+      position: absolute;
+      top: 8px;
+      left: 16px;
+      z-index: 2200;
+      display: flex;
+      gap: 4px;
+    }
+    .lang-btn {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 6px;
+      border: 1px solid #ffffffaa;
+      background: rgba(0,0,0,0.6);
+      color: #fff;
+      cursor: pointer;
+      backdrop-filter: blur(3px);
+    }
+    .lang-btn.active {
+      background: #ffd27a;
+      color: #000;
+      border-color: #ffd27a;
+    }
+  </style>
 </head>
 <body>
 <div class="stage" id="stage">
@@ -20,6 +47,12 @@
   <div class="curtain-side right"></div>
 
   <div class="spotlight" id="spotlight"></div>
+
+  <!-- Κουμπιά αλλαγής γλώσσας ΠΑΝΩ ΑΡΙΣΤΕΡΑ -->
+  <div class="lang-switch" id="langSwitch">
+    <button id="btnLangGR" class="lang-btn active">ΕΛ</button>
+    <button id="btnLangEN" class="lang-btn">EN</button>
+  </div>
 
   <div class="signboard">
     <h1>Πράξη 1η: Η Κινηματική στα ... Αλγεβρικά</h1>
@@ -50,10 +83,6 @@
   </div>
 
   <div class="laws" id="laws">
-    <div class="lang-switch">
-      <button id="btnLangGR" class="lang-btn active">ΕΛ</button>
-      <button id="btnLangEN" class="lang-btn">EN</button>
-    </div>
     <h4 id="lawsTitle">Νόμοι Α.Α.Τ.</h4>
     <div id="lawsBody" class="laws-body"></div>
   </div>
@@ -966,7 +995,6 @@ function showBubbleForEvent(ev){
 
 /* Δυναμικά bubbles για A, T/ω, φ */
 
-// Default templates (αν ΔΕΝ δώσεις left στο JSON)
 function dynDefault(kind){
   if(kind==='A'){
     return '…με A={A} m!';
@@ -978,7 +1006,6 @@ function dynDefault(kind){
   return '';
 }
 
-// Γενικός επεξεργαστής placeholders για live τιμές
 function expandDynTemplate(tpl){
   if(!tpl) return '';
   const x0 = x0Val().toFixed(2);
@@ -991,7 +1018,6 @@ function expandDynTemplate(tpl){
     .replaceAll('{phi0}', phi0deg.toFixed(1));
 }
 
-// Παίζει bubble με βάση JSON (left) ή default template
 function showDynBubble(ev){
   return new Promise(resolve=>{
     const viewer = ev.viewer || 1;
@@ -1039,7 +1065,6 @@ async function runAct1(){
       return;
     }
 
-    // Δυναμικά bubbles
     if(ev.param){
       await showDynBubble(ev);
 
@@ -1065,7 +1090,6 @@ async function runAct1(){
       continue;
     }
 
-    // Κανονικά bubbles
     if(ev.left || ev.viewer){
       await showBubbleForEvent(ev);
 
@@ -1091,7 +1115,6 @@ async function runAct1(){
       continue;
     }
 
-    // Σκέτος νόμος
     if(ev.right){
       addLaw(ev.right);
       if(ev.alsoParams) showParamsBox();
@@ -1114,7 +1137,6 @@ async function runAct1(){
       continue;
     }
 
-    // Σκέτα διαγράμματα
     if(ev.graph==='xt'){
       initXTChart();
       drawXTChart();
@@ -1389,7 +1411,6 @@ function addFoyerRow(item){
 }
 
 async function runFoyer(){
-  // Μπαίνουμε στο φουαγιέ → παγώνουμε χειρισμούς σκηνής
   setMode('pause');
   inFoyer = true;
   startBtn.style.display = 'none';
@@ -1422,19 +1443,18 @@ async function runFoyer(){
 
 function setMode(newMode){
   mode = newMode;
-  // αν είμαστε στο φουαγιέ, τα κουμπιά play/pause δείχνουν ουδέτερα/παύση
   btnPlay.classList.toggle('active', mode==='run' && !inFoyer);
   btnPause.classList.toggle('active', mode==='pause' || inFoyer);
   slowHint.textContent = '';
 }
 
 btnPause.addEventListener('click', ()=>{
-  if(inFoyer) return; // στο φουαγιέ κλειδωμένα
+  if(inFoyer) return;
   setMode(mode==='pause' ? 'run' : 'pause');
 });
 
 btnPlay.addEventListener('click', ()=>{
-  if(inFoyer) return; // στο φουαγιέ κλειδωμένα
+  if(inFoyer) return;
   setMode('run');
 });
 
@@ -1664,8 +1684,8 @@ function initViewersAvatars(){
   const leftBand  = 0.18;
   const widthBand = 0.64;
 
-  const baseWidthPx  = 140; // CSS default
-  const refScale     = 0.5; // “κανονική” τιμή από το JSON
+  const baseWidthPx  = 140;
+  const refScale     = 0.5;
 
   items.forEach((div, idx) => {
     const v = VIEWERS[idx];
