@@ -193,6 +193,7 @@ const boardRight  = document.getElementById('boardRight');
 const foyerBubble = document.getElementById('foyerBubble');
 
 const viewersStrip = document.getElementById('viewersStrip');
+const signTitle    = document.querySelector('.signboard h1');
 
 let t0 = performance.now();
 let lastFrame = t0;
@@ -243,6 +244,17 @@ function measureSpringNaturalSize(){
 
   springEl.style.display   = prevDisplay;
   springEl.style.transform = prevTransform;
+}
+
+/* ---------- Τίτλοι πράξεων ---------- */
+
+function setActTitle(act){
+  if(!signTitle) return;
+  if(act === 1){
+    signTitle.textContent = 'Πράξη 1η: Η Κινηματική στα ... Αλγεβρικά';
+  }else if(act === 2){
+    signTitle.textContent = 'Πράξη 2η: Η Δυναμική του ταλαντωτή (m,D)';
+  }
 }
 
 /* ---------- Χρήσιμα ---------- */
@@ -958,8 +970,6 @@ function showDynBubble(ev){
   return new Promise(resolve=>{
     const viewer = ev.viewer || 1;
 
-    // Αν στο JSON έχεις left → το χρησιμοποιεί
-    // αλλιώς πέφτει στο dynDefault(ev.param)
     const base = (ev.left && ev.left.trim().length)
       ? ev.left
       : dynDefault(ev.param);
@@ -992,22 +1002,18 @@ function showDynBubble(ev){
   });
 }
 
-/* ---------- Act 1 / Act 2 sequences ----------
-   ΣΗΜΕΙΩΣΗ: όλα τα "συμβάντα" έρχονται από το JSON:
-   - ev.param: 'A' | 'Tw' | 'phi' → δυναμικό bubble με live τιμές
-   - ev.right + alsoParams: true → δείξε πλαίσιο A, ω, φ₀
-   - ev.graph: 'xt' → άναψε x–t
-   - ev.plot: 'v' | 'a' | 'ax' → άναψε mini grafs
-*/
+/* ---------- Act 1 / Act 2 sequences ---------- */
 
 async function runAct1(){
+  setActTitle(1);
+
   for(const ev of ACT1){
     if(ev.close){
       await closeCurtainToAct2();
       return;
     }
 
-    // 1) Δυναμικά bubbles (A, T/ω, φ): πρώτα ατάκα, μετά νόμοι / διαγράμματα
+    // Δυναμικά bubbles
     if(ev.param){
       await showDynBubble(ev);
 
@@ -1033,7 +1039,7 @@ async function runAct1(){
       continue;
     }
 
-    // 2) Κανονικά bubbles (left/viewer): πρώτα μιλάει ο θεατής, μετά νόμος / διαγράμματα
+    // Κανονικά bubbles
     if(ev.left || ev.viewer){
       await showBubbleForEvent(ev);
 
@@ -1059,7 +1065,7 @@ async function runAct1(){
       continue;
     }
 
-    // 3) Σκέτος νόμος (χωρίς left/viewer/param)
+    // Σκέτος νόμος
     if(ev.right){
       addLaw(ev.right);
       if(ev.alsoParams) showParamsBox();
@@ -1078,12 +1084,11 @@ async function runAct1(){
         ensureAxChart();
       }
 
-      // Μικρή παύση μόνο όταν είναι "ξερός" νόμος
       await new Promise(r=>setTimeout(r,600));
       continue;
     }
 
-    // 4) Σκέτα διαγράμματα (χωρίς κείμενο ή νόμο)
+    // Σκέτα διαγράμματα
     if(ev.graph==='xt'){
       initXTChart();
       drawXTChart();
@@ -1151,6 +1156,8 @@ function ensureGhost(){
 }
 
 async function runAct2(){
+  setActTitle(2);
+
   ensureGhost();
   ghostActive=false;
   actBreak.style.display='none';
@@ -1165,7 +1172,6 @@ async function runAct2(){
     if(ev.gStart) ghostActive = true;
     if(ev.gStop)  ghostActive = false;
 
-    // 1) Ομιλητές με left/viewer: πρώτα bubble, μετά νόμος / διαγράμματα
     if(ev.left || ev.viewer){
       await showBubbleForEvent(ev);
 
@@ -1191,7 +1197,6 @@ async function runAct2(){
       continue;
     }
 
-    // 2) Σκέτος νόμος
     if(ev.right){
       addLaw(ev.right);
       if(ev.alsoParams) showParamsBox();
@@ -1214,7 +1219,6 @@ async function runAct2(){
       continue;
     }
 
-    // 3) Σκέτα διαγράμματα
     if(ev.graph==='xt'){
       initXTChart();
       drawXTChart();
@@ -1261,9 +1265,24 @@ function isFormulaBlock(text){
   return false;
 }
 
+// μόνο ο ομιλητής ορατός στο foyer
+function highlightFoyerViewer(idx1based){
+  const items = viewersStrip.querySelectorAll('.viewer-avatar');
+  items.forEach((div, i)=>{
+    if(i === (idx1based-1)){
+      div.style.opacity = '1';
+      div.style.filter  = '';
+    }else{
+      div.style.opacity = '0';
+    }
+  });
+}
+
 function setFoyerSpeaker(idx1based){
   const {x,y,info} = viewerAnchor(idx1based);
   if(!info) return;
+
+  highlightFoyerViewer(idx1based);
 
   foyerBubble.textContent = info.name_gr || ('Θεατής '+idx1based);
   foyerBubble.style.backgroundColor = tint(info.color,0.85);
@@ -1392,6 +1411,8 @@ function resetShow(){
   measureRowIdx      = 0;
   setMode('run');
 
+  setActTitle(1);
+
   startBtn.style.display       ='block';
   countdownOverlay.style.display='none';
   measureBox.style.display     ='none';
@@ -1415,6 +1436,14 @@ function resetShow(){
   bubbleEl.classList.remove('active','closing');
   actBubble.style.display      ='none';
   measureTBody.innerHTML       ='';
+
+  // Στις πράξεις: θεατές αόρατοι (σκεπτόμενοι)
+  const avatars = viewersStrip.querySelectorAll('.viewer-avatar');
+  avatars.forEach(div=>{
+    div.style.display = 'block';
+    div.style.opacity = '0';
+    div.style.filter  = '';
+  });
 
   if(uXT){
     xtChartEl.innerHTML = '';
@@ -1607,26 +1636,22 @@ function initViewersAvatars(){
       return;
     }
 
-    // εικόνα από JSON
     if (v.img) {
       div.style.backgroundImage = 'url("'+v.img+'")';
     }
 
-    // Ύψος: μόνο αν δίνεται ρητά από JSON (αλλιώς αφήνουμε το CSS)
     if (typeof v.heightVh === 'number') {
       div.style.height = v.heightVh + 'vh';
     } else {
       div.style.height = '';
     }
 
-    // Κάθετη θέση: ΑΠΟΚΛΕΙΣΤΙΚΑ από avatarDy (px)
     if (typeof v.avatarDy === 'number') {
       div.style.bottom = v.avatarDy + 'px';
     } else {
       div.style.bottom = '';
     }
 
-    // Σμίκρυνση / μεγέθυνση: avatarScale
     if (typeof v.avatarScale === 'number') {
       const widthPx = baseWidthPx * (v.avatarScale / refScale);
       div.style.width = widthPx + 'px';
@@ -1634,13 +1659,15 @@ function initViewersAvatars(){
       div.style.width = '';
     }
 
-    // Οριζόντια θέση: xFrac από JSON, αλλιώς ένα τίμιο fallback
     const fracDefault = (idx + 1) / (items.length + 1);
     const xFrac = (typeof v.xFrac === 'number') ? v.xFrac : fracDefault;
     const x = (leftBand + widthBand * xFrac) * stageW;
     div.style.left = x + 'px';
 
+    // αρχικά ΠΑΝΤΑ αφανείς (σκεπτόμενοι)
     div.style.display = 'block';
+    div.style.opacity = '0';
+    div.style.filter  = '';
   });
 }
 
