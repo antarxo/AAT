@@ -6,7 +6,7 @@
       "color": "#ffcc00",
       "xFrac": 0.10,
       "bubbleDx": 40,
-      "bubbleDy": 25,
+      "bubbleDy": 5,
       "avatarDy": 100,
       "avatarScale": 0.27,
       "chipDx": 80,
@@ -19,7 +19,7 @@
       "color": "#66ccff",
       "xFrac": 0.27,
       "bubbleDx": 40,
-      "bubbleDy": 25,
+      "bubbleDy": 5,
       "avatarDy": 100,
       "avatarScale": 0.27,
       "chipDx": 80,
@@ -32,7 +32,7 @@
       "color": "#ff99cc",
       "xFrac": 0.5,
       "bubbleDx": 50,
-      "bubbleDy": 25,
+      "bubbleDy": 5,
       "avatarDy": 100,
       "avatarScale": 0.27,
       "chipDx": 90,
@@ -45,7 +45,7 @@
       "color": "#99ff99",
       "xFrac": 0.70,
       "bubbleDx": 50,
-      "bubbleDy": 25,
+      "bubbleDy": 5,
       "avatarDy": 100,
       "avatarScale": 0.3,
       "chipDx": 90,
@@ -58,7 +58,7 @@
       "color": "#ff9966",
       "xFrac": 0.90,
       "bubbleDx": 50,
-      "bubbleDy": 25,
+      "bubbleDy": 5,
       "avatarDy": 100,
       "avatarScale": 0.27,
       "chipDx": 80,
@@ -716,4 +716,5 @@
     }
   ]
 }  
+
 
