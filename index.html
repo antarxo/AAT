@@ -50,6 +50,10 @@
   </div>
 
   <div class="laws" id="laws">
+    <div class="lang-switch">
+      <button id="btnLangGR" class="lang-btn active">ΕΛ</button>
+      <button id="btnLangEN" class="lang-btn">EN</button>
+    </div>
     <h4 id="lawsTitle">Νόμοι Α.Α.Τ.</h4>
     <div id="lawsBody" class="laws-body"></div>
   </div>
@@ -134,7 +138,7 @@
 </div>
 
 <script>
-/* ---------- ΔΕΔΟΜΕΝΑ ΑΠΟ dialogs-gr.json ---------- */
+/* ---------- ΔΕΔΟΜΕΝΑ ΑΠΟ dialogs-*.json ---------- */
 
 let VIEWERS = [];
 let ACT1 = [];
@@ -142,6 +146,7 @@ let ACT2 = [];
 let FOYER = [];
 
 let foyerTBody = null;
+let currentLang = 'gr';
 
 /* ---------- Φυσική / σκηνή ---------- */
 
@@ -195,6 +200,9 @@ const foyerBubble = document.getElementById('foyerBubble');
 const viewersStrip = document.getElementById('viewersStrip');
 const signTitle    = document.querySelector('.signboard h1');
 
+const btnLangGR   = document.getElementById('btnLangGR');
+const btnLangEN   = document.getElementById('btnLangEN');
+
 let t0 = performance.now();
 let lastFrame = t0;
 let playbackTime = 0;
@@ -206,6 +214,7 @@ let sampleInterval = 0.4;
 let measureRowIdx = 0;
 
 let mode = 'run';
+let inFoyer = false;
 
 let uXT = null;  // canvas για x–t
 let vCan = null;
@@ -255,6 +264,23 @@ function setActTitle(act){
   }else if(act === 2){
     signTitle.textContent = 'Πράξη 2η: Η Δυναμική του ταλαντωτή (m,D)';
   }
+}
+
+/* ---------- Γλώσσα (GR / EN) ---------- */
+
+function updateLangButtons(){
+  if(!btnLangGR || !btnLangEN) return;
+  btnLangGR.classList.toggle('active', currentLang === 'gr');
+  btnLangEN.classList.toggle('active', currentLang === 'en');
+}
+
+async function switchLang(lang){
+  const target = (lang === 'en') ? 'en' : 'gr';
+  if(target === currentLang) return;
+  currentLang = target;
+  await loadDialogs(currentLang);
+  resetShow();
+  updateLangButtons();
 }
 
 /* ---------- Χρήσιμα ---------- */
@@ -1363,6 +1389,14 @@ function addFoyerRow(item){
 }
 
 async function runFoyer(){
+  // Μπαίνουμε στο φουαγιέ → παγώνουμε χειρισμούς σκηνής
+  setMode('pause');
+  inFoyer = true;
+  startBtn.style.display = 'none';
+  countdownOverlay.style.display = 'none';
+  actBreak.style.display = 'none';
+  foyerBreak.style.display = 'none';
+
   foyerEl.style.display='block';
   boardLeft.innerHTML  = '';
   boardRight.innerHTML = '';
@@ -1388,16 +1422,19 @@ async function runFoyer(){
 
 function setMode(newMode){
   mode = newMode;
-  btnPlay.classList.toggle('active', mode==='run');
-  btnPause.classList.toggle('active', mode==='pause');
+  // αν είμαστε στο φουαγιέ, τα κουμπιά play/pause δείχνουν ουδέτερα/παύση
+  btnPlay.classList.toggle('active', mode==='run' && !inFoyer);
+  btnPause.classList.toggle('active', mode==='pause' || inFoyer);
   slowHint.textContent = '';
 }
 
 btnPause.addEventListener('click', ()=>{
+  if(inFoyer) return; // στο φουαγιέ κλειδωμένα
   setMode(mode==='pause' ? 'run' : 'pause');
 });
 
 btnPlay.addEventListener('click', ()=>{
+  if(inFoyer) return; // στο φουαγιέ κλειδωμένα
   setMode('run');
 });
 
@@ -1409,6 +1446,7 @@ function resetShow(){
   obsStartPlaybackOffset = 0;
   lastSampleObsTime = -Infinity;
   measureRowIdx      = 0;
+  inFoyer            = false;
   setMode('run');
 
   setActTitle(1);
@@ -1671,13 +1709,15 @@ function initViewersAvatars(){
   });
 }
 
-/* ---------- Load dialogs-gr.json & bootstrap ---------- */
+/* ---------- Load dialogs-<lang>.json & bootstrap ---------- */
 
-async function loadDialogs(){
+async function loadDialogs(lang){
+  const useLang = (lang === 'en') ? 'en' : 'gr';
+  const url = (useLang === 'en') ? 'dialogs-en.json' : 'dialogs-gr.json';
   try{
-    const resp = await fetch('dialogs-gr.json',{cache:'no-store'});
+    const resp = await fetch(url,{cache:'no-store'});
     if(!resp.ok){
-      console.error('Δε βρέθηκε dialogs-gr.json');
+      console.error('Δε βρέθηκε '+url);
       return;
     }
     const data = await resp.json();
@@ -1691,12 +1731,24 @@ async function loadDialogs(){
   }
 }
 
+/* ---------- Event bindings γλώσσας ---------- */
+
+if(btnLangGR){
+  btnLangGR.addEventListener('click', ()=>switchLang('gr'));
+}
+if(btnLangEN){
+  btnLangEN.addEventListener('click', ()=>switchLang('en'));
+}
+
+/* ---------- on load ---------- */
+
 window.addEventListener('load', ()=>{
   updateRuler();
   measureSpringNaturalSize();
   ensureActorFloorBottom();
   resetShow();
-  loadDialogs();
+  loadDialogs(currentLang);
+  updateLangButtons();
 });
 </script>
 </body>
