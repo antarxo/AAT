@@ -10,7 +10,7 @@
       "avatarDy": 100,
       "avatarScale": 0.27,
       "chipDx": 80,
-      "chipDy": 60,
+      "chipDy": 40,
       "img": "viewer1.png"
     },
     {
@@ -23,7 +23,7 @@
       "avatarDy": 100,
       "avatarScale": 0.27,
       "chipDx": 80,
-      "chipDy": 60,
+      "chipDy": 40,
       "img": "viewer2.png"
     },
     {
@@ -36,7 +36,7 @@
       "avatarDy": 100,
       "avatarScale": 0.27,
       "chipDx": 90,
-      "chipDy": 60,
+      "chipDy": 40,
       "img": "viewer3.png"
     },
     {
@@ -49,7 +49,7 @@
       "avatarDy": 100,
       "avatarScale": 0.3,
       "chipDx": 90,
-      "chipDy": 60,
+      "chipDy": 40,
       "img": "viewer4.png"
     },
     {
@@ -62,7 +62,7 @@
       "avatarDy": 100,
       "avatarScale": 0.27,
       "chipDx": 80,
-      "chipDy": 60,
+      "chipDy": 40,
       "img": "viewer5.png"
     }
   ],
@@ -716,3 +716,4 @@
     }
   ]
 }  
+
