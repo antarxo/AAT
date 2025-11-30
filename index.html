@@ -125,6 +125,7 @@
   <div class="controls" id="controls">
     <button id="btnPause" title="παύση">⏸</button>
     <button id="btnPlay" title="κανονικά">▶</button>
+    <button id="btnSlow" title="αργή αφήγηση">🐌</button>
     <button id="btnReset" title="reset">↺</button>
   </div>
   <button class="btn-end" id="btnEndShow">Τέλος Παράστασης</button>
@@ -201,6 +202,7 @@ const lawsBody     = document.getElementById('lawsBody');
 const lawCharts    = document.getElementById('lawCharts');
 const xtChartEl    = document.getElementById('xtChart');
 const audienceExtra= document.getElementById('audienceExtra');
+const audienceMain = document.querySelector('.audience-main');
 
 const bubbleEl     = document.getElementById('bubble0');
 const bubbleTextEl = bubbleEl.querySelector('.text');
@@ -212,6 +214,7 @@ const countdownTimerEl  = document.getElementById('countdownTimer');
 
 const btnPause   = document.getElementById('btnPause');
 const btnPlay    = document.getElementById('btnPlay');
+const btnSlow    = document.getElementById('btnSlow');
 const btnReset   = document.getElementById('btnReset');
 const btnEndShow = document.getElementById('btnEndShow');
 const btnFoyer   = document.getElementById('btnFoyer');
@@ -267,6 +270,10 @@ let springNaturalHeight = null;
 
 /* Πάτωμα ηθοποιού σε px (κοινό με ghost) */
 let actorFloorBottomPx = null;
+
+/* Slow mode για σκέψεις/διαλόγους */
+let dialogSpeedFactor = 1.0;
+let slowMode = false;
 
 function measureSpringNaturalSize(){
   if(!springEl) return;
@@ -976,8 +983,10 @@ function showBubbleForEvent(ev){
     bubbleEl.classList.add('active');
     bubbleEl.style.opacity='1';
 
-    const typeMs  = ev.typeMs  || 2500;
-    const pauseMs = ev.pauseMs || 800;
+    const baseTypeMs  = ev.typeMs  || 2500;
+    const basePauseMs = ev.pauseMs || 800;
+    const typeMs  = baseTypeMs  * dialogSpeedFactor;
+    const pauseMs = basePauseMs * dialogSpeedFactor;
 
     typeWriterHTML(bubbleTextEl, html, typeMs, ()=>{
       setTimeout(()=>{
@@ -1022,11 +1031,11 @@ function showDynBubble(ev){
   return new Promise(resolve=>{
     const viewer = ev.viewer || 1;
 
-    const base = (ev.left && ev.left.trim().length)
+    const baseTpl = (ev.left && ev.left.trim().length)
       ? ev.left
       : dynDefault(ev.param);
 
-    const txt = expandDynTemplate(base);
+    const txt = expandDynTemplate(baseTpl);
 
     showSpeakerChip(viewer);
     placeBubble(viewer, ev.xShift||0, ev.yOffset||0);
@@ -1037,8 +1046,10 @@ function showDynBubble(ev){
     bubbleEl.classList.add('active');
     bubbleEl.style.opacity='1';
 
-    const typeMs  = ev.typeMs  || 2500;
-    const pauseMs = ev.pauseMs || 800;
+    const baseTypeMs  = ev.typeMs  || 2500;
+    const basePauseMs = ev.pauseMs || 800;
+    const typeMs  = baseTypeMs  * dialogSpeedFactor;
+    const pauseMs = basePauseMs * dialogSpeedFactor;
 
     typeWriterHTML(bubbleTextEl, txt, typeMs, ()=>{
       setTimeout(()=>{
@@ -1210,6 +1221,7 @@ async function runAct2(){
   ghostActive=false;
   actBreak.style.display='none';
   stage.classList.add('open');
+  setAudienceDark(true);
 
   springEl.style.display='block';
   if(ghostSpring) ghostSpring.style.display='block';
@@ -1285,6 +1297,7 @@ async function runAct2(){
   stage.classList.remove('open');
   setTimeout(()=>{
     foyerBreak.style.display='flex';
+    setFoyerEnabled(true); // μετά τη 2η πράξη ξανα-ενεργό το κουμπί Φουαγιέ
   }, 1200);
 }
 
@@ -1395,8 +1408,10 @@ function addFoyerRow(item){
 
     setFoyerSpeaker(viewer);
 
-    const typeMs  = item.typeMs  || 4000;
-    const pauseMs = item.pauseMs || 1500;
+    const baseTypeMs  = item.typeMs  || 4000;
+    const basePauseMs = item.pauseMs || 1500;
+    const typeMs  = baseTypeMs  * dialogSpeedFactor;
+    const pauseMs = basePauseMs * dialogSpeedFactor;
 
     typeWriterBoard(l, item.left||'', typeMs, ()=>{
       if((item.right||'').trim().length>0){
@@ -1417,6 +1432,8 @@ async function runFoyer(){
   countdownOverlay.style.display = 'none';
   actBreak.style.display = 'none';
   foyerBreak.style.display = 'none';
+
+  setAudienceDark(false); // στο φουαγιέ το κοινό κανονικό
 
   foyerEl.style.display='block';
   boardLeft.innerHTML  = '';
@@ -1439,13 +1456,29 @@ async function runFoyer(){
   }
 }
 
+/* ---------- Slow UI & Foyer enable ---------- */
+
+function updateSlowUI(){
+  if(btnSlow){
+    btnSlow.classList.toggle('active', slowMode);
+  }
+  if(slowHint){
+    slowHint.textContent = slowMode ? ' (αργή αφήγηση)' : '';
+  }
+}
+
+function setFoyerEnabled(on){
+  if(!btnFoyer) return;
+  btnFoyer.disabled = !on;
+}
+
 /* ---------- Κουμπιά / modes ---------- */
 
 function setMode(newMode){
   mode = newMode;
   btnPlay.classList.toggle('active', mode==='run' && !inFoyer);
   btnPause.classList.toggle('active', mode==='pause' || inFoyer);
-  slowHint.textContent = '';
+  updateSlowUI();
 }
 
 btnPause.addEventListener('click', ()=>{
@@ -1458,6 +1491,20 @@ btnPlay.addEventListener('click', ()=>{
   setMode('run');
 });
 
+if(btnSlow){
+  btnSlow.addEventListener('click', ()=>{
+    slowMode = !slowMode;
+    dialogSpeedFactor = slowMode ? 2.5 : 1.0;
+    updateSlowUI();
+  });
+}
+
+function setAudienceDark(isDark){
+  const filt = isDark ? 'brightness(0.35)' : 'brightness(1)';
+  if(audienceMain) audienceMain.style.filter = filt;
+  if(audienceExtra) audienceExtra.style.filter = filt;
+}
+
 function resetShow(){
   t0        = performance.now();
   lastFrame = t0;
@@ -1468,6 +1515,8 @@ function resetShow(){
   measureRowIdx      = 0;
   inFoyer            = false;
   setMode('run');
+  setAudienceDark(false);
+  setFoyerEnabled(true);
 
   setActTitle(1);
 
@@ -1530,6 +1579,8 @@ btnEndShow.addEventListener('click', resetShow);
 
 function beginObservation(){
   stage.classList.add('open');
+  setAudienceDark(true);
+
   if(!obsStarted){
     obsStarted = true;
     obsStartPlaybackOffset = playbackTime;
@@ -1545,6 +1596,8 @@ function beginObservation(){
 function startShowCountdown(){
   startBtn.style.display    ='none';
   countdownOverlay.style.display='flex';
+  setFoyerEnabled(false); // από εδώ και μέχρι να τελειώσει η 2η πράξη, το Φουαγιέ κλειδωμένο
+
   const seconds = 5;
   const end = performance.now()+seconds*1000;
   function tick(){
@@ -1573,6 +1626,7 @@ btnAct2.addEventListener('click', ()=>{
 /* Φουαγιέ κουμπιά */
 
 btnFoyer.addEventListener('click', ()=>{
+  if(btnFoyer.disabled) return;
   runFoyer();
 });
 
