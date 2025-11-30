@@ -12,7 +12,7 @@
   <!-- Σκηνή CSS -->
   <link rel="stylesheet" href="aat-stage.css">
 
-  <!-- Μικρό inline CSS μόνο για τα κουμπιά γλώσσας + viewers fade -->
+  <!-- Μικρό inline CSS μόνο για τα κουμπιά γλώσσας + viewers fade + φώτα/ghost -->
   <style>
     .lang-toggle {
       position: absolute;
@@ -40,13 +40,18 @@
       background: rgba(0,0,0,0.75);
     }
 
-    /* Θεατές: fade μόνο με opacity, χωρίς να πειράζουμε transforms από το CSS της σκηνής */
+    /* Θεατές: μόνο fade, ΧΩΡΙΣ animation στο bottom */
     .viewers .viewer-avatar {
       opacity: 0;
-      transition: opacity 0.35s ease-out, bottom 0.35s ease-out;
+      transition: opacity 0.35s ease-out;
     }
     .viewers .viewer-avatar.is-visible {
       opacity: 1;
+    }
+
+    /* Φώτα σκηνής: το κλείσιμο/άναμμα γίνεται με opacity στο spotlight */
+    .spotlight {
+      transition: opacity 0.7s ease-in-out;
     }
   </style>
 </head>
@@ -255,6 +260,9 @@ let measureRowIdx = 0;
 
 let mode = 'run';
 
+/* Φώτα σκηνής (on/off) */
+let lightsOn = true;
+
 let uXT = null;  // canvas για x–t
 let vCan = null;
 let aCan = null;
@@ -295,6 +303,12 @@ function measureSpringNaturalSize(){
 
   springEl.style.display   = prevDisplay;
   springEl.style.transform = prevTransform;
+}
+
+/* ---------- ΦΩΤΑ ΣΚΗΝΗΣ ---------- */
+
+function setLights(on){
+  lightsOn = !!on;
 }
 
 /* ---------- UI κείμενα ανά γλώσσα ---------- */
@@ -962,8 +976,9 @@ function tint(hex, alpha){
 }
 
 /* Ενεργοποίηση ενός μόνο avatar θεατή.
-   mode='act' → εικόνα 40px χαμηλότερα από τη JSON θέση,
-   mode='foyer' → στην κανονική της θέση (baseBottom). */
+   mode='act' → εικόνα 45px χαμηλότερα από τη JSON θέση,
+   mode='foyer' → στην κανονική της θέση (baseBottom).
+   ΜΟΝΟ bottom jump + fade, ΧΩΡΙΣ animation στην κίνηση. */
 function setActiveViewerAvatar(idx1based, mode){
   const items = viewersStrip.querySelectorAll('.viewer-avatar');
   const targetIdx = (idx1based || 1) - 1;
@@ -990,8 +1005,9 @@ function setActiveViewerAvatar(idx1based, mode){
   if(!Number.isNaN(baseBottom)){
     let targetBottom = baseBottom;
     if(mode === 'act'){
-      targetBottom = baseBottom - 60; // μισό κεφάλι στις πράξεις
+      targetBottom = baseBottom - 45; // μισό κεφάλι στις πράξεις
     }
+    // Χωρίς transition στο bottom (μόνο opacity), άρα δεν “αναδύεται”, απλά εμφανίζεται στη θέση του.
     el.style.bottom = targetBottom + 'px';
   }
 
@@ -1178,6 +1194,11 @@ function showDynBubble(ev){
 
 async function runAct1(){
   for(const ev of ACT1){
+
+    /* ξανά το κλείσιμο/άναμμα φωτών με flags από το JSON */
+    if(ev.lightsOff) setLights(false);
+    if(ev.lightsOn)  setLights(true);
+
     if(ev.close){
       await closeCurtainToAct2();
       return;
@@ -1293,7 +1314,8 @@ function ensureGhost(){
     ghost.style.position='absolute';
     ghost.style.zIndex='158';
     ghost.style.pointerEvents='none';
-    ghost.style.opacity='0.85';
+    ghost.style.opacity='0'; // ξεκινά σβηστό
+    ghost.style.transition='opacity 1.6s ease-in-out'; // μεγάλο fade για φάντασμα
     ghost.style.filter='grayscale(1) brightness(1.2)';
     ghost.style.width  = aw+'px';
     ghost.style.height = ah+'px';
@@ -1314,9 +1336,9 @@ function ensureGhost(){
     ghostSpring.style.transformOrigin='left center';
     ghostSpring.style.zIndex='157';
     ghostSpring.style.pointerEvents='none';
-    ghostSpring.style.opacity='0.9';
+    ghostSpring.style.opacity='0'; // ξεκινά σβηστό
+    ghostSpring.style.transition='opacity 1.6s ease-in-out';
     ghostSpring.style.filter='grayscale(1) brightness(1.15)';
-    ghostSpring.style.display='none';
     stage.appendChild(ghostSpring);
   }
 }
@@ -1328,11 +1350,15 @@ async function runAct2(){
   stage.classList.add('open');
 
   springEl.style.display='block';
-  if(ghostSpring) ghostSpring.style.display='block';
+  if(ghostSpring) ghostSpring.style.opacity='0';
   markerEl.style.opacity='1';
   markerGhostEl.style.opacity='0';
 
   for(const ev of ACT2){
+
+    if(ev.lightsOff) setLights(false);
+    if(ev.lightsOn)  setLights(true);
+
     if(ev.gStart) ghostActive = true;
     if(ev.gStop)  ghostActive = false;
 
@@ -1520,6 +1546,9 @@ function addFoyerRow(item){
 }
 
 async function runFoyer(){
+  /* στο φουαγιέ τα φώτα “ανοικτά” */
+  setLights(true);
+
   foyerEl.style.display='block';
   boardLeft.innerHTML  = '';
   boardRight.innerHTML = '';
@@ -1567,6 +1596,7 @@ function resetShow(){
   lastSampleObsTime = -Infinity;
   measureRowIdx      = 0;
   setMode('run');
+  lightsOn = true;  // default: φώτα ανοικτά στην αρχή
 
   startBtn.style.display       ='block';
   countdownOverlay.style.display='none';
@@ -1612,10 +1642,10 @@ function resetShow(){
 
   springEl.style.display = 'none';
   if(ghost){
-    ghost.style.display = 'none';
+    ghost.style.opacity = '0';
   }
   if(ghostSpring){
-    ghostSpring.style.display = 'none';
+    ghostSpring.style.opacity = '0';
   }
   ghostActive = false;
 }
@@ -1702,6 +1732,10 @@ function animate(now){
   const cx = centerX();
   const stageH = stage.clientHeight;
 
+  /* Φωτισμός σκηνής: βάση lightsOn */
+  spotlight.style.opacity = lightsOn ? '1' : '0';
+  stage.style.filter = lightsOn ? 'none' : 'brightness(0.35)';
+
   const hookX = cx + A_px*Math.sin(omega*playbackTime);
 
   const baseL = springNaturalWidth || (springEl.getBoundingClientRect().width || 1);
@@ -1733,8 +1767,8 @@ function animate(now){
     const springBottom = getComputedStyle(springEl).bottom || 'calc(32vh + 92px)';
 
     if(ghostActive){
-      ghost.style.display      = 'block';
-      ghostSpring.style.display= 'block';
+      ghost.style.opacity      = '1';
+      ghostSpring.style.opacity= '1';
 
       const ghostRect  = ghost.getBoundingClientRect();
       const ghostWidth = ghostRect.width || actorWidth || 80;
@@ -1753,8 +1787,8 @@ function animate(now){
       markerGhostEl.style.left   = hookXg+'px';
       markerGhostEl.style.opacity= '1';
     }else{
-      ghost.style.display        = 'none';
-      ghostSpring.style.display  = 'none';
+      ghost.style.opacity        = '0';
+      ghostSpring.style.opacity  = '0';
       markerGhostEl.style.opacity= '0';
     }
   }else{
@@ -1867,6 +1901,9 @@ window.addEventListener('load', ()=>{
   if(btnLangEN){
     btnLangEN.addEventListener('click', ()=>setLanguage('en'));
   }
+
+  /* transition για το γενικό dim/bright της σκηνής */
+  stage.style.transition = 'filter 0.7s ease-in-out';
 
   updateRuler();
   measureSpringNaturalSize();
