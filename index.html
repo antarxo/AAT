@@ -12,7 +12,7 @@
   <!-- Σκηνή CSS -->
   <link rel="stylesheet" href="aat-stage.css">
 
-  <!-- Μικρό inline CSS μόνο για τα κουμπιά γλώσσας -->
+  <!-- Μικρό inline CSS μόνο για τα κουμπιά γλώσσας + viewers fade -->
   <style>
     .lang-toggle {
       position: absolute;
@@ -38,6 +38,17 @@
       font-weight: 600;
       box-shadow: 0 0 0 1px rgba(255,255,255,.7);
       background: rgba(0,0,0,0.75);
+    }
+
+    /* Θεατές: default κρυφοί, εμφανίζονται με fade + ανάδυση */
+    .viewers .viewer-avatar {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.35s ease-out, transform 0.35s ease-out;
+    }
+    .viewers .viewer-avatar.is-visible {
+      opacity: 1;
+      transform: translateY(0);
     }
   </style>
 </head>
@@ -268,6 +279,9 @@ let springNaturalHeight = null;
 
 /* Πάτωμα ηθοποιού σε px (κοινό με ghost) */
 let actorFloorBottomPx = null;
+
+/* Ενεργός avatar θεατή (acts/foyer) */
+let activeViewerAvatar = null;
 
 function measureSpringNaturalSize(){
   if(!springEl) return;
@@ -966,7 +980,49 @@ function tint(hex, alpha){
   return 'rgba('+r+','+g+','+b+','+alpha+')';
 }
 
+/* Ενεργοποίηση ενός μόνο avatar θεατή, με διαφοροποίηση Acts / Foyer */
+function setActiveViewerAvatar(idx1based, mode){
+  const items = viewersStrip.querySelectorAll('.viewer-avatar');
+  const targetIdx = (idx1based || 1) - 1;
+
+  items.forEach((div, idx) => {
+    if(idx !== targetIdx){
+      div.classList.remove('is-visible');
+    }
+  });
+
+  const el = viewersStrip.querySelector('.viewer-avatar[data-idx="'+targetIdx+'"]');
+  if(!el){
+    activeViewerAvatar = null;
+    return;
+  }
+
+  const baseBottom = el.dataset.baseBottom ? parseFloat(el.dataset.baseBottom) : NaN;
+  if(!Number.isNaN(baseBottom)){
+    let targetBottom = baseBottom;
+    if(mode === 'act'){
+      // Acts 1–2: λίγο πιο χαμηλά, σαν "μισό κεφάλι"
+      targetBottom = baseBottom - 40;
+    }
+    el.style.bottom = targetBottom + 'px';
+  }
+
+  // επανεκκίνηση κατάστασης για ομαλό fade / ανάδυση
+  el.classList.remove('is-visible');
+  el.style.opacity = '0';
+  el.style.transform = 'translateY(30px)';
+
+  // force reflow για να παίξει σωστά το transition
+  void el.offsetWidth;
+
+  el.classList.add('is-visible');
+  activeViewerAvatar = el;
+}
+
 function showSpeakerChip(idx1based){
+  // Acts 1 & 2: ενεργοποίηση avatar σε "act" mode
+  setActiveViewerAvatar(idx1based, 'act');
+
   const {x,y,info} = viewerAnchor(idx1based);
   if(!info) return;
 
@@ -1404,6 +1460,9 @@ function isFormulaBlock(text){
 }
 
 function setFoyerSpeaker(idx1based){
+  // Φουαγιέ: avatar σε πλήρη θέση JSON
+  setActiveViewerAvatar(idx1based, 'foyer');
+
   const {x,y,info} = viewerAnchor(idx1based);
   if(!info) return;
 
@@ -1563,6 +1622,17 @@ function resetShow(){
   bubbleEl.classList.remove('active','closing');
   actBubble.style.display      ='none';
   measureTBody.innerHTML       ='';
+
+  // καθάρισμα ενεργών avatars θεατών
+  if(viewersStrip){
+    const items = viewersStrip.querySelectorAll('.viewer-avatar');
+    items.forEach(div=>{
+      div.classList.remove('is-visible');
+      div.style.opacity = '';
+      div.style.transform = '';
+    });
+  }
+  activeViewerAvatar = null;
 
   if(uXT){
     xtChartEl.innerHTML = '';
@@ -1767,11 +1837,16 @@ function initViewersAvatars(){
       div.style.height = '';
     }
 
-    // Κάθετη θέση: ΑΠΟΚΛΕΙΣΤΙΚΑ από avatarDy (px)
+    // Κάθετη θέση: ΑΠΟΚΛΕΙΣΤΙΚΑ από avatarDy (px) + αποθήκευση ως baseBottom
     if (typeof v.avatarDy === 'number') {
       div.style.bottom = v.avatarDy + 'px';
+      div.dataset.baseBottom = String(v.avatarDy);
     } else {
       div.style.bottom = '';
+      const b = parseFloat(getComputedStyle(div).bottom);
+      if(!Number.isNaN(b)){
+        div.dataset.baseBottom = String(b);
+      }
     }
 
     // Σμίκρυνση / μεγέθυνση: avatarScale
@@ -1788,6 +1863,8 @@ function initViewersAvatars(){
     const x = (leftBand + widthBand * xFrac) * stageW;
     div.style.left = x + 'px';
 
+    // default: κρυφό, μέχρι να γίνει ενεργός
+    div.classList.remove('is-visible');
     div.style.display = 'block';
   });
 }
