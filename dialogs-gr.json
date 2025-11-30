@@ -6,11 +6,11 @@
       "color": "#ffcc00",
       "xFrac": 0.09,
       "bubbleDx": 40,
-      "bubbleDy": 25,
+      "bubbleDy": 15,
       "avatarDy": 100,
       "avatarScale": 0.27,
       "chipDx": 80,
-      "chipDy": 60,
+      "chipDy": 50,
       "img": "viewer1.png"
     },
     {
@@ -19,11 +19,11 @@
       "color": "#66ccff",
       "xFrac": 0.30,
       "bubbleDx": 40,
-      "bubbleDy": 25,
+      "bubbleDy": 15,
       "avatarDy": 100,
       "avatarScale": 0.27,
       "chipDx": 80,
-      "chipDy": 60,
+      "chipDy": 50,
       "img": "viewer2.png"
     },
     {
@@ -32,11 +32,11 @@
       "color": "#ff99cc",
       "xFrac": 0.55,
       "bubbleDx": 50,
-      "bubbleDy": 25,
+      "bubbleDy": 15,
       "avatarDy": 100,
       "avatarScale": 0.27,
       "chipDx": 90,
-      "chipDy": 60,
+      "chipDy": 50,
       "img": "viewer3.png"
     },
     {
@@ -45,11 +45,11 @@
       "color": "#99ff99",
       "xFrac": 0.75,
       "bubbleDx": 50,
-      "bubbleDy": 25,
+      "bubbleDy": 15,
       "avatarDy": 100,
       "avatarScale": 0.3,
       "chipDx": 90,
-      "chipDy": 60,
+      "chipDy": 50,
       "img": "viewer4.png"
     },
     {
@@ -58,11 +58,11 @@
       "color": "#ff9966",
       "xFrac": 0.88,
       "bubbleDx": 50,
-      "bubbleDy": 25,
+      "bubbleDy": 15,
       "avatarDy": 100,
       "avatarScale": 0.27,
       "chipDx": 80,
-      "chipDy": 60,
+      "chipDy": 50,
       "img": "viewer5.png"
     }
   ],
@@ -725,6 +725,7 @@
     }
   ]
 }  
+
 
 
 
