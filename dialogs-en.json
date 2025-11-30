@@ -110,7 +110,7 @@
       "yOffset": 0,
       "typeMs": 0,
       "pauseMs": 0,
-      "left": "Could it be <b>Simple Harmonic Motion (S.H.M.)?</b>",
+      "left": "Could it be <b>Simple Harmonic Motion?</b>",
       "right": ""
     },
     {
@@ -160,7 +160,7 @@
       "pauseMs": 400,
       "param": "phi",
       "left": "…and since <b>x₀={x0} m</b> is not zero, there is also an initial phase <b>φ₀={phi0}°</b>. Haha, one thing to keep in mind!",
-      "right": "x=Αημ(ωt+φ₀) (1)",
+      "right": "x=A·sin(ωt+φ₀) (1)",
       "alsoParams": true
     },
 
@@ -171,7 +171,7 @@
       "typeMs": 0,
       "pauseMs": 400,
       "left": "…therefore the velocity is given by the law <b>v=ωA·cos(ωt+φ₀)!</b>",
-      "right": "v=ωA·συν(ωt+φ₀) (2)",
+      "right": "v=ωA·cos(ωt+φ₀) (2)",
       "plot": "v"
     },
     {
@@ -181,7 +181,7 @@
       "typeMs": 0,
       "pauseMs": 400,
       "left": "…and the acceleration by the law <b>a=−ω²A·sin(ωt+φ₀)!</b>",
-      "right": "a=−ω²A·ημ(ωt+φ₀) (3)",
+      "right": "a=−ω²A·sin(ωt+φ₀) (3)",
       "plot": "a"
     },
     {
@@ -375,7 +375,7 @@
       "typeMs": 0,
       "pauseMs": 400,
       "left": "…uhm, ΣF = m·a in general, and so here, using (3), <b>ΣF = −mω²A·sin(ωt+φ₀) (5)!</b>",
-      "right": "ΣF = −mω²A·ημ(ωt+φ₀) (5)",
+      "right": "ΣF = −mω²A·sin(ωt+φ₀) (5)",
       "gStart": false,
       "gStop": false
     },
@@ -445,7 +445,7 @@
       "gStart": false,
       "gStop": false
     },
-    { 
+    {
       "viewer": 3,
       "xShift": 0,
       "yOffset": 0,
