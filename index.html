@@ -53,7 +53,7 @@
       transition: filter 0.8s ease;
     }
     .dimmed {
-      filter: brightness(0.45);
+      filter: brightness(0.8);
     }
 
     /* Avatars θεατών: κρυφοί by default, εμφανίζονται με fade μόνο όταν μιλάνε/σκέφτονται */
@@ -301,10 +301,13 @@ const A_px  = A_m*pxPerMeter;
 
 /* καθιστός θεατής στις πράξεις 1–2 */
 const ACTS_AVATAR_OFFSET = -45;
+/* labels & σκέψεις λίγο χαμηλότερα από το anchor */
+const LABEL_OFFSET = 30;
 
 let ghost       = null;
 let ghostSpring = null;
 let ghostActive = false;
+let ghostOpacity = 0;
 
 /* φυσικό μήκος ελατηρίου σε px */
 let springNaturalWidth  = null;
@@ -1140,7 +1143,7 @@ function showSpeakerChip(idx1based){
   const dy = (info && typeof info.chipDy === 'number') ? info.chipDy : 0;
 
   actBubble.style.left = (x + dx) + 'px';
-  actBubble.style.top  = (y - dy) + 'px';
+  actBubble.style.top  = (y - dy + LABEL_OFFSET) + 'px';
   actBubble.style.transform='translateX(-50%)';
   actBubble.style.backgroundColor = tint(info.color,0.9);
   actBubble.style.display='block';
@@ -1155,7 +1158,7 @@ function placeBubble(idx1based, xShift, yOffset){
   const dx = (info && typeof info.bubbleDx==='number'? info.bubbleDx:0) + (xShift||0);
   const dy = (info && typeof info.bubbleDy==='number'? info.bubbleDy:0) + (yOffset||0);
   const left = x + dx;
-  const top  = y - dy;
+  const top  = y - dy + LABEL_OFFSET;
   bubbleEl.style.left = left+'px';
   bubbleEl.style.top  = top +'px';
 }
@@ -1466,6 +1469,7 @@ function ensureGhost(){
 async function runAct2(){
   ensureGhost();
   ghostActive=false;
+  ghostOpacity = 0;
   actBreak.style.display='none';
   stage.classList.add('open');
   setAudienceLights(false);
@@ -1770,6 +1774,7 @@ function resetShow(){
     ghostSpring.style.opacity = '0';
   }
   ghostActive = false;
+  ghostOpacity = 0;
   setAudienceLights(true);
 }
 
@@ -1887,7 +1892,7 @@ function animate(now){
   const xMeters = (hookX - cx)/pxPerMeter;
   logMeasurement(tObs, xMeters);
 
-  /* GHOST: fade με opacity καθώς κινείται, χωρίς να σταματάει */
+  /* GHOST: απλό fade in/out με target opacity, ενώ κινείται κανονικά */
   if(ghost && ghostSpring){
     const Aghost_m  = 5.0;
     const Aghost_px = pxPerMeter*Aghost_m;
@@ -1913,18 +1918,14 @@ function animate(now){
 
     markerGhostEl.style.left   = hookXg+'px';
 
-    if(ghostActive){
-      const phaseNorm = (Math.sin(omega*playbackTime) + 1) / 2; // 0..1
-      const op = 0.15 + 0.70 * phaseNorm; // 0.15..0.85
-      const opStr = op.toFixed(2);
-      ghost.style.opacity       = opStr;
-      ghostSpring.style.opacity = opStr;
-      markerGhostEl.style.opacity = opStr;
-    }else{
-      ghost.style.opacity       = '0';
-      ghostSpring.style.opacity = '0';
-      markerGhostEl.style.opacity = '0';
-    }
+    const targetOpacity = ghostActive ? 0.85 : 0;
+    ghostOpacity += (targetOpacity - ghostOpacity) * 0.15;
+    if(Math.abs(targetOpacity - ghostOpacity) < 0.01) ghostOpacity = targetOpacity;
+    const opStr = ghostOpacity.toFixed(2);
+
+    ghost.style.opacity       = opStr;
+    ghostSpring.style.opacity = opStr;
+    markerGhostEl.style.opacity = opStr;
   }else{
     markerGhostEl.style.opacity = '0';
   }
