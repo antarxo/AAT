@@ -11,69 +11,6 @@
 
   <!-- Σκηνή CSS -->
   <link rel="stylesheet" href="aat-stage.css">
-
-  <!-- Μικρό inline CSS μόνο για τα κουμπιά γλώσσας + lawCharts + φώτα κοινού + avatars -->
-  <style>
-    .lang-toggle {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      z-index: 2000;
-      display: flex;
-      gap: 6px;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    }
-    .lang-toggle button {
-      padding: 2px 8px;
-      font-size: 11px;
-      border-radius: 4px;
-      border: none;
-      cursor: pointer;
-      opacity: 0.75;
-      background: rgba(0,0,0,0.4);
-      color: #fff;
-    }
-    .lang-toggle button.active {
-      opacity: 1;
-      font-weight: 600;
-      box-shadow: 0 0 0 1px rgba(255,255,255,.7);
-      background: rgba(0,0,0,0.75);
-    }
-
-    /* Σήκωμα στήλης mini-γραφημάτων */
-    .law-charts {
-      transform: translateY(-130px);
-    }
-
-    /* Φώτα κοινού + κουρτίνες */
-    .audience-main,
-    .audience-extra,
-    .curtain-top,
-    .curtain-upper,
-    .curtain-side {
-      transition: filter 0.8s ease;
-    }
-    .audience-main.dimmed,
-    .audience-extra.dimmed,
-    .curtain-top.dimmed,
-    .curtain-upper.dimmed,
-    .curtain-side.dimmed {
-      filter: brightness(0.5);
-    }
-
-    /* Avatars θεατών: κρυφοί by default, εμφανίζονται με fade μόνο όταν μιλάνε/σκέφτονται */
-    .viewers .viewer-avatar {
-      opacity: 0;
-      transition: opacity 0.5s ease;
-    }
-    .viewers .viewer-avatar.visible {
-      opacity: 1;
-    }
-    /* Φωτεινοί ομιλητές όταν τα φώτα είναι σβηστά */
-    .viewers .viewer-avatar.lit {
-      filter: brightness(0.8);
-    }
-  </style>
 </head>
 <body>
 <div class="stage" id="stage">
@@ -212,6 +149,108 @@ let FOYER = [];
 
 let foyerTBody = null;
 
+/* Σταθερά κείμενα ανά γλώσσα: μπορούν να σκεπαστούν από JSON → data.texts */
+const DIALOG_TEXTS_DEFAULT = {
+  gr: {
+    sign: {
+      title: 'Πράξη 1η: Η Κινηματική στα ... Αλγεβρικά',
+      lineA: 'Πρωταγωνιστεί ο ταλαντωτής (m₁, D₁) και οι θεαποιοί(*)',
+      lineB_html: 'στον μονόλογο <span class="hl">«ατέλειωτο πήγαινε έλα»</span>... επί σκηνής!',
+      lineC: 'Παραγωγή-Σκηνοθεσία: Εμηχ. Ενεργειούλης',
+      lineD: '(*) ... εσείς'
+    },
+    laws: {
+      title: 'Νόμοι Α.Α.Τ.'
+    },
+    measure: {
+      title: 'Μετρήσεις',
+      colIdx: 'α/α'
+    },
+    countdown: {
+      main: 'Η παράσταση αρχίζει.',
+      sub: 'ώρα να χρησιμοποιήσετε χαρτί και μολύβι!'
+    },
+    actBreak: {
+      title: 'Τέλος Πράξης 1',
+      msg: 'Ο (m₁,D₁) συνεχίζει. Είστε έτοιμοι για τη Δεύτερη Πράξη;',
+      button: 'Έναρξη Πράξης 2'
+    },
+    foyerBreak: {
+      title: 'Τέλος Πράξης 2',
+      msg: 'Θέλετε να περάσετε στο φουαγιέ για τη συζήτηση;',
+      button: 'Μετάβαση στο Φουαγιέ'
+    },
+    buttons: {
+      endShow: 'Τέλος Παράστασης',
+      foyer: 'Φουαγιέ',
+      start: 'Έναρξη'
+    },
+    controls: {
+      pauseTitle: 'παύση',
+      playTitle: 'κανονικά',
+      resetTitle: 'reset',
+      foyerTitle: 'Φουαγιέ'
+    }
+  },
+  en: {
+    sign: {
+      title: 'Act I: Kinematics in Algebraic Form',
+      lineA: 'Starring the oscillator (m₁, D₁) and the spectators(*)',
+      lineB_html: 'in the monologue <span class="hl">“endless back and forth”</span>... on stage!',
+      lineC: 'Production & Direction: Eng. Energioulis',
+      lineD: '(*) ... you'
+    },
+    laws: {
+      title: 'S.H.M. Laws'
+    },
+    measure: {
+      title: 'Measurements',
+      colIdx: 'No'
+    },
+    countdown: {
+      main: 'The performance is about to begin.',
+      sub: 'time to use pencil and paper!'
+    },
+    actBreak: {
+      title: 'End of Act I',
+      msg: '(m₁,D₁) continues. Ready for Act II?',
+      button: 'Start Act II'
+    },
+    foyerBreak: {
+      title: 'End of Act II',
+      msg: 'Do you want to move to the foyer for discussion?',
+      button: 'Go to Foyer'
+    },
+    buttons: {
+      endShow: 'End of Performance',
+      foyer: 'Foyer',
+      start: 'Start'
+    },
+    controls: {
+      pauseTitle: 'pause',
+      playTitle: 'play',
+      resetTitle: 'reset',
+      foyerTitle: 'Foyer'
+    }
+  },
+  dynamic: {
+    A: {
+      gr: '…με A={A} m!',
+      en: '…with A={A} m!'
+    },
+    Tw: {
+      gr: '… και T={T} s και επομένως ω={omega} rad/s!',
+      en: '…and T={T} s and therefore ω={omega} rad/s!'
+    },
+    phi: {
+      gr: '… όντως είναι ΑΑΤ και αφού το x₀={x0} m υπάρχει φ₀={phi0}°. Χαχα, ένα το κρατούμενο!',
+      en: '…indeed it is S.H.M. and since x₀={x0} m, there is an initial phase φ₀={phi0}°. Haha, one thing to keep in mind!'
+    }
+  }
+};
+
+let DIALOG_TEXTS = JSON.parse(JSON.stringify(DIALOG_TEXTS_DEFAULT));
+
 /* Τρέχουσα γλώσσα: 'gr' ή 'en' */
 let currentLang = 'gr';
 let btnLangGR = null;
@@ -331,6 +370,24 @@ function measureSpringNaturalSize(){
   springEl.style.transform = prevTransform;
 }
 
+/* merge για data.texts από JSON πάνω στα defaults */
+function mergeDeep(target, source){
+  if(!source || typeof source !== 'object') return target;
+  Object.keys(source).forEach(key=>{
+    const srcVal = source[key];
+    const tgtVal = target[key];
+    if(srcVal && typeof srcVal === 'object' && !Array.isArray(srcVal)){
+      if(!tgtVal || typeof tgtVal !== 'object' || Array.isArray(tgtVal)){
+        target[key] = {};
+      }
+      mergeDeep(target[key], srcVal);
+    }else{
+      target[key] = srcVal;
+    }
+  });
+  return target;
+}
+
 /* Φώτα κοινού + κουρτίνες */
 function setAudienceLights(on){
   audienceLightsOn = !!on;
@@ -373,68 +430,45 @@ function applyUIText(){
   const foyerBreakTitle = document.getElementById('foyerBreakTitle');
   const foyerBreakMsg = document.getElementById('foyerBreakMsg');
 
-  if(currentLang === 'en'){
-    if(signTitle) signTitle.textContent = 'Act I: Kinematics in Algebraic Form';
-    if(signLineA) signLineA.textContent = 'Starring the oscillator (m₁, D₁) and the spectators(*)';
-    if(signLineB) signLineB.innerHTML   = 'in the monologue <span class="hl">“endless back and forth”</span>... on stage!';
-    if(signLineC) signLineC.textContent = 'Production & Direction: Eng. Energioulis';
-    if(signLineD) signLineD.textContent = '(*) ... you';
+  const pack = DIALOG_TEXTS[currentLang] || DIALOG_TEXTS.gr;
+  const sign = pack.sign || {};
+  const laws = pack.laws || {};
+  const meas = pack.measure || {};
+  const ctd  = pack.countdown || {};
+  const ab   = pack.actBreak || {};
+  const fb   = pack.foyerBreak || {};
+  const btns = pack.buttons || {};
+  const ctrls= pack.controls || {};
 
-    if(lawsTitle) lawsTitle.textContent = 'S.H.M. Laws';
-    if(measureTitle) measureTitle.textContent = 'Measurements';
-    if(measureColIdx) measureColIdx.textContent = 'No';
+  if(signTitle) signTitle.textContent = sign.title || '';
+  if(signLineA) signLineA.textContent = sign.lineA || '';
+  if(signLineB) signLineB.innerHTML   = sign.lineB_html || '';
+  if(signLineC) signLineC.textContent = sign.lineC || '';
+  if(signLineD) signLineD.textContent = sign.lineD || '';
 
-    if(countdownMain) countdownMain.textContent = 'The performance is about to begin.';
-    if(countdownSub)  countdownSub.textContent  = 'time to use pencil and paper!';
+  if(lawsTitle)    lawsTitle.textContent    = laws.title || '';
+  if(measureTitle) measureTitle.textContent = meas.title || '';
+  if(measureColIdx) measureColIdx.textContent = meas.colIdx || '';
 
-    if(actBreakTitle) actBreakTitle.textContent = 'End of Act I';
-    if(actBreakMsg)   actBreakMsg.textContent   = '(m₁,D₁) continues. Ready for Act II?';
-    if(btnAct2)       btnAct2.textContent       = 'Start Act II';
+  if(countdownMain) countdownMain.textContent = ctd.main || '';
+  if(countdownSub)  countdownSub.textContent  = ctd.sub  || '';
 
-    if(foyerBreakTitle) foyerBreakTitle.textContent = 'End of Act II';
-    if(foyerBreakMsg)   foyerBreakMsg.textContent   = 'Do you want to move to the foyer for discussion?';
-    if(btnFoyerGo)      btnFoyerGo.textContent      = 'Go to Foyer';
+  if(actBreakTitle) actBreakTitle.textContent = ab.title || '';
+  if(actBreakMsg)   actBreakMsg.textContent   = ab.msg   || '';
+  if(btnAct2)       btnAct2.textContent       = ab.button || btnAct2.textContent;
 
-    if(btnEndShow) btnEndShow.textContent = 'End of Performance';
-    if(btnFoyer)   btnFoyer.textContent   = 'Foyer';
-    if(startBtn)   startBtn.textContent   = 'Start';
+  if(foyerBreakTitle) foyerBreakTitle.textContent = fb.title || '';
+  if(foyerBreakMsg)   foyerBreakMsg.textContent   = fb.msg   || '';
+  if(btnFoyerGo)      btnFoyerGo.textContent      = fb.button || btnFoyerGo.textContent;
 
-    btnPause.title = 'pause';
-    btnPlay.title  = 'play';
-    btnReset.title = 'reset';
-    btnFoyer.title = 'Foyer';
+  if(btnEndShow) btnEndShow.textContent = btns.endShow || btnEndShow.textContent;
+  if(btnFoyer)   btnFoyer.textContent   = btns.foyer   || btnFoyer.textContent;
+  if(startBtn)   startBtn.textContent   = btns.start   || startBtn.textContent;
 
-  } else {
-    if(signTitle) signTitle.textContent = 'Πράξη 1η: Η Κινηματική στα ... Αλγεβρικά';
-    if(signLineA) signLineA.textContent = 'Πρωταγωνιστεί ο ταλαντωτής (m₁, D₁) και οι θεαποιοί(*)';
-    if(signLineB) signLineB.innerHTML   = 'στον μονόλογο <span class="hl">«ατέλειωτο πήγαινε έλα»</span>... επί σκηνής!';
-    if(signLineC) signLineC.textContent = 'Παραγωγή-Σκηνοθεσία: Εμηχ. Ενεργειούλης';
-    if(signLineD) signLineD.textContent = '(*) ... εσείς';
-
-    if(lawsTitle) lawsTitle.textContent = 'Νόμοι Α.Α.Τ.';
-    if(measureTitle) measureTitle.textContent = 'Μετρήσεις';
-    if(measureColIdx) measureColIdx.textContent = 'α/α';
-
-    if(countdownMain) countdownMain.textContent = 'Η παράσταση αρχίζει.';
-    if(countdownSub)  countdownSub.textContent  = 'ώρα να χρησιμοποιήσετε χαρτί και μολύβι!';
-
-    if(actBreakTitle) actBreakTitle.textContent = 'Τέλος Πράξης 1';
-    if(actBreakMsg)   actBreakMsg.textContent   = 'Ο (m₁,D₁) συνεχίζει. Είστε έτοιμοι για τη Δεύτερη Πράξη;';
-    if(btnAct2)       btnAct2.textContent       = 'Έναρξη Πράξης 2';
-
-    if(foyerBreakTitle) foyerBreakTitle.textContent = 'Τέλος Πράξης 2';
-    if(foyerBreakMsg)   foyerBreakMsg.textContent   = 'Θέλετε να περάσετε στο φουαγιέ για τη συζήτηση;';
-    if(btnFoyerGo)      btnFoyerGo.textContent      = 'Μετάβαση στο Φουαγιέ';
-
-    if(btnEndShow) btnEndShow.textContent = 'Τέλος Παράστασης';
-    if(btnFoyer)   btnFoyer.textContent   = 'Φουαγιέ';
-    if(startBtn)   startBtn.textContent   = 'Έναρξη';
-
-    btnPause.title = 'παύση';
-    btnPlay.title  = 'κανονικά';
-    btnReset.title = 'reset';
-    btnFoyer.title = 'Φουαγιέ';
-  }
+  if(btnPause) btnPause.title = ctrls.pauseTitle || btnPause.title;
+  if(btnPlay)  btnPlay.title  = ctrls.playTitle  || btnPlay.title;
+  if(btnReset) btnReset.title = ctrls.resetTitle || btnReset.title;
+  if(btnFoyer) btnFoyer.title = ctrls.foyerTitle || btnFoyer.title;
 
   if(btnLangGR && btnLangEN){
     btnLangGR.classList.toggle('active', currentLang === 'gr');
@@ -1272,6 +1306,12 @@ function showBubbleForEvent(ev){
 /* Δυναμικά bubbles για A, T/ω, φ */
 
 function dynDefault(kind){
+  const dynPack = DIALOG_TEXTS.dynamic && DIALOG_TEXTS.dynamic[kind];
+  if(dynPack){
+    const txt = dynPack[currentLang] || dynPack.gr || dynPack.en;
+    if(txt) return txt;
+  }
+  // fallback σε παλιό κείμενο αν λείπει από JSON
   if(kind==='A'){
     return currentLang === 'en' ? '…with A={A} m!' :
       '…με A={A} m!';
@@ -1722,7 +1762,7 @@ async function runFoyer(){
   phase = 'foyer';
   setAudienceLights(true);
   foyerEl.style.display='block';
-  startBtn.style.display='none';   // <<< ΚΡΥΒΟΥΜΕ ΤΟ ΚΟΥΜΠΙ ΕΝΑΡΞΗ ΟΠΟΤΕ ΜΠΑΙΝΟΥΜΕ ΦΟΥΑΓΙΕ
+  startBtn.style.display='none';   // μπαίνοντας φουαγιέ, κρύβεται οπωσδήποτε το "Έναρξη"
   boardLeft.innerHTML  = '';
   boardRight.innerHTML = '';
   foyerBubble.style.display='none';
@@ -2064,6 +2104,12 @@ async function loadDialogs(){
       ACTS_AVATAR_OFFSET = data.actsAvatarOffset;
     } else {
       ACTS_AVATAR_OFFSET = -60;
+    }
+
+    /* texts από JSON (αν υπάρχουν) σκεπάζουν τα defaults */
+    if (data.texts && typeof data.texts === 'object') {
+      mergeDeep(DIALOG_TEXTS, data.texts);
+      applyUIText();
     }
 
     initViewersAvatars();
