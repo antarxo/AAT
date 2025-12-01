@@ -303,6 +303,7 @@ let ACTS_AVATAR_OFFSET = -60;
 let ghost       = null;
 let ghostSpring = null;
 let ghostActive = false;
+let ghostVisibility = 0; // 0..1 για fade-in/fade-out
 
 /* φυσικό μήκος ελατηρίου σε px */
 let springNaturalWidth  = null;
@@ -1107,7 +1108,7 @@ function viewerAnchor(idx1based){
   return {x,y,info:vi};
 }
 
-/* ΝΕΟ: anchor από το ΚΕΝΤΡΟ του avatar μετά την κλιμάκωση (όπως ζητάς) */
+/* ΝΕΟ: anchor από το ΚΕΝΤΡΟ του avatar, με χρήση του baseBottom (χωρίς ACTS_AVATAR_OFFSET) */
 function getViewerAvatarCenter(idx1based){
   const idx0 = (idx1based||1)-1;
   const div = viewersStrip.querySelector('.viewer-avatar[data-idx="'+idx0+'"]');
@@ -1116,8 +1117,11 @@ function getViewerAvatarCenter(idx1based){
 
   if(div){
     const r = div.getBoundingClientRect();
+    const baseBottom = parseFloat(div.dataset.baseBottom || '0') || 0;
+
     const cx = r.left + r.width/2 - stageRect.left;
-    const cy = r.top  + r.height/2 - stageRect.top;
+    const cy = stageRect.height - baseBottom - r.height/2; // ανεξάρτητο από το -60 στις πράξεις
+
     return {x:cx,y:cy,info};
   }
   /* fallback αν για κάποιο λόγο δεν υπάρχει avatar */
@@ -1148,7 +1152,7 @@ function showViewerAvatar(idx1based){
   const base = parseFloat(el.dataset.baseBottom || '0') || 0;
   let bottom = base;
   if(phase === 'act1' || phase === 'act2'){
-    bottom = base + ACTS_AVATAR_OFFSET;
+    bottom = base + ACTS_AVATAR_OFFSET; // μόνο η εικόνα κατεβαίνει, οι σκέψεις/ετικέτες αγνοούν αυτό το offset
   }
   el.style.bottom = bottom + 'px';
   el.classList.add('visible');
@@ -1465,11 +1469,12 @@ function ensureGhost(){
     ghost.style.position='absolute';
     ghost.style.zIndex='158';
     ghost.style.pointerEvents='none';
-    ghost.style.opacity='0.85';
+    ghost.style.opacity='0';
     ghost.style.filter='grayscale(1) brightness(1.2)';
     ghost.style.width  = aw+'px';
     ghost.style.height = ah+'px';
     ghost.style.bottom = (actorFloorBottomPx ?? 0)+'px';
+    ghost.style.display='none';
 
     const img = document.createElement('img');
     img.src = actor.querySelector('img').src;
@@ -1486,7 +1491,7 @@ function ensureGhost(){
     ghostSpring.style.transformOrigin='left center';
     ghostSpring.style.zIndex='157';
     ghostSpring.style.pointerEvents='none';
-    ghostSpring.style.opacity='0.9';
+    ghostSpring.style.opacity='0';
     ghostSpring.style.filter='grayscale(1) brightness(1.15)';
     ghostSpring.style.display='none';
     stage.appendChild(ghostSpring);
@@ -1496,13 +1501,22 @@ function ensureGhost(){
 async function runAct2(){
   ensureGhost();
   ghostActive=false;
+  ghostVisibility=0;
+  if(ghost){
+    ghost.style.display='none';
+    ghost.style.opacity='0';
+  }
+  if(ghostSpring){
+    ghostSpring.style.display='none';
+    ghostSpring.style.opacity='0';
+  }
+
   actBreak.style.display='none';
   stage.classList.add('open');
   setAudienceLights(false);
   phase = 'act2';
 
   springEl.style.display='block';
-  if(ghostSpring) ghostSpring.style.display='block';
   markerEl.style.opacity='1';
   markerGhostEl.style.opacity='0';
 
@@ -1794,11 +1808,15 @@ function resetShow(){
   springEl.style.display = 'none';
   if(ghost){
     ghost.style.display = 'none';
+    ghost.style.opacity = '0';
   }
   if(ghostSpring){
     ghostSpring.style.display = 'none';
+    ghostSpring.style.opacity = '0';
   }
   ghostActive = false;
+  ghostVisibility = 0;
+
   setAudienceLights(true);
 }
 
@@ -1914,19 +1932,28 @@ function animate(now){
   const xMeters = (hookX - cx)/pxPerMeter;
   logMeasurement(tObs, xMeters);
 
+  /* Ghost με fade-in / fade-out σαν ανάμνηση */
   if(ghost && ghostSpring){
-    const Aghost_m  = 5.0;
-    const Aghost_px = pxPerMeter*Aghost_m;
-
-    const sinθ = Math.max(-1, Math.min(1, (hookX - cx)/Math.max(1,A_px)));
-    const hookXg = cx + Aghost_px*sinθ;
-
-    const springBottom = getComputedStyle(springEl).bottom || 'calc(32vh + 92px)';
-
-    if(ghostActive){
+    const target = ghostActive ? 1 : 0;
+    const fadeSpeed = 3; // μεγαλύτερο => πιο γρήγορο fade
+    const step = Math.min(1, fadeSpeed * realDt);
+    ghostVisibility += (target - ghostVisibility) * step;
+    if(ghostVisibility < 0.01 && !ghostActive){
+      ghostVisibility = 0;
+      ghost.style.display      = 'none';
+      ghostSpring.style.display= 'none';
+      markerGhostEl.style.opacity = '0';
+    }else{
       ghost.style.display      = 'block';
       ghostSpring.style.display= 'block';
 
+      const Aghost_m  = 5.0;
+      const Aghost_px = pxPerMeter*Aghost_m;
+
+      const sinθ = Math.max(-1, Math.min(1, (hookX - cx)/Math.max(1,A_px)));
+      const hookXg = cx + Aghost_px*sinθ;
+
+      const springBottom = getComputedStyle(springEl).bottom || 'calc(32vh + 92px)';
       const ghostRect  = ghost.getBoundingClientRect();
       const ghostWidth = ghostRect.width || actorWidth || 80;
 
@@ -1941,12 +1968,11 @@ function animate(now){
       ghostSpring.style.height   = springNaturalHeight ? (springNaturalHeight+'px') : (springEl.getBoundingClientRect().height || 1)+'px';
       ghostSpring.style.transform= 'scaleX('+scaleg+')';
 
+      const vis = ghostVisibility;
+      ghost.style.opacity        = (0.85*vis).toString();
+      ghostSpring.style.opacity  = (0.9*vis).toString();
       markerGhostEl.style.left   = hookXg+'px';
-      markerGhostEl.style.opacity= '1';
-    }else{
-      ghost.style.display        = 'none';
-      ghostSpring.style.display  = 'none';
-      markerGhostEl.style.opacity= '0';
+      markerGhostEl.style.opacity= vis.toString();
     }
   }else{
     markerGhostEl.style.opacity = '0';
