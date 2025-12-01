@@ -1,4 +1,38 @@
 {
+	{
+  "actsAvatarOffset": -60,
+  "ui": {
+    "signTitle": "Πράξη 1η: Η Κινηματική στα ... Αλγεβρικά",
+    "signLineA": "Πρωταγωνιστεί ο ταλαντωτής (m₁, D₁) και οι θεαποιοί(*)",
+    "signLineB": "στον μονόλογο <span class=\"hl\">«ατέλειωτο πήγαινε έλα»</span>... επί σκηνής!",
+    "signLineC": "Παραγωγή-Σκηνοθεσία: Εμηχ. Ενεργειούλης",
+    "signLineD": "(*) ... εσείς",
+
+    "lawsTitle": "Νόμοι Α.Α.Τ.",
+    "measureTitle": "Μετρήσεις",
+    "measureColIdx": "α/α",
+
+    "countdownMain": "Η παράσταση αρχίζει.",
+    "countdownSub": "ώρα να χρησιμοποιήσετε χαρτί και μολύβι!",
+
+    "actBreakTitle": "Τέλος Πράξης 1",
+    "actBreakMsg": "Ο (m₁,D₁) συνεχίζει. Είστε έτοιμοι για τη Δεύτερη Πράξη;",
+    "btnAct2": "Έναρξη Πράξης 2",
+
+    "foyerBreakTitle": "Τέλος Πράξης 2",
+    "foyerBreakMsg": "Θέλετε να περάσετε στο φουαγιέ για τη συζήτηση;",
+    "btnFoyerGo": "Μετάβαση στο Φουαγιέ",
+
+    "btnEndShow": "Τέλος Παράστασης",
+    "btnFoyer": "Φουαγιέ",
+    "startBtn": "Έναρξη",
+
+    "btnPauseTitle": "παύση",
+    "btnPlayTitle": "κανονικά",
+    "btnResetTitle": "reset",
+    "btnFoyerTitle": "Φουαγιέ"
+  },
+
   "viewers": [
     {
       "name_gr": "Θεατής 1",
@@ -726,6 +760,7 @@
     }
   ]
 }  
+
 
 
 
