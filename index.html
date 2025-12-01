@@ -12,7 +12,7 @@
   <!-- Σκηνή CSS -->
   <link rel="stylesheet" href="aat-stage.css">
 
-  <!-- Μικρό inline CSS μόνο για τα κουμπιά γλώσσας + viewers fade -->
+  <!-- Μικρό inline CSS μόνο για τα κουμπιά γλώσσας + viewers fade + overlay fix -->
   <style>
     .lang-toggle {
       position: absolute;
@@ -52,6 +52,12 @@
     /* Προαιρετικά ομαλό opacity για spotlight (δεν το δένουμε με τα φώτα του κοινού) */
     .spotlight {
       transition: opacity 0.7s ease-in-out;
+    }
+
+    /* Πλαίσια μεταξύ πράξεων / φουαγιέ: μόνο το κουτί, ΟΧΙ πέπλο πάνω από τη σκηνή */
+    .actbreak,
+    .foyerbreak {
+      background: none !important;
     }
   </style>
 </head>
