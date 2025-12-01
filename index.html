@@ -5,14 +5,14 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Θεατρική Σκηνή — Ενιαία Έκδοση (Act I + Act II + Φουαγιέ)</title>
 
-  <!-- uPlot για το x–t διάγραμμα (κρατιέται, αν και τώρα x–t είναι canvas) -->
+  <!-- uPlot για το x–t διάγραμμα (δεν πειράζει αν μείνει, τώρα το x–t είναι canvas) -->
   <link rel="stylesheet" href="https://unpkg.com/uplot@1.6.30/dist/uPlot.min.css">
   <script src="https://unpkg.com/uplot@1.6.30/dist/uPlot.iife.min.js"></script>
 
   <!-- Σκηνή CSS -->
   <link rel="stylesheet" href="aat-stage.css">
 
-  <!-- Inline CSS για γλώσσα, lawCharts offset, φώτα κοινού, avatars, ghost fade, act/foyer overlay -->
+  <!-- Inline CSS μόνο για extra εφέ -->
   <style>
     .lang-toggle {
       position: absolute;
@@ -40,20 +40,29 @@
       background: rgba(0,0,0,0.75);
     }
 
-    /* Σήκωμα στήλης mini-γραφημάτων ώστε να χωράει καλύτερα το F-x κ.λπ. */
+    /* Η στήλη των mini-γραφημάτων λίγο πιο πάνω για να χωράνε όλα (v, a, a-x, x-sin) */
     .law-charts {
       transform: translateY(-130px);
     }
 
-    /* Φώτα κοινού (koino.png) */
-    .audience-main {
-      transition: filter 0.8s ease;
+    /* Dim overlay για φώτα κοινού – από τον χάρακα και κάτω */
+    .audience-dim {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 60vh; /* ακριβής θέση ρυθμίζεται από JS */
+      bottom: 0;
+      pointer-events: none;
+      background: radial-gradient(ellipse at center, rgba(0,0,0,0.0) 0%, rgba(0,0,0,0.9) 70%);
+      opacity: 0;
+      transition: opacity 0.8s ease;
+      z-index: 1450; /* πάνω από κοινό/θεατές, κάτω από bubbles & κουτιά */
     }
-    .audience-main.dimmed {
-      filter: brightness(0.25);
+    .audience-dim.active {
+      opacity: 1;
     }
 
-    /* Avatars θεατών: κρυφοί by default, μόνο ο ενεργός με fade */
+    /* Avatars θεατών – κρυφοί, μόνο ο ενεργός φαίνεται με fade */
     .viewers .viewer-avatar {
       opacity: 0;
       transition: opacity 0.5s ease;
@@ -62,16 +71,14 @@
       opacity: 1;
     }
 
-    /* Ghost fade in / out καθώς κινείται */
+    /* Ghost: fade καθώς αλλάζει gStart/gStop */
     #actorGhost,
-    #springGhost {
-      transition: opacity 1.4s ease;
-    }
+    #springGhost,
     #markerGhost {
       transition: opacity 1.0s ease;
     }
 
-    /* Πλαίσια αλλαγής σκηνής: μόνο το κουτί, όχι "σεντόνι" πάνω απ' όλη τη σκηνή */
+    /* Να μην σεντονιάζει όλη τη σκηνή το act/foyer break */
     .actbreak,
     .foyerbreak {
       background: transparent !important;
@@ -160,6 +167,9 @@
     <div class="viewer-avatar" data-idx="4"></div>
   </div>
 
+  <!-- Dim overlay για τα φώτα κοινού -->
+  <div id="audienceDim" class="audience-dim"></div>
+
   <div class="thought-bubble" id="bubble0">
     <div class="text"></div>
     <div class="checkmark">✓</div>
@@ -225,9 +235,6 @@ let currentLang = 'gr';
 let btnLangGR = null;
 let btnLangEN = null;
 
-/* Κατάσταση παράστασης για locks κουμπιών */
-let phase = 'idle'; // idle, countdown, act1, between1and2, act2, between2andFoyer, foyer
-
 /* ---------- Φυσική / σκηνή ---------- */
 
 const stage        = document.getElementById('stage');
@@ -253,6 +260,7 @@ const lawCharts    = document.getElementById('lawCharts');
 const xtChartEl    = document.getElementById('xtChart');
 const audienceExtra= document.getElementById('audienceExtra');
 const audienceMain = document.querySelector('.audience-main');
+const audienceDim  = document.getElementById('audienceDim');
 
 const bubbleEl     = document.getElementById('bubble0');
 const bubbleTextEl = bubbleEl.querySelector('.text');
@@ -296,7 +304,7 @@ let uXT = null;  // canvas για x–t
 let vCan = null;
 let aCan = null;
 let axCan = null;
-let xsCan = null; // x–sin(ωt) γράφημα
+let xsCan = null; // x–sin(ωt)
 
 const m   = 70;
 const T   = 6.0;
@@ -305,14 +313,11 @@ const pxPerMeter = 50;
 const omega = 2*Math.PI/T;
 const A_px  = A_m*pxPerMeter;
 
-/* καθιστός θεατής στις πράξεις 1–2 */
-const ACTS_AVATAR_OFFSET = -45;
-
 let ghost       = null;
 let ghostSpring = null;
 let ghostActive = false;
 
-/* φυσικό μέγεθος ελατηρίου σε px */
+/* φυσικό μήκος ελατηρίου σε px */
 let springNaturalWidth  = null;
 let springNaturalHeight = null;
 
@@ -335,13 +340,20 @@ function measureSpringNaturalSize(){
   springEl.style.transform = prevTransform;
 }
 
-/* Φώτα κοινού */
+/* Φώτα κοινού: overlay από τον χάρακα και κάτω */
+function updateAudienceDimPosition(){
+  if(!audienceDim) return;
+  const sRect = stage.getBoundingClientRect();
+  const rRect = rulerEl.getBoundingClientRect();
+  const top = Math.max(0, rRect.bottom - sRect.top);
+  audienceDim.style.top = top + 'px';
+}
 function setAudienceLights(on){
-  if(!audienceMain) return;
+  if(!audienceDim) return;
   if(on){
-    audienceMain.classList.remove('dimmed');
+    audienceDim.classList.remove('active');
   }else{
-    audienceMain.classList.add('dimmed');
+    audienceDim.classList.add('active');
   }
 }
 
@@ -658,7 +670,7 @@ function sizeLawCanvas(c){
   c.style.height=h+'px';
 }
 
-/* v(t), a(t), a–x, x–sin(ωt) */
+/* v(t) */
 
 function drawVelocityChart(){
   if(!vCan) return;
@@ -748,6 +760,8 @@ function drawVelocityChart(){
   const vmaxLabel = (currentLang === 'en' ? 'v_max ≈ ' : 'υ_max ≈ ') + vmax.toFixed(2);
   ctx.fillText(vmaxLabel, x0+4, h-margin+4);
 }
+
+/* a(t) */
 
 function drawAccelerationChart(){
   if(!aCan) return;
@@ -890,43 +904,40 @@ function drawAxChart(){
 
   ctx.restore();
 
+  ctx.strokeStyle = '#ffd27a';
+  ctx.lineWidth = 2;
+  const pL = toCanvas(-A_m,  omega*omega*A_m);
+  const pR = toCanvas( A_m, -omega*omega*A_m);
+  ctx.beginPath();
+  ctx.moveTo(pL.cx,pL.cy);
+  ctx.lineTo(pR.cx,pR.cy);
+  ctx.stroke();
+
   ctx.strokeStyle = 'rgba(255,255,255,0.6)';
   ctx.lineWidth = 1;
   ctx.setLineDash([]);
   ctx.beginPath();
   ctx.moveTo(xMid, y0);
   ctx.lineTo(xMid, y1);
-  ctx.stroke();
-
-  ctx.beginPath();
   ctx.moveTo(x0, yMid);
   ctx.lineTo(x1, yMid);
   ctx.stroke();
 
-  ctx.strokeStyle = '#ffd27a';
-  ctx.lineWidth = 2;
   ctx.beginPath();
-  const pL = toCanvas(-A_m,  omega*omega*A_m);
-  const pR = toCanvas( A_m, -omega*omega*A_m);
-  ctx.moveTo(pL.cx,pL.cy);
-  ctx.lineTo(pR.cx,pR.cy);
+  ctx.rect(x0,y0,x1-x0,y1-y0);
   ctx.stroke();
 
   ctx.fillStyle = '#fff';
   ctx.font = '11px system-ui';
-  ctx.fillText('a–x', x0+4, y0+10);
+  ctx.fillText('a–x', x0+4, y0+12);
 
   ctx.font = '10px system-ui';
   ctx.fillText('x (m)', x1-32, yMid-4);
-  ctx.fillText('a (m/s²)', xMid+6, y0+10);
-
-  ctx.fillText('a = -ω²·x', x0+4, y1-4);
-  ctx.fillText('A = '+A_m.toFixed(2)+' m', x0+4, y1-18);
-  const amaxLabel = (currentLang === 'en' ? 'a_max ≈ ' : 'a_max ≈ ') + amax.toFixed(2);
-  ctx.fillText(amaxLabel, x0+4, y1-32);
+  ctx.fillText('a (m/s²)', xMid+6, y0+12);
+  ctx.fillText('a = -ω²·x', x0+4, y1-6);
 }
 
-/* x–sin(ωt) */
+/* x – sin(ωt) */
 
 function drawXSinChart(){
   if(!xsCan) return;
@@ -941,16 +952,14 @@ function drawXSinChart(){
   const y0 = margin;
   const y1 = h - margin;
 
-  const Smin = -1.1;
-  const Smax = +1.1;
-  const xmin = -1.1 * A_m;
-  const xmax = +1.1 * A_m;
+  const sinMin = -1, sinMax = 1;
+  const xMin = -A_m, xMax = A_m;
 
-  function SToX(S){
-    return x0 + (S - Smin)/(Smax - Smin) * (x1 - x0);
+  function sToXCoord(s){
+    return x0 + (s - sinMin)/(sinMax - sinMin) * (x1 - x0);
   }
-  function xToY(x){
-    return y1 - (x - xmin)/(xmax - xmin) * (y1 - y0);
+  function xToYCoord(x){
+    return y1 - (x - xMin)/(xMax - xMin) * (y1 - y0);
   }
 
   ctx.save();
@@ -958,21 +967,21 @@ function drawXSinChart(){
   ctx.lineWidth = 1;
   ctx.setLineDash([3,3]);
 
-  const STicks = [-1, -0.5, 0, 0.5, 1];
-  STicks.forEach(S=>{
-    const xx = SToX(S);
+  const sTicks = [-1,-0.5,0,0.5,1];
+  sTicks.forEach(s=>{
+    const xf = sToXCoord(s);
     ctx.beginPath();
-    ctx.moveTo(xx, y0);
-    ctx.lineTo(xx, y1);
+    ctx.moveTo(xf, y0);
+    ctx.lineTo(xf, y1);
     ctx.stroke();
   });
 
-  const xTicks = [-A_m, -A_m/2, 0, A_m/2, A_m];
+  const xTicks = [xMin, xMin/2, 0, xMax/2, xMax];
   xTicks.forEach(x=>{
-    const yy = xToY(x);
+    const yf = xToYCoord(x);
     ctx.beginPath();
-    ctx.moveTo(x0, yy);
-    ctx.lineTo(x1, yy);
+    ctx.moveTo(x0, yf);
+    ctx.lineTo(x1, yf);
     ctx.stroke();
   });
 
@@ -981,56 +990,44 @@ function drawXSinChart(){
   ctx.strokeStyle = 'rgba(255,255,255,0.6)';
   ctx.lineWidth = 1;
   ctx.setLineDash([]);
-
-  const xAxisS0 = SToX(0);
-  const yx0 = xToY(0);
-
   ctx.beginPath();
-  ctx.moveTo(xAxisS0, y0);
-  ctx.lineTo(xAxisS0, y1);
+  ctx.moveTo(sToXCoord(0), y0);
+  ctx.lineTo(sToXCoord(0), y1);
+  ctx.moveTo(x0, xToYCoord(0));
+  ctx.lineTo(x1, xToYCoord(0));
   ctx.stroke();
 
   ctx.beginPath();
-  ctx.moveTo(x0, yx0);
-  ctx.lineTo(x1, yx0);
+  ctx.rect(x0,y0,x1-x0,y1-y0);
   ctx.stroke();
 
-  ctx.beginPath();
-  ctx.rect(x0, y0, x1-x0, y1-y0);
-  ctx.stroke();
-
+  const N = 200;
   ctx.strokeStyle = '#ffd27a';
   ctx.lineWidth = 2;
   ctx.beginPath();
-  const S1 = -1;
-  const S2 = +1;
-  const x1L = A_m * S1;
-  const x2L = A_m * S2;
-  ctx.moveTo(SToX(S1), xToY(x1L));
-  ctx.lineTo(SToX(S2), xToY(x2L));
+  for(let i=0;i<=N;i++){
+    const t = (i/N)*T;
+    const s = Math.sin(omega*(t+obsStartPlaybackOffset));
+    const x = A_m*Math.sin(omega*(t+obsStartPlaybackOffset));
+    const px = sToXCoord(s);
+    const py = xToYCoord(x);
+    if(i===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
+  }
   ctx.stroke();
 
   ctx.fillStyle = '#fff';
   ctx.font = '11px system-ui';
-  const title = (currentLang === 'en') ? 'x–sin(ωt)' : 'x–ημ(ωt)';
-  ctx.fillText(title, x0+4, y0+10);
+  const label = currentLang === 'en' ? 'x–sin(ωt)' : 'x–ημ(ωt)';
+  ctx.fillText(label, x0+4, y0+12);
 
   ctx.font = '10px system-ui';
   const xLabel = 'x (m)';
-  const sLabel = (currentLang === 'en') ? 'sin(ωt)' : 'ημ(ωt)';
+  const sLabel = currentLang === 'en' ? 'sin(ωt)' : 'ημ(ωt)';
   ctx.fillText(xLabel, x0+4, y0-4);
   ctx.fillText(sLabel, x1-40, y1+12);
-
-  ctx.textAlign = 'center';
-  ctx.fillText('-1', SToX(-1), y1+10);
-  ctx.fillText('0',  SToX(0),  y1+10);
-  ctx.fillText('+1', SToX(+1), y1+10);
-  ctx.textAlign = 'left';
-
-  ctx.fillText('-A', x0+4, xToY(-A_m)+4);
-  ctx.fillText('0',  x0+4, xToY(0)+4);
-  ctx.fillText('+A', x0+4, xToY(+A_m)+4);
 }
+
+/* helpers για law canvases */
 
 function ensureVelocityChart(){
   if(!vCan){
@@ -1065,6 +1062,28 @@ function ensureXSinChart(){
   drawXSinChart();
 }
 
+/* Ενιαία εφαρμογή γραφημάτων από event (graph/plot) */
+
+function applyGraphs(ev){
+  const key = ev.graph || ev.plot || '';
+  if(key === 'xt'){
+    initXTChart();
+    drawXTChart();
+  }
+  if(key === 'v'){
+    ensureVelocityChart();
+  }
+  if(key === 'a'){
+    ensureAccelerationChart();
+  }
+  if(key === 'ax'){
+    ensureAxChart();
+  }
+  if(key === 'sin'){
+    ensureXSinChart();
+  }
+}
+
 /* ---------- Παράμετροι ταλάντωσης ---------- */
 
 function x0Val(){
@@ -1078,26 +1097,23 @@ function showParamsBox(){
   paramsBoxEl.style.display='block';
 }
 
-/* ---------- Viewers / Bubbles (πράξεις) ---------- */
+/* ---------- Bubbles / θεατές ---------- */
 
 function viewerInfo(idx1based){
   const i = (idx1based||1)-1;
   return VIEWERS[i] || VIEWERS[0] || null;
 }
 
-/* anchor με βάση το αρχικό avatarDy (baseBottom) για τίτλο + σκέψη,
-   όχι με το "καθιστό" offset των Πράξεων 1–2 */
 function viewerAnchor(idx1based){
   const vi = viewerInfo(idx1based);
   const avatar = viewersStrip.querySelector('.viewer-avatar[data-idx="'+(idx1based-1)+'"]');
+  const sRect = stage.getBoundingClientRect();
+
   if(avatar){
-    const sRect = stage.getBoundingClientRect();
     const aRect = avatar.getBoundingClientRect();
-    const centerX = aRect.left + aRect.width/2 - sRect.left;
-    const h = aRect.height || 0;
-    const baseBottom = parseFloat(avatar.dataset.baseBottom || '0') || 0;
-    const centerY = stage.clientHeight - (baseBottom + h/2);
-    return {x:centerX, y:centerY, info:vi};
+    const x = aRect.left + aRect.width/2 - sRect.left;
+    const y = aRect.top  + aRect.height/2 - sRect.top;
+    return {x,y,info:vi};
   }
 
   const leftFrac  = 0.18;
@@ -1118,23 +1134,17 @@ function tint(hex, alpha){
   return 'rgba('+r+','+g+','+b+','+alpha+')';
 }
 
-/* helpers για avatars: μόνο ένας φαίνεται κάθε φορά */
+/* Μόνο ο ενεργός θεατής φαίνεται (Acts + foyer) */
 
-function hideAllViewerAvatars(){
+function setActiveViewerAvatar(idx1based){
   const items = viewersStrip.querySelectorAll('.viewer-avatar');
-  items.forEach(div => div.classList.remove('visible'));
-}
-function showViewerAvatar(idx1based){
-  hideAllViewerAvatars();
-  const el = viewersStrip.querySelector('.viewer-avatar[data-idx="'+(idx1based-1)+'"]');
-  if(!el) return;
-  const base = parseFloat(el.dataset.baseBottom || '0') || 0;
-  let bottom = base;
-  if(phase === 'act1' || phase === 'act2'){
-    bottom = base + ACTS_AVATAR_OFFSET; // μόνο η εικόνα "κάθεται" στις πράξεις
-  }
-  el.style.bottom = bottom + 'px';
-  el.classList.add('visible');
+  items.forEach((div,idx)=>{
+    if(idx === (idx1based-1)){
+      div.classList.add('visible');
+    }else{
+      div.classList.remove('visible');
+    }
+  });
 }
 
 function showSpeakerChip(idx1based){
@@ -1212,12 +1222,12 @@ function showBubbleForEvent(ev){
     if(!html){
       hideSpeakerChip();
       bubbleEl.style.display='none';
-      hideAllViewerAvatars();
+      setActiveViewerAvatar(0);
       resolve();
       return;
     }
 
-    showViewerAvatar(viewer);
+    setActiveViewerAvatar(viewer);
     showSpeakerChip(viewer);
     placeBubble(viewer, ev.xShift||0, ev.yOffset||0);
 
@@ -1237,7 +1247,7 @@ function showBubbleForEvent(ev){
           bubbleEl.classList.remove('active','closing');
           bubbleEl.style.display='none';
           hideSpeakerChip();
-          hideAllViewerAvatars();
+          setActiveViewerAvatar(0);
           resolve();
         },200);
       }, pauseMs);
@@ -1268,31 +1278,24 @@ function expandDynTemplate(tpl){
   const x0 = x0Val().toFixed(2);
   const phi0deg = ((omega*obsStartPlaybackOffset)*180/Math.PI+360)%360;
   return String(tpl)
-    .replaceAll('{A}',     A_m.toFixed(2))
-    .replaceAll('{T}',     T.toFixed(2))
-    .replaceAll('{omega}', omega.toFixed(3))
-    .replaceAll('{x0}',    x0)
-    .replaceAll('{phi0}',  phi0deg.toFixed(1));
+    .replaceAll('{A}',    A_m.toFixed(2))
+    .replaceAll('{T}',    T.toFixed(2))
+    .replaceAll('{omega}',omega.toFixed(3))
+    .replaceAll('{x0}',   x0)
+    .replaceAll('{phi0}', phi0deg.toFixed(1));
 }
 
 function showDynBubble(ev){
   return new Promise(resolve=>{
     const viewer = ev.viewer || 1;
+
     const base = (ev.left && ev.left.trim().length)
       ? ev.left
       : dynDefault(ev.param);
 
     const txt = expandDynTemplate(base);
 
-    if(!txt){
-      hideSpeakerChip();
-      bubbleEl.style.display='none';
-      hideAllViewerAvatars();
-      resolve();
-      return;
-    }
-
-    showViewerAvatar(viewer);
+    setActiveViewerAvatar(viewer);
     showSpeakerChip(viewer);
     placeBubble(viewer, ev.xShift||0, ev.yOffset||0);
 
@@ -1312,7 +1315,7 @@ function showDynBubble(ev){
           bubbleEl.classList.remove('active','closing');
           bubbleEl.style.display='none';
           hideSpeakerChip();
-          hideAllViewerAvatars();
+          setActiveViewerAvatar(0);
           resolve();
         },200);
       }, pauseMs);
@@ -1323,15 +1326,12 @@ function showDynBubble(ev){
 /* ---------- Act 1 / Act 2 sequences ---------- */
 
 async function runAct1(){
-  phase = 'act1';
-  setAudienceLights(false);
   for(const ev of ACT1){
     if(ev.close){
       await closeCurtainToAct2();
       return;
     }
 
-    // Δυναμικά bubbles για A, T/ω, φ
     if(ev.param){
       await showDynBubble(ev);
 
@@ -1339,15 +1339,11 @@ async function runAct1(){
         addLaw(ev.right);
         if(ev.alsoParams) showParamsBox();
       }
-      if(ev.graph === 'xt'){ initXTChart(); drawXTChart(); }
-      if(ev.plot === 'v'){  ensureVelocityChart(); }
-      if(ev.plot === 'a'){  ensureAccelerationChart(); }
-      if(ev.plot === 'ax'){ ensureAxChart(); }
-      if(ev.plot === 'xs'){ ensureXSinChart(); }
+
+      applyGraphs(ev);
       continue;
     }
 
-    // Κανονικά bubbles
     if(ev.left || ev.viewer){
       await showBubbleForEvent(ev);
 
@@ -1355,35 +1351,20 @@ async function runAct1(){
         addLaw(ev.right);
         if(ev.alsoParams) showParamsBox();
       }
-      if(ev.graph === 'xt'){ initXTChart(); drawXTChart(); }
-      if(ev.plot === 'v'){  ensureVelocityChart(); }
-      if(ev.plot === 'a'){  ensureAccelerationChart(); }
-      if(ev.plot === 'ax'){ ensureAxChart(); }
-      if(ev.plot === 'xs'){ ensureXSinChart(); }
+
+      applyGraphs(ev);
       continue;
     }
 
-    // Σκέτος νόμος
     if(ev.right){
       addLaw(ev.right);
       if(ev.alsoParams) showParamsBox();
-
-      if(ev.graph === 'xt'){ initXTChart(); drawXTChart(); }
-      if(ev.plot === 'v'){  ensureVelocityChart(); }
-      if(ev.plot === 'a'){  ensureAccelerationChart(); }
-      if(ev.plot === 'ax'){ ensureAxChart(); }
-      if(ev.plot === 'xs'){ ensureXSinChart(); }
-
+      applyGraphs(ev);
       await new Promise(r=>setTimeout(r,600));
       continue;
     }
 
-    // Σκέτα διαγράμματα
-    if(ev.graph === 'xt'){ initXTChart(); drawXTChart(); }
-    if(ev.plot === 'v'){  ensureVelocityChart(); }
-    if(ev.plot === 'a'){  ensureAccelerationChart(); }
-    if(ev.plot === 'ax'){ ensureAxChart(); }
-    if(ev.plot === 'xs'){ ensureXSinChart(); }
+    applyGraphs(ev);
   }
 }
 
@@ -1393,7 +1374,7 @@ function ensureActorFloorBottom(){
   if(actorFloorBottomPx != null) return;
   const sb = getComputedStyle(actor).bottom;
   const val = parseFloat(sb);
-  actorFloorBottomPx = Number.isNaN(val) ? 0 : val;
+  if(!Number.isNaN(val)) actorFloorBottomPx = val;
 }
 
 function ensureGhost(){
@@ -1431,7 +1412,6 @@ function ensureGhost(){
     ghostSpring.style.zIndex='157';
     ghostSpring.style.pointerEvents='none';
     ghostSpring.style.opacity='0';
-    ghostSpring.style.filter='grayscale(1) brightness(1.15)';
     stage.appendChild(ghostSpring);
   }
 }
@@ -1442,9 +1422,9 @@ async function runAct2(){
   actBreak.style.display='none';
   stage.classList.add('open');
   setAudienceLights(false);
-  phase='act2';
 
   springEl.style.display='block';
+  if(ghostSpring) ghostSpring.style.display='block';
   markerEl.style.opacity='1';
   markerGhostEl.style.opacity='0';
 
@@ -1459,41 +1439,26 @@ async function runAct2(){
         addLaw(ev.right);
         if(ev.alsoParams) showParamsBox();
       }
-      if(ev.graph === 'xt'){ initXTChart(); drawXTChart(); }
-      if(ev.plot === 'v'){  ensureVelocityChart(); }
-      if(ev.plot === 'a'){  ensureAccelerationChart(); }
-      if(ev.plot === 'ax'){ ensureAxChart(); }
-      if(ev.plot === 'xs'){ ensureXSinChart(); }
+
+      applyGraphs(ev);
       continue;
     }
 
     if(ev.right){
       addLaw(ev.right);
       if(ev.alsoParams) showParamsBox();
-
-      if(ev.graph === 'xt'){ initXTChart(); drawXTChart(); }
-      if(ev.plot === 'v'){  ensureVelocityChart(); }
-      if(ev.plot === 'a'){  ensureAccelerationChart(); }
-      if(ev.plot === 'ax'){ ensureAxChart(); }
-      if(ev.plot === 'xs'){ ensureXSinChart(); }
-
+      applyGraphs(ev);
       await new Promise(r=>setTimeout(r,600));
       continue;
     }
 
-    if(ev.graph === 'xt'){ initXTChart(); drawXTChart(); }
-    if(ev.plot === 'v'){  ensureVelocityChart(); }
-    if(ev.plot === 'a'){  ensureAccelerationChart(); }
-    if(ev.plot === 'ax'){ ensureAxChart(); }
-    if(ev.plot === 'xs'){ ensureXSinChart(); }
+    applyGraphs(ev);
   }
 
   stage.classList.remove('open');
   setAudienceLights(true);
-  ghostActive=false;
   setTimeout(()=>{
     foyerBreak.style.display='flex';
-    phase='between2andFoyer';
   }, 1200);
 }
 
@@ -1503,7 +1468,6 @@ function closeCurtainToAct2(){
   return new Promise(resolve=>{
     stage.classList.remove('open');
     setAudienceLights(true);
-    phase='between1and2';
     setTimeout(()=>{
       actBreak.style.display='flex';
       resolve();
@@ -1543,6 +1507,8 @@ function setFoyerSpeaker(idx1based){
   foyerBubble.style.top  = (y - dy) + 'px';
   foyerBubble.style.transform='translateX(-50%)';
   foyerBubble.style.display='block';
+
+  setActiveViewerAvatar(idx1based);
 }
 
 function typeWriterBoard(el, text, totalMs, done){
@@ -1575,14 +1541,14 @@ function addFoyerRow(item){
     l.style.width = '60%';
     l.style.background = bgBase;
     l.style.borderLeft = '4px solid '+tint(vi.color||'#ffffff',0.85);
-    l.style.verticalAlign = 'top';
 
     const r = document.createElement('td');
     r.className = 'cell cell-right';
     r.style.width = '40%';
     r.style.background = bgBase;
-    r.style.borderLeft = '4px solid '+tint(vi.color||'#ffffff',0.55);
+    l.style.verticalAlign = 'top';
     r.style.verticalAlign = 'top';
+    r.style.borderLeft = '4px solid '+tint(vi.color||'#ffffff',0.55);
 
     if(isFormulaBlock(item.right)){
       r.classList.add('formula');
@@ -1603,24 +1569,27 @@ function addFoyerRow(item){
     typeWriterBoard(l, item.left||'', typeMs, ()=>{
       if((item.right||'').trim().length>0){
         typeWriterBoard(r, item.right||'', typeMs, ()=>{
-          setTimeout(resolve, pauseMs);
+          setTimeout(()=>{
+            setActiveViewerAvatar(0);
+            resolve();
+          }, pauseMs);
         });
       }else{
-        setTimeout(resolve, pauseMs);
+        setTimeout(()=>{
+          setActiveViewerAvatar(0);
+          resolve();
+        }, pauseMs);
       }
     });
   });
 }
 
 async function runFoyer(){
-  setAudienceLights(true);
   foyerEl.style.display='block';
   boardLeft.innerHTML  = '';
   boardRight.innerHTML = '';
   foyerBubble.style.display='none';
-  hideAllViewerAvatars();
-  hideSpeakerChip();
-  bubbleEl.style.display='none';
+  setAudienceLights(true);
 
   boardLeft.style.gridColumn = '1 / span 2';
   boardRight.style.display   = 'none';
@@ -1665,8 +1634,6 @@ function resetShow(){
   measureRowIdx      = 0;
   setMode('run');
 
-  phase = 'idle';
-
   startBtn.style.display       ='block';
   countdownOverlay.style.display='none';
   measureBox.style.display     ='none';
@@ -1690,6 +1657,7 @@ function resetShow(){
   bubbleEl.classList.remove('active','closing');
   actBubble.style.display      ='none';
   measureTBody.innerHTML       ='';
+  setActiveViewerAvatar(0);
 
   if(uXT){
     xtChartEl.innerHTML = '';
@@ -1698,31 +1666,22 @@ function resetShow(){
   xtChartEl.style.display      ='none';
 
   stage.classList.remove('open');
-  setAudienceLights(true);
-
   markerEl.style.left          = centerX()+'px';
   markerGhostEl.style.left     = centerX()+'px';
 
   springEl.style.display = 'none';
-
-  ghostActive = false;
-  hideAllViewerAvatars();
   if(ghost){
     ghost.style.opacity = '0';
   }
   if(ghostSpring){
     ghostSpring.style.opacity = '0';
   }
+  ghostActive = false;
+  setAudienceLights(true);
 }
 
 btnReset.addEventListener('click', resetShow);
-
-/* End Show: κλειδωμένο στις πράξεις, ενεργό σε idle & foyer */
-btnEndShow.addEventListener('click', ()=>{
-  if(phase === 'idle' || phase === 'foyer'){
-    resetShow();
-  }
-});
+btnEndShow.addEventListener('click', resetShow);
 
 /* ---------- Έναρξη με countdown ---------- */
 
@@ -1738,13 +1697,10 @@ function beginObservation(){
   markerEl.style.opacity  ='1';
   markerGhostEl.style.opacity='0';
   updateRuler();
-  phase='act1';
   runAct1();
 }
 
 function startShowCountdown(){
-  if(phase !== 'idle') return;
-  phase='countdown';
   startBtn.style.display    ='none';
   countdownOverlay.style.display='flex';
   const seconds = 5;
@@ -1775,24 +1731,14 @@ btnAct2.addEventListener('click', ()=>{
 /* Φουαγιέ κουμπιά */
 
 btnFoyer.addEventListener('click', ()=>{
-  // Πριν την έναρξη: μπορείς να πας κατευθείαν Φουαγιέ
-  if(phase === 'idle'){
-    phase='foyer';
+  // όπως είχες: πριν την έναρξη μπορείς να πας κατευθείαν φουαγιέ
+  if(!obsStarted){
     runFoyer();
-    return;
   }
-  // Μετά Act 2: επιτρέπεται
-  if(phase === 'between2andFoyer' || phase === 'foyer'){
-    phase='foyer';
-    runFoyer();
-    return;
-  }
-  // Στις πράξεις / countdown: κλειδωμένο
 });
 
 btnFoyerGo.addEventListener('click', ()=>{
   foyerBreak.style.display='none';
-  phase='foyer';
   runFoyer();
 });
 
@@ -1803,6 +1749,7 @@ function animate(now){
   lastFrame = now;
 
   updateRuler();
+  updateAudienceDimPosition();
 
   const tPhys = (now-t0)/1000;
   if(!obsStarted){
@@ -1850,9 +1797,14 @@ function animate(now){
 
     const springBottom = getComputedStyle(springEl).bottom || 'calc(32vh + 92px)';
 
-    ghost.style.bottom = bottomPx+'px';
+    // πάντα display:block, μόνο opacity για fade
+    ghost.style.display = 'block';
+    ghostSpring.style.display = 'block';
+
     const ghostRect  = ghost.getBoundingClientRect();
     const ghostWidth = ghostRect.width || actorWidth || 80;
+
+    ghost.style.bottom = bottomPx+'px';
     ghost.style.left   = (hookXg - ghostWidth/2) + 'px';
 
     const distg  = hookXg - ax;
@@ -1864,30 +1816,30 @@ function animate(now){
     ghostSpring.style.transform= 'scaleX('+scaleg+')';
 
     if(ghostActive){
-      ghost.style.opacity       = 0.9;
-      ghostSpring.style.opacity = 0.9;
-      markerGhostEl.style.left  = hookXg+'px';
+      ghost.style.opacity       = '1';
+      ghostSpring.style.opacity = '1';
       markerGhostEl.style.opacity= '1';
+      markerGhostEl.style.left   = hookXg+'px';
     }else{
-      ghost.style.opacity       = 0;
-      ghostSpring.style.opacity = 0;
+      ghost.style.opacity       = '0';
+      ghostSpring.style.opacity = '0';
       markerGhostEl.style.opacity= '0';
     }
   }else{
     markerGhostEl.style.opacity = '0';
   }
 
-  if(uXT)  drawXTChart();
-  if(vCan) drawVelocityChart();
-  if(aCan) drawAccelerationChart();
-  if(axCan)drawAxChart();
-  if(xsCan)drawXSinChart();
+  if(uXT)   drawXTChart();
+  if(vCan)  drawVelocityChart();
+  if(aCan)  drawAccelerationChart();
+  if(axCan) drawAxChart();
+  if(xsCan) drawXSinChart();
 
   requestAnimationFrame(animate);
 }
 requestAnimationFrame(animate);
 
-/* ---------- Viewers avatars init ---------- */
+/* ---------- Viewers avatars ---------- */
 
 function initViewersAvatars(){
   const items = viewersStrip.querySelectorAll('.viewer-avatar');
@@ -1906,8 +1858,6 @@ function initViewersAvatars(){
       return;
     }
 
-    div.style.display = 'block';
-
     if (v.img) {
       div.style.backgroundImage = 'url("'+v.img+'")';
     }
@@ -1918,12 +1868,11 @@ function initViewersAvatars(){
       div.style.height = '';
     }
 
-    let baseBottom = 0;
-    if(typeof v.avatarDy === 'number'){
-      baseBottom = v.avatarDy;
+    if (typeof v.avatarDy === 'number') {
+      div.style.bottom = v.avatarDy + 'px';
+    } else {
+      div.style.bottom = '';
     }
-    div.dataset.baseBottom = String(baseBottom);
-    div.style.bottom = baseBottom + 'px';
 
     if (typeof v.avatarScale === 'number') {
       const widthPx = baseWidthPx * (v.avatarScale / refScale);
@@ -1937,8 +1886,10 @@ function initViewersAvatars(){
     const x = (leftBand + widthBand * xFrac) * stageW;
     div.style.left = x + 'px';
 
-    div.classList.remove('visible');
+    div.style.display = 'block';
   });
+
+  setActiveViewerAvatar(0);
 }
 
 /* ---------- Load dialogs-gr/en.json & bootstrap ---------- */
@@ -1982,6 +1933,7 @@ window.addEventListener('load', ()=>{
   }
 
   updateRuler();
+  updateAudienceDimPosition();
   measureSpringNaturalSize();
   ensureActorFloorBottom();
   resetShow();
