@@ -5,14 +5,14 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Θεατρική Σκηνή — Ενιαία Έκδοση (Act I + Act II + Φουαγιέ)</title>
 
-  <!-- uPlot για το x–t διάγραμμα (κρατιέται, αν και τώρα x–t είναι canvas) -->
+  <!-- uPlot για το x–t διάγραμμα (δεν πειράζει αν μείνει, τώρα το x–t είναι canvas) -->
   <link rel="stylesheet" href="https://unpkg.com/uplot@1.6.30/dist/uPlot.min.css">
   <script src="https://unpkg.com/uplot@1.6.30/dist/uPlot.iife.min.js"></script>
 
   <!-- Σκηνή CSS -->
   <link rel="stylesheet" href="aat-stage.css">
 
-  <!-- Inline CSS για γλώσσα, lawCharts offset, φώτα κοινού, avatars, ghost fade, act/foyer overlay -->
+  <!-- Μικρό inline CSS μόνο για τα κουμπιά γλώσσας + lawCharts + φώτα κοινού + avatars -->
   <style>
     .lang-toggle {
       position: absolute;
@@ -40,7 +40,7 @@
       background: rgba(0,0,0,0.75);
     }
 
-    /* Σήκωμα στήλης mini-γραφημάτων ώστε να χωράει καλύτερα το F-x κ.λπ. */
+    /* Σήκωμα στήλης mini-γραφημάτων */
     .law-charts {
       transform: translateY(-130px);
     }
@@ -53,33 +53,13 @@
       filter: brightness(0.25);
     }
 
-    /* Avatars θεατών: κρυφοί by default, μόνο ο ενεργός με fade */
+    /* Avatars θεατών: κρυφοί by default, εμφανίζονται με fade μόνο όταν μιλάνε/σκέφτονται */
     .viewers .viewer-avatar {
       opacity: 0;
       transition: opacity 0.5s ease;
     }
     .viewers .viewer-avatar.visible {
       opacity: 1;
-    }
-
-    /* Ghost fade in / out καθώς κινείται */
-    #actorGhost,
-    #springGhost {
-      transition: opacity 1.4s ease;
-    }
-    #markerGhost {
-      transition: opacity 1.0s ease;
-    }
-
-    /* Πλαίσια αλλαγής σκηνής: μόνο το κουτί, όχι "σεντόνι" πάνω απ' όλη τη σκηνή */
-    .actbreak,
-    .foyerbreak {
-      background: transparent !important;
-      pointer-events: none;
-    }
-    .actbreak .box,
-    .foyerbreak .box {
-      pointer-events: auto;
     }
   </style>
 </head>
@@ -226,7 +206,7 @@ let btnLangGR = null;
 let btnLangEN = null;
 
 /* Κατάσταση παράστασης για locks κουμπιών */
-let phase = 'idle'; // idle, countdown, act1, between1and2, act2, between2andFoyer, foyer
+let phase = 'idle'; // idle, countdown, act1, act2, between2andFoyer, foyer
 
 /* ---------- Φυσική / σκηνή ---------- */
 
@@ -312,7 +292,7 @@ let ghost       = null;
 let ghostSpring = null;
 let ghostActive = false;
 
-/* φυσικό μέγεθος ελατηρίου σε px */
+/* φυσικό μήκος ελατηρίου σε px */
 let springNaturalWidth  = null;
 let springNaturalHeight = null;
 
@@ -1078,26 +1058,23 @@ function showParamsBox(){
   paramsBoxEl.style.display='block';
 }
 
-/* ---------- Viewers / Bubbles (πράξεις) ---------- */
+/* ---------- Bubbles (πράξεις) ---------- */
 
 function viewerInfo(idx1based){
   const i = (idx1based||1)-1;
   return VIEWERS[i] || VIEWERS[0] || null;
 }
 
-/* anchor με βάση το αρχικό avatarDy (baseBottom) για τίτλο + σκέψη,
-   όχι με το "καθιστό" offset των Πράξεων 1–2 */
 function viewerAnchor(idx1based){
   const vi = viewerInfo(idx1based);
   const avatar = viewersStrip.querySelector('.viewer-avatar[data-idx="'+(idx1based-1)+'"]');
+  const sRect = stage.getBoundingClientRect();
+
   if(avatar){
-    const sRect = stage.getBoundingClientRect();
     const aRect = avatar.getBoundingClientRect();
-    const centerX = aRect.left + aRect.width/2 - sRect.left;
-    const h = aRect.height || 0;
-    const baseBottom = parseFloat(avatar.dataset.baseBottom || '0') || 0;
-    const centerY = stage.clientHeight - (baseBottom + h/2);
-    return {x:centerX, y:centerY, info:vi};
+    const x = aRect.left + aRect.width/2 - sRect.left;
+    const y = aRect.top  + aRect.height/2 - sRect.top;
+    return {x,y,info:vi};
   }
 
   const leftFrac  = 0.18;
@@ -1118,7 +1095,7 @@ function tint(hex, alpha){
   return 'rgba('+r+','+g+','+b+','+alpha+')';
 }
 
-/* helpers για avatars: μόνο ένας φαίνεται κάθε φορά */
+/* ΝΕΟ: helper για avatars ώστε να φαίνεται μόνο ο τρέχων θεατής με fade */
 
 function hideAllViewerAvatars(){
   const items = viewersStrip.querySelectorAll('.viewer-avatar');
@@ -1131,7 +1108,7 @@ function showViewerAvatar(idx1based){
   const base = parseFloat(el.dataset.baseBottom || '0') || 0;
   let bottom = base;
   if(phase === 'act1' || phase === 'act2'){
-    bottom = base + ACTS_AVATAR_OFFSET; // μόνο η εικόνα "κάθεται" στις πράξεις
+    bottom = base + ACTS_AVATAR_OFFSET;
   }
   el.style.bottom = bottom + 'px';
   el.classList.add('visible');
@@ -1217,6 +1194,7 @@ function showBubbleForEvent(ev){
       return;
     }
 
+    // εμφάνιση μόνο του συγκεκριμένου θεατή (Acts 1–2) με fade
     showViewerAvatar(viewer);
     showSpeakerChip(viewer);
     placeBubble(viewer, ev.xShift||0, ev.yOffset||0);
@@ -1268,30 +1246,24 @@ function expandDynTemplate(tpl){
   const x0 = x0Val().toFixed(2);
   const phi0deg = ((omega*obsStartPlaybackOffset)*180/Math.PI+360)%360;
   return String(tpl)
-    .replaceAll('{A}',     A_m.toFixed(2))
-    .replaceAll('{T}',     T.toFixed(2))
-    .replaceAll('{omega}', omega.toFixed(3))
-    .replaceAll('{x0}',    x0)
-    .replaceAll('{phi0}',  phi0deg.toFixed(1));
+    .replaceAll('{A}',    A_m.toFixed(2))
+    .replaceAll('{T}',    T.toFixed(2))
+    .replaceAll('{omega}',omega.toFixed(3))
+    .replaceAll('{x0}',   x0)
+    .replaceAll('{phi0}', phi0deg.toFixed(1));
 }
 
 function showDynBubble(ev){
   return new Promise(resolve=>{
     const viewer = ev.viewer || 1;
+
     const base = (ev.left && ev.left.trim().length)
       ? ev.left
       : dynDefault(ev.param);
 
     const txt = expandDynTemplate(base);
 
-    if(!txt){
-      hideSpeakerChip();
-      bubbleEl.style.display='none';
-      hideAllViewerAvatars();
-      resolve();
-      return;
-    }
-
+    // και εδώ μόνο ο συγκεκριμένος θεατής
     showViewerAvatar(viewer);
     showSpeakerChip(viewer);
     placeBubble(viewer, ev.xShift||0, ev.yOffset||0);
@@ -1324,14 +1296,12 @@ function showDynBubble(ev){
 
 async function runAct1(){
   phase = 'act1';
-  setAudienceLights(false);
   for(const ev of ACT1){
     if(ev.close){
       await closeCurtainToAct2();
       return;
     }
 
-    // Δυναμικά bubbles για A, T/ω, φ
     if(ev.param){
       await showDynBubble(ev);
 
@@ -1339,15 +1309,27 @@ async function runAct1(){
         addLaw(ev.right);
         if(ev.alsoParams) showParamsBox();
       }
-      if(ev.graph === 'xt'){ initXTChart(); drawXTChart(); }
-      if(ev.plot === 'v'){  ensureVelocityChart(); }
-      if(ev.plot === 'a'){  ensureAccelerationChart(); }
-      if(ev.plot === 'ax'){ ensureAxChart(); }
-      if(ev.plot === 'xs'){ ensureXSinChart(); }
+
+      if(ev.graph==='xt'){
+        initXTChart();
+        drawXTChart();
+      }
+      if(ev.plot==='v'){
+        ensureVelocityChart();
+      }
+      if(ev.plot==='a'){
+        ensureAccelerationChart();
+      }
+      if(ev.plot==='ax'){
+        ensureAxChart();
+      }
+      if(ev.plot==='xsin'){
+        ensureXSinChart();
+      }
+
       continue;
     }
 
-    // Κανονικά bubbles
     if(ev.left || ev.viewer){
       await showBubbleForEvent(ev);
 
@@ -1355,35 +1337,68 @@ async function runAct1(){
         addLaw(ev.right);
         if(ev.alsoParams) showParamsBox();
       }
-      if(ev.graph === 'xt'){ initXTChart(); drawXTChart(); }
-      if(ev.plot === 'v'){  ensureVelocityChart(); }
-      if(ev.plot === 'a'){  ensureAccelerationChart(); }
-      if(ev.plot === 'ax'){ ensureAxChart(); }
-      if(ev.plot === 'xs'){ ensureXSinChart(); }
+
+      if(ev.graph==='xt'){
+        initXTChart();
+        drawXTChart();
+      }
+      if(ev.plot==='v'){
+        ensureVelocityChart();
+      }
+      if(ev.plot==='a'){
+        ensureAccelerationChart();
+      }
+      if(ev.plot==='ax'){
+        ensureAxChart();
+      }
+      if(ev.plot==='xsin'){
+        ensureXSinChart();
+      }
+
       continue;
     }
 
-    // Σκέτος νόμος
     if(ev.right){
       addLaw(ev.right);
       if(ev.alsoParams) showParamsBox();
 
-      if(ev.graph === 'xt'){ initXTChart(); drawXTChart(); }
-      if(ev.plot === 'v'){  ensureVelocityChart(); }
-      if(ev.plot === 'a'){  ensureAccelerationChart(); }
-      if(ev.plot === 'ax'){ ensureAxChart(); }
-      if(ev.plot === 'xs'){ ensureXSinChart(); }
+      if(ev.graph==='xt'){
+        initXTChart();
+        drawXTChart();
+      }
+      if(ev.plot==='v'){
+        ensureVelocityChart();
+      }
+      if(ev.plot==='a'){
+        ensureAccelerationChart();
+      }
+      if(ev.plot==='ax'){
+        ensureAxChart();
+      }
+      if(ev.plot==='xsin'){
+        ensureXSinChart();
+      }
 
       await new Promise(r=>setTimeout(r,600));
       continue;
     }
 
-    // Σκέτα διαγράμματα
-    if(ev.graph === 'xt'){ initXTChart(); drawXTChart(); }
-    if(ev.plot === 'v'){  ensureVelocityChart(); }
-    if(ev.plot === 'a'){  ensureAccelerationChart(); }
-    if(ev.plot === 'ax'){ ensureAxChart(); }
-    if(ev.plot === 'xs'){ ensureXSinChart(); }
+    if(ev.graph==='xt'){
+      initXTChart();
+      drawXTChart();
+    }
+    if(ev.plot==='v'){
+      ensureVelocityChart();
+    }
+    if(ev.plot==='a'){
+      ensureAccelerationChart();
+    }
+    if(ev.plot==='ax'){
+      ensureAxChart();
+    }
+    if(ev.plot==='xsin'){
+      ensureXSinChart();
+    }
   }
 }
 
@@ -1393,7 +1408,7 @@ function ensureActorFloorBottom(){
   if(actorFloorBottomPx != null) return;
   const sb = getComputedStyle(actor).bottom;
   const val = parseFloat(sb);
-  actorFloorBottomPx = Number.isNaN(val) ? 0 : val;
+  if(!Number.isNaN(val)) actorFloorBottomPx = val;
 }
 
 function ensureGhost(){
@@ -1409,7 +1424,7 @@ function ensureGhost(){
     ghost.style.position='absolute';
     ghost.style.zIndex='158';
     ghost.style.pointerEvents='none';
-    ghost.style.opacity='0';
+    ghost.style.opacity='0.85';
     ghost.style.filter='grayscale(1) brightness(1.2)';
     ghost.style.width  = aw+'px';
     ghost.style.height = ah+'px';
@@ -1430,8 +1445,9 @@ function ensureGhost(){
     ghostSpring.style.transformOrigin='left center';
     ghostSpring.style.zIndex='157';
     ghostSpring.style.pointerEvents='none';
-    ghostSpring.style.opacity='0';
+    ghostSpring.style.opacity='0.9';
     ghostSpring.style.filter='grayscale(1) brightness(1.15)';
+    ghostSpring.style.display='none';
     stage.appendChild(ghostSpring);
   }
 }
@@ -1442,9 +1458,10 @@ async function runAct2(){
   actBreak.style.display='none';
   stage.classList.add('open');
   setAudienceLights(false);
-  phase='act2';
+  phase = 'act2';
 
   springEl.style.display='block';
+  if(ghostSpring) ghostSpring.style.display='block';
   markerEl.style.opacity='1';
   markerGhostEl.style.opacity='0';
 
@@ -1459,11 +1476,24 @@ async function runAct2(){
         addLaw(ev.right);
         if(ev.alsoParams) showParamsBox();
       }
-      if(ev.graph === 'xt'){ initXTChart(); drawXTChart(); }
-      if(ev.plot === 'v'){  ensureVelocityChart(); }
-      if(ev.plot === 'a'){  ensureAccelerationChart(); }
-      if(ev.plot === 'ax'){ ensureAxChart(); }
-      if(ev.plot === 'xs'){ ensureXSinChart(); }
+
+      if(ev.graph==='xt'){
+        initXTChart();
+        drawXTChart();
+      }
+      if(ev.plot==='v'){
+        ensureVelocityChart();
+      }
+      if(ev.plot==='a'){
+        ensureAccelerationChart();
+      }
+      if(ev.plot==='ax'){
+        ensureAxChart();
+      }
+      if(ev.plot==='xsin'){
+        ensureXSinChart();
+      }
+
       continue;
     }
 
@@ -1471,29 +1501,50 @@ async function runAct2(){
       addLaw(ev.right);
       if(ev.alsoParams) showParamsBox();
 
-      if(ev.graph === 'xt'){ initXTChart(); drawXTChart(); }
-      if(ev.plot === 'v'){  ensureVelocityChart(); }
-      if(ev.plot === 'a'){  ensureAccelerationChart(); }
-      if(ev.plot === 'ax'){ ensureAxChart(); }
-      if(ev.plot === 'xs'){ ensureXSinChart(); }
+      if(ev.graph==='xt'){
+        initXTChart();
+        drawXTChart();
+      }
+      if(ev.plot==='v'){
+        ensureVelocityChart();
+      }
+      if(ev.plot==='a'){
+        ensureAccelerationChart();
+      }
+      if(ev.plot==='ax'){
+        ensureAxChart();
+      }
+      if(ev.plot==='xsin'){
+        ensureXSinChart();
+      }
 
       await new Promise(r=>setTimeout(r,600));
       continue;
     }
 
-    if(ev.graph === 'xt'){ initXTChart(); drawXTChart(); }
-    if(ev.plot === 'v'){  ensureVelocityChart(); }
-    if(ev.plot === 'a'){  ensureAccelerationChart(); }
-    if(ev.plot === 'ax'){ ensureAxChart(); }
-    if(ev.plot === 'xs'){ ensureXSinChart(); }
+    if(ev.graph==='xt'){
+      initXTChart();
+      drawXTChart();
+    }
+    if(ev.plot==='v'){
+      ensureVelocityChart();
+    }
+    if(ev.plot==='a'){
+      ensureAccelerationChart();
+    }
+    if(ev.plot==='ax'){
+      ensureAxChart();
+    }
+    if(ev.plot==='xsin'){
+      ensureXSinChart();
+    }
   }
 
   stage.classList.remove('open');
   setAudienceLights(true);
-  ghostActive=false;
+  phase = 'between2andFoyer';
   setTimeout(()=>{
     foyerBreak.style.display='flex';
-    phase='between2andFoyer';
   }, 1200);
 }
 
@@ -1503,7 +1554,6 @@ function closeCurtainToAct2(){
   return new Promise(resolve=>{
     stage.classList.remove('open');
     setAudienceLights(true);
-    phase='between1and2';
     setTimeout(()=>{
       actBreak.style.display='flex';
       resolve();
@@ -1575,14 +1625,14 @@ function addFoyerRow(item){
     l.style.width = '60%';
     l.style.background = bgBase;
     l.style.borderLeft = '4px solid '+tint(vi.color||'#ffffff',0.85);
-    l.style.verticalAlign = 'top';
 
     const r = document.createElement('td');
     r.className = 'cell cell-right';
     r.style.width = '40%';
     r.style.background = bgBase;
-    r.style.borderLeft = '4px solid '+tint(vi.color||'#ffffff',0.55);
+    l.style.verticalAlign = 'top';
     r.style.verticalAlign = 'top';
+    r.style.borderLeft = '4px solid '+tint(vi.color||'#ffffff',0.55);
 
     if(isFormulaBlock(item.right)){
       r.classList.add('formula');
@@ -1595,6 +1645,8 @@ function addFoyerRow(item){
       foyerTBody.appendChild(row);
     }
 
+    // στο φουαγιέ, επίσης μόνο ο αντίστοιχος ομιλητής
+    showViewerAvatar(viewer);
     setFoyerSpeaker(viewer);
 
     const typeMs  = item.typeMs  || 4000;
@@ -1613,14 +1665,12 @@ function addFoyerRow(item){
 }
 
 async function runFoyer(){
+  phase = 'foyer';
   setAudienceLights(true);
   foyerEl.style.display='block';
   boardLeft.innerHTML  = '';
   boardRight.innerHTML = '';
   foyerBubble.style.display='none';
-  hideAllViewerAvatars();
-  hideSpeakerChip();
-  bubbleEl.style.display='none';
 
   boardLeft.style.gridColumn = '1 / span 2';
   boardRight.style.display   = 'none';
@@ -1656,6 +1706,7 @@ btnPlay.addEventListener('click', ()=>{
 });
 
 function resetShow(){
+  phase = 'idle';
   t0        = performance.now();
   lastFrame = t0;
   playbackTime = 0;
@@ -1664,8 +1715,6 @@ function resetShow(){
   lastSampleObsTime = -Infinity;
   measureRowIdx      = 0;
   setMode('run');
-
-  phase = 'idle';
 
   startBtn.style.display       ='block';
   countdownOverlay.style.display='none';
@@ -1690,6 +1739,7 @@ function resetShow(){
   bubbleEl.classList.remove('active','closing');
   actBubble.style.display      ='none';
   measureTBody.innerHTML       ='';
+  hideAllViewerAvatars();
 
   if(uXT){
     xtChartEl.innerHTML = '';
@@ -1698,27 +1748,24 @@ function resetShow(){
   xtChartEl.style.display      ='none';
 
   stage.classList.remove('open');
-  setAudienceLights(true);
-
   markerEl.style.left          = centerX()+'px';
   markerGhostEl.style.left     = centerX()+'px';
 
   springEl.style.display = 'none';
-
-  ghostActive = false;
-  hideAllViewerAvatars();
   if(ghost){
-    ghost.style.opacity = '0';
+    ghost.style.display = 'none';
   }
   if(ghostSpring){
-    ghostSpring.style.opacity = '0';
+    ghostSpring.style.display = 'none';
   }
+  ghostActive = false;
+  setAudienceLights(true);
 }
 
 btnReset.addEventListener('click', resetShow);
 
-/* End Show: κλειδωμένο στις πράξεις, ενεργό σε idle & foyer */
 btnEndShow.addEventListener('click', ()=>{
+  // Locked εκτός idle/foyer
   if(phase === 'idle' || phase === 'foyer'){
     resetShow();
   }
@@ -1738,13 +1785,11 @@ function beginObservation(){
   markerEl.style.opacity  ='1';
   markerGhostEl.style.opacity='0';
   updateRuler();
-  phase='act1';
   runAct1();
 }
 
 function startShowCountdown(){
-  if(phase !== 'idle') return;
-  phase='countdown';
+  phase = 'countdown';
   startBtn.style.display    ='none';
   countdownOverlay.style.display='flex';
   const seconds = 5;
@@ -1775,24 +1820,14 @@ btnAct2.addEventListener('click', ()=>{
 /* Φουαγιέ κουμπιά */
 
 btnFoyer.addEventListener('click', ()=>{
-  // Πριν την έναρξη: μπορείς να πας κατευθείαν Φουαγιέ
-  if(phase === 'idle'){
-    phase='foyer';
+  // Πριν την έναρξη: επιτρέπεται. Κατά τη διάρκεια πράξεων: lock.
+  if(phase === 'idle' || phase === 'foyer'){
     runFoyer();
-    return;
   }
-  // Μετά Act 2: επιτρέπεται
-  if(phase === 'between2andFoyer' || phase === 'foyer'){
-    phase='foyer';
-    runFoyer();
-    return;
-  }
-  // Στις πράξεις / countdown: κλειδωμένο
 });
 
 btnFoyerGo.addEventListener('click', ()=>{
   foyerBreak.style.display='none';
-  phase='foyer';
   runFoyer();
 });
 
@@ -1850,27 +1885,29 @@ function animate(now){
 
     const springBottom = getComputedStyle(springEl).bottom || 'calc(32vh + 92px)';
 
-    ghost.style.bottom = bottomPx+'px';
-    const ghostRect  = ghost.getBoundingClientRect();
-    const ghostWidth = ghostRect.width || actorWidth || 80;
-    ghost.style.left   = (hookXg - ghostWidth/2) + 'px';
-
-    const distg  = hookXg - ax;
-    const scaleg = distg / baseL;
-
-    ghostSpring.style.bottom   = springBottom;
-    ghostSpring.style.left     = ax+'px';
-    ghostSpring.style.height   = springNaturalHeight ? (springNaturalHeight+'px') : (springEl.getBoundingClientRect().height || 1)+'px';
-    ghostSpring.style.transform= 'scaleX('+scaleg+')';
-
     if(ghostActive){
-      ghost.style.opacity       = 0.9;
-      ghostSpring.style.opacity = 0.9;
-      markerGhostEl.style.left  = hookXg+'px';
+      ghost.style.display      = 'block';
+      ghostSpring.style.display= 'block';
+
+      const ghostRect  = ghost.getBoundingClientRect();
+      const ghostWidth = ghostRect.width || actorWidth || 80;
+
+      ghost.style.bottom = bottomPx+'px';
+      ghost.style.left   = (hookXg - ghostWidth/2) + 'px';
+
+      const distg  = hookXg - ax;
+      const scaleg = distg / baseL;
+
+      ghostSpring.style.bottom   = springBottom;
+      ghostSpring.style.left     = ax+'px';
+      ghostSpring.style.height   = springNaturalHeight ? (springNaturalHeight+'px') : (springEl.getBoundingClientRect().height || 1)+'px';
+      ghostSpring.style.transform= 'scaleX('+scaleg+')';
+
+      markerGhostEl.style.left   = hookXg+'px';
       markerGhostEl.style.opacity= '1';
     }else{
-      ghost.style.opacity       = 0;
-      ghostSpring.style.opacity = 0;
+      ghost.style.display        = 'none';
+      ghostSpring.style.display  = 'none';
       markerGhostEl.style.opacity= '0';
     }
   }else{
@@ -1887,7 +1924,7 @@ function animate(now){
 }
 requestAnimationFrame(animate);
 
-/* ---------- Viewers avatars init ---------- */
+/* ---------- Viewers avatars ---------- */
 
 function initViewersAvatars(){
   const items = viewersStrip.querySelectorAll('.viewer-avatar');
@@ -1896,8 +1933,8 @@ function initViewersAvatars(){
   const leftBand  = 0.18;
   const widthBand = 0.64;
 
-  const baseWidthPx  = 140; // CSS default
-  const refScale     = 0.5; // “κανονική” τιμή από το JSON
+  const baseWidthPx  = 140;
+  const refScale     = 0.5;
 
   items.forEach((div, idx) => {
     const v = VIEWERS[idx];
@@ -1905,8 +1942,6 @@ function initViewersAvatars(){
       div.style.display = 'none';
       return;
     }
-
-    div.style.display = 'block';
 
     if (v.img) {
       div.style.backgroundImage = 'url("'+v.img+'")';
@@ -1918,12 +1953,12 @@ function initViewersAvatars(){
       div.style.height = '';
     }
 
-    let baseBottom = 0;
-    if(typeof v.avatarDy === 'number'){
-      baseBottom = v.avatarDy;
+    if (typeof v.avatarDy === 'number') {
+      div.dataset.baseBottom = v.avatarDy;
+      div.style.bottom = v.avatarDy + 'px';
+    } else {
+      div.dataset.baseBottom = '';
     }
-    div.dataset.baseBottom = String(baseBottom);
-    div.style.bottom = baseBottom + 'px';
 
     if (typeof v.avatarScale === 'number') {
       const widthPx = baseWidthPx * (v.avatarScale / refScale);
@@ -1937,6 +1972,8 @@ function initViewersAvatars(){
     const x = (leftBand + widthBand * xFrac) * stageW;
     div.style.left = x + 'px';
 
+    // εμφανίζονται ΜΟΝΟ όταν πάρουν .visible, αλλιώς κρυφοί
+    div.style.display = 'block';
     div.classList.remove('visible');
   });
 }
