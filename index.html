@@ -45,15 +45,19 @@
       transform: translateY(-130px);
     }
 
-    /* Φώτα κοινού + κουρτίνες (ΟΧΙ bubbles / ομιλητές) */
+    /* Φώτα κοινού + κουρτίνες */
     .audience-main,
-    #audienceExtra,
+    .audience-extra,
     .curtain-top,
     .curtain-upper,
     .curtain-side {
       transition: filter 0.8s ease;
     }
-    .dimmed {
+    .audience-main.dimmed,
+    .audience-extra.dimmed,
+    .curtain-top.dimmed,
+    .curtain-upper.dimmed,
+    .curtain-side.dimmed {
       filter: brightness(0.5);
     }
 
@@ -65,16 +69,9 @@
     .viewers .viewer-avatar.visible {
       opacity: 1;
     }
-
-    /* Break πλαίσια: να μην σεντονιάζουν όλη τη σκηνή */
-    .actbreak,
-    .foyerbreak {
-      background: transparent !important;
-      pointer-events: none;
-    }
-    .actbreak .box,
-    .foyerbreak .box {
-      pointer-events: auto;
+    /* Φωτεινοί ομιλητές όταν τα φώτα είναι σβηστά */
+    .viewers .viewer-avatar.lit {
+      filter: brightness(0.8);
     }
   </style>
 </head>
@@ -300,13 +297,12 @@ const pxPerMeter = 50;
 const omega = 2*Math.PI/T;
 const A_px  = A_m*pxPerMeter;
 
-/* καθιστός θεατής στις πράξεις 1–2: 65px πιο κάτω */
+/* καθιστός θεατής στις πράξεις 1–2: 65px πιο κάτω από τη θέση JSON */
 const ACTS_AVATAR_OFFSET = -65;
 
 let ghost       = null;
 let ghostSpring = null;
 let ghostActive = false;
-let ghostOpacity = 0;
 
 /* φυσικό μήκος ελατηρίου σε px */
 let springNaturalWidth  = null;
@@ -314,6 +310,9 @@ let springNaturalHeight = null;
 
 /* Πάτωμα ηθοποιού σε px (κοινό με ghost) */
 let actorFloorBottomPx = null;
+
+/* Κατάσταση φώτων κοινού/σκηνής */
+let audienceLightsOn = true;
 
 function measureSpringNaturalSize(){
   if(!springEl) return;
@@ -331,18 +330,28 @@ function measureSpringNaturalSize(){
   springEl.style.transform = prevTransform;
 }
 
-/* Φώτα κοινού + κουρτίνες (ΟΧΙ bubbles / ομιλητές) */
+/* Φώτα κοινού + κουρτίνες */
 function setAudienceLights(on){
-  const curtainTop   = document.querySelector('.curtain-top');
-  const curtainUpper = document.querySelector('.curtain-upper');
-  const curtainSides = document.querySelectorAll('.curtain-side');
-  const method = on ? 'remove' : 'add';
+  audienceLightsOn = !!on;
 
-  if(audienceMain)  audienceMain.classList[method]('dimmed');
-  if(audienceExtra) audienceExtra.classList[method]('dimmed');
-  if(curtainTop)    curtainTop.classList[method]('dimmed');
-  if(curtainUpper)  curtainUpper.classList[method]('dimmed');
-  curtainSides.forEach(el => el.classList[method]('dimmed'));
+  const main = audienceMain;
+  const extra = audienceExtra;
+  const ct = document.querySelector('.curtain-top');
+  const cu = document.querySelector('.curtain-upper');
+  const csL = document.querySelector('.curtain-side.left');
+  const csR = document.querySelector('.curtain-side.right');
+
+  const elems = [main, extra, ct, cu, csL, csR].filter(Boolean);
+  elems.forEach(el => {
+    el.classList.toggle('dimmed', !on);
+  });
+
+  // Όταν ανάβουν τα φώτα, καθαρίζουμε το "lit" από όλους
+  if(on && viewersStrip){
+    viewersStrip.querySelectorAll('.viewer-avatar').forEach(div=>{
+      div.classList.remove('lit');
+    });
+  }
 }
 
 /* ---------- UI κείμενα ανά γλώσσα ---------- */
@@ -1085,7 +1094,7 @@ function viewerInfo(idx1based){
   return VIEWERS[i] || VIEWERS[0] || null;
 }
 
-/* Anchor για ετικέτες/σκέψεις: καθαρά από JSON (xFrac,yFrac) */
+/* Άγκυρα για ετικέτες/σκέψεις: ΜΟΝΟ από JSON (xFrac) – ίδια σε Acts & Foyer */
 function viewerAnchor(idx1based){
   const vi = viewerInfo(idx1based);
   const leftFrac  = 0.18;
@@ -1094,8 +1103,7 @@ function viewerAnchor(idx1based){
     ? vi.xFrac
     : (idx1based/(VIEWERS.length+1 || 2));
   const x = (leftFrac + widthFrac*frac)*stage.clientWidth;
-  const yFrac = vi && typeof vi.yFrac==='number' ? vi.yFrac : 0.68;
-  const y = stage.clientHeight * yFrac;
+  const y = stage.clientHeight*0.60; // σταθερή "γραμμή" θεατών για labels/σκέψεις
   return {x,y,info:vi};
 }
 
@@ -1107,13 +1115,13 @@ function tint(hex, alpha){
   return 'rgba('+r+','+g+','+b+','+alpha+')';
 }
 
-/* helper για avatars ώστε να φαίνεται μόνο ο τρέχων θεατής με fade */
+/* ΝΕΟ: helper για avatars ώστε να φαίνεται μόνο ο τρέχων θεατής με fade */
 
 function hideAllViewerAvatars(){
   const items = viewersStrip.querySelectorAll('.viewer-avatar');
   items.forEach(div => {
     div.classList.remove('visible');
-    div.style.filter = '';
+    div.classList.remove('lit');
   });
 }
 function showViewerAvatar(idx1based){
@@ -1122,17 +1130,14 @@ function showViewerAvatar(idx1based){
   if(!el) return;
   const base = parseFloat(el.dataset.baseBottom || '0') || 0;
   let bottom = base;
-
   if(phase === 'act1' || phase === 'act2'){
-    bottom = base + ACTS_AVATAR_OFFSET;
-    el.style.filter = 'brightness(0.8)';
-  } else {
-    bottom = base;
-    el.style.filter = '';
+    bottom = base + ACTS_AVATAR_OFFSET; // 65px πιο κάτω από JSON μόνο στις πράξεις
   }
-
   el.style.bottom = bottom + 'px';
   el.classList.add('visible');
+  if(!audienceLightsOn){
+    el.classList.add('lit');
+  }
 }
 
 function showSpeakerChip(idx1based){
@@ -1445,7 +1450,7 @@ function ensureGhost(){
     ghost.style.position='absolute';
     ghost.style.zIndex='158';
     ghost.style.pointerEvents='none';
-    ghost.style.opacity='0';
+    ghost.style.opacity='0.85';
     ghost.style.filter='grayscale(1) brightness(1.2)';
     ghost.style.width  = aw+'px';
     ghost.style.height = ah+'px';
@@ -1466,8 +1471,9 @@ function ensureGhost(){
     ghostSpring.style.transformOrigin='left center';
     ghostSpring.style.zIndex='157';
     ghostSpring.style.pointerEvents='none';
-    ghostSpring.style.opacity='0';
+    ghostSpring.style.opacity='0.9';
     ghostSpring.style.filter='grayscale(1) brightness(1.15)';
+    ghostSpring.style.display='none';
     stage.appendChild(ghostSpring);
   }
 }
@@ -1475,7 +1481,6 @@ function ensureGhost(){
 async function runAct2(){
   ensureGhost();
   ghostActive=false;
-  ghostOpacity = 0;
   actBreak.style.display='none';
   stage.classList.add('open');
   setAudienceLights(false);
@@ -1774,13 +1779,12 @@ function resetShow(){
 
   springEl.style.display = 'none';
   if(ghost){
-    ghost.style.opacity = '0';
+    ghost.style.display = 'none';
   }
   if(ghostSpring){
-    ghostSpring.style.opacity = '0';
+    ghostSpring.style.display = 'none';
   }
   ghostActive = false;
-  ghostOpacity = 0;
   setAudienceLights(true);
 }
 
@@ -1898,7 +1902,6 @@ function animate(now){
   const xMeters = (hookX - cx)/pxPerMeter;
   logMeasurement(tObs, xMeters);
 
-  /* GHOST: απλό fade in/out με target opacity, ενώ κινείται κανονικά */
   if(ghost && ghostSpring){
     const Aghost_m  = 5.0;
     const Aghost_px = pxPerMeter*Aghost_m;
@@ -1908,30 +1911,31 @@ function animate(now){
 
     const springBottom = getComputedStyle(springEl).bottom || 'calc(32vh + 92px)';
 
-    const ghostRect  = ghost.getBoundingClientRect();
-    const ghostWidth = ghostRect.width || actorWidth || 80;
+    if(ghostActive){
+      ghost.style.display      = 'block';
+      ghostSpring.style.display= 'block';
 
-    ghost.style.bottom = bottomPx+'px';
-    ghost.style.left   = (hookXg - ghostWidth/2) + 'px';
+      const ghostRect  = ghost.getBoundingClientRect();
+      const ghostWidth = ghostRect.width || actorWidth || 80;
 
-    const distg  = hookXg - ax;
-    const scaleg = distg / baseL;
+      ghost.style.bottom = bottomPx+'px';
+      ghost.style.left   = (hookXg - ghostWidth/2) + 'px';
 
-    ghostSpring.style.bottom   = springBottom;
-    ghostSpring.style.left     = ax+'px';
-    ghostSpring.style.height   = springNaturalHeight ? (springNaturalHeight+'px') : (springEl.getBoundingClientRect().height || 1)+'px';
-    ghostSpring.style.transform= 'scaleX('+scaleg+')';
+      const distg  = hookXg - ax;
+      const scaleg = distg / baseL;
 
-    markerGhostEl.style.left   = hookXg+'px';
+      ghostSpring.style.bottom   = springBottom;
+      ghostSpring.style.left     = ax+'px';
+      ghostSpring.style.height   = springNaturalHeight ? (springNaturalHeight+'px') : (springEl.getBoundingClientRect().height || 1)+'px';
+      ghostSpring.style.transform= 'scaleX('+scaleg+')';
 
-    const targetOpacity = ghostActive ? 0.85 : 0;
-    ghostOpacity += (targetOpacity - ghostOpacity) * 0.15;
-    if(Math.abs(targetOpacity - ghostOpacity) < 0.01) ghostOpacity = targetOpacity;
-    const opStr = ghostOpacity.toFixed(2);
-
-    ghost.style.opacity       = opStr;
-    ghostSpring.style.opacity = opStr;
-    markerGhostEl.style.opacity = opStr;
+      markerGhostEl.style.left   = hookXg+'px';
+      markerGhostEl.style.opacity= '1';
+    }else{
+      ghost.style.display        = 'none';
+      ghostSpring.style.display  = 'none';
+      markerGhostEl.style.opacity= '0';
+    }
   }else{
     markerGhostEl.style.opacity = '0';
   }
@@ -1997,7 +2001,7 @@ function initViewersAvatars(){
     // εμφανίζονται ΜΟΝΟ όταν πάρουν .visible, αλλιώς κρυφοί
     div.style.display = 'block';
     div.classList.remove('visible');
-    div.style.filter = '';
+    div.classList.remove('lit');
   });
 }
 
