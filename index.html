@@ -45,18 +45,15 @@
       transform: translateY(-130px);
     }
 
-    /* Φώτα κοινού + ομιλητές + κουρτίνα πίσω */
+    /* Φώτα κοινού + ομιλητές + κουρτίνα πίσω (ΟΧΙ bubbles) */
     .audience-main,
     #audienceExtra,
     #viewersStrip,
-    #actBubble,
-    #foyerBubble,
-    #bubble0,
     .curtain-upper {
       transition: filter 0.8s ease;
     }
     .dimmed {
-      filter: brightness(0.25);
+      filter: brightness(0.45);
     }
 
     /* Avatars θεατών: κρυφοί by default, εμφανίζονται με fade μόνο όταν μιλάνε/σκέφτονται */
@@ -332,24 +329,18 @@ function measureSpringNaturalSize(){
   springEl.style.transform = prevTransform;
 }
 
-/* Φώτα κοινού + ομιλητών + κουρτίνας */
+/* Φώτα κοινού + ομιλητών + κουρτίνας (ΟΧΙ bubbles) */
 function setAudienceLights(on){
   const curtainUpper = document.querySelector('.curtain-upper');
   if(on){
     if(audienceMain) audienceMain.classList.remove('dimmed');
     if(audienceExtra) audienceExtra.classList.remove('dimmed');
     if(viewersStrip) viewersStrip.classList.remove('dimmed');
-    if(actBubble) actBubble.classList.remove('dimmed');
-    if(foyerBubble) foyerBubble.classList.remove('dimmed');
-    if(bubbleEl) bubbleEl.classList.remove('dimmed');
     if(curtainUpper) curtainUpper.classList.remove('dimmed');
   }else{
     if(audienceMain) audienceMain.classList.add('dimmed');
     if(audienceExtra) audienceExtra.classList.add('dimmed');
     if(viewersStrip) viewersStrip.classList.add('dimmed');
-    if(actBubble) actBubble.classList.add('dimmed');
-    if(foyerBubble) foyerBubble.classList.add('dimmed');
-    if(bubbleEl) bubbleEl.classList.add('dimmed');
     if(curtainUpper) curtainUpper.classList.add('dimmed');
   }
 }
@@ -1094,8 +1085,7 @@ function viewerInfo(idx1based){
   return VIEWERS[i] || VIEWERS[0] || null;
 }
 
-/* Εδώ δένουμε ετικέτες/σκέψεις καθαρά με JSON (xFrac / yFrac),
-   ΧΩΡΙΣ να εξαρτώνται από τη θέση του avatar που κατεβαίνει στις πράξεις. */
+/* Εδώ δένουμε ετικέτες/σκέψεις καθαρά με JSON (xFrac / yFrac) */
 function viewerAnchor(idx1based){
   const vi = viewerInfo(idx1based);
   const leftFrac  = 0.18;
