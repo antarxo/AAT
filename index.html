@@ -1085,7 +1085,7 @@ function viewerInfo(idx1based){
   return VIEWERS[i] || VIEWERS[0] || null;
 }
 
-/* Εδώ δένουμε ετικέτες/σκέψεις καθαρά με JSON (xFrac / yFrac) */
+/* Ετικέτες/σκέψεις: καθαρά από JSON (xFrac, yFrac). Default yFrac λίγο χαμηλότερα. */
 function viewerAnchor(idx1based){
   const vi = viewerInfo(idx1based);
   const leftFrac  = 0.18;
@@ -1094,7 +1094,7 @@ function viewerAnchor(idx1based){
     ? vi.xFrac
     : (idx1based/(VIEWERS.length+1 || 2));
   const x = (leftFrac + widthFrac*frac)*stage.clientWidth;
-  const yFrac = vi && typeof vi.yFrac==='number' ? vi.yFrac : 0.60;
+  const yFrac = vi && typeof vi.yFrac==='number' ? vi.yFrac : 0.68;
   const y = stage.clientHeight * yFrac;
   return {x,y,info:vi};
 }
@@ -1107,7 +1107,7 @@ function tint(hex, alpha){
   return 'rgba('+r+','+g+','+b+','+alpha+')';
 }
 
-/* ΝΕΟ: helper για avatars ώστε να φαίνεται μόνο ο τρέχων θεατής με fade */
+/* helper για avatars ώστε να φαίνεται μόνο ο τρέχων θεατής με fade */
 
 function hideAllViewerAvatars(){
   const items = viewersStrip.querySelectorAll('.viewer-avatar');
@@ -1436,7 +1436,7 @@ function ensureGhost(){
     ghost.style.position='absolute';
     ghost.style.zIndex='158';
     ghost.style.pointerEvents='none';
-    ghost.style.opacity='0.85';
+    ghost.style.opacity='0';
     ghost.style.filter='grayscale(1) brightness(1.2)';
     ghost.style.width  = aw+'px';
     ghost.style.height = ah+'px';
@@ -1457,9 +1457,8 @@ function ensureGhost(){
     ghostSpring.style.transformOrigin='left center';
     ghostSpring.style.zIndex='157';
     ghostSpring.style.pointerEvents='none';
-    ghostSpring.style.opacity='0.9';
+    ghostSpring.style.opacity='0';
     ghostSpring.style.filter='grayscale(1) brightness(1.15)';
-    ghostSpring.style.display='none';
     stage.appendChild(ghostSpring);
   }
 }
@@ -1765,10 +1764,10 @@ function resetShow(){
 
   springEl.style.display = 'none';
   if(ghost){
-    ghost.style.display = 'none';
+    ghost.style.opacity = '0';
   }
   if(ghostSpring){
-    ghostSpring.style.display = 'none';
+    ghostSpring.style.opacity = '0';
   }
   ghostActive = false;
   setAudienceLights(true);
@@ -1888,6 +1887,7 @@ function animate(now){
   const xMeters = (hookX - cx)/pxPerMeter;
   logMeasurement(tObs, xMeters);
 
+  /* GHOST: fade με opacity καθώς κινείται, χωρίς να σταματάει */
   if(ghost && ghostSpring){
     const Aghost_m  = 5.0;
     const Aghost_px = pxPerMeter*Aghost_m;
@@ -1897,30 +1897,33 @@ function animate(now){
 
     const springBottom = getComputedStyle(springEl).bottom || 'calc(32vh + 92px)';
 
+    const ghostRect  = ghost.getBoundingClientRect();
+    const ghostWidth = ghostRect.width || actorWidth || 80;
+
+    ghost.style.bottom = bottomPx+'px';
+    ghost.style.left   = (hookXg - ghostWidth/2) + 'px';
+
+    const distg  = hookXg - ax;
+    const scaleg = distg / baseL;
+
+    ghostSpring.style.bottom   = springBottom;
+    ghostSpring.style.left     = ax+'px';
+    ghostSpring.style.height   = springNaturalHeight ? (springNaturalHeight+'px') : (springEl.getBoundingClientRect().height || 1)+'px';
+    ghostSpring.style.transform= 'scaleX('+scaleg+')';
+
+    markerGhostEl.style.left   = hookXg+'px';
+
     if(ghostActive){
-      ghost.style.display      = 'block';
-      ghostSpring.style.display= 'block';
-
-      const ghostRect  = ghost.getBoundingClientRect();
-      const ghostWidth = ghostRect.width || actorWidth || 80;
-
-      ghost.style.bottom = bottomPx+'px';
-      ghost.style.left   = (hookXg - ghostWidth/2) + 'px';
-
-      const distg  = hookXg - ax;
-      const scaleg = distg / baseL;
-
-      ghostSpring.style.bottom   = springBottom;
-      ghostSpring.style.left     = ax+'px';
-      ghostSpring.style.height   = springNaturalHeight ? (springNaturalHeight+'px') : (springEl.getBoundingClientRect().height || 1)+'px';
-      ghostSpring.style.transform= 'scaleX('+scaleg+')';
-
-      markerGhostEl.style.left   = hookXg+'px';
-      markerGhostEl.style.opacity= '1';
+      const phaseNorm = (Math.sin(omega*playbackTime) + 1) / 2; // 0..1
+      const op = 0.15 + 0.70 * phaseNorm; // 0.15..0.85
+      const opStr = op.toFixed(2);
+      ghost.style.opacity       = opStr;
+      ghostSpring.style.opacity = opStr;
+      markerGhostEl.style.opacity = opStr;
     }else{
-      ghost.style.display        = 'none';
-      ghostSpring.style.display  = 'none';
-      markerGhostEl.style.opacity= '0';
+      ghost.style.opacity       = '0';
+      ghostSpring.style.opacity = '0';
+      markerGhostEl.style.opacity = '0';
     }
   }else{
     markerGhostEl.style.opacity = '0';
