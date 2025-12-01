@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>ΘεATRική Σκηνή — Ενιαία Έκδοση (Act I + Act II + Φουαγιέ)</title>
+  <title>Θεατρική Σκηνή — Ενιαία Έκδοση (Act I + Act II + Φουαγιέ)</title>
 
   <!-- uPlot για το x–t διάγραμμα (δεν πειράζει αν μείνει, τώρα το x–t είναι canvas) -->
   <link rel="stylesheet" href="https://unpkg.com/uplot@1.6.30/dist/uPlot.min.css">
@@ -284,6 +284,9 @@ const A_m = 3.0;
 const pxPerMeter = 50;
 const omega = 2*Math.PI/T;
 const A_px  = A_m*pxPerMeter;
+
+/* καθιστός θεατής στις πράξεις 1–2 */
+const ACTS_AVATAR_OFFSET = -45;
 
 let ghost       = null;
 let ghostSpring = null;
@@ -1101,7 +1104,14 @@ function hideAllViewerAvatars(){
 function showViewerAvatar(idx1based){
   hideAllViewerAvatars();
   const el = viewersStrip.querySelector('.viewer-avatar[data-idx="'+(idx1based-1)+'"]');
-  if(el) el.classList.add('visible');
+  if(!el) return;
+  const base = parseFloat(el.dataset.baseBottom || '0') || 0;
+  let bottom = base;
+  if(phase === 'act1' || phase === 'act2'){
+    bottom = base + ACTS_AVATAR_OFFSET;
+  }
+  el.style.bottom = bottom + 'px';
+  el.classList.add('visible');
 }
 
 function showSpeakerChip(idx1based){
@@ -1944,9 +1954,10 @@ function initViewersAvatars(){
     }
 
     if (typeof v.avatarDy === 'number') {
+      div.dataset.baseBottom = v.avatarDy;
       div.style.bottom = v.avatarDy + 'px';
     } else {
-      div.style.bottom = '';
+      div.dataset.baseBottom = '';
     }
 
     if (typeof v.avatarScale === 'number') {
