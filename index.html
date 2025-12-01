@@ -263,6 +263,10 @@ let mode = 'run';
 /* Φώτα σκηνής (on/off) */
 let lightsOn = true;
 
+/* Κατάσταση παράστασης για lock κουμπιών */
+let showStarted   = false; // αληθές μετά το πάτημα "Έναρξη"
+let foyerUnlocked = true;  // πριν την έναρξη μπορείς να πας κατευθείαν φουαγιέ
+
 let uXT = null;  // canvas για x–t
 let vCan = null;
 let aCan = null;
@@ -934,9 +938,7 @@ function viewerInfo(idx1based){
   return VIEWERS[i] || VIEWERS[0] || null;
 }
 
-/* anchor για label + bubble:
-   y βασισμένο στην baseBottom (όπως στο JSON),
-   ανεξάρτητα από το πόσο χαμηλά/ψηλά έχουμε ρίξει την εικόνα */
+/* anchor για label + bubble: y βασισμένο στην baseBottom (όπως στο JSON) */
 function viewerAnchor(idx1based){
   const vi = viewerInfo(idx1based);
   const avatar = viewersStrip.querySelector('.viewer-avatar[data-idx="'+(idx1based-1)+'"]');
@@ -1007,7 +1009,6 @@ function setActiveViewerAvatar(idx1based, mode){
     if(mode === 'act'){
       targetBottom = baseBottom - 45; // μισό κεφάλι στις πράξεις
     }
-    // Χωρίς transition στο bottom (μόνο opacity), άρα δεν “αναδύεται”, απλά εμφανίζεται στη θέση του.
     el.style.bottom = targetBottom + 'px';
   }
 
@@ -1195,9 +1196,9 @@ function showDynBubble(ev){
 async function runAct1(){
   for(const ev of ACT1){
 
-    /* ξανά το κλείσιμο/άναμμα φωτών με flags από το JSON */
-    if(ev.lightsOff) setLights(false);
-    if(ev.lightsOn)  setLights(true);
+    /* φώτα: υποστήριξη lightsOff/lightsOn ή lights:'off'/'on' */
+    if(ev.lightsOff || ev.lights === 'off') setLights(false);
+    if(ev.lightsOn  || ev.lights === 'on')  setLights(true);
 
     if(ev.close){
       await closeCurtainToAct2();
@@ -1356,8 +1357,8 @@ async function runAct2(){
 
   for(const ev of ACT2){
 
-    if(ev.lightsOff) setLights(false);
-    if(ev.lightsOn)  setLights(true);
+    if(ev.lightsOff || ev.lights === 'off') setLights(false);
+    if(ev.lightsOn  || ev.lights === 'on')  setLights(true);
 
     if(ev.gStart) ghostActive = true;
     if(ev.gStop)  ghostActive = false;
@@ -1427,6 +1428,7 @@ async function runAct2(){
   stage.classList.remove('open');
   setTimeout(()=>{
     foyerBreak.style.display='flex';
+    foyerUnlocked = true;   // από εδώ και πέρα ξεκλειδώνει το φουαγιέ & το Τέλος
   }, 1200);
 }
 
@@ -1596,7 +1598,9 @@ function resetShow(){
   lastSampleObsTime = -Infinity;
   measureRowIdx      = 0;
   setMode('run');
-  lightsOn = true;  // default: φώτα ανοικτά στην αρχή
+  lightsOn       = true;  // default: φώτα ανοικτά
+  showStarted    = false; // παράσταση όχι σε εξέλιξη
+  foyerUnlocked  = true;  // πριν ξεκινήσει, το φουαγιέ είναι ελεύθερο
 
   startBtn.style.display       ='block';
   countdownOverlay.style.display='none';
@@ -1651,7 +1655,15 @@ function resetShow(){
 }
 
 btnReset.addEventListener('click', resetShow);
-btnEndShow.addEventListener('click', resetShow);
+
+/* Τέλος Παράστασης:
+   - Πριν την έναρξη → δουλεύει κανονικά (reset)
+   - Μετά την έναρξη και πριν το φουαγιέ → lock (χωρίς action)
+   - Μετά το ξεκλείδωμα φουαγιέ → επιτρέπεται ξανά */
+btnEndShow.addEventListener('click', ()=>{
+  if(showStarted && !foyerUnlocked) return;
+  resetShow();
+});
 
 /* ---------- Έναρξη με countdown ---------- */
 
@@ -1670,6 +1682,9 @@ function beginObservation(){
 }
 
 function startShowCountdown(){
+  showStarted  = true;   // από εδώ και πέρα θεωρούμε ότι η παράσταση έχει ξεκινήσει
+  foyerUnlocked = false; // κλειδώνουμε φουαγιέ/τέλος μέχρι να έρθει η ώρα του φουαγιέ
+
   startBtn.style.display    ='none';
   countdownOverlay.style.display='flex';
   const seconds = 5;
@@ -1699,7 +1714,12 @@ btnAct2.addEventListener('click', ()=>{
 
 /* Φουαγιέ κουμπιά */
 
+/* Κουμπί Φουαγιέ:
+   - Πριν την έναρξη → πάει κατευθείαν φουαγιέ
+   - Μετά την έναρξη και πριν το ξεκλείδωμα → lock
+   - Μετά το ξεκλείδωμα → δουλεύει κανονικά */
 btnFoyer.addEventListener('click', ()=>{
+  if(showStarted && !foyerUnlocked) return;
   runFoyer();
 });
 
@@ -1757,6 +1777,7 @@ function animate(now){
   const xMeters = (hookX - cx)/pxPerMeter;
   logMeasurement(tObs, xMeters);
 
+  /* Ghost: ΠΑΝΤΑ κινείται, ghostActive ελέγχει μόνο το opacity */
   if(ghost && ghostSpring){
     const Aghost_m  = 5.0;
     const Aghost_px = pxPerMeter*Aghost_m;
@@ -1766,31 +1787,28 @@ function animate(now){
 
     const springBottom = getComputedStyle(springEl).bottom || 'calc(32vh + 92px)';
 
-    if(ghostActive){
-      ghost.style.opacity      = '1';
-      ghostSpring.style.opacity= '1';
+    const ghostRect  = ghost.getBoundingClientRect();
+    const ghostWidth = ghostRect.width || actorWidth || 80;
 
-      const ghostRect  = ghost.getBoundingClientRect();
-      const ghostWidth = ghostRect.width || actorWidth || 80;
+    ghost.style.bottom = bottomPx+'px';
+    ghost.style.left   = (hookXg - ghostWidth/2) + 'px';
 
-      ghost.style.bottom = bottomPx+'px';
-      ghost.style.left   = (hookXg - ghostWidth/2) + 'px';
+    const distg  = hookXg - ax;
+    const scaleg = distg / baseL;
 
-      const distg  = hookXg - ax;
-      const scaleg = distg / baseL;
+    ghostSpring.style.bottom   = springBottom;
+    ghostSpring.style.left     = ax+'px';
+    ghostSpring.style.height   = springNaturalHeight
+      ? (springNaturalHeight+'px')
+      : (springEl.getBoundingClientRect().height || 1)+'px';
+    ghostSpring.style.transform= 'scaleX('+scaleg+')';
 
-      ghostSpring.style.bottom   = springBottom;
-      ghostSpring.style.left     = ax+'px';
-      ghostSpring.style.height   = springNaturalHeight ? (springNaturalHeight+'px') : (springEl.getBoundingClientRect().height || 1)+'px';
-      ghostSpring.style.transform= 'scaleX('+scaleg+')';
+    markerGhostEl.style.left = hookXg+'px';
 
-      markerGhostEl.style.left   = hookXg+'px';
-      markerGhostEl.style.opacity= '1';
-    }else{
-      ghost.style.opacity        = '0';
-      ghostSpring.style.opacity  = '0';
-      markerGhostEl.style.opacity= '0';
-    }
+    const op = ghostActive ? '1' : '0';
+    ghost.style.opacity        = op;
+    ghostSpring.style.opacity  = op;
+    markerGhostEl.style.opacity= ghostActive ? '1' : '0';
   }else{
     markerGhostEl.style.opacity = '0';
   }
