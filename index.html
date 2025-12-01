@@ -5,16 +5,16 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Θεατρική Σκηνή — Ενιαία Έκδοση (Act I + Act II + Φουαγιέ)</title>
 
-  <!-- uPlot για το x–t διάγραμμα (δεν πειράζει αν μείνει, τώρα το x–t είναι canvas) -->
+  <!-- uPlot για x–t (παραμένει, παρότι τώρα το x–t είναι δικό μας canvas) -->
   <link rel="stylesheet" href="https://unpkg.com/uplot@1.6.30/dist/uPlot.min.css">
   <script src="https://unpkg.com/uplot@1.6.30/dist/uPlot.iife.min.js"></script>
 
-  <!-- Σκηνή CSS -->
+  <!-- CSS σκηνής -->
   <link rel="stylesheet" href="aat-stage.css">
 </head>
 <body>
 <div class="stage" id="stage">
-  <!-- Κουμπιά επιλογής γλώσσας -->
+  <!-- Κουμπιά γλώσσας -->
   <div class="lang-toggle">
     <button id="btnLangGR" class="lang-btn active">GR</button>
     <button id="btnLangEN" class="lang-btn">EN</button>
@@ -27,6 +27,7 @@
 
   <div class="spotlight" id="spotlight"></div>
 
+  <!-- Ταμπέλα τίτλου (default κείμενα – θα αντικατασταθούν από JSON.ui) -->
   <div class="signboard">
     <h1 id="signTitle">Πράξη 1η: Η Κινηματική στα ... Αλγεβρικά</h1>
     <div class="sb-lineA" id="signLineA">Πρωταγωνιστεί ο ταλαντωτής (m₁, D₁) και οι θεαποιοί(*)</div>
@@ -63,12 +64,12 @@
 
   <div class="ruler" id="ruler"></div>
 
-  <!-- βέλος κανονικού -->
+  <!-- κανονικός δείκτης -->
   <div class="marker" id="marker">
     <div class="marker-line"></div>
     <div class="marker-tip"></div>
   </div>
-  <!-- βέλος ghost -->
+  <!-- ghost δείκτης -->
   <div class="marker" id="markerGhost">
     <div class="marker-line"></div>
     <div class="marker-tip"></div>
@@ -97,18 +98,18 @@
 
   <div class="controls" id="controls">
     <button id="btnPause" title="παύση">⏸</button>
-    <button id="btnPlay" title="κανονικά">▶</button>
+    <button id="btnPlay"  title="κανονικά">▶</button>
     <button id="btnReset" title="reset">↺</button>
   </div>
-  <button class="btn-end" id="btnEndShow">Τέλος Παράστασης</button>
-  <button class="btn-foyer" id="btnFoyer" title="Φουαγιέ">Φουαγιέ</button>
+  <button class="btn-end"  id="btnEndShow">Τέλος Παράστασης</button>
+  <button class="btn-foyer" id="btnFoyer"   title="Φουαγιέ">Φουαγιέ</button>
 
   <button class="start-btn" id="startBtn">Έναρξη</button>
 
   <div class="countdown-overlay" id="countdownOverlay">
     <div class="countdown-box">
       <div class="countdown-main" id="countdownMain">Η παράσταση αρχίζει.</div>
-      <div class="countdown-sub" id="countdownSub">ώρα να χρησιμοποιήσετε χαρτί και μολύβι!</div>
+      <div class="countdown-sub"  id="countdownSub">ώρα να χρησιμοποιήσετε χαρτί και μολύβι!</div>
       <div class="countdown-timer" id="countdownTimer">5</div>
     </div>
   </div>
@@ -116,7 +117,7 @@
   <div class="actbreak" id="actBreak">
     <div class="box">
       <h3 id="actBreakTitle">Τέλος Πράξης 1</h3>
-      <p id="actBreakMsg">Ο (m₁,D₁) συνεχίζει. Είστε έτοιμοι για τη Δεύτερη Πράξη;</p>
+      <p  id="actBreakMsg">Ο (m₁,D₁) συνεχίζει. Είστε έτοιμοι για τη Δεύτερη Πράξη;</p>
       <button id="btnAct2">Έναρξη Πράξης 2</button>
     </div>
   </div>
@@ -124,7 +125,7 @@
   <div class="foyerbreak" id="foyerBreak">
     <div class="box">
       <h3 id="foyerBreakTitle">Τέλος Πράξης 2</h3>
-      <p id="foyerBreakMsg">Θέλετε να περάσετε στο φουαγιέ για τη συζήτηση;</p>
+      <p  id="foyerBreakMsg">Θέλετε να περάσετε στο φουαγιέ για τη συζήτηση;</p>
       <button id="btnFoyerGo">Μετάβαση στο Φουαγιέ</button>
     </div>
   </div>
@@ -143,116 +144,16 @@
 /* ---------- ΔΕΔΟΜΕΝΑ ΑΠΟ dialogs-*.json ---------- */
 
 let VIEWERS = [];
-let ACT1 = [];
-let ACT2 = [];
-let FOYER = [];
+let ACT1    = [];
+let ACT2    = [];
+let FOYER   = [];
 
 let foyerTBody = null;
 
-/* Σταθερά κείμενα ανά γλώσσα: μπορούν να σκεπαστούν από JSON → data.texts */
-const DIALOG_TEXTS_DEFAULT = {
-  gr: {
-    sign: {
-      title: 'Πράξη 1η: Η Κινηματική στα ... Αλγεβρικά',
-      lineA: 'Πρωταγωνιστεί ο ταλαντωτής (m₁, D₁) και οι θεαποιοί(*)',
-      lineB_html: 'στον μονόλογο <span class="hl">«ατέλειωτο πήγαινε έλα»</span>... επί σκηνής!',
-      lineC: 'Παραγωγή-Σκηνοθεσία: Εμηχ. Ενεργειούλης',
-      lineD: '(*) ... εσείς'
-    },
-    laws: {
-      title: 'Νόμοι Α.Α.Τ.'
-    },
-    measure: {
-      title: 'Μετρήσεις',
-      colIdx: 'α/α'
-    },
-    countdown: {
-      main: 'Η παράσταση αρχίζει.',
-      sub: 'ώρα να χρησιμοποιήσετε χαρτί και μολύβι!'
-    },
-    actBreak: {
-      title: 'Τέλος Πράξης 1',
-      msg: 'Ο (m₁,D₁) συνεχίζει. Είστε έτοιμοι για τη Δεύτερη Πράξη;',
-      button: 'Έναρξη Πράξης 2'
-    },
-    foyerBreak: {
-      title: 'Τέλος Πράξης 2',
-      msg: 'Θέλετε να περάσετε στο φουαγιέ για τη συζήτηση;',
-      button: 'Μετάβαση στο Φουαγιέ'
-    },
-    buttons: {
-      endShow: 'Τέλος Παράστασης',
-      foyer: 'Φουαγιέ',
-      start: 'Έναρξη'
-    },
-    controls: {
-      pauseTitle: 'παύση',
-      playTitle: 'κανονικά',
-      resetTitle: 'reset',
-      foyerTitle: 'Φουαγιέ'
-    }
-  },
-  en: {
-    sign: {
-      title: 'Act I: Kinematics in Algebraic Form',
-      lineA: 'Starring the oscillator (m₁, D₁) and the spectators(*)',
-      lineB_html: 'in the monologue <span class="hl">“endless back and forth”</span>... on stage!',
-      lineC: 'Production & Direction: Eng. Energioulis',
-      lineD: '(*) ... you'
-    },
-    laws: {
-      title: 'S.H.M. Laws'
-    },
-    measure: {
-      title: 'Measurements',
-      colIdx: 'No'
-    },
-    countdown: {
-      main: 'The performance is about to begin.',
-      sub: 'time to use pencil and paper!'
-    },
-    actBreak: {
-      title: 'End of Act I',
-      msg: '(m₁,D₁) continues. Ready for Act II?',
-      button: 'Start Act II'
-    },
-    foyerBreak: {
-      title: 'End of Act II',
-      msg: 'Do you want to move to the foyer for discussion?',
-      button: 'Go to Foyer'
-    },
-    buttons: {
-      endShow: 'End of Performance',
-      foyer: 'Foyer',
-      start: 'Start'
-    },
-    controls: {
-      pauseTitle: 'pause',
-      playTitle: 'play',
-      resetTitle: 'reset',
-      foyerTitle: 'Foyer'
-    }
-  },
-  dynamic: {
-    A: {
-      gr: '…με A={A} m!',
-      en: '…with A={A} m!'
-    },
-    Tw: {
-      gr: '… και T={T} s και επομένως ω={omega} rad/s!',
-      en: '…and T={T} s and therefore ω={omega} rad/s!'
-    },
-    phi: {
-      gr: '… όντως είναι ΑΑΤ και αφού το x₀={x0} m υπάρχει φ₀={phi0}°. Χαχα, ένα το κρατούμενο!',
-      en: '…indeed it is S.H.M. and since x₀={x0} m, there is an initial phase φ₀={phi0}°. Haha, one thing to keep in mind!'
-    }
-  }
-};
+/* UI κείμενα από JSON.ui */
+let UI = {};
 
-let DIALOG_TEXTS = JSON.parse(JSON.stringify(DIALOG_TEXTS_DEFAULT));
-
-/* Τρέχουσα γλώσσα: 'gr' ή 'en' */
-let currentLang = 'gr';
+let currentLang = 'gr';  // 'gr' ή 'en'
 let btnLangGR = null;
 let btnLangEN = null;
 
@@ -268,7 +169,7 @@ const spotlight    = document.getElementById('spotlight');
 const rulerEl      = document.getElementById('ruler');
 const markerEl     = document.getElementById('marker');
 const markerGhostEl= document.getElementById('markerGhost');
-markerGhostEl.style.zIndex = '159'; // ghost βέλος
+markerGhostEl.style.zIndex = '159';
 
 const clockEl      = document.getElementById('clock');
 const slowHint     = document.getElementById('slowHint');
@@ -323,11 +224,11 @@ let measureRowIdx = 0;
 
 let mode = 'run';
 
-let uXT = null;  // canvas για x–t
-let vCan = null;
-let aCan = null;
-let axCan = null;
-let xsCan = null; // x–sin(ωt) γράφημα
+let uXT = null;   // x–t canvas
+let vCan = null;  // v–t
+let aCan = null;  // a–t
+let axCan = null; // a–x
+let xsCan = null; // x–sin(ωt)
 
 const m   = 70;
 const T   = 6.0;
@@ -336,23 +237,77 @@ const pxPerMeter = 50;
 const omega = 2*Math.PI/T;
 const A_px  = A_m*pxPerMeter;
 
-/* καθιστός θεατής στις πράξεις 1–2: offset από JSON (global), default -60 */
+/* offset για avatars στις πράξεις από JSON. Προεπιλογή: -60 */
 let ACTS_AVATAR_OFFSET = -60;
 
 let ghost       = null;
 let ghostSpring = null;
 let ghostActive = false;
-let ghostVisibility = 0; // 0..1 για fade-in/fade-out
+let ghostVisibility = 0;
 
-/* φυσικό μήκος ελατηρίου σε px */
 let springNaturalWidth  = null;
 let springNaturalHeight = null;
+let actorFloorBottomPx  = null;
 
-/* Πάτωμα ηθοποιού σε px (κοινό με ghost) */
-let actorFloorBottomPx = null;
-
-/* Κατάσταση φώτων κοινού/σκηνής */
 let audienceLightsOn = true;
+
+/* ---------- UI από JSON.ui ---------- */
+
+function applyUITextFromUI(){
+  const ui = UI || {};
+
+  const signTitle = document.getElementById('signTitle');
+  const signLineA = document.getElementById('signLineA');
+  const signLineB = document.getElementById('signLineB');
+  const signLineC = document.getElementById('signLineC');
+  const signLineD = document.getElementById('signLineD');
+  const lawsTitle = document.getElementById('lawsTitle');
+  const measureTitle = document.getElementById('measureTitle');
+  const measureColIdx = document.getElementById('measureColIdx');
+  const countdownMain = document.getElementById('countdownMain');
+  const countdownSub  = document.getElementById('countdownSub');
+  const actBreakTitle = document.getElementById('actBreakTitle');
+  const actBreakMsg   = document.getElementById('actBreakMsg');
+  const foyerBreakTitle = document.getElementById('foyerBreakTitle');
+  const foyerBreakMsg   = document.getElementById('foyerBreakMsg');
+
+  if(signTitle   && ui.signTitle   != null) signTitle.textContent   = ui.signTitle;
+  if(signLineA   && ui.signLineA   != null) signLineA.textContent   = ui.signLineA;
+  if(signLineB   && ui.signLineB   != null) signLineB.innerHTML     = ui.signLineB;
+  if(signLineC   && ui.signLineC   != null) signLineC.textContent   = ui.signLineC;
+  if(signLineD   && ui.signLineD   != null) signLineD.textContent   = ui.signLineD;
+
+  if(lawsTitle   && ui.lawsTitle   != null) lawsTitle.textContent   = ui.lawsTitle;
+  if(measureTitle&& ui.measureTitle!= null) measureTitle.textContent= ui.measureTitle;
+  if(measureColIdx&&ui.measureColIdx!=null) measureColIdx.textContent= ui.measureColIdx;
+
+  if(countdownMain && ui.countdownMain != null) countdownMain.textContent = ui.countdownMain;
+  if(countdownSub  && ui.countdownSub  != null) countdownSub.textContent  = ui.countdownSub;
+
+  if(actBreakTitle && ui.actBreakTitle != null) actBreakTitle.textContent = ui.actBreakTitle;
+  if(actBreakMsg   && ui.actBreakMsg   != null) actBreakMsg.textContent   = ui.actBreakMsg;
+  if(btnAct2       && ui.btnAct2       != null) btnAct2.textContent       = ui.btnAct2;
+
+  if(foyerBreakTitle && ui.foyerBreakTitle != null) foyerBreakTitle.textContent = ui.foyerBreakTitle;
+  if(foyerBreakMsg   && ui.foyerBreakMsg   != null) foyerBreakMsg.textContent   = ui.foyerBreakMsg;
+  if(btnFoyerGo      && ui.btnFoyerGo      != null) btnFoyerGo.textContent      = ui.btnFoyerGo;
+
+  if(btnEndShow && ui.btnEndShow != null) btnEndShow.textContent = ui.btnEndShow;
+  if(btnFoyer   && ui.btnFoyer   != null) btnFoyer.textContent   = ui.btnFoyer;
+  if(startBtn   && ui.startBtn   != null) startBtn.textContent   = ui.startBtn;
+
+  if(btnPause   && ui.btnPauseTitle != null) btnPause.title = ui.btnPauseTitle;
+  if(btnPlay    && ui.btnPlayTitle  != null) btnPlay.title  = ui.btnPlayTitle;
+  if(btnReset   && ui.btnResetTitle != null) btnReset.title = ui.btnResetTitle;
+  if(btnFoyer   && ui.btnFoyerTitle != null) btnFoyer.title = ui.btnFoyerTitle;
+
+  if(btnLangGR && btnLangEN){
+    btnLangGR.classList.toggle('active', currentLang === 'gr');
+    btnLangEN.classList.toggle('active', currentLang === 'en');
+  }
+}
+
+/* ---------- Βοηθητικά για σκηνή ---------- */
 
 function measureSpringNaturalSize(){
   if(!springEl) return;
@@ -370,25 +325,6 @@ function measureSpringNaturalSize(){
   springEl.style.transform = prevTransform;
 }
 
-/* merge για data.texts από JSON πάνω στα defaults */
-function mergeDeep(target, source){
-  if(!source || typeof source !== 'object') return target;
-  Object.keys(source).forEach(key=>{
-    const srcVal = source[key];
-    const tgtVal = target[key];
-    if(srcVal && typeof srcVal === 'object' && !Array.isArray(srcVal)){
-      if(!tgtVal || typeof tgtVal !== 'object' || Array.isArray(tgtVal)){
-        target[key] = {};
-      }
-      mergeDeep(target[key], srcVal);
-    }else{
-      target[key] = srcVal;
-    }
-  });
-  return target;
-}
-
-/* Φώτα κοινού + κουρτίνες */
 function setAudienceLights(on){
   audienceLightsOn = !!on;
 
@@ -400,11 +336,10 @@ function setAudienceLights(on){
   const csR = document.querySelector('.curtain-side.right');
 
   const elems = [main, extra, ct, cu, csL, csR].filter(Boolean);
-  elems.forEach(el => {
+  elems.forEach(el=>{
     el.classList.toggle('dimmed', !on);
   });
 
-  // Όταν ανάβουν τα φώτα, καθαρίζουμε το "lit" από όλους
   if(on && viewersStrip){
     viewersStrip.querySelectorAll('.viewer-avatar').forEach(div=>{
       div.classList.remove('lit');
@@ -412,78 +347,10 @@ function setAudienceLights(on){
   }
 }
 
-/* ---------- UI κείμενα ανά γλώσσα ---------- */
+/* ---------- Ruler / μετρήσεις ---------- */
 
-function applyUIText(){
-  const signTitle = document.getElementById('signTitle');
-  const signLineA = document.getElementById('signLineA');
-  const signLineB = document.getElementById('signLineB');
-  const signLineC = document.getElementById('signLineC');
-  const signLineD = document.getElementById('signLineD');
-  const lawsTitle = document.getElementById('lawsTitle');
-  const measureTitle = document.getElementById('measureTitle');
-  const measureColIdx = document.getElementById('measureColIdx');
-  const countdownMain = document.getElementById('countdownMain');
-  const countdownSub = document.getElementById('countdownSub');
-  const actBreakTitle = document.getElementById('actBreakTitle');
-  const actBreakMsg = document.getElementById('actBreakMsg');
-  const foyerBreakTitle = document.getElementById('foyerBreakTitle');
-  const foyerBreakMsg = document.getElementById('foyerBreakMsg');
-
-  const pack = DIALOG_TEXTS[currentLang] || DIALOG_TEXTS.gr;
-  const sign = pack.sign || {};
-  const laws = pack.laws || {};
-  const meas = pack.measure || {};
-  const ctd  = pack.countdown || {};
-  const ab   = pack.actBreak || {};
-  const fb   = pack.foyerBreak || {};
-  const btns = pack.buttons || {};
-  const ctrls= pack.controls || {};
-
-  if(signTitle) signTitle.textContent = sign.title || '';
-  if(signLineA) signLineA.textContent = sign.lineA || '';
-  if(signLineB) signLineB.innerHTML   = sign.lineB_html || '';
-  if(signLineC) signLineC.textContent = sign.lineC || '';
-  if(signLineD) signLineD.textContent = sign.lineD || '';
-
-  if(lawsTitle)    lawsTitle.textContent    = laws.title || '';
-  if(measureTitle) measureTitle.textContent = meas.title || '';
-  if(measureColIdx) measureColIdx.textContent = meas.colIdx || '';
-
-  if(countdownMain) countdownMain.textContent = ctd.main || '';
-  if(countdownSub)  countdownSub.textContent  = ctd.sub  || '';
-
-  if(actBreakTitle) actBreakTitle.textContent = ab.title || '';
-  if(actBreakMsg)   actBreakMsg.textContent   = ab.msg   || '';
-  if(btnAct2)       btnAct2.textContent       = ab.button || btnAct2.textContent;
-
-  if(foyerBreakTitle) foyerBreakTitle.textContent = fb.title || '';
-  if(foyerBreakMsg)   foyerBreakMsg.textContent   = fb.msg   || '';
-  if(btnFoyerGo)      btnFoyerGo.textContent      = fb.button || btnFoyerGo.textContent;
-
-  if(btnEndShow) btnEndShow.textContent = btns.endShow || btnEndShow.textContent;
-  if(btnFoyer)   btnFoyer.textContent   = btns.foyer   || btnFoyer.textContent;
-  if(startBtn)   startBtn.textContent   = btns.start   || startBtn.textContent;
-
-  if(btnPause) btnPause.title = ctrls.pauseTitle || btnPause.title;
-  if(btnPlay)  btnPlay.title  = ctrls.playTitle  || btnPlay.title;
-  if(btnReset) btnReset.title = ctrls.resetTitle || btnReset.title;
-  if(btnFoyer) btnFoyer.title = ctrls.foyerTitle || btnFoyer.title;
-
-  if(btnLangGR && btnLangEN){
-    btnLangGR.classList.toggle('active', currentLang === 'gr');
-    btnLangEN.classList.toggle('active', currentLang === 'en');
-  }
-}
-
-/* ---------- Χρήσιμα ---------- */
-
-function anchorX(){
-  return stage.clientWidth * 0.18;
-}
-function centerX(){
-  return stage.clientWidth * 0.5;
-}
+function anchorX(){ return stage.clientWidth * 0.18; }
+function centerX(){ return stage.clientWidth * 0.5; }
 
 function updateRuler(){
   const baseLeft = stage.clientWidth * 0.18;
@@ -492,17 +359,17 @@ function updateRuler(){
   rulerEl.style.width = usableW + 'px';
   rulerEl.innerHTML   = '';
   const cX = stage.clientWidth / 2;
-  for(let mTick=-7; mTick<=7; mTick++){
-    const xPx = cX + mTick * pxPerMeter;
+  for(let mTick=-7;mTick<=7;mTick++){
+    const xPx = cX + mTick*pxPerMeter;
     const rel = xPx - baseLeft;
     const tDiv = document.createElement('div');
-    tDiv.className = 'tick';
+    tDiv.className='tick';
     tDiv.style.left = rel + 'px';
     rulerEl.appendChild(tDiv);
     const lbl = document.createElement('div');
-    lbl.className = 'tick-label';
-    lbl.textContent = (mTick===0 ? '0' : (mTick>0? '+'+mTick : mTick)) + ' m';
-    lbl.style.left = rel + 'px';
+    lbl.className='tick-label';
+    lbl.textContent = (mTick===0?'0':(mTick>0? '+'+mTick:mTick))+' m';
+    lbl.style.left=rel+'px';
     rulerEl.appendChild(lbl);
   }
 }
@@ -512,17 +379,17 @@ function logMeasurement(tObs, xMeters){
   if(tObs - lastSampleObsTime < sampleInterval) return;
   lastSampleObsTime = tObs;
   const tr = document.createElement('tr');
-  tr.className = 'new';
+  tr.className='new';
   tr.innerHTML =
     '<td>'+(++measureRowIdx)+'</td>'+
     '<td>'+tObs.toFixed(2)+'</td>'+
     '<td>'+xMeters.toFixed(2)+'</td>';
   measureTBody.appendChild(tr);
-  setTimeout(()=>tr.classList.remove('new'), 650);
+  setTimeout(()=>tr.classList.remove('new'),650);
   try{ tr.scrollIntoView({block:'end'}); }catch(e){}
 }
 
-/* ---------- x(t) — canvas με grid & ticks ---------- */
+/* ---------- x(t) canvas ---------- */
 
 function buildSeriesData(){
   const N = 240;
@@ -539,16 +406,14 @@ function buildSeriesData(){
 function initXTChart(){
   if(uXT) return;
   xtChartEl.style.display='block';
-
   const c = document.createElement('canvas');
-  c.width  = 210;
-  c.height = 120;
-  c.style.width  = '210px';
-  c.style.height = '120px';
-  xtChartEl.innerHTML = '';
+  c.width = 210;
+  c.height= 120;
+  c.style.width='210px';
+  c.style.height='120px';
+  xtChartEl.innerHTML='';
   xtChartEl.appendChild(c);
   uXT = c;
-
   drawXTChart();
 }
 
@@ -559,144 +424,140 @@ function drawXTChart(){
   const h = uXT.height;
   ctx.clearRect(0,0,w,h);
 
-  const margin = 18;
-  const x0 = margin;
-  const x1 = w - margin;
-  const yTop = margin;
-  const yBot = h - margin;
+  const margin=18;
+  const x0=margin;
+  const x1=w-margin;
+  const yTop=margin;
+  const yBot=h-margin;
 
-  const [tArr, xArr] = buildSeriesData();
+  const [tArr,xArr] = buildSeriesData();
+  const tMin=0, tMax=T;
+  const xMaxAbs=A_m*1.1;
 
-  const tMin = 0, tMax = T;
-  const xMaxAbs = A_m * 1.1;
-
-  function tToX(t){
-    return x0 + (t - tMin)/(tMax - tMin) * (x1 - x0);
-  }
+  function tToX(t){ return x0+(t-tMin)/(tMax-tMin)*(x1-x0); }
   function xToY(x){
-    const mid = (yTop + yBot)/2;
-    const amp = (yBot - yTop)/2;
-    return mid - (x / xMaxAbs) * amp;
+    const mid=(yTop+yBot)/2;
+    const amp=(yBot-yTop)/2;
+    return mid-(x/xMaxAbs)*amp;
   }
 
   ctx.save();
-  ctx.strokeStyle = 'rgba(255,255,255,0.18)';
-  ctx.lineWidth = 1;
+  ctx.strokeStyle='rgba(255,255,255,0.18)';
+  ctx.lineWidth=1;
   ctx.setLineDash([3,3]);
 
-  const tTicks = [0, T/2, T];
+  const tTicks=[0,T/2,T];
   tTicks.forEach(t=>{
-    const xf = tToX(t);
+    const xf=tToX(t);
     ctx.beginPath();
-    ctx.moveTo(xf, yTop);
-    ctx.lineTo(xf, yBot);
+    ctx.moveTo(xf,yTop);
+    ctx.lineTo(xf,yBot);
     ctx.stroke();
   });
 
-  const xTicks = [-A_m, 0, A_m];
+  const xTicks=[-A_m,0,A_m];
   xTicks.forEach(x=>{
-    const yf = xToY(x);
+    const yf=xToY(x);
     ctx.beginPath();
-    ctx.moveTo(x0, yf);
-    ctx.lineTo(x1, yf);
+    ctx.moveTo(x0,yf);
+    ctx.lineTo(x1,yf);
     ctx.stroke();
   });
 
   ctx.restore();
 
-  ctx.strokeStyle = 'rgba(255,255,255,0.6)';
-  ctx.lineWidth = 1;
+  ctx.strokeStyle='rgba(255,255,255,0.6)';
+  ctx.lineWidth=1;
   ctx.setLineDash([]);
 
-  const y0line = xToY(0);
+  const y0line=xToY(0);
   ctx.beginPath();
-  ctx.moveTo(x0, y0line);
-  ctx.lineTo(x1, y0line);
+  ctx.moveTo(x0,y0line);
+  ctx.lineTo(x1,y0line);
   ctx.stroke();
 
-  const xAxis0 = tToX(0);
+  const xAxis0=tToX(0);
   ctx.beginPath();
-  ctx.moveTo(xAxis0, yTop);
-  ctx.lineTo(xAxis0, yBot);
+  ctx.moveTo(xAxis0,yTop);
+  ctx.lineTo(xAxis0,yBot);
   ctx.stroke();
 
   ctx.beginPath();
-  ctx.rect(x0, yTop, x1-x0, yBot-yTop);
+  ctx.rect(x0,yTop,x1-x0,yBot-yTop);
   ctx.stroke();
 
-  ctx.strokeStyle = '#ffd27a';
-  ctx.lineWidth = 2;
+  ctx.strokeStyle='#ffd27a';
+  ctx.lineWidth=2;
   ctx.beginPath();
   for(let i=0;i<tArr.length;i++){
-    const tx = tArr[i];
-    const xx = xArr[i];
-    const px = tToX(tx);
-    const py = xToY(xx);
+    const tx=tArr[i];
+    const xx=xArr[i];
+    const px=tToX(tx);
+    const py=xToY(xx);
     if(i===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
   }
   ctx.stroke();
 
-  ctx.fillStyle = '#fff';
-  ctx.font = '11px system-ui';
+  ctx.fillStyle='#fff';
+  ctx.font='11px system-ui';
   ctx.fillText('x(t)', x0+4, yTop+10);
 
-  ctx.font = '10px system-ui';
+  ctx.font='10px system-ui';
   ctx.fillText('x (m)', x0+4, yTop-4);
   ctx.fillText('t (s)', x1-20, yBot+12);
 
-  ctx.textAlign = 'center';
-  ctx.fillText('0', tToX(0),  yBot+10);
+  ctx.textAlign='center';
+  ctx.fillText('0', tToX(0), yBot+10);
   ctx.fillText((T/2).toFixed(1), tToX(T/2), yBot+10);
   ctx.fillText(T.toFixed(1), tToX(T), yBot+10);
-  ctx.textAlign = 'left';
+  ctx.textAlign='left';
 
   ctx.fillText('-A', x0+4, xToY(-A_m)+4);
   ctx.fillText('0',  x0+4, xToY(0)+4);
-  ctx.fillText('+A', x0+4, xToY(A_m)+4);
+  ctx.fillText('+A', x0+4, xToY(+A_m)+4);
 
-  const x0val = A_m*Math.sin(omega*(0+obsStartPlaybackOffset));
-  const yx0 = xToY(x0val);
-  ctx.strokeStyle = 'rgba(255,255,255,0.7)';
+  const x0val=A_m*Math.sin(omega*(0+obsStartPlaybackOffset));
+  const yx0=xToY(x0val);
+  ctx.strokeStyle='rgba(255,255,255,0.7)';
   ctx.setLineDash([4,2]);
   ctx.beginPath();
-  ctx.moveTo(x0, yx0);
-  ctx.lineTo(x1, yx0);
+  ctx.moveTo(x0,yx0);
+  ctx.lineTo(x1,yx0);
   ctx.stroke();
 
   ctx.setLineDash([]);
-  ctx.fillStyle = '#ffd27a';
-  ctx.font = '10px system-ui';
-  const labelX0 = (currentLang === 'en' ? 'x₀ ≈ ' : 'x₀ ≈ ') + x0val.toFixed(2) + ' m';
+  ctx.fillStyle='#ffd27a';
+  ctx.font='10px system-ui';
+  const labelX0='x₀ ≈ '+x0val.toFixed(2)+' m';
   ctx.fillText(labelX0, x0+4, yx0-4);
 }
 
-/* ---------- Νόμοι / διαγράμματα ---------- */
+/* ---------- Νόμοι & mini-διαγράμματα ---------- */
 
-let firstLawShown = false;
+let firstLawShown=false;
 
 function localizeTrig(txt){
   if(!txt) return txt;
-  if(currentLang === 'gr'){
+  if(currentLang==='gr'){
     return txt.replaceAll('sin','ημ').replaceAll('cos','συν');
   }
   return txt;
 }
 
 function addLaw(txt){
-  const t = localizeTrig(txt);
+  const t=localizeTrig(txt);
   if(!firstLawShown){
-    firstLawShown = true;
+    firstLawShown=true;
     lawsPane.style.display='block';
   }
-  const div = document.createElement('div');
+  const div=document.createElement('div');
   div.className='law-line';
-  div.textContent = t;
+  div.textContent=t;
   lawsBody.appendChild(div);
 }
 
 function sizeLawCanvas(c){
-  const w = 210;
-  const h = 120;
+  const w=210,h=120;
   c.width=w; c.height=h;
   c.style.width=w+'px';
   c.style.height=h+'px';
@@ -706,47 +567,47 @@ function sizeLawCanvas(c){
 
 function drawVelocityChart(){
   if(!vCan) return;
-  const ctx = vCan.getContext('2d');
-  const w = vCan.width;
-  const h = vCan.height;
+  const ctx=vCan.getContext('2d');
+  const w=vCan.width;
+  const h=vCan.height;
   ctx.clearRect(0,0,w,h);
 
-  const margin = 18;
-  const x0 = margin;
-  const x1 = w - margin;
-  const y0 = h/2;
+  const margin=18;
+  const x0=margin;
+  const x1=w-margin;
+  const y0=h/2;
 
-  const vmax = omega * A_m;
-  const yAmp = (h/2 - margin);
-  const scaleV = yAmp / (1.1*vmax);
+  const vmax=omega*A_m;
+  const yAmp=(h/2-margin);
+  const scaleV=yAmp/(1.1*vmax);
 
   ctx.save();
-  ctx.strokeStyle = 'rgba(255,255,255,0.18)';
-  ctx.lineWidth = 1;
+  ctx.strokeStyle='rgba(255,255,255,0.18)';
+  ctx.lineWidth=1;
   ctx.setLineDash([3,3]);
 
-  const tTicks = [0, T/2, T];
+  const tTicks=[0,T/2,T];
   tTicks.forEach(t=>{
-    const xf = x0 + (x1-x0)*(t/T);
+    const xf=x0+(x1-x0)*(t/T);
     ctx.beginPath();
-    ctx.moveTo(xf, margin);
-    ctx.lineTo(xf, h-margin);
+    ctx.moveTo(xf,margin);
+    ctx.lineTo(xf,h-margin);
     ctx.stroke();
   });
 
-  const vTicks = [-vmax, -vmax/2, 0, vmax/2, vmax];
+  const vTicks=[-vmax,-vmax/2,0,vmax/2,vmax];
   vTicks.forEach(v=>{
-    const yf = y0 - v*scaleV;
+    const yf=y0-v*scaleV;
     ctx.beginPath();
-    ctx.moveTo(x0, yf);
-    ctx.lineTo(x1, yf);
+    ctx.moveTo(x0,yf);
+    ctx.lineTo(x1,yf);
     ctx.stroke();
   });
 
   ctx.restore();
 
-  ctx.strokeStyle = 'rgba(255,255,255,0.6)';
-  ctx.lineWidth = 1;
+  ctx.strokeStyle='rgba(255,255,255,0.6)';
+  ctx.lineWidth=1;
   ctx.setLineDash([]);
   ctx.beginPath();
   ctx.moveTo(x0,y0);
@@ -759,83 +620,83 @@ function drawVelocityChart(){
   ctx.rect(x0,margin,x1-x0,h-2*margin);
   ctx.stroke();
 
-  const N = 200;
-  ctx.strokeStyle = '#ffd27a';
-  ctx.lineWidth = 2;
+  const N=200;
+  ctx.strokeStyle='#ffd27a';
+  ctx.lineWidth=2;
   ctx.beginPath();
   for(let i=0;i<=N;i++){
-    const t = (i/N)*T;
-    const v = vmax * Math.cos(omega*(t+obsStartPlaybackOffset));
-    const xf = x0 + (x1-x0)*(t/T);
-    const yf = y0 - v*scaleV;
+    const t=(i/N)*T;
+    const v=vmax*Math.cos(omega*(t+obsStartPlaybackOffset));
+    const xf=x0+(x1-x0)*(t/T);
+    const yf=y0-v*scaleV;
     if(i===0) ctx.moveTo(xf,yf); else ctx.lineTo(xf,yf);
   }
   ctx.stroke();
 
-  ctx.fillStyle = '#fff';
-  ctx.font = '11px system-ui';
-  const labelVt = (currentLang === 'en') ? 'v(t)' : 'υ(t)';
-  ctx.fillText(labelVt, x0+4, margin+10);
+  ctx.fillStyle='#fff';
+  ctx.font='11px system-ui';
+  const labelVt=(currentLang==='en')?'v(t)':'υ(t)';
+  ctx.fillText(labelVt,x0+4,margin+10);
 
-  ctx.font = '10px system-ui';
-  const vAxisLabel = (currentLang === 'en') ? 'v (m/s)' : 'υ (m/s)';
-  ctx.fillText(vAxisLabel, x0+4, margin-4);
-  ctx.fillText('t', x1-6, y0+12);
-  ctx.fillText('0', x0-10, y0+4);
+  ctx.font='10px system-ui';
+  const vAxisLabel=(currentLang==='en')?'v (m/s)':'υ (m/s)';
+  ctx.fillText(vAxisLabel,x0+4,margin-4);
+  ctx.fillText('t',x1-6,y0+12);
+  ctx.fillText('0',x0-10,y0+4);
 
-  ctx.textAlign = 'center';
-  ctx.fillText('0', x0, h-margin+10);
-  ctx.fillText((T/2).toFixed(1), (x0+x1)/2, h-margin+10);
-  ctx.fillText(T.toFixed(1), x1, h-margin+10);
-  ctx.textAlign = 'left';
+  ctx.textAlign='center';
+  ctx.fillText('0',x0,h-margin+10);
+  ctx.fillText((T/2).toFixed(1),(x0+x1)/2,h-margin+10);
+  ctx.fillText(T.toFixed(1),x1,h-margin+10);
+  ctx.textAlign='left';
 
-  const vmaxLabel = (currentLang === 'en' ? 'v_max ≈ ' : 'υ_max ≈ ') + vmax.toFixed(2);
-  ctx.fillText(vmaxLabel, x0+4, h-margin+4);
+  const vmaxLabel=((currentLang==='en')?'v_max ≈ ':'υ_max ≈ ')+vmax.toFixed(2);
+  ctx.fillText(vmaxLabel,x0+4,h-margin+4);
 }
 
 function drawAccelerationChart(){
   if(!aCan) return;
-  const ctx = aCan.getContext('2d');
-  const w = aCan.width;
-  const h = aCan.height;
+  const ctx=aCan.getContext('2d');
+  const w=aCan.width;
+  const h=aCan.height;
   ctx.clearRect(0,0,w,h);
 
-  const margin = 18;
-  const x0 = margin;
-  const x1 = w - margin;
-  const y0 = h/2;
+  const margin=18;
+  const x0=margin;
+  const x1=w-margin;
+  const y0=h/2;
 
-  const amax = omega * omega * A_m;
-  const yAmp = (h/2 - margin);
-  const scaleA = yAmp / (1.1*amax);
+  const amax=omega*omega*A_m;
+  const yAmp=(h/2-margin);
+  const scaleA=yAmp/(1.1*amax);
 
   ctx.save();
-  ctx.strokeStyle = 'rgba(255,255,255,0.18)';
-  ctx.lineWidth = 1;
+  ctx.strokeStyle='rgba(255,255,255,0.18)';
+  ctx.lineWidth=1;
   ctx.setLineDash([3,3]);
 
-  const tTicks = [0, T/2, T];
+  const tTicks=[0,T/2,T];
   tTicks.forEach(t=>{
-    const xf = x0 + (x1-x0)*(t/T);
+    const xf=x0+(x1-x0)*(t/T);
     ctx.beginPath();
-    ctx.moveTo(xf, margin);
-    ctx.lineTo(xf, h-margin);
+    ctx.moveTo(xf,margin);
+    ctx.lineTo(xf,h-margin);
     ctx.stroke();
   });
 
-  const aTicks = [-amax, -amax/2, 0, amax/2, amax];
+  const aTicks=[-amax,-amax/2,0,amax/2,amax];
   aTicks.forEach(a=>{
-    const yf = y0 - a*scaleA;
+    const yf=y0-a*scaleA;
     ctx.beginPath();
-    ctx.moveTo(x0, yf);
-    ctx.lineTo(x1, yf);
+    ctx.moveTo(x0,yf);
+    ctx.lineTo(x1,yf);
     ctx.stroke();
   });
 
   ctx.restore();
 
-  ctx.strokeStyle = 'rgba(255,255,255,0.6)';
-  ctx.lineWidth = 1;
+  ctx.strokeStyle='rgba(255,255,255,0.6)';
+  ctx.lineWidth=1;
   ctx.setLineDash([]);
   ctx.beginPath();
   ctx.moveTo(x0,y0);
@@ -848,237 +709,226 @@ function drawAccelerationChart(){
   ctx.rect(x0,margin,x1-x0,h-2*margin);
   ctx.stroke();
 
-  const N = 200;
-  ctx.strokeStyle = '#ffd27a';
-  ctx.lineWidth = 2;
+  const N=200;
+  ctx.strokeStyle='#ffd27a';
+  ctx.lineWidth=2;
   ctx.beginPath();
   for(let i=0;i<=N;i++){
-    const t = (i/N)*T;
-    const a = -amax * Math.sin(omega*(t+obsStartPlaybackOffset));
-    const xf = x0 + (x1-x0)*(t/T);
-    const yf = y0 - a*scaleA;
+    const t=(i/N)*T;
+    const a=-amax*Math.sin(omega*(t+obsStartPlaybackOffset));
+    const xf=x0+(x1-x0)*(t/T);
+    const yf=y0-a*scaleA;
     if(i===0) ctx.moveTo(xf,yf); else ctx.lineTo(xf,yf);
   }
   ctx.stroke();
 
-  ctx.fillStyle = '#fff';
-  ctx.font = '11px system-ui';
-  ctx.fillText('a(t)', x0+4, margin+10);
+  ctx.fillStyle='#fff';
+  ctx.font='11px system-ui';
+  ctx.fillText('a(t)',x0+4,margin+10);
 
-  ctx.font = '10px system-ui';
-  ctx.fillText('a (m/s²)', x0+4, margin-4);
-  ctx.fillText('t', x1-6, y0+12);
-  ctx.fillText('0', x0-10, y0+4);
+  ctx.font='10px system-ui';
+  ctx.fillText('a (m/s²)',x0+4,margin-4);
+  ctx.fillText('t',x1-6,y0+12);
+  ctx.fillText('0',x0-10,y0+4);
 
-  ctx.textAlign = 'center';
-  ctx.fillText('0', x0, h-margin+10);
-  ctx.fillText((T/2).toFixed(1), (x0+x1)/2, h-margin+10);
-  ctx.fillText(T.toFixed(1), x1, h-margin+10);
-  ctx.textAlign = 'left';
+  ctx.textAlign='center';
+  ctx.fillText('0',x0,h-margin+10);
+  ctx.fillText((T/2).toFixed(1),(x0+x1)/2,h-margin+10);
+  ctx.fillText(T.toFixed(1),x1,h-margin+10);
+  ctx.textAlign='left';
 
-  const amaxLabel = (currentLang === 'en' ? 'a_max ≈ ' : 'a_max ≈ ') + amax.toFixed(2);
-  ctx.fillText(amaxLabel, x0+4, h-margin+4);
+  const amaxLabel='a_max ≈ '+amax.toFixed(2);
+  ctx.fillText(amaxLabel,x0+4,h-margin+4);
 }
-
-/* a–x */
 
 function drawAxChart(){
   if(!axCan) return;
-  const ctx = axCan.getContext('2d');
-  const w = axCan.width;
-  const h = axCan.height;
+  const ctx=axCan.getContext('2d');
+  const w=axCan.width;
+  const h=axCan.height;
   ctx.clearRect(0,0,w,h);
 
-  const margin = 22;
-  const x0 = margin;
-  const x1 = w - margin;
-  const y0 = margin;
-  const y1 = h - margin;
+  const margin=22;
+  const x0=margin;
+  const x1=w-margin;
+  const y0=margin;
+  const y1=h-margin;
 
-  const xMid = (x0 + x1)/2;
-  const yMid = (y0 + y1)/2;
+  const xMid=(x0+x1)/2;
+  const yMid=(y0+y1)/2;
 
-  const amax = omega * omega * A_m;
+  const amax=omega*omega*A_m;
 
-  const pxPerX = (x1 - x0) / (2 * A_m);
-  const pxPerA = (y1 - y0) / (2 * amax);
+  const pxPerX=(x1-x0)/(2*A_m);
+  const pxPerA=(y1-y0)/(2*amax);
 
   function toCanvas(x,a){
-    const cx = xMid + x * pxPerX;
-    const cy = yMid - a * pxPerA;
+    const cx=xMid+x*pxPerX;
+    const cy=yMid-a*pxPerA;
     return {cx,cy};
   }
 
   ctx.save();
-  ctx.strokeStyle = 'rgba(255,255,255,0.18)';
-  ctx.lineWidth = 1;
+  ctx.strokeStyle='rgba(255,255,255,0.18)';
+  ctx.lineWidth=1;
   ctx.setLineDash([3,3]);
 
-  const xTicks = [-A_m, -A_m/2, 0, A_m/2, A_m];
+  const xTicks=[-A_m,-A_m/2,0,A_m/2,A_m];
   xTicks.forEach(x=>{
-    const p = toCanvas(x,0);
+    const p=toCanvas(x,0);
     ctx.beginPath();
-    ctx.moveTo(p.cx, y0);
-    ctx.lineTo(p.cx, y1);
+    ctx.moveTo(p.cx,y0);
+    ctx.lineTo(p.cx,y1);
     ctx.stroke();
   });
 
-  const aTicks = [-amax, -amax/2, 0, amax/2, amax];
+  const aTicks=[-amax,-amax/2,0,amax/2,amax];
   aTicks.forEach(a=>{
-    const p = toCanvas(0,a);
+    const p=toCanvas(0,a);
     ctx.beginPath();
-    ctx.moveTo(x0, p.cy);
-    ctx.lineTo(x1, p.cy);
+    ctx.moveTo(x0,p.cy);
+    ctx.lineTo(x1,p.cy);
     ctx.stroke();
   });
 
   ctx.restore();
 
-  ctx.strokeStyle = 'rgba(255,255,255,0.6)';
-  ctx.lineWidth = 1;
+  ctx.strokeStyle='rgba(255,255,255,0.6)';
+  ctx.lineWidth=1;
   ctx.setLineDash([]);
   ctx.beginPath();
-  ctx.moveTo(xMid, y0);
-  ctx.lineTo(xMid, y1);
+  ctx.moveTo(xMid,y0);
+  ctx.lineTo(xMid,y1);
   ctx.stroke();
 
   ctx.beginPath();
-  ctx.moveTo(x0, yMid);
-  ctx.lineTo(x1, yMid);
+  ctx.moveTo(x0,yMid);
+  ctx.lineTo(x1,yMid);
   ctx.stroke();
 
-  ctx.strokeStyle = '#ffd27a';
-  ctx.lineWidth = 2;
+  ctx.strokeStyle='#ffd27a';
+  ctx.lineWidth=2;
   ctx.beginPath();
-  const pL = toCanvas(-A_m,  omega*omega*A_m);
-  const pR = toCanvas( A_m, -omega*omega*A_m);
+  const pL=toCanvas(-A_m, omega*omega*A_m);
+  const pR=toCanvas(+A_m,-omega*omega*A_m);
   ctx.moveTo(pL.cx,pL.cy);
   ctx.lineTo(pR.cx,pR.cy);
   ctx.stroke();
 
-  ctx.fillStyle = '#fff';
-  ctx.font = '11px system-ui';
-  ctx.fillText('a–x', x0+4, y0+10);
+  ctx.fillStyle='#fff';
+  ctx.font='11px system-ui';
+  ctx.fillText('a–x',x0+4,y0+10);
 
-  ctx.font = '10px system-ui';
-  ctx.fillText('x (m)', x1-32, yMid-4);
-  ctx.fillText('a (m/s²)', xMid+6, y0+10);
+  ctx.font='10px system-ui';
+  ctx.fillText('x (m)',x1-32,yMid-4);
+  ctx.fillText('a (m/s²)',xMid+6,y0+10);
 
-  ctx.fillText('a = -ω²·x', x0+4, y1-4);
-  ctx.fillText('A = '+A_m.toFixed(2)+' m', x0+4, y1-18);
-  const amaxLabel = (currentLang === 'en' ? 'a_max ≈ ' : 'a_max ≈ ') + amax.toFixed(2);
-  ctx.fillText(amaxLabel, x0+4, y1-32);
+  ctx.fillText('a = -ω²·x',x0+4,y1-4);
+  ctx.fillText('A = '+A_m.toFixed(2)+' m',x0+4,y1-18);
+  const amaxLabel='a_max ≈ '+amax.toFixed(2);
+  ctx.fillText(amaxLabel,x0+4,y1-32);
 }
-
-/* x–sin(ωt) */
 
 function drawXSinChart(){
   if(!xsCan) return;
-  const ctx = xsCan.getContext('2d');
-  const w = xsCan.width;
-  const h = xsCan.height;
+  const ctx=xsCan.getContext('2d');
+  const w=xsCan.width;
+  const h=xsCan.height;
   ctx.clearRect(0,0,w,h);
 
-  const margin = 22;
-  const x0 = margin;
-  const x1 = w - margin;
-  const y0 = margin;
-  const y1 = h - margin;
+  const margin=22;
+  const x0=margin;
+  const x1=w-margin;
+  const y0=margin;
+  const y1=h-margin;
 
-  const Smin = -1.1;
-  const Smax = +1.1;
-  const xmin = -1.1 * A_m;
-  const xmax = +1.1 * A_m;
+  const Smin=-1.1, Smax=+1.1;
+  const xmin=-1.1*A_m, xmax=+1.1*A_m;
 
-  function SToX(S){
-    return x0 + (S - Smin)/(Smax - Smin) * (x1 - x0);
-  }
-  function xToY(x){
-    return y1 - (x - xmin)/(xmax - xmin) * (y1 - y0);
-  }
+  function SToX(S){ return x0+(S-Smin)/(Smax-Smin)*(x1-x0); }
+  function xToY(x){ return y1-(x-xmin)/(xmax-xmin)*(y1-y0); }
 
   ctx.save();
-  ctx.strokeStyle = 'rgba(255,255,255,0.18)';
-  ctx.lineWidth = 1;
+  ctx.strokeStyle='rgba(255,255,255,0.18)';
+  ctx.lineWidth=1;
   ctx.setLineDash([3,3]);
 
-  const STicks = [-1, -0.5, 0, 0.5, 1];
+  const STicks=[-1,-0.5,0,0.5,1];
   STicks.forEach(S=>{
-    const xx = SToX(S);
+    const xx=SToX(S);
     ctx.beginPath();
-    ctx.moveTo(xx, y0);
-    ctx.lineTo(xx, y1);
+    ctx.moveTo(xx,y0);
+    ctx.lineTo(xx,y1);
     ctx.stroke();
   });
 
-  const xTicks = [-A_m, -A_m/2, 0, A_m/2, A_m];
+  const xTicks=[-A_m,-A_m/2,0,A_m/2,A_m];
   xTicks.forEach(x=>{
-    const yy = xToY(x);
+    const yy=xToY(x);
     ctx.beginPath();
-    ctx.moveTo(x0, yy);
-    ctx.lineTo(x1, yy);
+    ctx.moveTo(x0,yy);
+    ctx.lineTo(x1,yy);
     ctx.stroke();
   });
 
   ctx.restore();
 
-  ctx.strokeStyle = 'rgba(255,255,255,0.6)';
-  ctx.lineWidth = 1;
+  ctx.strokeStyle='rgba(255,255,255,0.6)';
+  ctx.lineWidth=1;
   ctx.setLineDash([]);
 
-  const xAxisS0 = SToX(0);
-  const yx0 = xToY(0);
+  const xAxisS0=SToX(0);
+  const yx0=xToY(0);
 
   ctx.beginPath();
-  ctx.moveTo(xAxisS0, y0);
-  ctx.lineTo(xAxisS0, y1);
+  ctx.moveTo(xAxisS0,y0);
+  ctx.lineTo(xAxisS0,y1);
   ctx.stroke();
 
   ctx.beginPath();
-  ctx.moveTo(x0, yx0);
-  ctx.lineTo(x1, yx0);
+  ctx.moveTo(x0,yx0);
+  ctx.lineTo(x1,yx0);
   ctx.stroke();
 
   ctx.beginPath();
-  ctx.rect(x0, y0, x1-x0, y1-y0);
+  ctx.rect(x0,y0,x1-x0,y1-y0);
   ctx.stroke();
 
-  ctx.strokeStyle = '#ffd27a';
-  ctx.lineWidth = 2;
+  ctx.strokeStyle='#ffd27a';
+  ctx.lineWidth=2;
   ctx.beginPath();
-  const S1 = -1;
-  const S2 = +1;
-  const x1L = A_m * S1;
-  const x2L = A_m * S2;
-  ctx.moveTo(SToX(S1), xToY(x1L));
-  ctx.lineTo(SToX(S2), xToY(x2L));
+  const S1=-1,S2=+1;
+  const x1L=A_m*S1;
+  const x2L=A_m*S2;
+  ctx.moveTo(SToX(S1),xToY(x1L));
+  ctx.lineTo(SToX(S2),xToY(x2L));
   ctx.stroke();
 
-  ctx.fillStyle = '#fff';
-  ctx.font = '11px system-ui';
-  const title = (currentLang === 'en') ? 'x–sin(ωt)' : 'x–ημ(ωt)';
-  ctx.fillText(title, x0+4, y0+10);
+  ctx.fillStyle='#fff';
+  ctx.font='11px system-ui';
+  const title=(currentLang==='en')?'x–sin(ωt)':'x–ημ(ωt)';
+  ctx.fillText(title,x0+4,y0+10);
 
-  ctx.font = '10px system-ui';
-  const xLabel = 'x (m)';
-  const sLabel = (currentLang === 'en') ? 'sin(ωt)' : 'ημ(ωt)';
-  ctx.fillText(xLabel, x0+4, y0-4);
-  ctx.fillText(sLabel, x1-40, y1+12);
+  ctx.font='10px system-ui';
+  const xLabel='x (m)';
+  const sLabel=(currentLang==='en')?'sin(ωt)':'ημ(ωt)';
+  ctx.fillText(xLabel,x0+4,y0-4);
+  ctx.fillText(sLabel,x1-40,y1+12);
 
-  ctx.textAlign = 'center';
-  ctx.fillText('-1', SToX(-1), y1+10);
-  ctx.fillText('0',  SToX(0),  y1+10);
-  ctx.fillText('+1', SToX(+1), y1+10);
-  ctx.textAlign = 'left';
+  ctx.textAlign='center';
+  ctx.fillText('-1',SToX(-1),y1+10);
+  ctx.fillText('0', SToX(0), y1+10);
+  ctx.fillText('+1',SToX(+1),y1+10);
+  ctx.textAlign='left';
 
-  ctx.fillText('-A', x0+4, xToY(-A_m)+4);
-  ctx.fillText('0',  x0+4, xToY(0)+4);
-  ctx.fillText('+A', x0+4, xToY(+A_m)+4);
+  ctx.fillText('-A',x0+4,xToY(-A_m)+4);
+  ctx.fillText('0', x0+4,xToY(0)+4);
+  ctx.fillText('+A',x0+4,xToY(+A_m)+4);
 }
 
 function ensureVelocityChart(){
   if(!vCan){
-    vCan = document.createElement('canvas');
+    vCan=document.createElement('canvas');
     lawCharts.appendChild(vCan);
   }
   sizeLawCanvas(vCan);
@@ -1086,7 +936,7 @@ function ensureVelocityChart(){
 }
 function ensureAccelerationChart(){
   if(!aCan){
-    aCan = document.createElement('canvas');
+    aCan=document.createElement('canvas');
     lawCharts.appendChild(aCan);
   }
   sizeLawCanvas(aCan);
@@ -1094,7 +944,7 @@ function ensureAccelerationChart(){
 }
 function ensureAxChart(){
   if(!axCan){
-    axCan = document.createElement('canvas');
+    axCan=document.createElement('canvas');
     lawCharts.appendChild(axCan);
   }
   sizeLawCanvas(axCan);
@@ -1102,93 +952,83 @@ function ensureAxChart(){
 }
 function ensureXSinChart(){
   if(!xsCan){
-    xsCan = document.createElement('canvas');
+    xsCan=document.createElement('canvas');
     lawCharts.appendChild(xsCan);
   }
   sizeLawCanvas(xsCan);
   drawXSinChart();
 }
 
-/* ---------- Παράμετροι ταλάντωσης ---------- */
+/* ---------- Παράμετροι ΑΑΤ ---------- */
 
 function x0Val(){
   return A_m*Math.sin(omega*(0+obsStartPlaybackOffset));
 }
 function showParamsBox(){
-  const phi0deg = ((omega*obsStartPlaybackOffset)*180/Math.PI+360)%360;
+  const phi0deg=((omega*obsStartPlaybackOffset)*180/Math.PI+360)%360;
   paramAEl.textContent  = 'A = '+A_m.toFixed(2)+' m';
   paramWEl.textContent  = 'ω = '+omega.toFixed(3)+' rad/s';
   paramPhiEl.textContent= 'φ₀ = '+phi0deg.toFixed(1)+'°';
   paramsBoxEl.style.display='block';
 }
 
-/* ---------- Bubbles (πράξεις) ---------- */
+/* ---------- Θεατές / bubbles ---------- */
 
 function viewerInfo(idx1based){
-  const i = (idx1based||1)-1;
+  const i=(idx1based||1)-1;
   return VIEWERS[i] || VIEWERS[0] || null;
 }
 
-/* Παλιά anchor με βάση xFrac, για fallback μόνο */
 function viewerAnchor(idx1based){
-  const vi = viewerInfo(idx1based);
-  const leftFrac  = 0.18;
-  const widthFrac = 0.64;
-  const frac = vi && typeof vi.xFrac==='number'
+  const vi=viewerInfo(idx1based);
+  const leftFrac=0.18;
+  const widthFrac=0.64;
+  const frac=vi && typeof vi.xFrac==='number'
     ? vi.xFrac
     : (idx1based/(VIEWERS.length+1 || 2));
-  const x = (leftFrac + widthFrac*frac)*stage.clientWidth;
-  const y = stage.clientHeight*0.60;
+  const x=(leftFrac+widthFrac*frac)*stage.clientWidth;
+  const y=stage.clientHeight*0.60;
   return {x,y,info:vi};
 }
 
-/* ΝΕΟ: anchor από το ΚΕΝΤΡΟ του avatar, με χρήση του baseBottom (χωρίς ACTS_AVATAR_OFFSET) */
 function getViewerAvatarCenter(idx1based){
-  const idx0 = (idx1based||1)-1;
-  const div = viewersStrip.querySelector('.viewer-avatar[data-idx="'+idx0+'"]');
-  const info = viewerInfo(idx1based);
-  const stageRect = stage.getBoundingClientRect();
-
+  const idx0=(idx1based||1)-1;
+  const div=viewersStrip.querySelector('.viewer-avatar[data-idx="'+idx0+'"]');
+  const info=viewerInfo(idx1based);
+  const stageRect=stage.getBoundingClientRect();
   if(div){
-    const r = div.getBoundingClientRect();
-    const baseBottom = parseFloat(div.dataset.baseBottom || '0') || 0;
-
-    const cx = r.left + r.width/2 - stageRect.left;
-    const cy = stageRect.height - baseBottom - r.height/2; // ανεξάρτητο από το -60 στις πράξεις
-
+    const r=div.getBoundingClientRect();
+    const baseBottom=parseFloat(div.dataset.baseBottom || '0') || 0;
+    const cx=r.left+r.width/2 - stageRect.left;
+    const cy=stageRect.height - baseBottom - r.height/2;
     return {x:cx,y:cy,info};
   }
-  /* fallback αν για κάποιο λόγο δεν υπάρχει avatar */
   return viewerAnchor(idx1based);
 }
 
-function tint(hex, alpha){
-  const c = (hex||'#ffffff').replace('#','');
-  const r = parseInt(c.slice(0,2),16) || 255;
-  const g = parseInt(c.slice(2,4),16) || 255;
-  const b = parseInt(c.slice(4,6),16) || 255;
+function tint(hex,alpha){
+  const c=(hex||'#ffffff').replace('#','');
+  const r=parseInt(c.slice(0,2),16)||255;
+  const g=parseInt(c.slice(2,4),16)||255;
+  const b=parseInt(c.slice(4,6),16)||255;
   return 'rgba('+r+','+g+','+b+','+alpha+')';
 }
 
-/* Avatars helpers */
-
 function hideAllViewerAvatars(){
-  const items = viewersStrip.querySelectorAll('.viewer-avatar');
-  items.forEach(div => {
-    div.classList.remove('visible');
-    div.classList.remove('lit');
+  viewersStrip.querySelectorAll('.viewer-avatar').forEach(div=>{
+    div.classList.remove('visible','lit');
   });
 }
 function showViewerAvatar(idx1based){
   hideAllViewerAvatars();
-  const el = viewersStrip.querySelector('.viewer-avatar[data-idx="'+(idx1based-1)+'"]');
+  const el=viewersStrip.querySelector('.viewer-avatar[data-idx="'+(idx1based-1)+'"]');
   if(!el) return;
-  const base = parseFloat(el.dataset.baseBottom || '0') || 0;
-  let bottom = base;
-  if(phase === 'act1' || phase === 'act2'){
-    bottom = base + ACTS_AVATAR_OFFSET; // μόνο η εικόνα κατεβαίνει, οι σκέψεις/ετικέτες αγνοούν αυτό το offset
+  const base=parseFloat(el.dataset.baseBottom || '0') || 0;
+  let bottom=base;
+  if(phase==='act1' || phase==='act2'){
+    bottom=base+ACTS_AVATAR_OFFSET; // μόνο η εικόνα κατεβαίνει, οι σκέψεις/ετικέτες αγνοούν αυτό το offset
   }
-  el.style.bottom = bottom + 'px';
+  el.style.bottom=bottom+'px';
   el.classList.add('visible');
   if(!audienceLightsOn){
     el.classList.add('lit');
@@ -1196,42 +1036,35 @@ function showViewerAvatar(idx1based){
 }
 
 function showSpeakerChip(idx1based){
-  const {x,y,info} = getViewerAvatarCenter(idx1based);
+  const {x,y,info}=getViewerAvatarCenter(idx1based);
   if(!info) return;
-
-  const nameGR = info.name_gr || ('Θεατής '+idx1based);
-  const nameEN = info.name_en || ('Viewer '+idx1based);
-  const label = currentLang === 'en' ? nameEN : nameGR;
-
-  actBubble.textContent = label;
-
-  const dx = (info && typeof info.chipDx === 'number') ? info.chipDx : 0;
-  const dy = (info && typeof info.chipDy === 'number') ? info.chipDy : 0;
-
-  actBubble.style.left = (x + dx) + 'px';
-  actBubble.style.top  = (y - dy) + 'px';
+  const nameGR=info.name_gr || ('Θεατής '+idx1based);
+  const nameEN=info.name_en || ('Viewer '+idx1based);
+  const label=currentLang==='en'? nameEN : nameGR;
+  actBubble.textContent=label;
+  const dx=(typeof info.chipDx==='number'? info.chipDx:0);
+  const dy=(typeof info.chipDy==='number'? info.chipDy:0);
+  actBubble.style.left=(x+dx)+'px';
+  actBubble.style.top =(y-dy)+'px';
   actBubble.style.transform='translateX(-50%)';
-  actBubble.style.backgroundColor = tint(info.color,0.9);
+  actBubble.style.backgroundColor=tint(info.color,0.9);
   actBubble.style.display='block';
 }
-
 function hideSpeakerChip(){
   actBubble.style.display='none';
 }
 
-function placeBubble(idx1based, xShift, yOffset){
-  const {x,y,info} = getViewerAvatarCenter(idx1based);
-  const dx = (info && typeof info.bubbleDx==='number'? info.bubbleDx:0) + (xShift||0);
-  const dy = (info && typeof info.bubbleDy==='number'? info.bubbleDy:0) + (yOffset||0);
-  const left = x + dx;
-  const top  = y - dy;
-  bubbleEl.style.left = left+'px';
-  bubbleEl.style.top  = top +'px';
+function placeBubble(idx1based,xShift,yOffset){
+  const {x,y,info}=getViewerAvatarCenter(idx1based);
+  const dx=(info && typeof info.bubbleDx==='number'? info.bubbleDx:0)+(xShift||0);
+  const dy=(info && typeof info.bubbleDy==='number'? info.bubbleDy:0)+(yOffset||0);
+  bubbleEl.style.left=(x+dx)+'px';
+  bubbleEl.style.top =(y-dy)+'px';
 }
 
-function typeWriterHTML(el, html, totalMs, done){
-  el.innerHTML = html || '';
-  const textNodes = [];
+function typeWriterHTML(el,html,totalMs,done){
+  el.innerHTML=html||'';
+  const textNodes=[];
   function collect(node){
     if(node.nodeType===3){
       textNodes.push({node,text:node.textContent});
@@ -1241,31 +1074,31 @@ function typeWriterHTML(el, html, totalMs, done){
     }
   }
   collect(el);
-  const totalChars = textNodes.reduce((s,o)=>s+o.text.length,0) || 1;
-  const baseMs = (typeof totalMs==='number' && totalMs>0? totalMs : 2500);
-  const step = Math.max(15, Math.min(80, Math.round(baseMs/totalChars)));
+  const totalChars=textNodes.reduce((s,o)=>s+o.text.length,0)||1;
+  const baseMs=(typeof totalMs==='number' && totalMs>0? totalMs:2500);
+  const step=Math.max(15,Math.min(80,Math.round(baseMs/totalChars)));
   let i=0;
   (function tick(){
     let rem=i;
     for(const obj of textNodes){
       if(rem>obj.text.length){
-        obj.node.textContent = obj.text;
-        rem -= obj.text.length;
+        obj.node.textContent=obj.text;
+        rem-=obj.text.length;
       }else{
-        obj.node.textContent = obj.text.slice(0,rem);
+        obj.node.textContent=obj.text.slice(0,rem);
         rem=0;
       }
     }
     i++;
-    if(i<=totalChars) setTimeout(tick, step);
+    if(i<=totalChars) setTimeout(tick,step);
     else if(typeof done==='function') done();
   })();
 }
 
 function showBubbleForEvent(ev){
   return new Promise(resolve=>{
-    const viewer = ev.viewer || 1;
-    const html = (ev.left||'').replaceAll('\n','<br>');
+    const viewer=ev.viewer || 1;
+    const html=(ev.left||'').replaceAll('\n','<br>');
 
     if(!html){
       hideSpeakerChip();
@@ -1277,7 +1110,7 @@ function showBubbleForEvent(ev){
 
     showViewerAvatar(viewer);
     showSpeakerChip(viewer);
-    placeBubble(viewer, ev.xShift||0, ev.yOffset||0);
+    placeBubble(viewer,ev.xShift||0,ev.yOffset||0);
 
     bubbleEl.style.display='block';
     bubbleEl.style.opacity='0';
@@ -1285,10 +1118,10 @@ function showBubbleForEvent(ev){
     bubbleEl.classList.add('active');
     bubbleEl.style.opacity='1';
 
-    const typeMs  = ev.typeMs  || 2500;
-    const pauseMs = ev.pauseMs || 800;
+    const typeMs =ev.typeMs  || 2500;
+    const pauseMs=ev.pauseMs || 800;
 
-    typeWriterHTML(bubbleTextEl, html, typeMs, ()=>{
+    typeWriterHTML(bubbleTextEl,html,typeMs,()=>{
       setTimeout(()=>{
         bubbleEl.classList.add('closing');
         setTimeout(()=>{
@@ -1298,60 +1131,33 @@ function showBubbleForEvent(ev){
           hideAllViewerAvatars();
           resolve();
         },200);
-      }, pauseMs);
+      },pauseMs);
     });
   });
 }
 
-/* Δυναμικά bubbles για A, T/ω, φ */
-
-function dynDefault(kind){
-  const dynPack = DIALOG_TEXTS.dynamic && DIALOG_TEXTS.dynamic[kind];
-  if(dynPack){
-    const txt = dynPack[currentLang] || dynPack.gr || dynPack.en;
-    if(txt) return txt;
-  }
-  // fallback σε παλιό κείμενο αν λείπει από JSON
-  if(kind==='A'){
-    return currentLang === 'en' ? '…with A={A} m!' :
-      '…με A={A} m!';
-  }else if(kind==='Tw'){
-    return currentLang === 'en'
-      ? '…and T={T} s and therefore ω={omega} rad/s!'
-      : '… και T={T} s και επομένως ω={omega} rad/s!';
-  }else if(kind==='phi'){
-    return currentLang === 'en'
-      ? '…indeed it is S.H.M. and since x₀={x0} m, there is an initial phase φ₀={phi0}°. Haha, one thing to keep in mind!'
-      : '… όντως είναι ΑΑΤ και αφού το x₀={x0} m υπάρχει φ₀={phi0}°. Χαχα, ένα το κρατούμενο!';
-  }
-  return '';
-}
-
+/* Δυναμικό κείμενο με {A},{T},{omega},{x0},{phi0} */
 function expandDynTemplate(tpl){
   if(!tpl) return '';
-  const x0 = x0Val().toFixed(2);
-  const phi0deg = ((omega*obsStartPlaybackOffset)*180/Math.PI+360)%360;
+  const x0=x0Val().toFixed(2);
+  const phi0deg=((omega*obsStartPlaybackOffset)*180/Math.PI+360)%360;
   return String(tpl)
-    .replaceAll('{A}',    A_m.toFixed(2))
-    .replaceAll('{T}',    T.toFixed(2))
+    .replaceAll('{A}',A_m.toFixed(2))
+    .replaceAll('{T}',T.toFixed(2))
     .replaceAll('{omega}',omega.toFixed(3))
-    .replaceAll('{x0}',   x0)
-    .replaceAll('{phi0}', phi0deg.toFixed(1));
+    .replaceAll('{x0}',x0)
+    .replaceAll('{phi0}',phi0deg.toFixed(1));
 }
 
 function showDynBubble(ev){
   return new Promise(resolve=>{
-    const viewer = ev.viewer || 1;
-
-    const base = (ev.left && ev.left.trim().length)
-      ? ev.left
-      : dynDefault(ev.param);
-
-    const txt = expandDynTemplate(base);
+    const viewer=ev.viewer || 1;
+    const base = ev.left || '';
+    const txt  = expandDynTemplate(base);
 
     showViewerAvatar(viewer);
     showSpeakerChip(viewer);
-    placeBubble(viewer, ev.xShift||0, ev.yOffset||0);
+    placeBubble(viewer,ev.xShift||0,ev.yOffset||0);
 
     bubbleEl.style.display='block';
     bubbleEl.style.opacity='0';
@@ -1359,10 +1165,10 @@ function showDynBubble(ev){
     bubbleEl.classList.add('active');
     bubbleEl.style.opacity='1';
 
-    const typeMs  = ev.typeMs  || 2500;
-    const pauseMs = ev.pauseMs || 800;
+    const typeMs =ev.typeMs  || 2500;
+    const pauseMs=ev.pauseMs || 800;
 
-    typeWriterHTML(bubbleTextEl, txt, typeMs, ()=>{
+    typeWriterHTML(bubbleTextEl,txt,typeMs,()=>{
       setTimeout(()=>{
         bubbleEl.classList.add('closing');
         setTimeout(()=>{
@@ -1372,15 +1178,15 @@ function showDynBubble(ev){
           hideAllViewerAvatars();
           resolve();
         },200);
-      }, pauseMs);
+      },pauseMs);
     });
   });
 }
 
-/* ---------- Act 1 / Act 2 sequences ---------- */
+/* ---------- Act 1 / Act 2 ---------- */
 
 async function runAct1(){
-  phase = 'act1';
+  phase='act1';
   for(const ev of ACT1){
     if(ev.close){
       await closeCurtainToAct2();
@@ -1395,22 +1201,11 @@ async function runAct1(){
         if(ev.alsoParams) showParamsBox();
       }
 
-      if(ev.graph==='xt'){
-        initXTChart();
-        drawXTChart();
-      }
-      if(ev.plot==='v'){
-        ensureVelocityChart();
-      }
-      if(ev.plot==='a'){
-        ensureAccelerationChart();
-      }
-      if(ev.plot==='ax'){
-        ensureAxChart();
-      }
-      if(ev.plot==='xsin'){
-        ensureXSinChart();
-      }
+      if(ev.graph==='xt') initXTChart();
+      if(ev.plot ==='v') ensureVelocityChart();
+      if(ev.plot ==='a') ensureAccelerationChart();
+      if(ev.plot ==='ax')ensureAxChart();
+      if(ev.plot ==='xsin')ensureXSinChart();
 
       continue;
     }
@@ -1423,22 +1218,11 @@ async function runAct1(){
         if(ev.alsoParams) showParamsBox();
       }
 
-      if(ev.graph==='xt'){
-        initXTChart();
-        drawXTChart();
-      }
-      if(ev.plot==='v'){
-        ensureVelocityChart();
-      }
-      if(ev.plot==='a'){
-        ensureAccelerationChart();
-      }
-      if(ev.plot==='ax'){
-        ensureAxChart();
-      }
-      if(ev.plot==='xsin'){
-        ensureXSinChart();
-      }
+      if(ev.graph==='xt') initXTChart();
+      if(ev.plot ==='v') ensureVelocityChart();
+      if(ev.plot ==='a') ensureAccelerationChart();
+      if(ev.plot ==='ax')ensureAxChart();
+      if(ev.plot ==='xsin')ensureXSinChart();
 
       continue;
     }
@@ -1447,86 +1231,64 @@ async function runAct1(){
       addLaw(ev.right);
       if(ev.alsoParams) showParamsBox();
 
-      if(ev.graph==='xt'){
-        initXTChart();
-        drawXTChart();
-      }
-      if(ev.plot==='v'){
-        ensureVelocityChart();
-      }
-      if(ev.plot==='a'){
-        ensureAccelerationChart();
-      }
-      if(ev.plot==='ax'){
-        ensureAxChart();
-      }
-      if(ev.plot==='xsin'){
-        ensureXSinChart();
-      }
+      if(ev.graph==='xt') initXTChart();
+      if(ev.plot ==='v') ensureVelocityChart();
+      if(ev.plot ==='a') ensureAccelerationChart();
+      if(ev.plot ==='ax')ensureAxChart();
+      if(ev.plot ==='xsin')ensureXSinChart();
 
       await new Promise(r=>setTimeout(r,600));
       continue;
     }
 
-    if(ev.graph==='xt'){
-      initXTChart();
-      drawXTChart();
-    }
-    if(ev.plot==='v'){
-      ensureVelocityChart();
-    }
-    if(ev.plot==='a'){
-      ensureAccelerationChart();
-    }
-    if(ev.plot==='ax'){
-      ensureAxChart();
-    }
-    if(ev.plot==='xsin'){
-      ensureXSinChart();
-    }
+    if(ev.graph==='xt') initXTChart();
+    if(ev.plot ==='v') ensureVelocityChart();
+    if(ev.plot ==='a') ensureAccelerationChart();
+    if(ev.plot ==='ax')ensureAxChart();
+    if(ev.plot ==='xsin')ensureXSinChart();
   }
 }
 
-/* Ghost setup για Act 2 */
+/* Ghost / Act 2 */
 
 function ensureActorFloorBottom(){
-  if(actorFloorBottomPx != null) return;
-  const sb = getComputedStyle(actor).bottom;
-  const val = parseFloat(sb);
-  if(!Number.isNaN(val)) actorFloorBottomPx = val;
+  if(actorFloorBottomPx!=null) return;
+  const sb=getComputedStyle(actor).bottom;
+  const val=parseFloat(sb);
+  if(!Number.isNaN(val)) actorFloorBottomPx=val;
 }
 
 function ensureGhost(){
   ensureActorFloorBottom();
 
   if(!ghost){
-    const ar = actor.getBoundingClientRect();
-    const aw = ar.width  || 144;
-    const ah = ar.height || 96;
+    const ar=actor.getBoundingClientRect();
+    const aw=ar.width || 144;
+    const ah=ar.height|| 96;
 
-    ghost = document.createElement('div');
+    ghost=document.createElement('div');
     ghost.id='actorGhost';
     ghost.style.position='absolute';
     ghost.style.zIndex='158';
     ghost.style.pointerEvents='none';
     ghost.style.opacity='0';
     ghost.style.filter='grayscale(1) brightness(1.2)';
-    ghost.style.width  = aw+'px';
-    ghost.style.height = ah+'px';
-    ghost.style.bottom = (actorFloorBottomPx ?? 0)+'px';
+    ghost.style.width =aw+'px';
+    ghost.style.height=ah+'px';
+    ghost.style.bottom=(actorFloorBottomPx ?? 0)+'px';
     ghost.style.display='none';
 
-    const img = document.createElement('img');
-    img.src = actor.querySelector('img').src;
+    const img=document.createElement('img');
+    img.src=actor.querySelector('img').src;
     img.style.width='100%';
     img.style.height='auto';
     ghost.appendChild(img);
     stage.appendChild(ghost);
   }
   if(!ghostSpring){
-    ghostSpring = document.createElement('img');
+    ghostSpring=document.createElement('img');
     ghostSpring.id='springGhost';
-    ghostSpring.src = springEl.src;
+    ghostSpring.src=springEl.src;
     ghostSpring.style.position='absolute';
     ghostSpring.style.transformOrigin='left center';
     ghostSpring.style.zIndex='157';
@@ -1554,15 +1316,15 @@ async function runAct2(){
   actBreak.style.display='none';
   stage.classList.add('open');
   setAudienceLights(false);
-  phase = 'act2';
+  phase='act2';
 
   springEl.style.display='block';
   markerEl.style.opacity='1';
   markerGhostEl.style.opacity='0';
 
   for(const ev of ACT2){
-    if(ev.gStart) ghostActive = true;
-    if(ev.gStop)  ghostActive = false;
+    if(ev.gStart) ghostActive=true;
+    if(ev.gStop)  ghostActive=false;
 
     if(ev.left || ev.viewer){
       await showBubbleForEvent(ev);
@@ -1572,22 +1334,11 @@ async function runAct2(){
         if(ev.alsoParams) showParamsBox();
       }
 
-      if(ev.graph==='xt'){
-        initXTChart();
-        drawXTChart();
-      }
-      if(ev.plot==='v'){
-        ensureVelocityChart();
-      }
-      if(ev.plot==='a'){
-        ensureAccelerationChart();
-      }
-      if(ev.plot==='ax'){
-        ensureAxChart();
-      }
-      if(ev.plot==='xsin'){
-        ensureXSinChart();
-      }
+      if(ev.graph==='xt') initXTChart();
+      if(ev.plot ==='v') ensureVelocityChart();
+      if(ev.plot ==='a') ensureAccelerationChart();
+      if(ev.plot ==='ax')ensureAxChart();
+      if(ev.plot ==='xsin')ensureXSinChart();
 
       continue;
     }
@@ -1596,54 +1347,30 @@ async function runAct2(){
       addLaw(ev.right);
       if(ev.alsoParams) showParamsBox();
 
-      if(ev.graph==='xt'){
-        initXTChart();
-        drawXTChart();
-      }
-      if(ev.plot==='v'){
-        ensureVelocityChart();
-      }
-      if(ev.plot==='a'){
-        ensureAccelerationChart();
-      }
-      if(ev.plot==='ax'){
-        ensureAxChart();
-      }
-      if(ev.plot==='xsin'){
-        ensureXSinChart();
-      }
+      if(ev.graph==='xt') initXTChart();
+      if(ev.plot ==='v') ensureVelocityChart();
+      if(ev.plot ==='a') ensureAccelerationChart();
+      if(ev.plot ==='ax')ensureAxChart();
+      if(ev.plot ==='xsin')ensureXSinChart();
 
       await new Promise(r=>setTimeout(r,600));
       continue;
     }
 
-    if(ev.graph==='xt'){
-      initXTChart();
-      drawXTChart();
-    }
-    if(ev.plot==='v'){
-      ensureVelocityChart();
-    }
-    if(ev.plot==='a'){
-      ensureAccelerationChart();
-    }
-    if(ev.plot==='ax'){
-      ensureAxChart();
-    }
-    if(ev.plot==='xsin'){
-      ensureXSinChart();
-    }
+    if(ev.graph==='xt') initXTChart();
+    if(ev.plot ==='v') ensureVelocityChart();
+    if(ev.plot ==='a') ensureAccelerationChart();
+    if(ev.plot ==='ax')ensureAxChart();
+    if(ev.plot ==='xsin')ensureXSinChart();
   }
 
   stage.classList.remove('open');
   setAudienceLights(true);
-  phase = 'between2andFoyer';
-  setTimeout(()=>{
-    foyerBreak.style.display='flex';
-  }, 1200);
+  phase='between2andFoyer';
+  setTimeout(()=>{ foyerBreak.style.display='flex'; },1200);
 }
 
-/* ---------- Κουρτίνα / μεταβάσεις ---------- */
+/* ---------- Κουρτίνες / μεταβάσεις ---------- */
 
 function closeCurtainToAct2(){
   return new Promise(resolve=>{
@@ -1652,14 +1379,14 @@ function closeCurtainToAct2(){
     setTimeout(()=>{
       actBreak.style.display='flex';
       resolve();
-    }, 1400);
+    },1400);
   });
 }
 
-/* ---------- Foyer ---------- */
+/* ---------- Φουαγιέ ---------- */
 
 function isFormulaBlock(text){
-  const s = String(text||'').trim();
+  const s=String(text||'').trim();
   if(!s) return false;
   if(/^\(\d+\)/.test(s)) return true;
   if(/[ΑA]\.[ΔD]\.[ΜM]\.[ΕE]\.[ΤT]/.test(s)) return true;
@@ -1670,64 +1397,62 @@ function isFormulaBlock(text){
 }
 
 function setFoyerSpeaker(idx1based){
-  const {x,y,info} = getViewerAvatarCenter(idx1based);
+  const {x,y,info}=getViewerAvatarCenter(idx1based);
   if(!info) return;
 
-  const nameGR = info.name_gr || ('Θεατής '+idx1based);
-  const nameEN = info.name_en || ('Viewer '+idx1based);
-  const label = currentLang === 'en' ? nameEN : nameGR;
+  const nameGR=info.name_gr || ('Θεατής '+idx1based);
+  const nameEN=info.name_en || ('Viewer '+idx1based);
+  const label=currentLang==='en'? nameEN : nameGR;
 
-  foyerBubble.textContent = label;
-  foyerBubble.style.backgroundColor = tint(info.color,0.85);
-  foyerBubble.style.borderColor = 'rgba(255,255,255,.9)';
+  foyerBubble.textContent=label;
+  foyerBubble.style.backgroundColor=tint(info.color,0.85);
+  foyerBubble.style.borderColor='rgba(255,255,255,.9)';
 
-  const dx = (info && typeof info.chipDx === 'number') ? info.chipDx : 0;
-  const dy = (info && typeof info.chipDy === 'number') ? info.chipDy : 0;
+  const dx=(typeof info.chipDx==='number'? info.chipDx:0);
+  const dy=(typeof info.chipDy==='number'? info.chipDy:0);
 
-  foyerBubble.style.left = (x + dx) + 'px';
-  foyerBubble.style.top  = (y - dy) + 'px';
+  foyerBubble.style.left=(x+dx)+'px';
+  foyerBubble.style.top =(y-dy)+'px';
   foyerBubble.style.transform='translateX(-50%)';
   foyerBubble.style.display='block';
 }
 
-function typeWriterBoard(el, text, totalMs, done){
-  const src = String(text||'').replaceAll('sqrt(','√(');
-  const total = src.length || 1;
-  const baseMs = (typeof totalMs==='number' && totalMs>0 ? totalMs : 3000);
-  const step = Math.max(10, Math.round(baseMs/total));
+function typeWriterBoard(el,text,totalMs,done){
+  const src=String(text||'').replaceAll('sqrt(','√(');
+  const total=src.length || 1;
+  const baseMs=(typeof totalMs==='number' && totalMs>0? totalMs:3000);
+  const step=Math.max(10,Math.round(baseMs/total));
   let i=0;
   (function tick(){
-    el.innerHTML = src.slice(0,i).replaceAll('\n','<br>');
-    try{
-      boardLeft.scrollTop = boardLeft.scrollHeight;
-    }catch(e){}
+    el.innerHTML=src.slice(0,i).replaceAll('\n','<br>');
+    try{ boardLeft.scrollTop=boardLeft.scrollHeight; }catch(e){}
     i++;
-    if(i<=src.length) setTimeout(tick, step);
+    if(i<=src.length) setTimeout(tick,step);
     else if(typeof done==='function') done();
   })();
 }
 
 function addFoyerRow(item){
   return new Promise(resolve=>{
-    const viewer = item.viewer || 1;
-    const vi = viewerInfo(viewer) || {};
-    const bgBase = tint(vi.color||'#ffffff',0.22);
+    const viewer=item.viewer || 1;
+    const vi=viewerInfo(viewer) || {};
+    const bgBase=tint(vi.color||'#ffffff',0.22);
 
-    const row = document.createElement('tr');
+    const row=document.createElement('tr');
 
-    const l = document.createElement('td');
-    l.className = 'cell cell-left';
-    l.style.width = '60%';
-    l.style.background = bgBase;
-    l.style.borderLeft = '4px solid '+tint(vi.color||'#ffffff',0.85);
+    const l=document.createElement('td');
+    l.className='cell cell-left';
+    l.style.width='60%';
+    l.style.background=bgBase;
+    l.style.borderLeft='4px solid '+tint(vi.color||'#ffffff',0.85);
 
-    const r = document.createElement('td');
-    r.className = 'cell cell-right';
-    r.style.width = '40%';
-    r.style.background = bgBase;
-    l.style.verticalAlign = 'top';
-    r.style.verticalAlign = 'top';
-    r.style.borderLeft = '4px solid '+tint(vi.color||'#ffffff',0.55);
+    const r=document.createElement('td');
+    r.className='cell cell-right';
+    r.style.width='40%';
+    r.style.background=bgBase;
+    l.style.verticalAlign='top';
+    r.style.verticalAlign='top';
+    r.style.borderLeft='4px solid '+tint(vi.color||'#ffffff',0.55);
 
     if(isFormulaBlock(item.right)){
       r.classList.add('formula');
@@ -1743,38 +1468,38 @@ function addFoyerRow(item){
     showViewerAvatar(viewer);
     setFoyerSpeaker(viewer);
 
-    const typeMs  = item.typeMs  || 4000;
-    const pauseMs = item.pauseMs || 1500;
+    const typeMs =item.typeMs  || 4000;
+    const pauseMs=item.pauseMs || 1500;
 
-    typeWriterBoard(l, item.left||'', typeMs, ()=>{
+    typeWriterBoard(l,item.left||'',typeMs,()=>{
       if((item.right||'').trim().length>0){
-        typeWriterBoard(r, item.right||'', typeMs, ()=>{
-          setTimeout(resolve, pauseMs);
+        typeWriterBoard(r,item.right||'',typeMs,()=>{
+          setTimeout(resolve,pauseMs);
         });
       }else{
-        setTimeout(resolve, pauseMs);
+        setTimeout(resolve,pauseMs);
       }
     });
   });
 }
 
 async function runFoyer(){
-  phase = 'foyer';
+  phase='foyer';
   setAudienceLights(true);
   foyerEl.style.display='block';
-  startBtn.style.display='none';   // μπαίνοντας φουαγιέ, κρύβεται οπωσδήποτε το "Έναρξη"
-  boardLeft.innerHTML  = '';
-  boardRight.innerHTML = '';
+  startBtn.style.display='none'; // μπαίνοντας φουαγιέ εξαφανίζουμε Έναρξη
+  boardLeft.innerHTML='';
+  boardRight.innerHTML='';
   foyerBubble.style.display='none';
 
-  boardLeft.style.gridColumn = '1 / span 2';
-  boardRight.style.display   = 'none';
+  boardLeft.style.gridColumn='1 / span 2';
+  boardRight.style.display='none';
 
-  const table = document.createElement('table');
-  table.className = 'foyer-table';
-  table.style.width = '100%';
-  table.style.tableLayout = 'fixed';
-  foyerTBody = document.createElement('tbody');
+  const table=document.createElement('table');
+  table.className='foyer-table';
+  table.style.width='100%';
+  table.style.tableLayout='fixed';
+  foyerTBody=document.createElement('tbody');
   table.appendChild(foyerTBody);
   boardLeft.appendChild(table);
 
@@ -1783,88 +1508,85 @@ async function runFoyer(){
   }
 }
 
-/* ---------- Κουμπιά / modes ---------- */
+/* ---------- Κουμπιά / mode ---------- */
 
 function setMode(newMode){
-  mode = newMode;
-  btnPlay.classList.toggle('active', mode==='run');
-  btnPause.classList.toggle('active', mode==='pause');
-  slowHint.textContent = '';
+  mode=newMode;
+  btnPlay.classList.toggle('active',mode==='run');
+  btnPause.classList.toggle('active',mode==='pause');
+  slowHint.textContent='';
 }
 
-btnPause.addEventListener('click', ()=>{
-  setMode(mode==='pause' ? 'run' : 'pause');
+btnPause.addEventListener('click',()=>{
+  setMode(mode==='pause'?'run':'pause');
 });
-
-btnPlay.addEventListener('click', ()=>{
-  setMode('run');
-});
+btnPlay.addEventListener('click',()=>{ setMode('run'); });
 
 function resetShow(){
-  phase = 'idle';
-  t0        = performance.now();
-  lastFrame = t0;
-  playbackTime = 0;
-  obsStarted = false;
-  obsStartPlaybackOffset = 0;
-  lastSampleObsTime = -Infinity;
-  measureRowIdx      = 0;
+  phase='idle';
+  t0=performance.now();
+  lastFrame=t0;
+  playbackTime=0;
+  obsStarted=false;
+  obsStartPlaybackOffset=0;
+  lastSampleObsTime=-Infinity;
+  measureRowIdx=0;
   setMode('run');
 
-  startBtn.style.display       ='block';
+  startBtn.style.display='block';
   countdownOverlay.style.display='none';
-  measureBox.style.display     ='none';
-  clockEl.style.display        ='none';
-  markerEl.style.opacity       ='0';
-  markerGhostEl.style.opacity  ='0';
-  paramsBoxEl.style.display    ='none';
-  lawsPane.style.display       ='none';
-  lawsBody.innerHTML           ='';
-  firstLawShown                = false;
-  lawCharts.innerHTML          ='';
-  vCan = aCan = axCan = xsCan  = null;
-  actBreak.style.display       ='none';
-  foyerBreak.style.display     ='none';
-  foyerEl.style.display        ='none';
-  foyerBubble.style.display    ='none';
-  boardLeft.innerHTML          ='';
-  boardRight.innerHTML         ='';
-  foyerTBody                   = null;
-  bubbleEl.style.display       ='none';
+  measureBox.style.display='none';
+  clockEl.style.display='none';
+  markerEl.style.opacity='0';
+  markerGhostEl.style.opacity='0';
+  paramsBoxEl.style.display='none';
+  lawsPane.style.display='none';
+  lawsBody.innerHTML='';
+  firstLawShown=false;
+  lawCharts.innerHTML='';
+  vCan=aCan=axCan=xsCan=null;
+  actBreak.style.display='none';
+  foyerBreak.style.display='none';
+  foyerEl.style.display='none';
+  foyerBubble.style.display='none';
+  boardLeft.innerHTML='';
+  boardRight.innerHTML='';
+  foyerTBody=null;
+  bubbleEl.style.display='none';
   bubbleEl.classList.remove('active','closing');
-  actBubble.style.display      ='none';
-  measureTBody.innerHTML       ='';
+  actBubble.style.display='none';
+  measureTBody.innerHTML='';
   hideAllViewerAvatars();
 
   if(uXT){
-    xtChartEl.innerHTML = '';
-    uXT = null;
+    xtChartEl.innerHTML='';
+    uXT=null;
   }
-  xtChartEl.style.display      ='none';
+  xtChartEl.style.display='none';
 
   stage.classList.remove('open');
-  markerEl.style.left          = centerX()+'px';
-  markerGhostEl.style.left     = centerX()+'px';
+  markerEl.style.left=centerX()+'px';
+  markerGhostEl.style.left=centerX()+'px';
 
-  springEl.style.display = 'none';
+  springEl.style.display='none';
   if(ghost){
-    ghost.style.display = 'none';
-    ghost.style.opacity = '0';
+    ghost.style.display='none';
+    ghost.style.opacity='0';
   }
   if(ghostSpring){
-    ghostSpring.style.display = 'none';
-    ghostSpring.style.opacity = '0';
+    ghostSpring.style.display='none';
+    ghostSpring.style.opacity='0';
   }
-  ghostActive = false;
-  ghostVisibility = 0;
+  ghostActive=false;
+  ghostVisibility=0;
 
   setAudienceLights(true);
 }
 
-btnReset.addEventListener('click', resetShow);
+btnReset.addEventListener('click',resetShow);
 
-btnEndShow.addEventListener('click', ()=>{
-  if(phase === 'idle' || phase === 'foyer'){
+btnEndShow.addEventListener('click',()=>{
+  if(phase==='idle' || phase==='foyer'){
     resetShow();
   }
 });
@@ -1875,27 +1597,27 @@ function beginObservation(){
   stage.classList.add('open');
   setAudienceLights(false);
   if(!obsStarted){
-    obsStarted = true;
-    obsStartPlaybackOffset = playbackTime;
+    obsStarted=true;
+    obsStartPlaybackOffset=playbackTime;
   }
-  clockEl.style.display   ='block';
+  clockEl.style.display='block';
   measureBox.style.display='block';
-  markerEl.style.opacity  ='1';
+  markerEl.style.opacity='1';
   markerGhostEl.style.opacity='0';
   updateRuler();
   runAct1();
 }
 
 function startShowCountdown(){
-  phase = 'countdown';
-  startBtn.style.display    ='none';
+  phase='countdown';
+  startBtn.style.display='none';
   countdownOverlay.style.display='flex';
-  const seconds = 5;
-  const end = performance.now()+seconds*1000;
+  const seconds=5;
+  const end=performance.now()+seconds*1000;
   function tick(){
-    const now = performance.now();
-    const remain = Math.max(0, Math.ceil((end-now)/1000));
-    countdownTimerEl.textContent = remain;
+    const now=performance.now();
+    const remain=Math.max(0,Math.ceil((end-now)/1000));
+    countdownTimerEl.textContent=remain;
     if(now>=end){
       countdownOverlay.style.display='none';
       beginObservation();
@@ -1906,24 +1628,20 @@ function startShowCountdown(){
   requestAnimationFrame(tick);
 }
 
-startBtn.addEventListener('click', startShowCountdown);
+startBtn.addEventListener('click',startShowCountdown);
 
-/* Πράξη 2 κουμπί */
-
-btnAct2.addEventListener('click', ()=>{
+btnAct2.addEventListener('click',()=>{
   actBreak.style.display='none';
   runAct2();
 });
 
-/* Φουαγιέ κουμπιά */
-
-btnFoyer.addEventListener('click', ()=>{
-  if(phase === 'idle' || phase === 'foyer'){
+btnFoyer.addEventListener('click',()=>{
+  if(phase==='idle' || phase==='foyer'){
     runFoyer();
   }
 });
 
-btnFoyerGo.addEventListener('click', ()=>{
+btnFoyerGo.addEventListener('click',()=>{
   foyerBreak.style.display='none';
   runFoyer();
 });
@@ -1931,92 +1649,93 @@ btnFoyerGo.addEventListener('click', ()=>{
 /* ---------- Animation loop ---------- */
 
 function animate(now){
-  const realDt = (now-lastFrame)/1000;
-  lastFrame = now;
+  const realDt=(now-lastFrame)/1000;
+  lastFrame=now;
 
   updateRuler();
 
-  const tPhys = (now-t0)/1000;
+  const tPhys=(now-t0)/1000;
   if(!obsStarted){
-    playbackTime = tPhys;
+    playbackTime=tPhys;
   }else{
-    if(mode==='run') playbackTime += realDt;
+    if(mode==='run') playbackTime+=realDt;
   }
-  const tObs = obsStarted ? (playbackTime-obsStartPlaybackOffset) : 0;
-  clockEl.textContent = 't = '+tObs.toFixed(2)+' s';
+  const tObs=obsStarted? (playbackTime-obsStartPlaybackOffset):0;
+  clockEl.textContent='t = '+tObs.toFixed(2)+' s';
 
   ensureActorFloorBottom();
-  const bottomPx = actorFloorBottomPx ?? 0;
+  const bottomPx=actorFloorBottomPx ?? 0;
 
-  const axx = anchorX();
-  const cx = centerX();
-  const stageH = stage.clientHeight;
+  const axx=anchorX();
+  const cx =centerX();
+  const stageH=stage.clientHeight;
 
-  const hookX = cx + A_px*Math.sin(omega*playbackTime);
+  const hookX=cx+A_px*Math.sin(omega*playbackTime);
 
-  const baseL = springNaturalWidth || (springEl.getBoundingClientRect().width || 1);
-  const dist = hookX - axx;
-  const scale = dist / baseL;
-  springEl.style.left      = axx+'px';
-  springEl.style.transform = 'scaleX('+scale+')';
+  const baseL=springNaturalWidth || (springEl.getBoundingClientRect().width || 1);
+  const dist=hookX-axx;
+  const scale=dist/baseL;
+  springEl.style.left=axx+'px';
+  springEl.style.transform='scaleX('+scale+')';
 
-  const actorRect = actor.getBoundingClientRect();
-  const actorWidth = actorRect.width || 80;
+  const actorRect=actor.getBoundingClientRect();
+  const actorWidth=actorRect.width || 80;
+  actor.style.bottom=bottomPx+'px';
+  actor.style.left=(hookX-actorWidth/2)+'px';
 
-  actor.style.bottom = bottomPx+'px';
-  actor.style.left   = (hookX - actorWidth/2) + 'px';
-
-  markerEl.style.left = hookX+'px';
+  markerEl.style.left=hookX+'px';
   spotlight.style.background =
     'radial-gradient(220px 140px at '+hookX+'px '+(stageH*0.62)+'px, rgba(255,255,220,0.65), rgba(255,255,255,0) 70%)';
 
-  const xMeters = (hookX - cx)/pxPerMeter;
-  logMeasurement(tObs, xMeters);
+  const xMeters=(hookX-cx)/pxPerMeter;
+  logMeasurement(tObs,xMeters);
 
-  /* Ghost με fade-in / fade-out σαν ανάμνηση */
+  /* Ghost fade-in/out σαν ανάμνηση */
   if(ghost && ghostSpring){
-    const target = ghostActive ? 1 : 0;
-    const fadeSpeed = 3; // μεγαλύτερο => πιο γρήγορο fade
-    const step = Math.min(1, fadeSpeed * realDt);
-    ghostVisibility += (target - ghostVisibility) * step;
-    if(ghostVisibility < 0.01 && !ghostActive){
-      ghostVisibility = 0;
-      ghost.style.display      = 'none';
-      ghostSpring.style.display= 'none';
-      markerGhostEl.style.opacity = '0';
+    const target=ghostActive?1:0;
+    const fadeSpeed=3;
+    const step=Math.min(1,fadeSpeed*realDt);
+    ghostVisibility+= (target-ghostVisibility)*step;
+    if(ghostVisibility<0.01 && !ghostActive){
+      ghostVisibility=0;
+      ghost.style.display='none';
+      ghostSpring.style.display='none';
+      markerGhostEl.style.opacity='0';
     }else{
-      ghost.style.display      = 'block';
-      ghostSpring.style.display= 'block';
+      ghost.style.display='block';
+      ghostSpring.style.display='block';
 
-      const Aghost_m  = 5.0;
-      const Aghost_px = pxPerMeter*Aghost_m;
+      const Aghost_m =5.0;
+      const Aghost_px=pxPerMeter*Aghost_m;
 
-      const sinθ = Math.max(-1, Math.min(1, (hookX - cx)/Math.max(1,A_px)));
-      const hookXg = cx + Aghost_px*sinθ;
+      const sinθ=Math.max(-1,Math.min(1,(hookX-cx)/Math.max(1,A_px)));
+      const hookXg=cx+Aghost_px*sinθ;
 
-      const springBottom = getComputedStyle(springEl).bottom || 'calc(32vh + 92px)';
-      const ghostRect  = ghost.getBoundingClientRect();
-      const ghostWidth = ghostRect.width || actorWidth || 80;
+      const springBottom=getComputedStyle(springEl).bottom || 'calc(32vh + 92px)';
+      const ghostRect=ghost.getBoundingClientRect();
+      const ghostWidth=ghostRect.width || actorWidth || 80;
 
-      ghost.style.bottom = bottomPx+'px';
-      ghost.style.left   = (hookXg - ghostWidth/2) + 'px';
+      ghost.style.bottom=bottomPx+'px';
+      ghost.style.left  =(hookXg-ghostWidth/2)+'px';
 
-      const distg  = hookXg - axx;
-      const scaleg = distg / baseL;
+      const distg =hookXg-axx;
+      const scaleg=distg/baseL;
 
-      ghostSpring.style.bottom   = springBottom;
-      ghostSpring.style.left     = axx+'px';
-      ghostSpring.style.height   = springNaturalHeight ? (springNaturalHeight+'px') : (springEl.getBoundingClientRect().height || 1)+'px';
-      ghostSpring.style.transform= 'scaleX('+scaleg+')';
+      ghostSpring.style.bottom   =springBottom;
+      ghostSpring.style.left     =axx+'px';
+      ghostSpring.style.height   =springNaturalHeight
+        ? (springNaturalHeight+'px')
+        : (springEl.getBoundingClientRect().height || 1)+'px';
+      ghostSpring.style.transform='scaleX('+scaleg+')';
 
-      const vis = ghostVisibility;
-      ghost.style.opacity        = (0.85*vis).toString();
-      ghostSpring.style.opacity  = (0.9*vis).toString();
-      markerGhostEl.style.left   = hookXg+'px';
-      markerGhostEl.style.opacity= vis.toString();
+      const vis=ghostVisibility;
+      ghost.style.opacity       =(0.85*vis).toString();
+      ghostSpring.style.opacity =(0.9*vis).toString();
+      markerGhostEl.style.left  =hookXg+'px';
+      markerGhostEl.style.opacity=vis.toString();
     }
   }else{
-    markerGhostEl.style.opacity = '0';
+    markerGhostEl.style.opacity='0';
   }
 
   if(uXT)  drawXTChart();
@@ -2029,88 +1748,79 @@ function animate(now){
 }
 requestAnimationFrame(animate);
 
-/* ---------- Viewers avatars ---------- */
+/* ---------- Avatars από JSON.viewers ---------- */
 
 function initViewersAvatars(){
-  const items = viewersStrip.querySelectorAll('.viewer-avatar');
-  const stageW = stage.clientWidth || window.innerWidth;
+  const items=viewersStrip.querySelectorAll('.viewer-avatar');
+  const stageW=stage.clientWidth || window.innerWidth;
 
-  const leftBand  = 0.18;
-  const widthBand = 0.64;
+  const leftBand=0.18;
+  const widthBand=0.64;
+  const baseWidthPx=140;
+  const refScale=0.5;
 
-  const baseWidthPx  = 140;
-  const refScale     = 0.5;
-
-  items.forEach((div, idx) => {
-    const v = VIEWERS[idx];
-    if (!v) {
-      div.style.display = 'none';
+  items.forEach((div,idx)=>{
+    const v=VIEWERS[idx];
+    if(!v){
+      div.style.display='none';
       return;
     }
 
-    if (v.img) {
-      div.style.backgroundImage = 'url("'+v.img+'")';
+    if(v.img){
+      div.style.backgroundImage='url("'+v.img+'")';
+    }
+    if(typeof v.heightVh==='number'){
+      div.style.height=v.heightVh+'vh';
+    }else{
+      div.style.height='';
+    }
+    if(typeof v.avatarDy==='number'){
+      div.dataset.baseBottom=v.avatarDy;
+      div.style.bottom=v.avatarDy+'px';
+    }else{
+      div.dataset.baseBottom='';
+    }
+    if(typeof v.avatarScale==='number'){
+      const widthPx=baseWidthPx*(v.avatarScale/refScale);
+      div.style.width=widthPx+'px';
+    }else{
+      div.style.width='';
     }
 
-    if (typeof v.heightVh === 'number') {
-      div.style.height = v.heightVh + 'vh';
-    } else {
-      div.style.height = '';
-    }
+    const fracDefault=(idx+1)/(items.length+1);
+    const xFrac=(typeof v.xFrac==='number')? v.xFrac:fracDefault;
+    const x=(leftBand+widthBand*xFrac)*stageW;
+    div.style.left=x+'px';
 
-    if (typeof v.avatarDy === 'number') {
-      div.dataset.baseBottom = v.avatarDy;
-      div.style.bottom = v.avatarDy + 'px';
-    } else {
-      div.dataset.baseBottom = '';
-    }
-
-    if (typeof v.avatarScale === 'number') {
-      const widthPx = baseWidthPx * (v.avatarScale / refScale);
-      div.style.width = widthPx + 'px';
-    } else {
-      div.style.width = '';
-    }
-
-    const fracDefault = (idx + 1) / (items.length + 1);
-    const xFrac = (typeof v.xFrac === 'number') ? v.xFrac : fracDefault;
-    const x = (leftBand + widthBand * xFrac) * stageW;
-    div.style.left = x + 'px';
-
-    div.style.display = 'block';
-    div.classList.remove('visible');
-    div.classList.remove('lit');
+    div.style.display='block';
+    div.classList.remove('visible','lit');
   });
 }
 
-/* ---------- Load dialogs-gr/en.json & bootstrap ---------- */
+/* ---------- Φόρτωση dialogs-*.json ---------- */
 
 async function loadDialogs(){
   try{
-    const url = (currentLang === 'en') ? 'dialogs-en.json' : 'dialogs-gr.json';
-    const resp = await fetch(url,{cache:'no-store'});
+    const url=(currentLang==='en')?'dialogs-en.json':'dialogs-gr.json';
+    const resp=await fetch(url,{cache:'no-store'});
     if(!resp.ok){
       console.error('Δε βρέθηκε '+url);
       return;
     }
-    const data = await resp.json();
-    VIEWERS = data.viewers || [];
-    ACT1    = data.act1    || [];
-    ACT2    = data.act2    || [];
-    FOYER   = data.foyer   || [];
+    const data=await resp.json();
+    VIEWERS=data.viewers || [];
+    ACT1   =data.act1    || [];
+    ACT2   =data.act2    || [];
+    FOYER  =data.foyer   || [];
 
-    /* actsAvatarOffset global από JSON, χωρίς hard-coded -65 */
-    if (typeof data.actsAvatarOffset === 'number') {
-      ACTS_AVATAR_OFFSET = data.actsAvatarOffset;
-    } else {
-      ACTS_AVATAR_OFFSET = -60;
+    if(typeof data.actsAvatarOffset==='number'){
+      ACTS_AVATAR_OFFSET=data.actsAvatarOffset;
+    }else{
+      ACTS_AVATAR_OFFSET=-60;
     }
 
-    /* texts από JSON (αν υπάρχουν) σκεπάζουν τα defaults */
-    if (data.texts && typeof data.texts === 'object') {
-      mergeDeep(DIALOG_TEXTS, data.texts);
-      applyUIText();
-    }
+    UI=data.ui || {};
+    applyUITextFromUI();
 
     initViewersAvatars();
   }catch(e){
@@ -2118,30 +1828,38 @@ async function loadDialogs(){
   }
 }
 
+/* ---------- Αλλαγή γλώσσας ---------- */
+
 function setLanguage(lang){
-  if(lang === currentLang) return;
-  currentLang = lang;
-  applyUIText();
+  if(lang===currentLang) return;
+  currentLang=lang;
+
+  if(btnLangGR && btnLangEN){
+    btnLangGR.classList.toggle('active',currentLang==='gr');
+    btnLangEN.classList.toggle('active',currentLang==='en');
+  }
+
   resetShow();
   loadDialogs();
 }
 
-window.addEventListener('load', ()=>{
-  btnLangGR = document.getElementById('btnLangGR');
-  btnLangEN = document.getElementById('btnLangEN');
+/* ---------- Bootstrap ---------- */
+
+window.addEventListener('load',()=>{
+  btnLangGR=document.getElementById('btnLangGR');
+  btnLangEN=document.getElementById('btnLangEN');
 
   if(btnLangGR){
-    btnLangGR.addEventListener('click', ()=>setLanguage('gr'));
+    btnLangGR.addEventListener('click',()=>setLanguage('gr'));
   }
   if(btnLangEN){
-    btnLangEN.addEventListener('click', ()=>setLanguage('en'));
+    btnLangEN.addEventListener('click',()=>setLanguage('en'));
   }
 
   updateRuler();
   measureSpringNaturalSize();
   ensureActorFloorBottom();
   resetShow();
-  applyUIText();
   loadDialogs();
 });
 </script>
