@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Θεατρική Σκηνή — Ενιαία Έκδοση (Act I + Act II + Φουαγιέ)</title>
+  <title>ΘεATRική Σκηνή — Ενιαία Έκδοση (Act I + Act II + Φουαγιέ)</title>
 
   <!-- uPlot για το x–t διάγραμμα (δεν πειράζει αν μείνει, τώρα το x–t είναι canvas) -->
   <link rel="stylesheet" href="https://unpkg.com/uplot@1.6.30/dist/uPlot.min.css">
@@ -12,7 +12,7 @@
   <!-- Σκηνή CSS -->
   <link rel="stylesheet" href="aat-stage.css">
 
-  <!-- Μικρό inline CSS μόνο για τα κουμπιά γλώσσας + lawCharts + φώτα κοινού -->
+  <!-- Μικρό inline CSS μόνο για τα κουμπιά γλώσσας + lawCharts + φώτα κοινού + avatars -->
   <style>
     .lang-toggle {
       position: absolute;
@@ -51,6 +51,15 @@
     }
     .audience-main.dimmed {
       filter: brightness(0.25);
+    }
+
+    /* Avatars θεατών: κρυφοί by default, εμφανίζονται με fade μόνο όταν μιλάνε/σκέφτονται */
+    .viewers .viewer-avatar {
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+    .viewers .viewer-avatar.visible {
+      opacity: 1;
     }
   </style>
 </head>
@@ -626,7 +635,7 @@ function sizeLawCanvas(c){
   c.style.height=h+'px';
 }
 
-/* v(t), a(t), a–x */
+/* v(t), a(t), a–x, x–sin(ωt) */
 
 function drawVelocityChart(){
   if(!vCan) return;
@@ -1083,6 +1092,18 @@ function tint(hex, alpha){
   return 'rgba('+r+','+g+','+b+','+alpha+')';
 }
 
+/* ΝΕΟ: helper για avatars ώστε να φαίνεται μόνο ο τρέχων θεατής με fade */
+
+function hideAllViewerAvatars(){
+  const items = viewersStrip.querySelectorAll('.viewer-avatar');
+  items.forEach(div => div.classList.remove('visible'));
+}
+function showViewerAvatar(idx1based){
+  hideAllViewerAvatars();
+  const el = viewersStrip.querySelector('.viewer-avatar[data-idx="'+(idx1based-1)+'"]');
+  if(el) el.classList.add('visible');
+}
+
 function showSpeakerChip(idx1based){
   const {x,y,info} = viewerAnchor(idx1based);
   if(!info) return;
@@ -1158,10 +1179,13 @@ function showBubbleForEvent(ev){
     if(!html){
       hideSpeakerChip();
       bubbleEl.style.display='none';
+      hideAllViewerAvatars();
       resolve();
       return;
     }
 
+    // εμφάνιση μόνο του συγκεκριμένου θεατή (Acts 1–2) με fade
+    showViewerAvatar(viewer);
     showSpeakerChip(viewer);
     placeBubble(viewer, ev.xShift||0, ev.yOffset||0);
 
@@ -1181,6 +1205,7 @@ function showBubbleForEvent(ev){
           bubbleEl.classList.remove('active','closing');
           bubbleEl.style.display='none';
           hideSpeakerChip();
+          hideAllViewerAvatars();
           resolve();
         },200);
       }, pauseMs);
@@ -1228,6 +1253,8 @@ function showDynBubble(ev){
 
     const txt = expandDynTemplate(base);
 
+    // και εδώ μόνο ο συγκεκριμένος θεατής
+    showViewerAvatar(viewer);
     showSpeakerChip(viewer);
     placeBubble(viewer, ev.xShift||0, ev.yOffset||0);
 
@@ -1247,6 +1274,7 @@ function showDynBubble(ev){
           bubbleEl.classList.remove('active','closing');
           bubbleEl.style.display='none';
           hideSpeakerChip();
+          hideAllViewerAvatars();
           resolve();
         },200);
       }, pauseMs);
@@ -1607,6 +1635,8 @@ function addFoyerRow(item){
       foyerTBody.appendChild(row);
     }
 
+    // στο φουαγιέ, επίσης μόνο ο αντίστοιχος ομιλητής
+    showViewerAvatar(viewer);
     setFoyerSpeaker(viewer);
 
     const typeMs  = item.typeMs  || 4000;
@@ -1699,6 +1729,7 @@ function resetShow(){
   bubbleEl.classList.remove('active','closing');
   actBubble.style.display      ='none';
   measureTBody.innerHTML       ='';
+  hideAllViewerAvatars();
 
   if(uXT){
     xtChartEl.innerHTML = '';
@@ -1930,7 +1961,9 @@ function initViewersAvatars(){
     const x = (leftBand + widthBand * xFrac) * stageW;
     div.style.left = x + 'px';
 
+    // εμφανίζονται ΜΟΝΟ όταν πάρουν .visible, αλλιώς κρυφοί
     div.style.display = 'block';
+    div.classList.remove('visible');
   });
 }
 
