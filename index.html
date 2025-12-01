@@ -12,7 +12,7 @@
   <!-- Σκηνή CSS -->
   <link rel="stylesheet" href="aat-stage.css">
 
-  <!-- Μικρό inline CSS μόνο για τα κουμπιά γλώσσας + viewers fade + φώτα/ghost -->
+  <!-- Μικρό inline CSS μόνο για τα κουμπιά γλώσσας + viewers fade -->
   <style>
     .lang-toggle {
       position: absolute;
@@ -49,7 +49,7 @@
       opacity: 1;
     }
 
-    /* Φώτα σκηνής: το κλείσιμο/άναμμα γίνεται με opacity στο spotlight */
+    /* Προαιρετικά ομαλό opacity για spotlight (δεν το δένουμε με τα φώτα του κοινού) */
     .spotlight {
       transition: opacity 0.7s ease-in-out;
     }
@@ -221,6 +221,7 @@ const lawsBody     = document.getElementById('lawsBody');
 const lawCharts    = document.getElementById('lawCharts');
 const xtChartEl    = document.getElementById('xtChart');
 const audienceExtra= document.getElementById('audienceExtra');
+const audienceMain = document.querySelector('.audience-main');
 
 const bubbleEl     = document.getElementById('bubble0');
 const bubbleTextEl = bubbleEl.querySelector('.text');
@@ -260,7 +261,7 @@ let measureRowIdx = 0;
 
 let mode = 'run';
 
-/* Φώτα σκηνής (on/off) */
+/* "Φώτα κοινού": true = koino φωτεινό, false = koino σκοτεινό */
 let lightsOn = true;
 
 /* Κατάσταση παράστασης για lock κουμπιών */
@@ -283,7 +284,7 @@ let ghost       = null;
 let ghostSpring = null;
 let ghostActive = false;
 
-/* φυσικό μήκος ελατηρίου σε px */
+/* φυσικό μέγεθος ελατηρίου σε px */
 let springNaturalWidth  = null;
 let springNaturalHeight = null;
 
@@ -309,10 +310,15 @@ function measureSpringNaturalSize(){
   springEl.style.transform = prevTransform;
 }
 
-/* ---------- ΦΩΤΑ ΣΚΗΝΗΣ ---------- */
-
-function setLights(on){
-  lightsOn = !!on;
+/* ---------- ΦΩΤΑ ΚΟΙΝΟΥ (koino.png) ---------- */
+/* audienceLit=true  -> koino φωτεινό (διάλειμμα / αυλαία κλειστή)
+   audienceLit=false -> koino σκοτεινό (παράσταση σε εξέλιξη, αυλαία ανοιχτή) */
+function setLights(audienceLit){
+  lightsOn = !!audienceLit;
+  if(audienceMain){
+    audienceMain.style.transition = 'filter 0.7s ease-in-out';
+    audienceMain.style.filter = audienceLit ? 'brightness(1)' : 'brightness(0.35)';
+  }
 }
 
 /* ---------- UI κείμενα ανά γλώσσα ---------- */
@@ -978,8 +984,8 @@ function tint(hex, alpha){
 }
 
 /* Ενεργοποίηση ενός μόνο avatar θεατή.
-   mode='act' → εικόνα 45px χαμηλότερα από τη JSON θέση,
-   mode='foyer' → στην κανονική της θέση (baseBottom).
+   mode='act'   → εικόνα 45px χαμηλότερα από τη JSON θέση (μισό κεφάλι)
+   mode='foyer' → κανονική θέση (baseBottom).
    ΜΟΝΟ bottom jump + fade, ΧΩΡΙΣ animation στην κίνηση. */
 function setActiveViewerAvatar(idx1based, mode){
   const items = viewersStrip.querySelectorAll('.viewer-avatar');
@@ -1195,11 +1201,6 @@ function showDynBubble(ev){
 
 async function runAct1(){
   for(const ev of ACT1){
-
-    /* φώτα: υποστήριξη lightsOff/lightsOn ή lights:'off'/'on' */
-    if(ev.lightsOff || ev.lights === 'off') setLights(false);
-    if(ev.lightsOn  || ev.lights === 'on')  setLights(true);
-
     if(ev.close){
       await closeCurtainToAct2();
       return;
@@ -1350,15 +1351,14 @@ async function runAct2(){
   actBreak.style.display='none';
   stage.classList.add('open');
 
+  setLights(false);   // αυλαία ανοίγει → κοινό στο ημίφως
+
   springEl.style.display='block';
   if(ghostSpring) ghostSpring.style.opacity='0';
   markerEl.style.opacity='1';
   markerGhostEl.style.opacity='0';
 
   for(const ev of ACT2){
-
-    if(ev.lightsOff || ev.lights === 'off') setLights(false);
-    if(ev.lightsOn  || ev.lights === 'on')  setLights(true);
 
     if(ev.gStart) ghostActive = true;
     if(ev.gStop)  ghostActive = false;
@@ -1425,10 +1425,11 @@ async function runAct2(){
     }
   }
 
+  setLights(true);     // αυλαία κλείνει → φώτα κοινού on
   stage.classList.remove('open');
   setTimeout(()=>{
     foyerBreak.style.display='flex';
-    foyerUnlocked = true;   // από εδώ και πέρα ξεκλειδώνει το φουαγιέ & το Τέλος
+    foyerUnlocked = true;
   }, 1200);
 }
 
@@ -1436,6 +1437,7 @@ async function runAct2(){
 
 function closeCurtainToAct2(){
   return new Promise(resolve=>{
+    setLights(true);            // κλείνει αυλαία μετά Act 1 → κοινό φωτεινό
     stage.classList.remove('open');
     setTimeout(()=>{
       actBreak.style.display='flex';
@@ -1548,7 +1550,7 @@ function addFoyerRow(item){
 }
 
 async function runFoyer(){
-  /* στο φουαγιέ τα φώτα “ανοικτά” */
+  /* στο φουαγιέ θέλουμε κοινό φωτεινό, χωρίς blackout εφέ */
   setLights(true);
 
   foyerEl.style.display='block';
@@ -1598,9 +1600,12 @@ function resetShow(){
   lastSampleObsTime = -Infinity;
   measureRowIdx      = 0;
   setMode('run');
-  lightsOn       = true;  // default: φώτα ανοικτά
-  showStarted    = false; // παράσταση όχι σε εξέλιξη
-  foyerUnlocked  = true;  // πριν ξεκινήσει, το φουαγιέ είναι ελεύθερο
+
+  lightsOn      = true;   // default: κοινό φωτεινό
+  setLights(true);
+
+  showStarted   = false;
+  foyerUnlocked = true;
 
   startBtn.style.display       ='block';
   countdownOverlay.style.display='none';
@@ -1669,6 +1674,8 @@ btnEndShow.addEventListener('click', ()=>{
 
 function beginObservation(){
   stage.classList.add('open');
+  setLights(false);   // αυλαία ανοίγει → κοινό σκοτεινό
+
   if(!obsStarted){
     obsStarted = true;
     obsStartPlaybackOffset = playbackTime;
@@ -1751,10 +1758,6 @@ function animate(now){
   const ax = anchorX();
   const cx = centerX();
   const stageH = stage.clientHeight;
-
-  /* Φωτισμός σκηνής: βάση lightsOn */
-  spotlight.style.opacity = lightsOn ? '1' : '0';
-  stage.style.filter = lightsOn ? 'none' : 'brightness(0.35)';
 
   const hookX = cx + A_px*Math.sin(omega*playbackTime);
 
@@ -1919,9 +1922,6 @@ window.addEventListener('load', ()=>{
   if(btnLangEN){
     btnLangEN.addEventListener('click', ()=>setLanguage('en'));
   }
-
-  /* transition για το γενικό dim/bright της σκηνής */
-  stage.style.transition = 'filter 0.7s ease-in-out';
 
   updateRuler();
   measureSpringNaturalSize();
