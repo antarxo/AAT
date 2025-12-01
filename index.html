@@ -45,11 +45,17 @@
       transform: translateY(-130px);
     }
 
-    /* Φώτα κοινού (koino.png) */
-    .audience-main {
+    /* Φώτα κοινού + ομιλητές + κουρτίνα πίσω */
+    .audience-main,
+    #audienceExtra,
+    #viewersStrip,
+    #actBubble,
+    #foyerBubble,
+    #bubble0,
+    .curtain-upper {
       transition: filter 0.8s ease;
     }
-    .audience-main.dimmed {
+    .dimmed {
       filter: brightness(0.25);
     }
 
@@ -60,6 +66,17 @@
     }
     .viewers .viewer-avatar.visible {
       opacity: 1;
+    }
+
+    /* Break πλαίσια: να μην σεντονιάζουν όλη τη σκηνή */
+    .actbreak,
+    .foyerbreak {
+      background: transparent !important;
+      pointer-events: none;
+    }
+    .actbreak .box,
+    .foyerbreak .box {
+      pointer-events: auto;
     }
   </style>
 </head>
@@ -315,13 +332,25 @@ function measureSpringNaturalSize(){
   springEl.style.transform = prevTransform;
 }
 
-/* Φώτα κοινού */
+/* Φώτα κοινού + ομιλητών + κουρτίνας */
 function setAudienceLights(on){
-  if(!audienceMain) return;
+  const curtainUpper = document.querySelector('.curtain-upper');
   if(on){
-    audienceMain.classList.remove('dimmed');
+    if(audienceMain) audienceMain.classList.remove('dimmed');
+    if(audienceExtra) audienceExtra.classList.remove('dimmed');
+    if(viewersStrip) viewersStrip.classList.remove('dimmed');
+    if(actBubble) actBubble.classList.remove('dimmed');
+    if(foyerBubble) foyerBubble.classList.remove('dimmed');
+    if(bubbleEl) bubbleEl.classList.remove('dimmed');
+    if(curtainUpper) curtainUpper.classList.remove('dimmed');
   }else{
-    audienceMain.classList.add('dimmed');
+    if(audienceMain) audienceMain.classList.add('dimmed');
+    if(audienceExtra) audienceExtra.classList.add('dimmed');
+    if(viewersStrip) viewersStrip.classList.add('dimmed');
+    if(actBubble) actBubble.classList.add('dimmed');
+    if(foyerBubble) foyerBubble.classList.add('dimmed');
+    if(bubbleEl) bubbleEl.classList.add('dimmed');
+    if(curtainUpper) curtainUpper.classList.add('dimmed');
   }
 }
 
@@ -1065,25 +1094,18 @@ function viewerInfo(idx1based){
   return VIEWERS[i] || VIEWERS[0] || null;
 }
 
+/* Εδώ δένουμε ετικέτες/σκέψεις καθαρά με JSON (xFrac / yFrac),
+   ΧΩΡΙΣ να εξαρτώνται από τη θέση του avatar που κατεβαίνει στις πράξεις. */
 function viewerAnchor(idx1based){
   const vi = viewerInfo(idx1based);
-  const avatar = viewersStrip.querySelector('.viewer-avatar[data-idx="'+(idx1based-1)+'"]');
-  const sRect = stage.getBoundingClientRect();
-
-  if(avatar){
-    const aRect = avatar.getBoundingClientRect();
-    const x = aRect.left + aRect.width/2 - sRect.left;
-    const y = aRect.top  + aRect.height/2 - sRect.top;
-    return {x,y,info:vi};
-  }
-
   const leftFrac  = 0.18;
   const widthFrac = 0.64;
   const frac = vi && typeof vi.xFrac==='number'
     ? vi.xFrac
     : (idx1based/(VIEWERS.length+1 || 2));
   const x = (leftFrac + widthFrac*frac)*stage.clientWidth;
-  const y = stage.clientHeight*0.60;
+  const yFrac = vi && typeof vi.yFrac==='number' ? vi.yFrac : 0.60;
+  const y = stage.clientHeight * yFrac;
   return {x,y,info:vi};
 }
 
