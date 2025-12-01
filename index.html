@@ -45,15 +45,16 @@
       transform: translateY(-130px);
     }
 
-    /* Φώτα κοινού + ομιλητές + κουρτίνα πίσω (ΟΧΙ bubbles) */
+    /* Φώτα κοινού + κουρτίνες (ΟΧΙ bubbles / ομιλητές) */
     .audience-main,
     #audienceExtra,
-    #viewersStrip,
-    .curtain-upper {
+    .curtain-top,
+    .curtain-upper,
+    .curtain-side {
       transition: filter 0.8s ease;
     }
     .dimmed {
-      filter: brightness(0.8);
+      filter: brightness(0.5);
     }
 
     /* Avatars θεατών: κρυφοί by default, εμφανίζονται με fade μόνο όταν μιλάνε/σκέφτονται */
@@ -299,10 +300,8 @@ const pxPerMeter = 50;
 const omega = 2*Math.PI/T;
 const A_px  = A_m*pxPerMeter;
 
-/* καθιστός θεατής στις πράξεις 1–2 */
-const ACTS_AVATAR_OFFSET = -45;
-/* labels & σκέψεις λίγο χαμηλότερα από το anchor */
-const LABEL_OFFSET = 30;
+/* καθιστός θεατής στις πράξεις 1–2: 65px πιο κάτω */
+const ACTS_AVATAR_OFFSET = -65;
 
 let ghost       = null;
 let ghostSpring = null;
@@ -332,20 +331,18 @@ function measureSpringNaturalSize(){
   springEl.style.transform = prevTransform;
 }
 
-/* Φώτα κοινού + ομιλητών + κουρτίνας (ΟΧΙ bubbles) */
+/* Φώτα κοινού + κουρτίνες (ΟΧΙ bubbles / ομιλητές) */
 function setAudienceLights(on){
+  const curtainTop   = document.querySelector('.curtain-top');
   const curtainUpper = document.querySelector('.curtain-upper');
-  if(on){
-    if(audienceMain) audienceMain.classList.remove('dimmed');
-    if(audienceExtra) audienceExtra.classList.remove('dimmed');
-    if(viewersStrip) viewersStrip.classList.remove('dimmed');
-    if(curtainUpper) curtainUpper.classList.remove('dimmed');
-  }else{
-    if(audienceMain) audienceMain.classList.add('dimmed');
-    if(audienceExtra) audienceExtra.classList.add('dimmed');
-    if(viewersStrip) viewersStrip.classList.add('dimmed');
-    if(curtainUpper) curtainUpper.classList.add('dimmed');
-  }
+  const curtainSides = document.querySelectorAll('.curtain-side');
+  const method = on ? 'remove' : 'add';
+
+  if(audienceMain)  audienceMain.classList[method]('dimmed');
+  if(audienceExtra) audienceExtra.classList[method]('dimmed');
+  if(curtainTop)    curtainTop.classList[method]('dimmed');
+  if(curtainUpper)  curtainUpper.classList[method]('dimmed');
+  curtainSides.forEach(el => el.classList[method]('dimmed'));
 }
 
 /* ---------- UI κείμενα ανά γλώσσα ---------- */
@@ -1088,7 +1085,7 @@ function viewerInfo(idx1based){
   return VIEWERS[i] || VIEWERS[0] || null;
 }
 
-/* Ετικέτες/σκέψεις: καθαρά από JSON (xFrac, yFrac). Default yFrac λίγο χαμηλότερα. */
+/* Anchor για ετικέτες/σκέψεις: καθαρά από JSON (xFrac,yFrac) */
 function viewerAnchor(idx1based){
   const vi = viewerInfo(idx1based);
   const leftFrac  = 0.18;
@@ -1114,7 +1111,10 @@ function tint(hex, alpha){
 
 function hideAllViewerAvatars(){
   const items = viewersStrip.querySelectorAll('.viewer-avatar');
-  items.forEach(div => div.classList.remove('visible'));
+  items.forEach(div => {
+    div.classList.remove('visible');
+    div.style.filter = '';
+  });
 }
 function showViewerAvatar(idx1based){
   hideAllViewerAvatars();
@@ -1122,9 +1122,15 @@ function showViewerAvatar(idx1based){
   if(!el) return;
   const base = parseFloat(el.dataset.baseBottom || '0') || 0;
   let bottom = base;
+
   if(phase === 'act1' || phase === 'act2'){
     bottom = base + ACTS_AVATAR_OFFSET;
+    el.style.filter = 'brightness(0.8)';
+  } else {
+    bottom = base;
+    el.style.filter = '';
   }
+
   el.style.bottom = bottom + 'px';
   el.classList.add('visible');
 }
@@ -1143,7 +1149,7 @@ function showSpeakerChip(idx1based){
   const dy = (info && typeof info.chipDy === 'number') ? info.chipDy : 0;
 
   actBubble.style.left = (x + dx) + 'px';
-  actBubble.style.top  = (y - dy + LABEL_OFFSET) + 'px';
+  actBubble.style.top  = (y - dy) + 'px';
   actBubble.style.transform='translateX(-50%)';
   actBubble.style.backgroundColor = tint(info.color,0.9);
   actBubble.style.display='block';
@@ -1158,7 +1164,7 @@ function placeBubble(idx1based, xShift, yOffset){
   const dx = (info && typeof info.bubbleDx==='number'? info.bubbleDx:0) + (xShift||0);
   const dy = (info && typeof info.bubbleDy==='number'? info.bubbleDy:0) + (yOffset||0);
   const left = x + dx;
-  const top  = y - dy + LABEL_OFFSET;
+  const top  = y - dy;
   bubbleEl.style.left = left+'px';
   bubbleEl.style.top  = top +'px';
 }
@@ -1991,6 +1997,7 @@ function initViewersAvatars(){
     // εμφανίζονται ΜΟΝΟ όταν πάρουν .visible, αλλιώς κρυφοί
     div.style.display = 'block';
     div.classList.remove('visible');
+    div.style.filter = '';
   });
 }
 
