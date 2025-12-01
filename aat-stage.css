@@ -171,6 +171,8 @@ body{
   box-shadow:none;
   background:transparent center bottom/contain no-repeat; /* PNG διαφανή */
   transform:translateX(-50%); /* το left ορίζει το κέντρο */
+  opacity:0;             /* στην αρχή ΚΑΝΕΙΣ ορατός */
+  transition:opacity .25s ease, transform .25s ease;
 }
 
 /* Ταμπέλα τίτλου */
@@ -652,7 +654,7 @@ body{
   color:#fff;
   z-index:410;
   display:none;
-  align-items:center;
+  alignitems:center;
   justify-content:center;
   text-align:center;
   pointer-events:none;         /* να περνάνε κλικ, εκτός από το box */
@@ -731,11 +733,4 @@ body{
   padding:6px 10px;
   border-bottom:1px dashed rgba(255,255,255,.18);
   white-space:pre-wrap;
-}
-.cell.formula{
-  color:#fffde7;
-  border-left-width:6px!important;
-  font-weight:600;
-  box-shadow:0 0 0 1px rgba(0,0,0,0.35) inset;
-  background:rgba(8,8,18,0.95)!important;
 }
