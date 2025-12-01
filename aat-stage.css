@@ -539,7 +539,7 @@ body{
   padding:6px 8px;
   display:flex;
   gap:8px;
-  z-index:350; /* Πιο κάτω από actbreak/foyerbreak ώστε να μην τρυπάνε τη διαφάνεια */
+  z-index:2000;
 }
 .controls button{
   background:none;
@@ -561,7 +561,7 @@ body{
   position:absolute;
   bottom:12px;
   right:12px;
-  z-index:350; /* επίσης κάτω από τα overlays πράξεων/φουαγιέ */
+  z-index:2000;
   background:#333;
   border:1px solid rgba(255,255,255,.25);
   color:#fff;
@@ -574,7 +574,7 @@ body{
   position:absolute;
   bottom:12px;
   left:12px;
-  z-index:350; /* ίδιο ύψος με btn-end/controls */
+  z-index:2000;
   background:#333;
   border:1px solid rgba(255,255,255,.25);
   color:#fff;
@@ -647,7 +647,7 @@ body{
   width:64%;
   top:26%;
   height:44%;
-  background:rgba(0,0,0,.55);
+  background:transparent; /* χωρίς εκτεταμένη διαφάνεια πάνω στην κουρτίνα */
   color:#fff;
   z-index:410;
   display:none;
