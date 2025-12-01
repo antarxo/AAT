@@ -11,9 +11,78 @@
 
   <!-- Σκηνή CSS -->
   <link rel="stylesheet" href="aat-stage.css">
+
+  <!-- Μικρό inline CSS μόνο για τα κουμπιά γλώσσας + lawCharts + φώτα κοινού + avatars -->
+  <style>
+    .lang-toggle {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 2000;
+      display: flex;
+      gap: 6px;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    .lang-toggle button {
+      padding: 2px 8px;
+      font-size: 11px;
+      border-radius: 4px;
+      border: none;
+      cursor: pointer;
+      opacity: 0.75;
+      background: rgba(0,0,0,0.4);
+      color: #fff;
+    }
+    .lang-toggle button.active {
+      opacity: 1;
+      font-weight: 600;
+      box-shadow: 0 0 0 1px rgba(255,255,255,.7);
+      background: rgba(0,0,0,0.75);
+    }
+
+    /* Σήκωμα στήλης mini-γραφημάτων */
+    .law-charts {
+      transform: translateY(-130px);
+    }
+
+    /* Φώτα κοινού + κουρτίνες */
+    .audience-main,
+    .audience-extra,
+    .curtain-top,
+    .curtain-upper,
+    .curtain-side {
+      transition: filter 0.8s ease;
+    }
+    .audience-main.dimmed,
+    .audience-extra.dimmed,
+    .curtain-top.dimmed,
+    .curtain-upper.dimmed,
+    .curtain-side.dimmed {
+      filter: brightness(0.5);
+    }
+
+    /* Avatars θεατών: κρυφοί by default, εμφανίζονται με fade μόνο όταν μιλάνε/σκέφτονται */
+    .viewers .viewer-avatar {
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+    .viewers .viewer-avatar.visible {
+      opacity: 1;
+    }
+    /* Φωτεινοί ομιλητές όταν τα φώτα είναι σβηστά */
+    .viewers .viewer-avatar.lit {
+      filter: brightness(0.8);
+    }
+  </style>
 </head>
 <body>
 <div class="stage" id="stage">
+  <!-- Κουμπιά επιλογής γλώσσας -->
+  <div class="lang-toggle">
+    <button id="btnLangGR" class="lang-btn active">GR</button>
+    <button id="btnLangEN" class="lang-btn">EN</button>
+  </div>
+
   <div class="curtain-top"></div>
   <div class="curtain-upper"></div>
   <div class="curtain-side left"></div>
@@ -22,20 +91,20 @@
   <div class="spotlight" id="spotlight"></div>
 
   <div class="signboard">
-    <h1>Πράξη 1η: Η Κινηματική στα ... Αλγεβρικά</h1>
-    <div class="sb-lineA">Πρωταγωνιστεί ο ταλαντωτής (m₁, D₁) και οι θεαποιοί(*)</div>
-    <div class="sb-lineB">στον μονόλογο <span class="hl">«ατέλειωτο πήγαινε έλα»</span>... επί σκηνής!</div>
-    <div class="sb-lineC">Παραγωγή-Σκηνοθεσία: Εμηχ. Ενεργειούλης</div>
-    <div class="sb-lineD">(*) ... εσείς</div>
+    <h1 id="signTitle">Πράξη 1η: Η Κινηματική στα ... Αλγεβρικά</h1>
+    <div class="sb-lineA" id="signLineA">Πρωταγωνιστεί ο ταλαντωτής (m₁, D₁) και οι θεαποιοί(*)</div>
+    <div class="sb-lineB" id="signLineB">στον μονόλογο <span class="hl">«ατέλειωτο πήγαινε έλα»</span>... επί σκηνής!</div>
+    <div class="sb-lineC" id="signLineC">Παραγωγή-Σκηνοθεσία: Εμηχ. Ενεργειούλης</div>
+    <div class="sb-lineD" id="signLineD">(*) ... εσείς</div>
   </div>
 
   <div class="clock" id="clock">t = 0.00 s<span class="hint" id="slowHint"></span></div>
 
   <div class="measure-box" id="measureBox">
-    <div class="mb-title">Μετρήσεις</div>
+    <div class="mb-title" id="measureTitle">Μετρήσεις</div>
     <table>
       <thead>
-        <tr><th>α/α</th><th>t (s)</th><th>x (m)</th></tr>
+        <tr><th id="measureColIdx">α/α</th><th>t (s)</th><th>x (m)</th></tr>
       </thead>
       <tbody id="measureTBody"></tbody>
     </table>
@@ -101,8 +170,8 @@
 
   <div class="countdown-overlay" id="countdownOverlay">
     <div class="countdown-box">
-      <div class="countdown-main">Η παράσταση αρχίζει.</div>
-      <div class="countdown-sub">ώρα να χρησιμοποιήσετε χαρτί και μολύβι!</div>
+      <div class="countdown-main" id="countdownMain">Η παράσταση αρχίζει.</div>
+      <div class="countdown-sub" id="countdownSub">ώρα να χρησιμοποιήσετε χαρτί και μολύβι!</div>
       <div class="countdown-timer" id="countdownTimer">5</div>
     </div>
   </div>
@@ -134,7 +203,7 @@
 </div>
 
 <script>
-/* ---------- ΔΕΔΟΜΕΝΑ ΑΠΟ dialogs-gr.json ---------- */
+/* ---------- ΔΕΔΟΜΕΝΑ ΑΠΟ dialogs-*.json ---------- */
 
 let VIEWERS = [];
 let ACT1 = [];
@@ -142,6 +211,14 @@ let ACT2 = [];
 let FOYER = [];
 
 let foyerTBody = null;
+
+/* Τρέχουσα γλώσσα: 'gr' ή 'en' */
+let currentLang = 'gr';
+let btnLangGR = null;
+let btnLangEN = null;
+
+/* Κατάσταση παράστασης για locks κουμπιών */
+let phase = 'idle'; // idle, countdown, act1, act2, between2andFoyer, foyer
 
 /* ---------- Φυσική / σκηνή ---------- */
 
@@ -167,6 +244,7 @@ const lawsBody     = document.getElementById('lawsBody');
 const lawCharts    = document.getElementById('lawCharts');
 const xtChartEl    = document.getElementById('xtChart');
 const audienceExtra= document.getElementById('audienceExtra');
+const audienceMain = document.querySelector('.audience-main');
 
 const bubbleEl     = document.getElementById('bubble0');
 const bubbleTextEl = bubbleEl.querySelector('.text');
@@ -210,6 +288,7 @@ let uXT = null;  // canvas για x–t
 let vCan = null;
 let aCan = null;
 let axCan = null;
+let xsCan = null; // x–sin(ωt) γράφημα
 
 const m   = 70;
 const T   = 6.0;
@@ -217,6 +296,9 @@ const A_m = 3.0;
 const pxPerMeter = 50;
 const omega = 2*Math.PI/T;
 const A_px  = A_m*pxPerMeter;
+
+/* καθιστός θεατής στις πράξεις 1–2: 60px πιο κάτω από τη θέση JSON (ρυθμιζόμενο από JSON) */
+let ACTS_AVATAR_OFFSET = -60;
 
 let ghost       = null;
 let ghostSpring = null;
@@ -228,6 +310,9 @@ let springNaturalHeight = null;
 
 /* Πάτωμα ηθοποιού σε px (κοινό με ghost) */
 let actorFloorBottomPx = null;
+
+/* Κατάσταση φώτων κοινού/σκηνής */
+let audienceLightsOn = true;
 
 function measureSpringNaturalSize(){
   if(!springEl) return;
@@ -243,6 +328,117 @@ function measureSpringNaturalSize(){
 
   springEl.style.display   = prevDisplay;
   springEl.style.transform = prevTransform;
+}
+
+/* Φώτα κοινού + κουρτίνες */
+function setAudienceLights(on){
+  audienceLightsOn = !!on;
+
+  const main = audienceMain;
+  const extra = audienceExtra;
+  const ct = document.querySelector('.curtain-top');
+  const cu = document.querySelector('.curtain-upper');
+  const csL = document.querySelector('.curtain-side.left');
+  const csR = document.querySelector('.curtain-side.right');
+
+  const elems = [main, extra, ct, cu, csL, csR].filter(Boolean);
+  elems.forEach(el => {
+    el.classList.toggle('dimmed', !on);
+  });
+
+  // Όταν ανάβουν τα φώτα, καθαρίζουμε το "lit" από όλους
+  if(on && viewersStrip){
+    viewersStrip.querySelectorAll('.viewer-avatar').forEach(div=>{
+      div.classList.remove('lit');
+    });
+  }
+}
+
+/* ---------- UI κείμενα ανά γλώσσα ---------- */
+
+function applyUIText(){
+  const signTitle = document.getElementById('signTitle');
+  const signLineA = document.getElementById('signLineA');
+  const signLineB = document.getElementById('signLineB');
+  const signLineC = document.getElementById('signLineC');
+  const signLineD = document.getElementById('signLineD');
+  const lawsTitle = document.getElementById('lawsTitle');
+  const measureTitle = document.getElementById('measureTitle');
+  const measureColIdx = document.getElementById('measureColIdx');
+  const countdownMain = document.getElementById('countdownMain');
+  const countdownSub = document.getElementById('countdownSub');
+  const actBreakTitle = document.getElementById('actBreakTitle');
+  const actBreakMsg = document.getElementById('actBreakMsg');
+  const foyerBreakTitle = document.getElementById('foyerBreakTitle');
+  const foyerBreakMsg = document.getElementById('foyerBreakMsg');
+
+  if(currentLang === 'en'){
+    if(signTitle) signTitle.textContent = 'Act I: Kinematics in Algebraic Form';
+    if(signLineA) signLineA.textContent = 'Starring the oscillator (m₁, D₁) and the spectators(*)';
+    if(signLineB) signLineB.innerHTML   = 'in the monologue <span class="hl">“endless back and forth”</span>... on stage!';
+    if(signLineC) signLineC.textContent = 'Production & Direction: Eng. Energioulis';
+    if(signLineD) signLineD.textContent = '(*) ... you';
+
+    if(lawsTitle) lawsTitle.textContent = 'S.H.M. Laws';
+    if(measureTitle) measureTitle.textContent = 'Measurements';
+    if(measureColIdx) measureColIdx.textContent = 'No';
+
+    if(countdownMain) countdownMain.textContent = 'The performance is about to begin.';
+    if(countdownSub)  countdownSub.textContent  = 'time to use pencil and paper!';
+
+    if(actBreakTitle) actBreakTitle.textContent = 'End of Act I';
+    if(actBreakMsg)   actBreakMsg.textContent   = '(m₁,D₁) continues. Ready for Act II?';
+    if(btnAct2)       btnAct2.textContent       = 'Start Act II';
+
+    if(foyerBreakTitle) foyerBreakTitle.textContent = 'End of Act II';
+    if(foyerBreakMsg)   foyerBreakMsg.textContent   = 'Do you want to move to the foyer for discussion?';
+    if(btnFoyerGo)      btnFoyerGo.textContent      = 'Go to Foyer';
+
+    if(btnEndShow) btnEndShow.textContent = 'End of Performance';
+    if(btnFoyer)   btnFoyer.textContent   = 'Foyer';
+    if(startBtn)   startBtn.textContent   = 'Start';
+
+    btnPause.title = 'pause';
+    btnPlay.title  = 'play';
+    btnReset.title = 'reset';
+    btnFoyer.title = 'Foyer';
+
+  } else {
+    if(signTitle) signTitle.textContent = 'Πράξη 1η: Η Κινηματική στα ... Αλγεβρικά';
+    if(signLineA) signLineA.textContent = 'Πρωταγωνιστεί ο ταλαντωτής (m₁, D₁) και οι θεαποιοί(*)';
+    if(signLineB) signLineB.innerHTML   = 'στον μονόλογο <span class="hl">«ατέλειωτο πήγαινε έλα»</span>... επί σκηνής!';
+    if(signLineC) signLineC.textContent = 'Παραγωγή-Σκηνοθεσία: Εμηχ. Ενεργειούλης';
+    if(signLineD) signLineD.textContent = '(*) ... εσείς';
+
+    if(lawsTitle) lawsTitle.textContent = 'Νόμοι Α.Α.Τ.';
+    if(measureTitle) measureTitle.textContent = 'Μετρήσεις';
+    if(measureColIdx) measureColIdx.textContent = 'α/α';
+
+    if(countdownMain) countdownMain.textContent = 'Η παράσταση αρχίζει.';
+    if(countdownSub)  countdownSub.textContent  = 'ώρα να χρησιμοποιήσετε χαρτί και μολύβι!';
+
+    if(actBreakTitle) actBreakTitle.textContent = 'Τέλος Πράξης 1';
+    if(actBreakMsg)   actBreakMsg.textContent   = 'Ο (m₁,D₁) συνεχίζει. Είστε έτοιμοι για τη Δεύτερη Πράξη;';
+    if(btnAct2)       btnAct2.textContent       = 'Έναρξη Πράξης 2';
+
+    if(foyerBreakTitle) foyerBreakTitle.textContent = 'Τέλος Πράξης 2';
+    if(foyerBreakMsg)   foyerBreakMsg.textContent   = 'Θέλετε να περάσετε στο φουαγιέ για τη συζήτηση;';
+    if(btnFoyerGo)      btnFoyerGo.textContent      = 'Μετάβαση στο Φουαγιέ';
+
+    if(btnEndShow) btnEndShow.textContent = 'Τέλος Παράστασης';
+    if(btnFoyer)   btnFoyer.textContent   = 'Φουαγιέ';
+    if(startBtn)   startBtn.textContent   = 'Έναρξη';
+
+    btnPause.title = 'παύση';
+    btnPlay.title  = 'κανονικά';
+    btnReset.title = 'reset';
+    btnFoyer.title = 'Φουαγιέ';
+  }
+
+  if(btnLangGR && btnLangEN){
+    btnLangGR.classList.toggle('active', currentLang === 'gr');
+    btnLangEN.classList.toggle('active', currentLang === 'en');
+  }
 }
 
 /* ---------- Χρήσιμα ---------- */
@@ -348,7 +544,6 @@ function drawXTChart(){
     return mid - (x / xMaxAbs) * amp;
   }
 
-  // πλέγμα: t = 0, T/2, T και x = -A, 0, +A
   ctx.save();
   ctx.strokeStyle = 'rgba(255,255,255,0.18)';
   ctx.lineWidth = 1;
@@ -374,7 +569,6 @@ function drawXTChart(){
 
   ctx.restore();
 
-  // άξονες και πλαίσιο
   ctx.strokeStyle = 'rgba(255,255,255,0.6)';
   ctx.lineWidth = 1;
   ctx.setLineDash([]);
@@ -395,7 +589,6 @@ function drawXTChart(){
   ctx.rect(x0, yTop, x1-x0, yBot-yTop);
   ctx.stroke();
 
-  // καμπύλη x(t)
   ctx.strokeStyle = '#ffd27a';
   ctx.lineWidth = 2;
   ctx.beginPath();
@@ -408,7 +601,6 @@ function drawXTChart(){
   }
   ctx.stroke();
 
-  // labels & ticks
   ctx.fillStyle = '#fff';
   ctx.font = '11px system-ui';
   ctx.fillText('x(t)', x0+4, yTop+10);
@@ -427,7 +619,6 @@ function drawXTChart(){
   ctx.fillText('0',  x0+4, xToY(0)+4);
   ctx.fillText('+A', x0+4, xToY(A_m)+4);
 
-  // x0 annotation
   const x0val = A_m*Math.sin(omega*(0+obsStartPlaybackOffset));
   const yx0 = xToY(x0val);
   ctx.strokeStyle = 'rgba(255,255,255,0.7)';
@@ -440,7 +631,8 @@ function drawXTChart(){
   ctx.setLineDash([]);
   ctx.fillStyle = '#ffd27a';
   ctx.font = '10px system-ui';
-  ctx.fillText('x₀ ≈ '+x0val.toFixed(2)+' m', x0+4, yx0-4);
+  const labelX0 = (currentLang === 'en' ? 'x₀ ≈ ' : 'x₀ ≈ ') + x0val.toFixed(2) + ' m';
+  ctx.fillText(labelX0, x0+4, yx0-4);
 }
 
 /* ---------- Νόμοι / διαγράμματα ---------- */
@@ -449,7 +641,10 @@ let firstLawShown = false;
 
 function localizeTrig(txt){
   if(!txt) return txt;
-  return txt.replaceAll('sin','ημ').replaceAll('cos','συν');
+  if(currentLang === 'gr'){
+    return txt.replaceAll('sin','ημ').replaceAll('cos','συν');
+  }
+  return txt;
 }
 
 function addLaw(txt){
@@ -472,7 +667,7 @@ function sizeLawCanvas(c){
   c.style.height=h+'px';
 }
 
-/* mini γραφήματα v(t), a(t), a–x με πλέγμα & τιμές */
+/* v(t), a(t), a–x, x–sin(ωt) */
 
 function drawVelocityChart(){
   if(!vCan) return;
@@ -490,13 +685,11 @@ function drawVelocityChart(){
   const yAmp = (h/2 - margin);
   const scaleV = yAmp / (1.1*vmax);
 
-  // πλέγμα
   ctx.save();
   ctx.strokeStyle = 'rgba(255,255,255,0.18)';
   ctx.lineWidth = 1;
   ctx.setLineDash([3,3]);
 
-  // κάθετες (t)
   const tTicks = [0, T/2, T];
   tTicks.forEach(t=>{
     const xf = x0 + (x1-x0)*(t/T);
@@ -506,7 +699,6 @@ function drawVelocityChart(){
     ctx.stroke();
   });
 
-  // οριζόντιες (v)
   const vTicks = [-vmax, -vmax/2, 0, vmax/2, vmax];
   vTicks.forEach(v=>{
     const yf = y0 - v*scaleV;
@@ -518,7 +710,6 @@ function drawVelocityChart(){
 
   ctx.restore();
 
-  // άξονες
   ctx.strokeStyle = 'rgba(255,255,255,0.6)';
   ctx.lineWidth = 1;
   ctx.setLineDash([]);
@@ -529,12 +720,10 @@ function drawVelocityChart(){
   ctx.lineTo(x0,h-margin);
   ctx.stroke();
 
-  // περίγραμμα
   ctx.beginPath();
   ctx.rect(x0,margin,x1-x0,h-2*margin);
   ctx.stroke();
 
-  // καμπύλη v(t)
   const N = 200;
   ctx.strokeStyle = '#ffd27a';
   ctx.lineWidth = 2;
@@ -548,24 +737,25 @@ function drawVelocityChart(){
   }
   ctx.stroke();
 
-  // labels
   ctx.fillStyle = '#fff';
   ctx.font = '11px system-ui';
-  ctx.fillText('υ(t)', x0+4, margin+10);
+  const labelVt = (currentLang === 'en') ? 'v(t)' : 'υ(t)';
+  ctx.fillText(labelVt, x0+4, margin+10);
 
   ctx.font = '10px system-ui';
-  ctx.fillText('0', x0-10, y0+4);
+  const vAxisLabel = (currentLang === 'en') ? 'v (m/s)' : 'υ (m/s)';
+  ctx.fillText(vAxisLabel, x0+4, margin-4);
   ctx.fillText('t', x1-6, y0+12);
-  ctx.fillText('υ (m/s)', x0+4, margin-4);
+  ctx.fillText('0', x0-10, y0+4);
 
-  // χρόνοι στον άξονα t
   ctx.textAlign = 'center';
   ctx.fillText('0', x0, h-margin+10);
   ctx.fillText((T/2).toFixed(1), (x0+x1)/2, h-margin+10);
   ctx.fillText(T.toFixed(1), x1, h-margin+10);
   ctx.textAlign = 'left';
 
-  ctx.fillText('υmax ≈ '+vmax.toFixed(2), x0+4, h-margin+4);
+  const vmaxLabel = (currentLang === 'en' ? 'v_max ≈ ' : 'υ_max ≈ ') + vmax.toFixed(2);
+  ctx.fillText(vmaxLabel, x0+4, h-margin+4);
 }
 
 function drawAccelerationChart(){
@@ -584,7 +774,6 @@ function drawAccelerationChart(){
   const yAmp = (h/2 - margin);
   const scaleA = yAmp / (1.1*amax);
 
-  // πλέγμα
   ctx.save();
   ctx.strokeStyle = 'rgba(255,255,255,0.18)';
   ctx.lineWidth = 1;
@@ -610,7 +799,6 @@ function drawAccelerationChart(){
 
   ctx.restore();
 
-  // άξονες
   ctx.strokeStyle = 'rgba(255,255,255,0.6)';
   ctx.lineWidth = 1;
   ctx.setLineDash([]);
@@ -621,12 +809,10 @@ function drawAccelerationChart(){
   ctx.lineTo(x0,h-margin);
   ctx.stroke();
 
-  // περίγραμμα
   ctx.beginPath();
   ctx.rect(x0,margin,x1-x0,h-2*margin);
   ctx.stroke();
 
-  // καμπύλη a(t)
   const N = 200;
   ctx.strokeStyle = '#ffd27a';
   ctx.lineWidth = 2;
@@ -640,15 +826,14 @@ function drawAccelerationChart(){
   }
   ctx.stroke();
 
-  // labels
   ctx.fillStyle = '#fff';
   ctx.font = '11px system-ui';
   ctx.fillText('a(t)', x0+4, margin+10);
 
   ctx.font = '10px system-ui';
-  ctx.fillText('0', x0-10, y0+4);
-  ctx.fillText('t', x1-6, y0+12);
   ctx.fillText('a (m/s²)', x0+4, margin-4);
+  ctx.fillText('t', x1-6, y0+12);
+  ctx.fillText('0', x0-10, y0+4);
 
   ctx.textAlign = 'center';
   ctx.fillText('0', x0, h-margin+10);
@@ -656,10 +841,12 @@ function drawAccelerationChart(){
   ctx.fillText(T.toFixed(1), x1, h-margin+10);
   ctx.textAlign = 'left';
 
-  ctx.fillText('amax ≈ '+amax.toFixed(2), x0+4, h-margin+4);
+  const amaxLabel = (currentLang === 'en' ? 'a_max ≈ ' : 'a_max ≈ ') + amax.toFixed(2);
+  ctx.fillText(amaxLabel, x0+4, h-margin+4);
 }
 
-/* Τρίτο: a–x γράφημα (a = -ω² x) με πλέγμα & τιμές */
+/* a–x */
+
 function drawAxChart(){
   if(!axCan) return;
   const ctx = axCan.getContext('2d');
@@ -678,9 +865,8 @@ function drawAxChart(){
 
   const amax = omega * omega * A_m;
 
-  // κλίμακες
-  const pxPerX = (x1 - x0) / (2 * A_m);      // από -A έως +A
-  const pxPerA = (y1 - y0) / (2 * amax);     // από -amax έως +amax
+  const pxPerX = (x1 - x0) / (2 * A_m);
+  const pxPerA = (y1 - y0) / (2 * amax);
 
   function toCanvas(x,a){
     const cx = xMid + x * pxPerX;
@@ -688,7 +874,6 @@ function drawAxChart(){
     return {cx,cy};
   }
 
-  // πλέγμα για x και a
   ctx.save();
   ctx.strokeStyle = 'rgba(255,255,255,0.18)';
   ctx.lineWidth = 1;
@@ -714,7 +899,6 @@ function drawAxChart(){
 
   ctx.restore();
 
-  // άξονες
   ctx.strokeStyle = 'rgba(255,255,255,0.6)';
   ctx.lineWidth = 1;
   ctx.setLineDash([]);
@@ -728,7 +912,6 @@ function drawAxChart(){
   ctx.lineTo(x1, yMid);
   ctx.stroke();
 
-  // γραμμή a = -ω² x
   ctx.strokeStyle = '#ffd27a';
   ctx.lineWidth = 2;
   ctx.beginPath();
@@ -748,7 +931,114 @@ function drawAxChart(){
 
   ctx.fillText('a = -ω²·x', x0+4, y1-4);
   ctx.fillText('A = '+A_m.toFixed(2)+' m', x0+4, y1-18);
-  ctx.fillText('amax ≈ '+amax.toFixed(2), x0+4, y1-32);
+  const amaxLabel = (currentLang === 'en' ? 'a_max ≈ ' : 'a_max ≈ ') + amax.toFixed(2);
+  ctx.fillText(amaxLabel, x0+4, y1-32);
+}
+
+/* x–sin(ωt) */
+
+function drawXSinChart(){
+  if(!xsCan) return;
+  const ctx = xsCan.getContext('2d');
+  const w = xsCan.width;
+  const h = xsCan.height;
+  ctx.clearRect(0,0,w,h);
+
+  const margin = 22;
+  const x0 = margin;
+  const x1 = w - margin;
+  const y0 = margin;
+  const y1 = h - margin;
+
+  const Smin = -1.1;
+  const Smax = +1.1;
+  const xmin = -1.1 * A_m;
+  const xmax = +1.1 * A_m;
+
+  function SToX(S){
+    return x0 + (S - Smin)/(Smax - Smin) * (x1 - x0);
+  }
+  function xToY(x){
+    return y1 - (x - xmin)/(xmax - xmin) * (y1 - y0);
+  }
+
+  ctx.save();
+  ctx.strokeStyle = 'rgba(255,255,255,0.18)';
+  ctx.lineWidth = 1;
+  ctx.setLineDash([3,3]);
+
+  const STicks = [-1, -0.5, 0, 0.5, 1];
+  STicks.forEach(S=>{
+    const xx = SToX(S);
+    ctx.beginPath();
+    ctx.moveTo(xx, y0);
+    ctx.lineTo(xx, y1);
+    ctx.stroke();
+  });
+
+  const xTicks = [-A_m, -A_m/2, 0, A_m/2, A_m];
+  xTicks.forEach(x=>{
+    const yy = xToY(x);
+    ctx.beginPath();
+    ctx.moveTo(x0, yy);
+    ctx.lineTo(x1, yy);
+    ctx.stroke();
+  });
+
+  ctx.restore();
+
+  ctx.strokeStyle = 'rgba(255,255,255,0.6)';
+  ctx.lineWidth = 1;
+  ctx.setLineDash([]);
+
+  const xAxisS0 = SToX(0);
+  const yx0 = xToY(0);
+
+  ctx.beginPath();
+  ctx.moveTo(xAxisS0, y0);
+  ctx.lineTo(xAxisS0, y1);
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(x0, yx0);
+  ctx.lineTo(x1, yx0);
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.rect(x0, y0, x1-x0, y1-y0);
+  ctx.stroke();
+
+  ctx.strokeStyle = '#ffd27a';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  const S1 = -1;
+  const S2 = +1;
+  const x1L = A_m * S1;
+  const x2L = A_m * S2;
+  ctx.moveTo(SToX(S1), xToY(x1L));
+  ctx.lineTo(SToX(S2), xToY(x2L));
+  ctx.stroke();
+
+  ctx.fillStyle = '#fff';
+  ctx.font = '11px system-ui';
+  const title = (currentLang === 'en') ? 'x–sin(ωt)' : 'x–ημ(ωt)';
+  ctx.fillText(title, x0+4, y0+10);
+
+  ctx.font = '10px system-ui';
+  const xLabel = 'x (m)';
+  const sLabel = (currentLang === 'en') ? 'sin(ωt)' : 'ημ(ωt)';
+  ctx.fillText(xLabel, x0+4, y0-4);
+  ctx.fillText(sLabel, x1-40, y1+12);
+
+  ctx.textAlign = 'center';
+  ctx.fillText('-1', SToX(-1), y1+10);
+  ctx.fillText('0',  SToX(0),  y1+10);
+  ctx.fillText('+1', SToX(+1), y1+10);
+  ctx.textAlign = 'left';
+
+  ctx.fillText('-A', x0+4, xToY(-A_m)+4);
+  ctx.fillText('0',  x0+4, xToY(0)+4);
+  ctx.fillText('+A', x0+4, xToY(+A_m)+4);
 }
 
 function ensureVelocityChart(){
@@ -775,6 +1065,14 @@ function ensureAxChart(){
   sizeLawCanvas(axCan);
   drawAxChart();
 }
+function ensureXSinChart(){
+  if(!xsCan){
+    xsCan = document.createElement('canvas');
+    lawCharts.appendChild(xsCan);
+  }
+  sizeLawCanvas(xsCan);
+  drawXSinChart();
+}
 
 /* ---------- Παράμετροι ταλάντωσης ---------- */
 
@@ -796,25 +1094,16 @@ function viewerInfo(idx1based){
   return VIEWERS[i] || VIEWERS[0] || null;
 }
 
+/* Άγκυρα για ετικέτες/σκέψεις: ΜΟΝΟ από JSON (xFrac) – ίδια σε Acts & Foyer */
 function viewerAnchor(idx1based){
   const vi = viewerInfo(idx1based);
-  const avatar = viewersStrip.querySelector('.viewer-avatar[data-idx="'+(idx1based-1)+'"]');
-  const sRect = stage.getBoundingClientRect();
-
-  if(avatar){
-    const aRect = avatar.getBoundingClientRect();
-    const x = aRect.left + aRect.width/2 - sRect.left;
-    const y = aRect.top  + aRect.height/2 - sRect.top;
-    return {x,y,info:vi};
-  }
-
   const leftFrac  = 0.18;
   const widthFrac = 0.64;
   const frac = vi && typeof vi.xFrac==='number'
     ? vi.xFrac
     : (idx1based/(VIEWERS.length+1 || 2));
   const x = (leftFrac + widthFrac*frac)*stage.clientWidth;
-  const y = stage.clientHeight*0.60;
+  const y = stage.clientHeight*0.60; // σταθερή "γραμμή" θεατών για labels/σκέψεις
   return {x,y,info:vi};
 }
 
@@ -826,10 +1115,40 @@ function tint(hex, alpha){
   return 'rgba('+r+','+g+','+b+','+alpha+')';
 }
 
+/* ΝΕΟ: helper για avatars ώστε να φαίνεται μόνο ο τρέχων θεατής με fade */
+
+function hideAllViewerAvatars(){
+  const items = viewersStrip.querySelectorAll('.viewer-avatar');
+  items.forEach(div => {
+    div.classList.remove('visible');
+    div.classList.remove('lit');
+  });
+}
+function showViewerAvatar(idx1based){
+  hideAllViewerAvatars();
+  const el = viewersStrip.querySelector('.viewer-avatar[data-idx="'+(idx1based-1)+'"]');
+  if(!el) return;
+  const base = parseFloat(el.dataset.baseBottom || '0') || 0;
+  let bottom = base;
+  if(phase === 'act1' || phase === 'act2'){
+    bottom = base + ACTS_AVATAR_OFFSET; // 60px πιο κάτω από JSON μόνο στις πράξεις
+  }
+  el.style.bottom = bottom + 'px';
+  el.classList.add('visible');
+  if(!audienceLightsOn){
+    el.classList.add('lit');
+  }
+}
+
 function showSpeakerChip(idx1based){
   const {x,y,info} = viewerAnchor(idx1based);
   if(!info) return;
-  actBubble.textContent = info.name_gr || ('ΘΕΑΤΗΣ '+idx1based);
+
+  const nameGR = info.name_gr || ('Θεατής '+idx1based);
+  const nameEN = info.name_en || ('Viewer '+idx1based);
+  const label = currentLang === 'en' ? nameEN : nameGR;
+
+  actBubble.textContent = label;
 
   const dx = (info && typeof info.chipDx === 'number') ? info.chipDx : 0;
   const dy = (info && typeof info.chipDy === 'number') ? info.chipDy : 0;
@@ -896,10 +1215,13 @@ function showBubbleForEvent(ev){
     if(!html){
       hideSpeakerChip();
       bubbleEl.style.display='none';
+      hideAllViewerAvatars();
       resolve();
       return;
     }
 
+    // εμφάνιση μόνο του συγκεκριμένου θεατή (Acts 1–2) με fade
+    showViewerAvatar(viewer);
     showSpeakerChip(viewer);
     placeBubble(viewer, ev.xShift||0, ev.yOffset||0);
 
@@ -919,6 +1241,7 @@ function showBubbleForEvent(ev){
           bubbleEl.classList.remove('active','closing');
           bubbleEl.style.display='none';
           hideSpeakerChip();
+          hideAllViewerAvatars();
           resolve();
         },200);
       }, pauseMs);
@@ -928,19 +1251,22 @@ function showBubbleForEvent(ev){
 
 /* Δυναμικά bubbles για A, T/ω, φ */
 
-// Default templates (αν ΔΕΝ δώσεις left στο JSON)
 function dynDefault(kind){
   if(kind==='A'){
-    return '…με A={A} m!';
+    return currentLang === 'en' ? '…with A={A} m!' :
+      '…με A={A} m!';
   }else if(kind==='Tw'){
-    return '… και T={T} s και επομένως ω={omega} rad/s!';
+    return currentLang === 'en'
+      ? '…and T={T} s and therefore ω={omega} rad/s!'
+      : '… και T={T} s και επομένως ω={omega} rad/s!';
   }else if(kind==='phi'){
-    return '… όντως είναι ΑΑΤ και αφού το x₀={x0} m υπάρχει φ₀={phi0}°. Χαχα, ένα το κρατούμενο!';
+    return currentLang === 'en'
+      ? '…indeed it is S.H.M. and since x₀={x0} m, there is an initial phase φ₀={phi0}°. Haha, one thing to keep in mind!'
+      : '… όντως είναι ΑΑΤ και αφού το x₀={x0} m υπάρχει φ₀={phi0}°. Χαχα, ένα το κρατούμενο!';
   }
   return '';
 }
 
-// Γενικός επεξεργαστής placeholders για live τιμές
 function expandDynTemplate(tpl){
   if(!tpl) return '';
   const x0 = x0Val().toFixed(2);
@@ -953,19 +1279,18 @@ function expandDynTemplate(tpl){
     .replaceAll('{phi0}', phi0deg.toFixed(1));
 }
 
-// Παίζει bubble με βάση JSON (left) ή default template
 function showDynBubble(ev){
   return new Promise(resolve=>{
     const viewer = ev.viewer || 1;
 
-    // Αν στο JSON έχεις left → το χρησιμοποιεί
-    // αλλιώς πέφτει στο dynDefault(ev.param)
     const base = (ev.left && ev.left.trim().length)
       ? ev.left
       : dynDefault(ev.param);
 
     const txt = expandDynTemplate(base);
 
+    // και εδώ μόνο ο συγκεκριμένος θεατής
+    showViewerAvatar(viewer);
     showSpeakerChip(viewer);
     placeBubble(viewer, ev.xShift||0, ev.yOffset||0);
 
@@ -985,6 +1310,7 @@ function showDynBubble(ev){
           bubbleEl.classList.remove('active','closing');
           bubbleEl.style.display='none';
           hideSpeakerChip();
+          hideAllViewerAvatars();
           resolve();
         },200);
       }, pauseMs);
@@ -995,13 +1321,13 @@ function showDynBubble(ev){
 /* ---------- Act 1 / Act 2 sequences ---------- */
 
 async function runAct1(){
+  phase = 'act1';
   for(const ev of ACT1){
     if(ev.close){
       await closeCurtainToAct2();
       return;
     }
 
-    // 1) Δυναμικά bubbles (A, T/ω, φ): πρώτα ατάκα, μετά νόμοι / διαγράμματα
     if(ev.param){
       await showDynBubble(ev);
 
@@ -1023,11 +1349,13 @@ async function runAct1(){
       if(ev.plot==='ax'){
         ensureAxChart();
       }
+      if(ev.plot==='xsin'){
+        ensureXSinChart();
+      }
 
       continue;
     }
 
-    // 2) Κανονικά bubbles (left/viewer): πρώτα μιλάει ο θεατής, μετά νόμος / διαγράμματα
     if(ev.left || ev.viewer){
       await showBubbleForEvent(ev);
 
@@ -1049,11 +1377,13 @@ async function runAct1(){
       if(ev.plot==='ax'){
         ensureAxChart();
       }
+      if(ev.plot==='xsin'){
+        ensureXSinChart();
+      }
 
       continue;
     }
 
-    // 3) Σκέτος νόμος (χωρίς left/viewer/param)
     if(ev.right){
       addLaw(ev.right);
       if(ev.alsoParams) showParamsBox();
@@ -1071,13 +1401,14 @@ async function runAct1(){
       if(ev.plot==='ax'){
         ensureAxChart();
       }
+      if(ev.plot==='xsin'){
+        ensureXSinChart();
+      }
 
-      // Μικρή παύση μόνο όταν είναι "ξερός" νόμος
       await new Promise(r=>setTimeout(r,600));
       continue;
     }
 
-    // 4) Σκέτα διαγράμματα (χωρίς κείμενο ή νόμο)
     if(ev.graph==='xt'){
       initXTChart();
       drawXTChart();
@@ -1090,6 +1421,9 @@ async function runAct1(){
     }
     if(ev.plot==='ax'){
       ensureAxChart();
+    }
+    if(ev.plot==='xsin'){
+      ensureXSinChart();
     }
   }
 }
@@ -1149,6 +1483,8 @@ async function runAct2(){
   ghostActive=false;
   actBreak.style.display='none';
   stage.classList.add('open');
+  setAudienceLights(false);
+  phase = 'act2';
 
   springEl.style.display='block';
   if(ghostSpring) ghostSpring.style.display='block';
@@ -1159,7 +1495,6 @@ async function runAct2(){
     if(ev.gStart) ghostActive = true;
     if(ev.gStop)  ghostActive = false;
 
-    // 1) Ομιλητές με left/viewer: πρώτα bubble, μετά νόμος / διαγράμματα
     if(ev.left || ev.viewer){
       await showBubbleForEvent(ev);
 
@@ -1181,11 +1516,13 @@ async function runAct2(){
       if(ev.plot==='ax'){
         ensureAxChart();
       }
+      if(ev.plot==='xsin'){
+        ensureXSinChart();
+      }
 
       continue;
     }
 
-    // 2) Σκέτος νόμος
     if(ev.right){
       addLaw(ev.right);
       if(ev.alsoParams) showParamsBox();
@@ -1203,12 +1540,14 @@ async function runAct2(){
       if(ev.plot==='ax'){
         ensureAxChart();
       }
+      if(ev.plot==='xsin'){
+        ensureXSinChart();
+      }
 
       await new Promise(r=>setTimeout(r,600));
       continue;
     }
 
-    // 3) Σκέτα διαγράμματα
     if(ev.graph==='xt'){
       initXTChart();
       drawXTChart();
@@ -1222,9 +1561,14 @@ async function runAct2(){
     if(ev.plot==='ax'){
       ensureAxChart();
     }
+    if(ev.plot==='xsin'){
+      ensureXSinChart();
+    }
   }
 
   stage.classList.remove('open');
+  setAudienceLights(true);
+  phase = 'between2andFoyer';
   setTimeout(()=>{
     foyerBreak.style.display='flex';
   }, 1200);
@@ -1235,6 +1579,7 @@ async function runAct2(){
 function closeCurtainToAct2(){
   return new Promise(resolve=>{
     stage.classList.remove('open');
+    setAudienceLights(true);
     setTimeout(()=>{
       actBreak.style.display='flex';
       resolve();
@@ -1259,7 +1604,11 @@ function setFoyerSpeaker(idx1based){
   const {x,y,info} = viewerAnchor(idx1based);
   if(!info) return;
 
-  foyerBubble.textContent = info.name_gr || ('Θεατής '+idx1based);
+  const nameGR = info.name_gr || ('Θεατής '+idx1based);
+  const nameEN = info.name_en || ('Viewer '+idx1based);
+  const label = currentLang === 'en' ? nameEN : nameGR;
+
+  foyerBubble.textContent = label;
   foyerBubble.style.backgroundColor = tint(info.color,0.85);
   foyerBubble.style.borderColor = 'rgba(255,255,255,.9)';
 
@@ -1307,6 +1656,8 @@ function addFoyerRow(item){
     r.className = 'cell cell-right';
     r.style.width = '40%';
     r.style.background = bgBase;
+    l.style.verticalAlign = 'top';
+    r.style.verticalAlign = 'top';
     r.style.borderLeft = '4px solid '+tint(vi.color||'#ffffff',0.55);
 
     if(isFormulaBlock(item.right)){
@@ -1320,6 +1671,8 @@ function addFoyerRow(item){
       foyerTBody.appendChild(row);
     }
 
+    // στο φουαγιέ, επίσης μόνο ο αντίστοιχος ομιλητής
+    showViewerAvatar(viewer);
     setFoyerSpeaker(viewer);
 
     const typeMs  = item.typeMs  || 4000;
@@ -1338,6 +1691,8 @@ function addFoyerRow(item){
 }
 
 async function runFoyer(){
+  phase = 'foyer';
+  setAudienceLights(true);
   foyerEl.style.display='block';
   boardLeft.innerHTML  = '';
   boardRight.innerHTML = '';
@@ -1377,6 +1732,7 @@ btnPlay.addEventListener('click', ()=>{
 });
 
 function resetShow(){
+  phase = 'idle';
   t0        = performance.now();
   lastFrame = t0;
   playbackTime = 0;
@@ -1397,7 +1753,7 @@ function resetShow(){
   lawsBody.innerHTML           ='';
   firstLawShown                = false;
   lawCharts.innerHTML          ='';
-  vCan = aCan = axCan          = null;
+  vCan = aCan = axCan = xsCan  = null;
   actBreak.style.display       ='none';
   foyerBreak.style.display     ='none';
   foyerEl.style.display        ='none';
@@ -1409,6 +1765,7 @@ function resetShow(){
   bubbleEl.classList.remove('active','closing');
   actBubble.style.display      ='none';
   measureTBody.innerHTML       ='';
+  hideAllViewerAvatars();
 
   if(uXT){
     xtChartEl.innerHTML = '';
@@ -1428,15 +1785,23 @@ function resetShow(){
     ghostSpring.style.display = 'none';
   }
   ghostActive = false;
+  setAudienceLights(true);
 }
 
 btnReset.addEventListener('click', resetShow);
-btnEndShow.addEventListener('click', resetShow);
+
+btnEndShow.addEventListener('click', ()=>{
+  // Locked εκτός idle/foyer
+  if(phase === 'idle' || phase === 'foyer'){
+    resetShow();
+  }
+});
 
 /* ---------- Έναρξη με countdown ---------- */
 
 function beginObservation(){
   stage.classList.add('open');
+  setAudienceLights(false);
   if(!obsStarted){
     obsStarted = true;
     obsStartPlaybackOffset = playbackTime;
@@ -1450,6 +1815,7 @@ function beginObservation(){
 }
 
 function startShowCountdown(){
+  phase = 'countdown';
   startBtn.style.display    ='none';
   countdownOverlay.style.display='flex';
   const seconds = 5;
@@ -1480,7 +1846,10 @@ btnAct2.addEventListener('click', ()=>{
 /* Φουαγιέ κουμπιά */
 
 btnFoyer.addEventListener('click', ()=>{
-  runFoyer();
+  // Πριν την έναρξη: επιτρέπεται. Κατά τη διάρκεια πράξεων: lock.
+  if(phase === 'idle' || phase === 'foyer'){
+    runFoyer();
+  }
 });
 
 btnFoyerGo.addEventListener('click', ()=>{
@@ -1571,12 +1940,11 @@ function animate(now){
     markerGhostEl.style.opacity = '0';
   }
 
-  if(uXT){
-    drawXTChart();
-  }
-  if(vCan)  drawVelocityChart();
-  if(aCan)  drawAccelerationChart();
-  if(axCan) drawAxChart();
+  if(uXT)  drawXTChart();
+  if(vCan) drawVelocityChart();
+  if(aCan) drawAccelerationChart();
+  if(axCan)drawAxChart();
+  if(xsCan)drawXSinChart();
 
   requestAnimationFrame(animate);
 }
@@ -1591,8 +1959,8 @@ function initViewersAvatars(){
   const leftBand  = 0.18;
   const widthBand = 0.64;
 
-  const baseWidthPx  = 140; // CSS default
-  const refScale     = 0.5; // “κανονική” τιμή από το JSON
+  const baseWidthPx  = 140;
+  const refScale     = 0.5;
 
   items.forEach((div, idx) => {
     const v = VIEWERS[idx];
@@ -1601,26 +1969,23 @@ function initViewersAvatars(){
       return;
     }
 
-    // εικόνα από JSON
     if (v.img) {
       div.style.backgroundImage = 'url("'+v.img+'")';
     }
 
-    // Ύψος: μόνο αν δίνεται ρητά από JSON (αλλιώς αφήνουμε το CSS)
     if (typeof v.heightVh === 'number') {
       div.style.height = v.heightVh + 'vh';
     } else {
       div.style.height = '';
     }
 
-    // Κάθετη θέση: ΑΠΟΚΛΕΙΣΤΙΚΑ από avatarDy (px)
     if (typeof v.avatarDy === 'number') {
+      div.dataset.baseBottom = v.avatarDy;
       div.style.bottom = v.avatarDy + 'px';
     } else {
-      div.style.bottom = '';
+      div.dataset.baseBottom = '';
     }
 
-    // Σμίκρυνση / μεγέθυνση: avatarScale
     if (typeof v.avatarScale === 'number') {
       const widthPx = baseWidthPx * (v.avatarScale / refScale);
       div.style.width = widthPx + 'px';
@@ -1628,23 +1993,26 @@ function initViewersAvatars(){
       div.style.width = '';
     }
 
-    // Οριζόντια θέση: xFrac από JSON, αλλιώς ένα τίμιο fallback
     const fracDefault = (idx + 1) / (items.length + 1);
     const xFrac = (typeof v.xFrac === 'number') ? v.xFrac : fracDefault;
     const x = (leftBand + widthBand * xFrac) * stageW;
     div.style.left = x + 'px';
 
+    // εμφανίζονται ΜΟΝΟ όταν πάρουν .visible, αλλιώς κρυφοί
     div.style.display = 'block';
+    div.classList.remove('visible');
+    div.classList.remove('lit');
   });
 }
 
-/* ---------- Load dialogs-gr.json & bootstrap ---------- */
+/* ---------- Load dialogs-gr/en.json & bootstrap ---------- */
 
 async function loadDialogs(){
   try{
-    const resp = await fetch('dialogs-gr.json',{cache:'no-store'});
+    const url = (currentLang === 'en') ? 'dialogs-en.json' : 'dialogs-gr.json';
+    const resp = await fetch(url,{cache:'no-store'});
     if(!resp.ok){
-      console.error('Δε βρέθηκε dialogs-gr.json');
+      console.error('Δε βρέθηκε '+url);
       return;
     }
     const data = await resp.json();
@@ -1652,17 +2020,44 @@ async function loadDialogs(){
     ACT1    = data.act1    || [];
     ACT2    = data.act2    || [];
     FOYER   = data.foyer   || [];
+
+    // offset καθιστού θεατή στις πράξεις (global από JSON, default -60)
+    if (typeof data.actsAvatarOffset === 'number') {
+      ACTS_AVATAR_OFFSET = data.actsAvatarOffset;
+    } else {
+      ACTS_AVATAR_OFFSET = -60;
+    }
+
     initViewersAvatars();
   }catch(e){
     console.error(e);
   }
 }
 
+function setLanguage(lang){
+  if(lang === currentLang) return;
+  currentLang = lang;
+  applyUIText();
+  resetShow();
+  loadDialogs();
+}
+
 window.addEventListener('load', ()=>{
+  btnLangGR = document.getElementById('btnLangGR');
+  btnLangEN = document.getElementById('btnLangEN');
+
+  if(btnLangGR){
+    btnLangGR.addEventListener('click', ()=>setLanguage('gr'));
+  }
+  if(btnLangEN){
+    btnLangEN.addEventListener('click', ()=>setLanguage('en'));
+  }
+
   updateRuler();
   measureSpringNaturalSize();
   ensureActorFloorBottom();
   resetShow();
+  applyUIText();
   loadDialogs();
 });
 </script>
