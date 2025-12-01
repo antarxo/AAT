@@ -297,7 +297,7 @@ const pxPerMeter = 50;
 const omega = 2*Math.PI/T;
 const A_px  = A_m*pxPerMeter;
 
-/* καθιστός θεατής στις πράξεις 1–2: 60px πιο κάτω από τη θέση JSON (ρυθμιζόμενο από JSON) */
+/* καθιστός θεατής στις πράξεις 1–2: offset από JSON (global), default -60 */
 let ACTS_AVATAR_OFFSET = -60;
 
 let ghost       = null;
@@ -1094,7 +1094,7 @@ function viewerInfo(idx1based){
   return VIEWERS[i] || VIEWERS[0] || null;
 }
 
-/* Άγκυρα για ετικέτες/σκέψεις: ΜΟΝΟ από JSON (xFrac) – ίδια σε Acts & Foyer */
+/* Παλιά anchor με βάση xFrac, για fallback μόνο */
 function viewerAnchor(idx1based){
   const vi = viewerInfo(idx1based);
   const leftFrac  = 0.18;
@@ -1103,8 +1103,25 @@ function viewerAnchor(idx1based){
     ? vi.xFrac
     : (idx1based/(VIEWERS.length+1 || 2));
   const x = (leftFrac + widthFrac*frac)*stage.clientWidth;
-  const y = stage.clientHeight*0.60; // σταθερή "γραμμή" θεατών για labels/σκέψεις
+  const y = stage.clientHeight*0.60;
   return {x,y,info:vi};
+}
+
+/* ΝΕΟ: anchor από το ΚΕΝΤΡΟ του avatar μετά την κλιμάκωση (όπως ζητάς) */
+function getViewerAvatarCenter(idx1based){
+  const idx0 = (idx1based||1)-1;
+  const div = viewersStrip.querySelector('.viewer-avatar[data-idx="'+idx0+'"]');
+  const info = viewerInfo(idx1based);
+  const stageRect = stage.getBoundingClientRect();
+
+  if(div){
+    const r = div.getBoundingClientRect();
+    const cx = r.left + r.width/2 - stageRect.left;
+    const cy = r.top  + r.height/2 - stageRect.top;
+    return {x:cx,y:cy,info};
+  }
+  /* fallback αν για κάποιο λόγο δεν υπάρχει avatar */
+  return viewerAnchor(idx1based);
 }
 
 function tint(hex, alpha){
@@ -1115,7 +1132,7 @@ function tint(hex, alpha){
   return 'rgba('+r+','+g+','+b+','+alpha+')';
 }
 
-/* ΝΕΟ: helper για avatars ώστε να φαίνεται μόνο ο τρέχων θεατής με fade */
+/* Avatars helpers */
 
 function hideAllViewerAvatars(){
   const items = viewersStrip.querySelectorAll('.viewer-avatar');
@@ -1131,7 +1148,7 @@ function showViewerAvatar(idx1based){
   const base = parseFloat(el.dataset.baseBottom || '0') || 0;
   let bottom = base;
   if(phase === 'act1' || phase === 'act2'){
-    bottom = base + ACTS_AVATAR_OFFSET; // 60px πιο κάτω από JSON μόνο στις πράξεις
+    bottom = base + ACTS_AVATAR_OFFSET;
   }
   el.style.bottom = bottom + 'px';
   el.classList.add('visible');
@@ -1141,7 +1158,7 @@ function showViewerAvatar(idx1based){
 }
 
 function showSpeakerChip(idx1based){
-  const {x,y,info} = viewerAnchor(idx1based);
+  const {x,y,info} = getViewerAvatarCenter(idx1based);
   if(!info) return;
 
   const nameGR = info.name_gr || ('Θεατής '+idx1based);
@@ -1165,7 +1182,7 @@ function hideSpeakerChip(){
 }
 
 function placeBubble(idx1based, xShift, yOffset){
-  const {x,y,info} = viewerAnchor(idx1based);
+  const {x,y,info} = getViewerAvatarCenter(idx1based);
   const dx = (info && typeof info.bubbleDx==='number'? info.bubbleDx:0) + (xShift||0);
   const dy = (info && typeof info.bubbleDy==='number'? info.bubbleDy:0) + (yOffset||0);
   const left = x + dx;
@@ -1220,7 +1237,6 @@ function showBubbleForEvent(ev){
       return;
     }
 
-    // εμφάνιση μόνο του συγκεκριμένου θεατή (Acts 1–2) με fade
     showViewerAvatar(viewer);
     showSpeakerChip(viewer);
     placeBubble(viewer, ev.xShift||0, ev.yOffset||0);
@@ -1289,7 +1305,6 @@ function showDynBubble(ev){
 
     const txt = expandDynTemplate(base);
 
-    // και εδώ μόνο ο συγκεκριμένος θεατής
     showViewerAvatar(viewer);
     showSpeakerChip(viewer);
     placeBubble(viewer, ev.xShift||0, ev.yOffset||0);
@@ -1601,7 +1616,7 @@ function isFormulaBlock(text){
 }
 
 function setFoyerSpeaker(idx1based){
-  const {x,y,info} = viewerAnchor(idx1based);
+  const {x,y,info} = getViewerAvatarCenter(idx1based);
   if(!info) return;
 
   const nameGR = info.name_gr || ('Θεατής '+idx1based);
@@ -1671,7 +1686,6 @@ function addFoyerRow(item){
       foyerTBody.appendChild(row);
     }
 
-    // στο φουαγιέ, επίσης μόνο ο αντίστοιχος ομιλητής
     showViewerAvatar(viewer);
     setFoyerSpeaker(viewer);
 
@@ -1791,7 +1805,6 @@ function resetShow(){
 btnReset.addEventListener('click', resetShow);
 
 btnEndShow.addEventListener('click', ()=>{
-  // Locked εκτός idle/foyer
   if(phase === 'idle' || phase === 'foyer'){
     resetShow();
   }
@@ -1846,7 +1859,6 @@ btnAct2.addEventListener('click', ()=>{
 /* Φουαγιέ κουμπιά */
 
 btnFoyer.addEventListener('click', ()=>{
-  // Πριν την έναρξη: επιτρέπεται. Κατά τη διάρκεια πράξεων: lock.
   if(phase === 'idle' || phase === 'foyer'){
     runFoyer();
   }
@@ -1877,16 +1889,16 @@ function animate(now){
   ensureActorFloorBottom();
   const bottomPx = actorFloorBottomPx ?? 0;
 
-  const ax = anchorX();
+  const axx = anchorX();
   const cx = centerX();
   const stageH = stage.clientHeight;
 
   const hookX = cx + A_px*Math.sin(omega*playbackTime);
 
   const baseL = springNaturalWidth || (springEl.getBoundingClientRect().width || 1);
-  const dist = hookX - ax;
+  const dist = hookX - axx;
   const scale = dist / baseL;
-  springEl.style.left      = ax+'px';
+  springEl.style.left      = axx+'px';
   springEl.style.transform = 'scaleX('+scale+')';
 
   const actorRect = actor.getBoundingClientRect();
@@ -1921,11 +1933,11 @@ function animate(now){
       ghost.style.bottom = bottomPx+'px';
       ghost.style.left   = (hookXg - ghostWidth/2) + 'px';
 
-      const distg  = hookXg - ax;
+      const distg  = hookXg - axx;
       const scaleg = distg / baseL;
 
       ghostSpring.style.bottom   = springBottom;
-      ghostSpring.style.left     = ax+'px';
+      ghostSpring.style.left     = axx+'px';
       ghostSpring.style.height   = springNaturalHeight ? (springNaturalHeight+'px') : (springEl.getBoundingClientRect().height || 1)+'px';
       ghostSpring.style.transform= 'scaleX('+scaleg+')';
 
@@ -1998,7 +2010,6 @@ function initViewersAvatars(){
     const x = (leftBand + widthBand * xFrac) * stageW;
     div.style.left = x + 'px';
 
-    // εμφανίζονται ΜΟΝΟ όταν πάρουν .visible, αλλιώς κρυφοί
     div.style.display = 'block';
     div.classList.remove('visible');
     div.classList.remove('lit');
@@ -2021,7 +2032,7 @@ async function loadDialogs(){
     ACT2    = data.act2    || [];
     FOYER   = data.foyer   || [];
 
-    // offset καθιστού θεατή στις πράξεις (global από JSON, default -60)
+    /* actsAvatarOffset global από JSON, χωρίς hard-coded -65 */
     if (typeof data.actsAvatarOffset === 'number') {
       ACTS_AVATAR_OFFSET = data.actsAvatarOffset;
     } else {
