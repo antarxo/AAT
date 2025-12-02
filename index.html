@@ -263,6 +263,15 @@ let actorFloorBottomPx  = null;
 
 let audienceLightsOn = true;
 
+/* Κατάσταση για το βελάκι / νέα καμπύλη στο x–t */
+const xtMarkState = {
+  active: false,
+  hasPoint: false,
+  hasTail: false,
+  hasZero: false,
+  t0: 0
+};
+
 /* ---------- UI από JSON.ui ---------- */
 
 function applyUITextFromUI(){
@@ -401,14 +410,43 @@ function logMeasurement(tObs, xMeters){
   try{ tr.scrollIntoView({block:'end'}); }catch(e){}
 }
 
+/* ---------- Βοηθητικά για “φάση 0” στο x–t ---------- */
+
+function computePhaseZeroTime(){
+  let t0 = -obsStartPlaybackOffset;
+  t0 = t0 % T;
+  if(t0 < 0) t0 += T;
+  return t0;
+}
+
+function resetXtMark(){
+  xtMarkState.active  = false;
+  xtMarkState.hasPoint= false;
+  xtMarkState.hasTail = false;
+  xtMarkState.hasZero = false;
+  xtMarkState.t0      = 0;
+}
+
+function enableXtMark(ev){
+  const any = !!(ev.xtMark || ev.xtMarkTail || ev.xtZeroMark);
+  if(!any) return;
+  const t0 = computePhaseZeroTime();
+  xtMarkState.active   = true;
+  xtMarkState.hasPoint = !!ev.xtMark;
+  xtMarkState.hasTail  = !!ev.xtMarkTail;
+  xtMarkState.hasZero  = !!ev.xtZeroMark;
+  xtMarkState.t0       = t0;
+}
+
 /* ---------- x(t) canvas ---------- */
 
 function buildSeriesData(){
-  const N = 240;
+  const N = 360;
+  const span = 2*T; // 2 περίοδοι για να χωράει η νέα καμπύλη
   const tArr = new Array(N+1);
   const xArr = new Array(N+1);
   for(let i=0;i<=N;i++){
-    const tloc = (i/N)*T;
+    const tloc = (i/N)*span;
     tArr[i] = tloc;
     xArr[i] = A_m*Math.sin(omega*(tloc+obsStartPlaybackOffset));
   }
@@ -444,7 +482,7 @@ function drawXTChart(){
   const yBot=h-margin;
 
   const [tArr,xArr] = buildSeriesData();
-  const tMin=0, tMax=T;
+  const tMin=0, tMax=2*T;
   const xMaxAbs=A_m*1.1;
 
   function tToX(t){ return x0+(t-tMin)/(tMax-tMin)*(x1-x0); }
@@ -454,12 +492,13 @@ function drawXTChart(){
     return mid-(x/xMaxAbs)*amp;
   }
 
+  // grid
   ctx.save();
   ctx.strokeStyle='rgba(255,255,255,0.18)';
   ctx.lineWidth=1;
   ctx.setLineDash([3,3]);
 
-  const tTicks=[0,T/2,T];
+  const tTicks=[0,T,2*T];
   tTicks.forEach(t=>{
     const xf=tToX(t);
     ctx.beginPath();
@@ -479,6 +518,7 @@ function drawXTChart(){
 
   ctx.restore();
 
+  // άξονες
   ctx.strokeStyle='rgba(255,255,255,0.6)';
   ctx.lineWidth=1;
   ctx.setLineDash([]);
@@ -499,8 +539,10 @@ function drawXTChart(){
   ctx.rect(x0,yTop,x1-x0,yBot-yTop);
   ctx.stroke();
 
+  // βασική καμπύλη x(t)
   ctx.strokeStyle='#ffd27a';
   ctx.lineWidth=2;
+  ctx.setLineDash([]);
   ctx.beginPath();
   for(let i=0;i<tArr.length;i++){
     const tx=tArr[i];
@@ -511,6 +553,7 @@ function drawXTChart(){
   }
   ctx.stroke();
 
+  // labels αξόνων
   ctx.fillStyle='#fff';
   ctx.font='11px system-ui';
   ctx.fillText('x(t)', x0+4, yTop+10);
@@ -520,15 +563,16 @@ function drawXTChart(){
   ctx.fillText('t (s)', x1-20, yBot+12);
 
   ctx.textAlign='center';
-  ctx.fillText('0', tToX(0), yBot+10);
-  ctx.fillText((T/2).toFixed(1), tToX(T/2), yBot+10);
-  ctx.fillText(T.toFixed(1), tToX(T), yBot+10);
+  ctx.fillText('0',  tToX(0),  yBot+10);
+  ctx.fillText('T',  tToX(T),  yBot+10);
+  ctx.fillText('2T', tToX(2*T),yBot+10);
   ctx.textAlign='left';
 
   ctx.fillText('-A', x0+4, xToY(-A_m)+4);
   ctx.fillText('0',  x0+4, xToY(0)+4);
   ctx.fillText('+A', x0+4, xToY(+A_m)+4);
 
+  // γραμμή x0
   const x0val=A_m*Math.sin(omega*(0+obsStartPlaybackOffset));
   const yx0=xToY(x0val);
   ctx.strokeStyle='rgba(255,255,255,0.7)';
@@ -543,6 +587,108 @@ function drawXTChart(){
   ctx.font='10px system-ui';
   const labelX0='x₀ ≈ '+x0val.toFixed(2)+' m';
   ctx.fillText(labelX0, x0+4, yx0-4);
+
+  /* ΒΕΛΑΚΙ + ΝΕΑ ΚΑΜΠΥΛΗ ΑΠΟ ΤΗ ΣΤΙΓΜΗ ΦΑΣΗΣ 0 (με xtMark* flags) */
+  if(xtMarkState.active){
+    const t0 = xtMarkState.t0;
+    const tipT = Math.max(0, Math.min(2*T, t0));
+    const tipX = tToX(tipT);
+    const tipY = xToY(A_m*Math.sin(omega*(tipT+obsStartPlaybackOffset)));
+
+    // 1. Σημείο πάνω στην καμπύλη (xtMark)
+    if(xtMarkState.hasPoint){
+      ctx.save();
+      ctx.fillStyle='#ffeb3b';
+      ctx.beginPath();
+      ctx.arc(tipX,tipY,3,0,2*Math.PI);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    // 2. Τονισμένη καμπύλη 1 περιόδου από t0 (xtMarkTail)
+    if(xtMarkState.hasTail){
+      ctx.save();
+      ctx.strokeStyle='#ffeb3b';
+      ctx.lineWidth=2;
+      ctx.setLineDash([5,3]);
+      const N2 = 200;
+      let started = false;
+      ctx.beginPath();
+      for(let i=0;i<=N2;i++){
+        const tCur = t0 + (i/N2)*T;
+        if(tCur < 0 || tCur > 2*T) continue;
+        const px = tToX(tCur);
+        const py = xToY(A_m*Math.sin(omega*(tCur+obsStartPlaybackOffset)));
+        if(!started){
+          ctx.moveTo(px,py);
+          started=true;
+        }else{
+          ctx.lineTo(px,py);
+        }
+      }
+      if(started) ctx.stroke();
+      ctx.restore();
+    }
+
+    // 3. Label “Νέο t = 0 εδώ” με βέλος (xtZeroMark)
+    if(xtMarkState.hasZero){
+      ctx.save();
+      const label = (currentLang==='en')
+        ? 'New t = 0 here'
+        : 'Νέο t = 0 εδώ';
+
+      ctx.font='11px system-ui';
+      const tw = ctx.measureText(label).width;
+      const boxW = tw + 16;
+      const boxH = 18;
+      let boxX = tipX - boxW/2;
+      const boxY = yTop - boxH - 6;
+      if(boxX < x0+4) boxX = x0+4;
+      if(boxX + boxW > x1-4) boxX = x1 - boxW - 4;
+
+      // χάπι
+      ctx.beginPath();
+      ctx.fillStyle='rgba(0,0,0,0.85)';
+      ctx.strokeStyle='#ffeb3b';
+      ctx.lineWidth=1.4;
+      ctx.moveTo(boxX+8,boxY);
+      ctx.lineTo(boxX+boxW-8,boxY);
+      ctx.quadraticCurveTo(boxX+boxW,boxY,boxX+boxW,boxY+8);
+      ctx.lineTo(boxX+boxW,boxY+boxH-8);
+      ctx.quadraticCurveTo(boxX+boxW,boxY+boxH,boxX+boxW-8,boxY+boxH);
+      ctx.lineTo(boxX+8,boxY+boxH);
+      ctx.quadraticCurveTo(boxX,boxY+boxH,boxX,boxY+boxH-8);
+      ctx.lineTo(boxX,boxY+8);
+      ctx.quadraticCurveTo(boxX,boxY,boxX+8,boxY);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle='#ffeb3b';
+      ctx.textBaseline='middle';
+      ctx.fillText(label, boxX+8, boxY+boxH/2);
+
+      // βέλος προς την καμπύλη
+      const arrowStartY = boxY+boxH;
+      ctx.strokeStyle='#ffeb3b';
+      ctx.lineWidth=1.6;
+      ctx.beginPath();
+      ctx.moveTo(tipX, arrowStartY);
+      ctx.lineTo(tipX, tipY);
+      ctx.stroke();
+
+      const ah = 7;
+      const aw = 4;
+      ctx.beginPath();
+      ctx.moveTo(tipX, tipY);
+      ctx.lineTo(tipX-aw, tipY+ah);
+      ctx.lineTo(tipX+aw, tipY+ah);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.restore();
+    }
+  }
 }
 
 /* ---------- Νόμοι & mini-διαγράμματα ---------- */
@@ -1204,6 +1350,10 @@ function showDynBubble(ev){
 async function runAct1(){
   phase='act1';
   for(const ev of ACT1){
+    if(ev.xtMark || ev.xtMarkTail || ev.xtZeroMark){
+      enableXtMark(ev);
+    }
+
     if(ev.close){
       await closeCurtainToAct2();
       return;
@@ -1339,6 +1489,10 @@ async function runAct2(){
   markerGhostEl.style.opacity='0';
 
   for(const ev of ACT2){
+    if(ev.xtMark || ev.xtMarkTail || ev.xtZeroMark){
+      enableXtMark(ev);
+    }
+
     if(ev.gStart) ghostActive=true;
     if(ev.gStop)  ghostActive=false;
 
@@ -1470,9 +1624,9 @@ function addFoyerRow(item){
     r.style.verticalAlign='top';
     r.style.borderLeft='4px solid '+tint(vi.color||'#ffffff',0.55);
 
-    // Ουδέτερο: δεν αλλάζουμε ιδιαίτερα εμφάνιση για "formula"
-    // (αφήνω το isFormulaBlock αν το θες αργότερα για κάτι άλλο)
-    // if(isFormulaBlock(item.right)){ r.classList.add('formula'); }
+    if(isFormulaBlock(item.right)){
+      r.classList.add('formula');
+    }
 
     row.appendChild(l);
     row.appendChild(r);
@@ -1503,7 +1657,7 @@ async function runFoyer(){
   phase='foyer';
   setAudienceLights(true);
   foyerEl.style.display='block';
-  startBtn.style.display='none'; // μπαίνοντας φουαγιέ εξαφανίζουμε Έναρξη
+  startBtn.style.display='none';
   boardLeft.innerHTML='';
   boardRight.innerHTML='';
   foyerBubble.style.display='none';
@@ -1548,6 +1702,8 @@ function resetShow(){
   lastSampleObsTime=-Infinity;
   measureRowIdx=0;
   setMode('run');
+
+  resetXtMark();
 
   startBtn.style.display='block';
   countdownOverlay.style.display='none';
