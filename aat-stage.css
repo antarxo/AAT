@@ -171,8 +171,6 @@ body{
   box-shadow:none;
   background:transparent center bottom/contain no-repeat; /* PNG διαφανή */
   transform:translateX(-50%); /* το left ορίζει το κέντρο */
-  opacity:0;             /* στην αρχή ΚΑΝΕΙΣ ορατός */
-  transition:opacity .25s ease, transform .25s ease;
 }
 
 /* Ταμπέλα τίτλου */
@@ -654,10 +652,10 @@ body{
   color:#fff;
   z-index:410;
   display:none;
-  alignitems:center;
+  align-items:center;
   justify-content:center;
   text-align:center;
-  pointer-events:none;         /* να περνάνε κλικ, εκτός από το box */
+  pointer-events:none;         /* κλικ περνάνε έξω από το box */
 }
 
 .actbreak .box,
@@ -670,7 +668,7 @@ body{
   border-radius:999px;
   padding:8px 14px;
   max-width:520px;
-  pointer-events:auto;         /* τα κουμπιά μέσα να είναι clickable */
+  pointer-events:auto;         /* κουμπί clickable */
 }
 
 .actbreak h3,
