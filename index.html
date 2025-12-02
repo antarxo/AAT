@@ -230,6 +230,9 @@ let aCan = null;  // a–t
 let axCan = null; // a–x
 let xsCan = null; // x–sin(ωt)
 
+/* νέα σημαία για το "νέο t=0 εδώ" στο x–t */
+let xtMarkZeroEnabled = false;
+
 const m   = 70;
 const T   = 6.0;
 const A_m = 3.0;
@@ -239,11 +242,6 @@ const A_px  = A_m*pxPerMeter;
 
 /* offset για avatars στις πράξεις από JSON. Προεπιλογή: -60 */
 let ACTS_AVATAR_OFFSET = -60;
-
-/* x–t marker state (βέλος + “ουρά” ημιτόνου) */
-let xtMarkActive   = false;
-let xtMarkTime     = null;   // σε δευτερόλεπτα
-let xtMarkShowTail = false;  // αν θα τονίσουμε την καμπύλη από εκεί και μετά
 
 let ghost       = null;
 let ghostSpring = null;
@@ -261,52 +259,52 @@ let audienceLightsOn = true;
 function applyUITextFromUI(){
   const ui = UI || {};
 
-  const signTitle = document.getElementById('signTitle');
-  const signLineA = document.getElementById('signLineA');
-  const signLineB = document.getElementById('signLineB');
-  const signLineC = document.getElementById('signLineC');
-  const signLineD = document.getElementById('signLineD');
-  const lawsTitle = document.getElementById('lawsTitle');
-  const measureTitle = document.getElementById('measureTitle');
-  const measureColIdx = document.getElementById('measureColIdx');
-  const countdownMain = document.getElementById('countdownMain');
-  const countdownSub  = document.getElementById('countdownSub');
-  const actBreakTitle = document.getElementById('actBreakTitle');
-  const actBreakMsg   = document.getElementById('actBreakMsg');
-  const foyerBreakTitle = document.getElementById('foyerBreakTitle');
-  const foyerBreakMsg   = document.getElementById('foyerBreakMsg');
+  const signTitle      = document.getElementById('signTitle');
+  const signLineA      = document.getElementById('signLineA');
+  const signLineB      = document.getElementById('signLineB');
+  const signLineC      = document.getElementById('signLineC');
+  const signLineD      = document.getElementById('signLineD');
+  const lawsTitle      = document.getElementById('lawsTitle');
+  const measureTitle   = document.getElementById('measureTitle');
+  const measureColIdx  = document.getElementById('measureColIdx');
+  const countdownMain  = document.getElementById('countdownMain');
+  const countdownSub   = document.getElementById('countdownSub');
+  const actBreakTitle  = document.getElementById('actBreakTitle');
+  const actBreakMsg    = document.getElementById('actBreakMsg');
+  const foyerBreakTitle= document.getElementById('foyerBreakTitle');
+  const foyerBreakMsg  = document.getElementById('foyerBreakMsg');
 
-  if(signTitle   && ui.signTitle   != null) signTitle.textContent   = ui.signTitle;
-  if(signLineA   && ui.signLineA   != null) signLineA.textContent   = ui.signLineA;
-  if(signLineB   && ui.signLineB   != null) signLineB.innerHTML     = ui.signLineB;
-  if(signLineC   && ui.signLineC   != null) signLineC.textContent   = ui.signLineC;
-  if(signLineD   && ui.signLineD   != null) signLineD.textContent   = ui.signLineD;
+  if (signTitle     && ui.signTitle     != null) signTitle.textContent     = ui.signTitle;
+  if (signLineA     && ui.signLineA     != null) signLineA.textContent     = ui.signLineA;
+  if (signLineB     && ui.signLineB     != null) signLineB.innerHTML       = ui.signLineB;
+  if (signLineC     && ui.signLineC     != null) signLineC.textContent     = ui.signLineC;
+  if (signLineD     && ui.signLineD     != null) signLineD.textContent     = ui.signLineD;
 
-  if(lawsTitle    && ui.lawsTitle    != null) lawsTitle.textContent    = ui.lawsTitle;
-  if(measureTitle && ui.measureTitle != null) measureTitle.textContent = ui.measureTitle;
-  if(measureColIdx&& ui.measureColIdx!= null) measureColIdx.textContent= ui.measureColIdx;
+  if (lawsTitle     && ui.lawsTitle     != null) lawsTitle.textContent     = ui.lawsTitle;
+  if (measureTitle  && ui.measureTitle  != null) measureTitle.textContent  = ui.measureTitle;
+  if (measureColIdx && ui.measureColIdx != null) measureColIdx.textContent = ui.measureColIdx;
 
-  if(countdownMain && ui.countdownMain != null) countdownMain.textContent = ui.countdownMain;
-  if(countdownSub  && ui.countdownSub  != null) countdownSub.textContent  = ui.countdownSub;
+  if (countdownMain && ui.countdownMain != null) countdownMain.textContent = ui.countdownMain;
+  if (countdownSub  && ui.countdownSub  != null) countdownSub.textContent  = ui.countdownSub;
 
-  if(actBreakTitle && ui.actBreakTitle != null) actBreakTitle.textContent = ui.actBreakTitle;
-  if(actBreakMsg   && ui.actBreakMsg   != null) actBreakMsg.textContent   = ui.actBreakMsg;
-  if(btnAct2       && ui.btnAct2       != null) btnAct2.textContent       = ui.btnAct2;
+  if (actBreakTitle && ui.actBreakTitle != null) actBreakTitle.textContent = ui.actBreakTitle;
+  if (actBreakMsg   && ui.actBreakMsg   != null) actBreakMsg.textContent   = ui.actBreakMsg;
+  if (btnAct2       && ui.btnAct2       != null) btnAct2.textContent       = ui.btnAct2;
 
-  if(foyerBreakTitle && ui.foyerBreakTitle != null) foyerBreakTitle.textContent = ui.foyerBreakTitle;
-  if(foyerBreakMsg   && ui.foyerBreakMsg   != null) foyerBreakMsg.textContent   = ui.foyerBreakMsg;
-  if(btnFoyerGo      && ui.btnFoyerGo      != null) btnFoyerGo.textContent      = ui.btnFoyerGo;
+  if (foyerBreakTitle && ui.foyerBreakTitle != null) foyerBreakTitle.textContent = ui.foyerBreakTitle;
+  if (foyerBreakMsg   && ui.foyerBreakMsg   != null) foyerBreakMsg.textContent   = ui.foyerBreakMsg;
+  if (btnFoyerGo      && ui.btnFoyerGo      != null) btnFoyerGo.textContent      = ui.btnFoyerGo;
 
-  if(btnEndShow && ui.btnEndShow    != null) btnEndShow.textContent = ui.btnEndShow;
-  if(btnFoyer   && ui.btnFoyer      != null) btnFoyer.textContent   = ui.btnFoyer;
-  if(startBtn   && ui.startBtn      != null) startBtn.textContent   = ui.startBtn;
+  if (btnEndShow && ui.btnEndShow    != null) btnEndShow.textContent = ui.btnEndShow;
+  if (btnFoyer   && ui.btnFoyer      != null) btnFoyer.textContent   = ui.btnFoyer;
+  if (startBtn   && ui.startBtn      != null) startBtn.textContent   = ui.startBtn;
 
-  if(btnPause   && ui.btnPauseTitle != null) btnPause.title = ui.btnPauseTitle;
-  if(btnPlay    && ui.btnPlayTitle  != null) btnPlay.title  = ui.btnPlayTitle;
-  if(btnReset   && ui.btnResetTitle != null) btnReset.title = ui.btnResetTitle;
-  if(btnFoyer   && ui.btnFoyerTitle != null) btnFoyer.title = ui.btnFoyerTitle;
+  if (btnPause   && ui.btnPauseTitle != null) btnPause.title = ui.btnPauseTitle;
+  if (btnPlay    && ui.btnPlayTitle  != null) btnPlay.title  = ui.btnPlayTitle;
+  if (btnReset   && ui.btnResetTitle != null) btnReset.title = ui.btnResetTitle;
+  if (btnFoyer   && ui.btnFoyerTitle != null) btnFoyer.title = ui.btnFoyerTitle;
 
-  if(btnLangGR && btnLangEN){
+  if (btnLangGR && btnLangEN){
     btnLangGR.classList.toggle('active', currentLang === 'gr');
     btnLangEN.classList.toggle('active', currentLang === 'en');
   }
@@ -396,16 +394,29 @@ function logMeasurement(tObs, xMeters){
 
 /* ---------- x(t) canvas ---------- */
 
-function buildSeriesData(maxT){
+function buildSeriesData(){
   const N = 240;
   const tArr = new Array(N+1);
   const xArr = new Array(N+1);
   for(let i=0;i<=N;i++){
-    const tloc = (i/N)*maxT;
+    const tloc = (i/N)*T;
     tArr[i] = tloc;
     xArr[i] = A_m*Math.sin(omega*(tloc+obsStartPlaybackOffset));
   }
   return [tArr,xArr];
+}
+
+/* Υπολογισμός στιγμής όπου η φάση γίνεται 0 με θετική ταχύτητα (x=0, v>0) */
+function computeZeroPhaseTime(){
+  const offset = obsStartPlaybackOffset;
+  const twoPi = 2*Math.PI;
+  if(!isFinite(omega) || omega === 0) return null;
+
+  const n0 = Math.ceil((omega*offset)/twoPi);
+  const tCandidate = (twoPi*n0/omega) - offset;
+
+  if(tCandidate < 0) return null;
+  return tCandidate;
 }
 
 function initXTChart(){
@@ -435,12 +446,8 @@ function drawXTChart(){
   const yTop=margin;
   const yBot=h-margin;
 
-  const maxT = (xtMarkActive && xtMarkShowTail && xtMarkTime!=null)
-    ? (xtMarkTime + T)
-    : T;
-
-  const [tArr,xArr] = buildSeriesData(maxT);
-  const tMin=0, tMax=maxT;
+  const [tArr,xArr] = buildSeriesData();
+  const tMin=0, tMax=T;
   const xMaxAbs=A_m*1.1;
 
   function tToX(t){ return x0+(t-tMin)/(tMax-tMin)*(x1-x0); }
@@ -455,7 +462,7 @@ function drawXTChart(){
   ctx.lineWidth=1;
   ctx.setLineDash([3,3]);
 
-  const tTicks=[tMin, tMin+(tMax-tMin)/2, tMax];
+  const tTicks=[0,T/2,T];
   tTicks.forEach(t=>{
     const xf=tToX(t);
     ctx.beginPath();
@@ -497,7 +504,6 @@ function drawXTChart(){
 
   ctx.strokeStyle='#ffd27a';
   ctx.lineWidth=2;
-  ctx.setLineDash([]);
   ctx.beginPath();
   for(let i=0;i<tArr.length;i++){
     const tx=tArr[i];
@@ -517,9 +523,9 @@ function drawXTChart(){
   ctx.fillText('t (s)', x1-20, yBot+12);
 
   ctx.textAlign='center';
-  ctx.fillText(tMin.toFixed(1), tToX(tMin), yBot+10);
-  ctx.fillText(((tMin+tMax)/2).toFixed(1), tToX((tMin+tMax)/2), yBot+10);
-  ctx.fillText(tMax.toFixed(1), tToX(tMax), yBot+10);
+  ctx.fillText('0', tToX(0), yBot+10);
+  ctx.fillText((T/2).toFixed(1), tToX(T/2), yBot+10);
+  ctx.fillText(T.toFixed(1), tToX(T), yBot+10);
   ctx.textAlign='left';
 
   ctx.fillText('-A', x0+4, xToY(-A_m)+4);
@@ -541,74 +547,108 @@ function drawXTChart(){
   const labelX0='x₀ ≈ '+x0val.toFixed(2)+' m';
   ctx.fillText(labelX0, x0+4, yx0-4);
 
-  if(xtMarkActive && xtMarkTime != null){
-    const tStar  = xtMarkTime;
-    const pxStar = tToX(tStar);
-    const pyStar = xToY(0);
+  /* --------- ΝΕΟ: ένδειξη "νέο t=0 εδώ" + νέα καμπύλη από αυτό το σημείο --------- */
+  if(xtMarkZeroEnabled){
+    const tZero = computeZeroPhaseTime();
+    if(tZero != null){
+      // κλαμπάρουμε στο [tMin, tMax+T] για να σχεδιάσουμε 1 περίοδο
+      const tStart = Math.max(tMin, tZero);
+      const tEnd   = Math.min(tMax, tStart + T);
 
-    ctx.save();
+      // Σημείο στο x–t (x=0 εκεί, άρα επάνω στον άξονα x=0)
+      const pxZero = tToX(Math.max(tMin, Math.min(tMax, tZero)));
+      const pyZero = xToY(0);
 
-    ctx.fillStyle='#ffeb99';
-    ctx.beginPath();
-    ctx.arc(pxStar,pyStar,3,0,Math.PI*2);
-    ctx.fill();
-
-    const lbl = (currentLang==='en') ? 'new t=0' : 'νέο t=0';
-    const labelY = yTop + 6;
-    ctx.font='10px system-ui';
-    ctx.fillStyle='#ffd27a';
-    ctx.textAlign='left';
-    ctx.fillText(lbl, pxStar+6, labelY);
-
-    const arrowTopY = labelY + 4;
-    ctx.strokeStyle='#ffd27a';
-    ctx.lineWidth=1.5;
-    ctx.beginPath();
-    ctx.moveTo(pxStar,arrowTopY);
-    ctx.lineTo(pxStar,pyStar-8);
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.moveTo(pxStar,pyStar-8);
-    ctx.lineTo(pxStar-5,pyStar-18);
-    ctx.lineTo(pxStar+5,pyStar-18);
-    ctx.closePath();
-    ctx.fillStyle='#ffd27a';
-    ctx.fill();
-
-    ctx.restore();
-
-    if(xtMarkShowTail){
-      ctx.save();
-      ctx.strokeStyle='rgba(127,255,212,0.9)';
-      ctx.lineWidth=2;
-      ctx.setLineDash([5,3]);
-
-      const Ntail = 160;
-      const tEnd  = tStar + T;
-      const span  = tEnd - tStar;
-      let first = true;
-      for(let i=0;i<=Ntail;i++){
-        const tt = tStar + span*(i/Ntail);
-        const tx = Math.max(tMin, Math.min(tMax, tt));
-        const xx = A_m*Math.sin(omega*(tx+obsStartPlaybackOffset));
-        const px = tToX(tx);
-        const py = xToY(xx);
-        if(first){
-          ctx.beginPath();
-          ctx.moveTo(px,py);
-          first=false;
-        }else{
-          ctx.lineTo(px,py);
+      // 1. Νέα καμπύλη για μία περίοδο, με φάση που μηδενίζεται στο tZero
+      if(tEnd > tStart){
+        ctx.save();
+        ctx.strokeStyle='rgba(127,255,212,0.95)';
+        ctx.lineWidth=2;
+        ctx.setLineDash([4,2]);
+        const N2 = 220;
+        ctx.beginPath();
+        for(let i=0;i<=N2;i++){
+          const tt = tStart + (tEnd - tStart)*(i/N2);
+          const phase = omega*(tt - tZero); // νέο t' = tt - tZero, φάση 0 στο tZero
+          const xx = A_m*Math.sin(phase);
+          const px = tToX(tt);
+          const py = xToY(xx);
+          if(i===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
         }
+        ctx.stroke();
+        ctx.restore();
       }
+
+      // 2. Label "νέο t=0 εδώ" + βέλος προς το σημείο (pxZero, pyZero)
+      ctx.save();
+      ctx.font='10px system-ui';
+      const labelText = (currentLang==='en') ? 'new t = 0 here' : 'νέο t = 0 εδώ';
+      const metrics = ctx.measureText(labelText);
+      const padX = 6;
+      const padY = 3;
+      const boxW = metrics.width + padX*2;
+      const boxH = 16;
+
+      let centerLabelX = pxZero;
+      const halfW = boxW/2;
+      if(centerLabelX - halfW < x0+4) centerLabelX = x0+4+halfW;
+      if(centerLabelX + halfW > x1-4) centerLabelX = x1-4-halfW;
+
+      const boxX = centerLabelX - halfW;
+      const boxY = yTop + 4; // μέσα στο frame, λίγο κάτω από το πάνω όριο
+
+      // Στρογγυλεμένο χάπι
+      ctx.strokeStyle='rgba(127,255,212,0.95)';
+      ctx.fillStyle='rgba(127,255,212,0.95)';
+      const r = 6;
+      ctx.beginPath();
+      ctx.moveTo(boxX+r, boxY);
+      ctx.lineTo(boxX+boxW-r, boxY);
+      ctx.quadraticCurveTo(boxX+boxW, boxY, boxX+boxW, boxY+r);
+      ctx.lineTo(boxX+boxW, boxY+boxH-r);
+      ctx.quadraticCurveTo(boxX+boxW, boxY+boxH, boxX+boxW-r, boxY+boxH);
+      ctx.lineTo(boxX+r, boxY+boxH);
+      ctx.quadraticCurveTo(boxX, boxY+boxH, boxX, boxY+boxH-r);
+      ctx.lineTo(boxX, boxY+r);
+      ctx.quadraticCurveTo(boxX, boxY, boxX+r, boxY);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.fillStyle='#000';
+      ctx.fillText(labelText, boxX+padX, boxY+boxH-4);
+
+      // Βέλος από το κέντρο της βάσης του κουτιού προς το σημείο πάνω στην καμπύλη
+      const arrowX1 = centerLabelX;
+      const arrowY1 = boxY + boxH;
+      const arrowX2 = pxZero;
+      const arrowY2 = pyZero; // ακριβώς στο σημείο της καμπύλης (στον άξονα x=0)
+
+      ctx.strokeStyle='rgba(127,255,212,0.95)';
+      ctx.beginPath();
+      ctx.moveTo(arrowX1, arrowY1);
+      ctx.lineTo(arrowX2, arrowY2);
       ctx.stroke();
+
+      // Κεφαλή βέλους
+      const angle = Math.atan2(arrowY2 - arrowY1, arrowX2 - arrowX1);
+      const headLen = 8;
+      const hx1 = arrowX2 - headLen*Math.cos(angle - Math.PI/6);
+      const hy1 = arrowY2 - headLen*Math.sin(angle - Math.PI/6);
+      const hx2 = arrowX2 - headLen*Math.cos(angle + Math.PI/6);
+      const hy2 = arrowY2 - headLen*Math.sin(angle + Math.PI/6);
+      ctx.beginPath();
+      ctx.moveTo(arrowX2, arrowY2);
+      ctx.lineTo(hx1, hy1);
+      ctx.lineTo(hx2, hy2);
+      ctx.closePath();
+      ctx.fill();
+
       ctx.restore();
     }
   }
 }
 
-/* ---------- Νόμοι & mini διαγράμματα ---------- */
+/* ---------- Νόμοι & mini-διαγράμματα ---------- */
 
 let firstLawShown=false;
 
@@ -1010,7 +1050,6 @@ function ensureVelocityChart(){
   sizeLawCanvas(vCan);
   drawVelocityChart();
 }
-
 function ensureAccelerationChart(){
   if(!aCan){
     aCan=document.createElement('canvas');
@@ -1019,7 +1058,6 @@ function ensureAccelerationChart(){
   sizeLawCanvas(aCan);
   drawAccelerationChart();
 }
-
 function ensureAxChart(){
   if(!axCan){
     axCan=document.createElement('canvas');
@@ -1048,15 +1086,6 @@ function showParamsBox(){
   paramWEl.textContent  = 'ω = '+omega.toFixed(3)+' rad/s';
   paramPhiEl.textContent= 'φ₀ = '+phi0deg.toFixed(1)+'°';
   paramsBoxEl.style.display='block';
-}
-
-/* υπολογισμός στιγμής όπου φάση γίνεται 0 (x=0, φορά προς τα δεξιά) */
-function computePhaseZeroCross(){
-  const n = Math.ceil(obsStartPlaybackOffset / T);
-  let tau = n*T - obsStartPlaybackOffset;
-  tau = ((tau % T)+T)%T;
-  if(tau > T) tau = T;
-  xtMarkTime = tau;
 }
 
 /* ---------- Θεατές / bubbles ---------- */
@@ -1113,7 +1142,7 @@ function showViewerAvatar(idx1based){
   const base=parseFloat(el.dataset.baseBottom || '0') || 0;
   let bottom=base;
   if(phase==='act1' || phase==='act2'){
-    bottom=base+ACTS_AVATAR_OFFSET;
+    bottom=base+ACTS_AVATAR_OFFSET; // μόνο η εικόνα κατεβαίνει, οι σκέψεις/ετικέτες αγνοούν αυτό το offset
   }
   el.style.bottom=bottom+'px';
   el.classList.add('visible');
@@ -1223,6 +1252,7 @@ function showBubbleForEvent(ev){
   });
 }
 
+/* Δυναμικό κείμενο με {A},{T},{omega},{x0},{phi0} */
 function expandDynTemplate(tpl){
   if(!tpl) return '';
   const x0=x0Val().toFixed(2);
@@ -1275,12 +1305,9 @@ async function runAct1(){
   phase='act1';
   for(const ev of ACT1){
 
-    if(ev.xtMark){
-      if(xtMarkTime == null){
-        computePhaseZeroCross();
-      }
-      xtMarkActive   = true;
-      xtMarkShowTail = !!ev.xtMarkTail;
+    /* trigger από JSON: όταν κάποιο event έχει "xtZeroMark": true */
+    if(ev.xtZeroMark){
+      xtMarkZeroEnabled = true;
     }
 
     if(ev.close){
@@ -1540,12 +1567,12 @@ function addFoyerRow(item){
     l.style.width='60%';
     l.style.background=bgBase;
     l.style.borderLeft='4px solid '+tint(vi.color||'#ffffff',0.85);
-    l.style.verticalAlign='top';
 
     const r=document.createElement('td');
     r.className='cell cell-right';
     r.style.width='40%';
     r.style.background=bgBase;
+    l.style.verticalAlign='top';
     r.style.verticalAlign='top';
     r.style.borderLeft='4px solid '+tint(vi.color||'#ffffff',0.55);
 
@@ -1582,7 +1609,7 @@ async function runFoyer(){
   phase='foyer';
   setAudienceLights(true);
   foyerEl.style.display='block';
-  startBtn.style.display='none';
+  startBtn.style.display='none'; // μπαίνοντας φουαγιέ εξαφανίζουμε Έναρξη
   boardLeft.innerHTML='';
   boardRight.innerHTML='';
   foyerBubble.style.display='none';
@@ -1628,6 +1655,9 @@ function resetShow(){
   measureRowIdx=0;
   setMode('run');
 
+  // reset για το "νέο t = 0 εδώ"
+  xtMarkZeroEnabled = false;
+
   startBtn.style.display='block';
   countdownOverlay.style.display='none';
   measureBox.style.display='none';
@@ -1652,10 +1682,6 @@ function resetShow(){
   actBubble.style.display='none';
   measureTBody.innerHTML='';
   hideAllViewerAvatars();
-
-  xtMarkActive   = false;
-  xtMarkTime     = null;
-  xtMarkShowTail = false;
 
   if(uXT){
     xtChartEl.innerHTML='';
@@ -1789,6 +1815,7 @@ function animate(now){
   const xMeters=(hookX-cx)/pxPerMeter;
   logMeasurement(tObs,xMeters);
 
+  /* Ghost fade-in/out σαν ανάμνηση */
   if(ghost && ghostSpring){
     const target=ghostActive?1:0;
     const fadeSpeed=3;
