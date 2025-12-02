@@ -199,9 +199,6 @@
     "alsoParams": true
   },
 {
-  "viewer": 3,
-  "left": "Ας βάλουμε εδώ το νέο t = 0...",
-  "graph": "xt",
   "xtMarker": {
     "auto": "phaseZero",
     "label": "εδώ βάζουμε νέο t = 0",
@@ -768,6 +765,7 @@
     }
   ]
 }  
+
 
 
 
