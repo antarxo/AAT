@@ -240,6 +240,9 @@ const A_px  = A_m*pxPerMeter;
 /* offset για avatars στις πράξεις από JSON. Προεπιλογή: -60 */
 let ACTS_AVATAR_OFFSET = -60;
 
+/* διαμόρφωση για marker στο x–t (auto ή manual) */
+let xtMarkerConfig = null;
+
 let ghost       = null;
 let ghostSpring = null;
 let ghostActive = false;
@@ -389,7 +392,7 @@ function logMeasurement(tObs, xMeters){
   try{ tr.scrollIntoView({block:'end'}); }catch(e){}
 }
 
-/* ---------- x(t) canvas ---------- */
+/* ---------- x(t) canvas + auto marker ---------- */
 
 function buildSeriesData(){
   const N = 240;
@@ -415,6 +418,53 @@ function initXTChart(){
   xtChartEl.appendChild(c);
   uXT = c;
   drawXTChart();
+}
+
+/**
+ * Ρύθμιση xtMarker από event:
+ * - auto: "phaseZero" => βρίσκει μόνος του τη στιγμή που η φάση γίνεται 0
+ * - t: αριθμός => explicit t (fallback/manual)
+ */
+function configureXTMarkerFromEvent(ev){
+  const cfg = ev.xtMarker;
+  if(!cfg){
+    xtMarkerConfig = null;
+    return;
+  }
+
+  let tMark = null;
+
+  if(cfg.auto === 'phaseZero'){
+    // θέλουμε t ∈ [0,T) ώστε ω(t+offset) = 0 (mod 2π)
+    const offset = obsStartPlaybackOffset;
+    const offsetRed = ((offset % T)+T)%T;     // [0,T)
+    tMark = T - offsetRed;                    // υποψήφιο
+    if(tMark >= T-1e-6) tMark = 0;            // αν "πέσει" στο Τ, το ταυτίζουμε με 0
+  }
+  else if(typeof cfg.t === 'number'){
+    tMark = cfg.t;
+  }
+
+  if(tMark == null || !isFinite(tMark)){
+    xtMarkerConfig = null;
+    return;
+  }
+
+  // label από JSON (localised ανά γλώσσα στο κάθε dialogs-*.json)
+  const label = typeof cfg.label === 'string' ? cfg.label : '';
+
+  // χρώμα: αν ζητηθεί, του συγκεκριμένου θεατή
+  let color = '#ffd27a';
+  if(cfg.useViewerColor && ev.viewer){
+    const vinfo = viewerInfo(ev.viewer);
+    if(vinfo && vinfo.color) color = vinfo.color;
+  }
+
+  xtMarkerConfig = {
+    t: tMark,
+    label,
+    color
+  };
 }
 
 function drawXTChart(){
@@ -530,6 +580,52 @@ function drawXTChart(){
   ctx.font='10px system-ui';
   const labelX0='x₀ ≈ '+x0val.toFixed(2)+' m';
   ctx.fillText(labelX0, x0+4, yx0-4);
+
+  /* --------- Βελάκι xtMarker (auto ή manual) --------- */
+  if(xtMarkerConfig && typeof xtMarkerConfig.t === 'number'){
+    let tMark = xtMarkerConfig.t;
+
+    // φροντίζουμε να είναι μέσα στο [0,T) για να μη βγει εκτός διαγράμματος
+    const period = T;
+    tMark = ((tMark % period)+period)%period;
+
+    const px = tToX(tMark);
+    const xVal = A_m*Math.sin(omega*(tMark+obsStartPlaybackOffset));
+    const py  = xToY(xVal);
+
+    const c = xtMarkerConfig.color || '#ffd27a';
+
+    ctx.save();
+    ctx.strokeStyle = c;
+    ctx.fillStyle   = c;
+    ctx.lineWidth   = 1.5;
+
+    // κάθετη γραμμή από τον άξονα t μέχρι λίγο πάνω από την καμπύλη
+    const arrowBottom = yBot;
+    const arrowTop    = py - 6;
+    ctx.beginPath();
+    ctx.moveTo(px, arrowBottom);
+    ctx.lineTo(px, arrowTop);
+    ctx.stroke();
+
+    // κεφάλι βέλους πάνω στο σημείο
+    ctx.beginPath();
+    ctx.moveTo(px, arrowTop-6);
+    ctx.lineTo(px-5, arrowTop+2);
+    ctx.lineTo(px+5, arrowTop+2);
+    ctx.closePath();
+    ctx.fill();
+
+    // label πάνω από το βέλος (αν δόθηκε)
+    if(xtMarkerConfig.label){
+      ctx.font = '10px system-ui';
+      ctx.textAlign = 'center';
+      ctx.fillText(xtMarkerConfig.label, px, yTop-2 < 10 ? yTop+10 : yTop-4);
+      ctx.textAlign = 'left';
+    }
+
+    ctx.restore();
+  }
 }
 
 /* ---------- Νόμοι & mini-διαγράμματα ---------- */
@@ -1201,6 +1297,10 @@ async function runAct1(){
         if(ev.alsoParams) showParamsBox();
       }
 
+      if(ev.xtMarker){
+        configureXTMarkerFromEvent(ev);
+      }
+
       if(ev.graph==='xt') initXTChart();
       if(ev.plot ==='v') ensureVelocityChart();
       if(ev.plot ==='a') ensureAccelerationChart();
@@ -1218,6 +1318,10 @@ async function runAct1(){
         if(ev.alsoParams) showParamsBox();
       }
 
+      if(ev.xtMarker){
+        configureXTMarkerFromEvent(ev);
+      }
+
       if(ev.graph==='xt') initXTChart();
       if(ev.plot ==='v') ensureVelocityChart();
       if(ev.plot ==='a') ensureAccelerationChart();
@@ -1231,6 +1335,10 @@ async function runAct1(){
       addLaw(ev.right);
       if(ev.alsoParams) showParamsBox();
 
+      if(ev.xtMarker){
+        configureXTMarkerFromEvent(ev);
+      }
+
       if(ev.graph==='xt') initXTChart();
       if(ev.plot ==='v') ensureVelocityChart();
       if(ev.plot ==='a') ensureAccelerationChart();
@@ -1239,6 +1347,10 @@ async function runAct1(){
 
       await new Promise(r=>setTimeout(r,600));
       continue;
+    }
+
+    if(ev.xtMarker){
+      configureXTMarkerFromEvent(ev);
     }
 
     if(ev.graph==='xt') initXTChart();
@@ -1334,6 +1446,10 @@ async function runAct2(){
         if(ev.alsoParams) showParamsBox();
       }
 
+      if(ev.xtMarker){
+        configureXTMarkerFromEvent(ev);
+      }
+
       if(ev.graph==='xt') initXTChart();
       if(ev.plot ==='v') ensureVelocityChart();
       if(ev.plot ==='a') ensureAccelerationChart();
@@ -1347,6 +1463,10 @@ async function runAct2(){
       addLaw(ev.right);
       if(ev.alsoParams) showParamsBox();
 
+      if(ev.xtMarker){
+        configureXTMarkerFromEvent(ev);
+      }
+
       if(ev.graph==='xt') initXTChart();
       if(ev.plot ==='v') ensureVelocityChart();
       if(ev.plot ==='a') ensureAccelerationChart();
@@ -1355,6 +1475,10 @@ async function runAct2(){
 
       await new Promise(r=>setTimeout(r,600));
       continue;
+    }
+
+    if(ev.xtMarker){
+      configureXTMarkerFromEvent(ev);
     }
 
     if(ev.graph==='xt') initXTChart();
@@ -1532,6 +1656,8 @@ function resetShow(){
   lastSampleObsTime=-Infinity;
   measureRowIdx=0;
   setMode('run');
+
+  xtMarkerConfig = null;
 
   startBtn.style.display='block';
   countdownOverlay.style.display='none';
