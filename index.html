@@ -302,7 +302,7 @@ function applyUITextFromUI(){
   if(startBtn   && ui.startBtn   != null) startBtn.textContent   = ui.startBtn;
 
   if(btnPause   && ui.btnPauseTitle != null) btnPause.title = ui.btnPauseTitle;
-  if(btnPlay    && ui.btnPlayTitle  != null) btnPlay.title  = ui.btnPlayTitle;
+  if	btnPlay    && ui.btnPlayTitle  != null) btnPlay.title  = ui.btnPlayTitle;
   if(btnReset   && ui.btnResetTitle != null) btnReset.title = ui.btnResetTitle;
   if(btnFoyer   && ui.btnFoyerTitle != null) btnFoyer.title = ui.btnFoyerTitle;
 
@@ -435,7 +435,6 @@ function drawXTChart(){
   const yTop=margin;
   const yBot=h-margin;
 
-  // Αν είναι ενεργή η ουρά, επεκτείνουμε τον άξονα t ώστε να χωράει μια περίοδο από το νέο t=0
   const maxT = (xtMarkActive && xtMarkShowTail && xtMarkTime!=null)
     ? (xtMarkTime + T)
     : T;
@@ -451,7 +450,6 @@ function drawXTChart(){
     return mid-(x/xMaxAbs)*amp;
   }
 
-  // Grid
   ctx.save();
   ctx.strokeStyle='rgba(255,255,255,0.18)';
   ctx.lineWidth=1;
@@ -477,7 +475,6 @@ function drawXTChart(){
 
   ctx.restore();
 
-  // Άξονες
   ctx.strokeStyle='rgba(255,255,255,0.6)';
   ctx.lineWidth=1;
   ctx.setLineDash([]);
@@ -498,7 +495,6 @@ function drawXTChart(){
   ctx.rect(x0,yTop,x1-x0,yBot-yTop);
   ctx.stroke();
 
-  // Καμπύλη x(t)
   ctx.strokeStyle='#ffd27a';
   ctx.lineWidth=2;
   ctx.setLineDash([]);
@@ -512,7 +508,6 @@ function drawXTChart(){
   }
   ctx.stroke();
 
-  // Labels
   ctx.fillStyle='#fff';
   ctx.font='11px system-ui';
   ctx.fillText('x(t)', x0+4, yTop+10);
@@ -523,7 +518,7 @@ function drawXTChart(){
 
   ctx.textAlign='center';
   ctx.fillText(tMin.toFixed(1), tToX(tMin), yBot+10);
-  ctx.fillText((tMin+tMax/2).toFixed(1), tToX((tMin+tMax)/2), yBot+10);
+  ctx.fillText(((tMin+tMax)/2).toFixed(1), tToX((tMin+tMax)/2), yBot+10);
   ctx.fillText(tMax.toFixed(1), tToX(tMax), yBot+10);
   ctx.textAlign='left';
 
@@ -531,7 +526,6 @@ function drawXTChart(){
   ctx.fillText('0',  x0+4, xToY(0)+4);
   ctx.fillText('+A', x0+4, xToY(+A_m)+4);
 
-  // Οριζόντια γραμμή στο x0
   const x0val=A_m*Math.sin(omega*(0+obsStartPlaybackOffset));
   const yx0=xToY(x0val);
   ctx.strokeStyle='rgba(255,255,255,0.7)';
@@ -547,21 +541,18 @@ function drawXTChart(){
   const labelX0='x₀ ≈ '+x0val.toFixed(2)+' m';
   ctx.fillText(labelX0, x0+4, yx0-4);
 
-  // ---- Υπόδειξη σημείου καμπύλης & “ουρά” ημιτόνου από εκεί και μετά ----
   if(xtMarkActive && xtMarkTime != null){
     const tStar  = xtMarkTime;
     const pxStar = tToX(tStar);
-    const pyStar = xToY(0); // πάνω στη γραμμή x=0
+    const pyStar = xToY(0);
 
     ctx.save();
 
-    // Σημείο πάνω στην καμπύλη (x=0 στο νέο t=0)
     ctx.fillStyle='#ffeb99';
     ctx.beginPath();
     ctx.arc(pxStar,pyStar,3,0,Math.PI*2);
     ctx.fill();
 
-    // Label “νέο t=0” πιο ψηλά
     const lbl = (currentLang==='en') ? 'new t=0' : 'νέο t=0';
     const labelY = yTop + 6;
     ctx.font='10px system-ui';
@@ -569,7 +560,6 @@ function drawXTChart(){
     ctx.textAlign='left';
     ctx.fillText(lbl, pxStar+6, labelY);
 
-    // Κάθετο βελάκι που ξεκινά κάτω από την ετικέτα και καταλήγει στο σημείο
     const arrowTopY = labelY + 4;
     ctx.strokeStyle='#ffd27a';
     ctx.lineWidth=1.5;
@@ -578,7 +568,6 @@ function drawXTChart(){
     ctx.lineTo(pxStar,pyStar-8);
     ctx.stroke();
 
-    // Τρίγωνη αιχμή ακριβώς πριν τον άξονα x=0
     ctx.beginPath();
     ctx.moveTo(pxStar,pyStar-8);
     ctx.lineTo(pxStar-5,pyStar-18);
@@ -589,7 +578,6 @@ function drawXTChart(){
 
     ctx.restore();
 
-    // Τονισμένη ουρά του ίδιου ημιτόνου για ΜΙΑ περίοδο μετά το νέο t=0
     if(xtMarkShowTail){
       ctx.save();
       ctx.strokeStyle='rgba(127,255,212,0.9)';
@@ -597,8 +585,8 @@ function drawXTChart(){
       ctx.setLineDash([5,3]);
 
       const Ntail = 160;
-      const tEnd  = tStar + T;            // μία περίοδος μετά
-      const span  = tEnd - tStar;         // = T
+      const tEnd  = tStar + T;
+      const span  = tEnd - tStar;
       let first = true;
       for(let i=0;i<=Ntail;i++){
         const tt = tStar + span*(i/Ntail);
@@ -1022,7 +1010,8 @@ function ensureVelocityChart(){
   sizeLawCanvas(vCan);
   drawVelocityChart();
 }
-function ensureAccelerationChart(()=>{
+
+function ensureAccelerationChart(){
   if(!aCan){
     aCan=document.createElement('canvas');
     lawCharts.appendChild(aCan);
@@ -1030,6 +1019,7 @@ function ensureAccelerationChart(()=>{
   sizeLawCanvas(aCan);
   drawAccelerationChart();
 }
+
 function ensureAxChart(){
   if(!axCan){
     axCan=document.createElement('canvas');
@@ -1123,7 +1113,7 @@ function showViewerAvatar(idx1based){
   const base=parseFloat(el.dataset.baseBottom || '0') || 0;
   let bottom=base;
   if(phase==='act1' || phase==='act2'){
-    bottom=base+ACTS_AVATAR_OFFSET; // μόνο η εικόνα κατεβαίνει, οι σκέψεις/ετικέτες αγνοούν αυτό το offset
+    bottom=base+ACTS_AVATAR_OFFSET;
   }
   el.style.bottom=bottom+'px';
   el.classList.add('visible');
@@ -1233,7 +1223,6 @@ function showBubbleForEvent(ev){
   });
 }
 
-/* Δυναμικό κείμενο με {A},{T},{omega},{x0},{phi0} */
 function expandDynTemplate(tpl){
   if(!tpl) return '';
   const x0=x0Val().toFixed(2);
@@ -1286,7 +1275,6 @@ async function runAct1(){
   phase='act1';
   for(const ev of ACT1){
 
-    // Trigger για το x–t βελάκι από JSON
     if(ev.xtMark){
       if(xtMarkTime == null){
         computePhaseZeroCross();
@@ -1594,7 +1582,7 @@ async function runFoyer(){
   phase='foyer';
   setAudienceLights(true);
   foyerEl.style.display='block';
-  startBtn.style.display='none'; // μπαίνοντας φουαγιέ εξαφανίζουμε Έναρξη
+  startBtn.style.display='none';
   boardLeft.innerHTML='';
   boardRight.innerHTML='';
   foyerBubble.style.display='none';
@@ -1665,7 +1653,6 @@ function resetShow(){
   measureTBody.innerHTML='';
   hideAllViewerAvatars();
 
-  // reset x–t marker
   xtMarkActive   = false;
   xtMarkTime     = null;
   xtMarkShowTail = false;
@@ -1802,7 +1789,6 @@ function animate(now){
   const xMeters=(hookX-cx)/pxPerMeter;
   logMeasurement(tObs,xMeters);
 
-  /* Ghost fade-in/out σαν ανάμνηση */
   if(ghost && ghostSpring){
     const target=ghostActive?1:0;
     const fadeSpeed=3;
