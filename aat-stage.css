@@ -239,6 +239,8 @@ body{
   z-index:265;
   pointer-events:none;
   display:none;
+  min-width:220px;       /* ίδιο πλάτος με δεξιά στήλη */
+  text-align:center;     /* κεντράρισμα μέσα στο panel */
 }
 .clock .hint{
   font-size:10px;
@@ -299,9 +301,9 @@ body{
 #xtChart{
   position:absolute;
   right:10px;
-  width:240px;
-  height:160px;
-  top:calc(44px + 28vh + 10px);
+  width:220px;           /* πιο στενό, ευθυγραμμισμένο με measure-box/params */
+  height:120px;          /* μικρότερο ύψος */
+  top:calc(44px + 28vh + 8px);
   display:none;
   z-index:266;
   border:1px dashed rgba(255,255,255,.25);
@@ -312,9 +314,9 @@ body{
 #xSinChart{
   position:absolute;
   right:10px;
-  width:240px;
-  height:160px;
-  top:calc(44px + 28vh + 10px + 160px + 10px);
+  width:220px;           /* ίδιο πλάτος */
+  height:120px;          /* ίδιο μικρό ύψος */
+  top:calc(44px + 28vh + 8px + 120px + 8px);
   display:none;
   z-index:266;
   border:1px dashed rgba(255,255,255,.25);
@@ -325,7 +327,7 @@ body{
 .params-box{
   position:absolute;
   right:10px;
-  top:calc(44px + 28vh + 10px + 160px + 10px + 160px + 10px);
+  top:calc(44px + 28vh + 8px + 120px + 8px + 120px + 8px);
   z-index:268;
   background:rgba(0,0,0,.6);
   color:#fff;
@@ -371,7 +373,7 @@ body{
   top:calc(44px + 220px);
   width:210px;
   z-index:259;
-  transform:translateY(-130px); /* Σήκωμα στήλης mini-γραφημάτων */
+  transform:translateY(-80px); /* λίγο πιο κάτω για να σκεπάζονται λιγότερο */
 }
 .law-charts canvas{
   display:block;
