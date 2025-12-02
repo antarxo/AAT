@@ -200,14 +200,15 @@
   },
 {
   "viewer": 3,
-  "left": "Ας βάλουμε εδώ το νέο t = 0...",
-  "graph": "xt",
-  "xtMarker": {
-    "auto": "phaseZero",
-    "label": "εδώ βάζουμε νέο t = 0",
-    "useViewerColor": true
-  }
-},
+  "xShift": 0,
+  "yOffset": 0,
+  "typeMs": 2500,
+  "pauseMs": 800,
+  "left": "Ας μεταφέρουμε την αρχή του χρόνου εκεί που περνάει για πρώτη φορά από x=0 με φορά προς τα δεξιά…",
+  "right": "",
+  "xtMark": true,
+  "xtMarkTail": true
+}
   {
     "viewer": 2,
     "xShift": 0,
@@ -769,6 +770,7 @@
     }
   ]
 }  
+
 
 
 
