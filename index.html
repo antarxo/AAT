@@ -242,7 +242,7 @@ let ACTS_AVATAR_OFFSET = -60;
 
 /* x–t marker state (βέλος + “ουρά” ημιτόνου) */
 let xtMarkActive   = false;
-let xtMarkTime     = null;   // σε δευτερόλεπτα, 0..T
+let xtMarkTime     = null;   // σε δευτερόλεπτα
 let xtMarkShowTail = false;  // αν θα τονίσουμε την καμπύλη από εκεί και μετά
 
 let ghost       = null;
@@ -396,12 +396,12 @@ function logMeasurement(tObs, xMeters){
 
 /* ---------- x(t) canvas ---------- */
 
-function buildSeriesData(){
+function buildSeriesData(maxT){
   const N = 240;
   const tArr = new Array(N+1);
   const xArr = new Array(N+1);
   for(let i=0;i<=N;i++){
-    const tloc = (i/N)*T;
+    const tloc = (i/N)*maxT;
     tArr[i] = tloc;
     xArr[i] = A_m*Math.sin(omega*(tloc+obsStartPlaybackOffset));
   }
@@ -435,8 +435,13 @@ function drawXTChart(){
   const yTop=margin;
   const yBot=h-margin;
 
-  const [tArr,xArr] = buildSeriesData();
-  const tMin=0, tMax=T;
+  // Αν είναι ενεργή η ουρά, επεκτείνουμε τον άξονα t ώστε να χωράει μια περίοδο από το νέο t=0
+  const maxT = (xtMarkActive && xtMarkShowTail && xtMarkTime!=null)
+    ? (xtMarkTime + T)
+    : T;
+
+  const [tArr,xArr] = buildSeriesData(maxT);
+  const tMin=0, tMax=maxT;
   const xMaxAbs=A_m*1.1;
 
   function tToX(t){ return x0+(t-tMin)/(tMax-tMin)*(x1-x0); }
@@ -452,7 +457,7 @@ function drawXTChart(){
   ctx.lineWidth=1;
   ctx.setLineDash([3,3]);
 
-  const tTicks=[0,T/2,T];
+  const tTicks=[tMin, tMin+(tMax-tMin)/2, tMax];
   tTicks.forEach(t=>{
     const xf=tToX(t);
     ctx.beginPath();
@@ -517,9 +522,9 @@ function drawXTChart(){
   ctx.fillText('t (s)', x1-20, yBot+12);
 
   ctx.textAlign='center';
-  ctx.fillText('0', tToX(0), yBot+10);
-  ctx.fillText((T/2).toFixed(1), tToX(T/2), yBot+10);
-  ctx.fillText(T.toFixed(1), tToX(T), yBot+10);
+  ctx.fillText(tMin.toFixed(1), tToX(tMin), yBot+10);
+  ctx.fillText((tMin+tMax/2).toFixed(1), tToX((tMin+tMax)/2), yBot+10);
+  ctx.fillText(tMax.toFixed(1), tToX(tMax), yBot+10);
   ctx.textAlign='left';
 
   ctx.fillText('-A', x0+4, xToY(-A_m)+4);
@@ -550,14 +555,22 @@ function drawXTChart(){
 
     ctx.save();
 
-    // Σημείο πάνω στην καμπύλη
+    // Σημείο πάνω στην καμπύλη (x=0 στο νέο t=0)
     ctx.fillStyle='#ffeb99';
     ctx.beginPath();
     ctx.arc(pxStar,pyStar,3,0,Math.PI*2);
     ctx.fill();
 
-    // Κάθετο βελάκι από πάνω προς το σημείο
-    const arrowTopY = yTop + 6;
+    // Label “νέο t=0” πιο ψηλά
+    const lbl = (currentLang==='en') ? 'new t=0' : 'νέο t=0';
+    const labelY = yTop + 6;
+    ctx.font='10px system-ui';
+    ctx.fillStyle='#ffd27a';
+    ctx.textAlign='left';
+    ctx.fillText(lbl, pxStar+6, labelY);
+
+    // Κάθετο βελάκι που ξεκινά κάτω από την ετικέτα και καταλήγει στο σημείο
+    const arrowTopY = labelY + 4;
     ctx.strokeStyle='#ffd27a';
     ctx.lineWidth=1.5;
     ctx.beginPath();
@@ -565,7 +578,7 @@ function drawXTChart(){
     ctx.lineTo(pxStar,pyStar-8);
     ctx.stroke();
 
-    // Τρίγωνη αιχμή
+    // Τρίγωνη αιχμή ακριβώς πριν τον άξονα x=0
     ctx.beginPath();
     ctx.moveTo(pxStar,pyStar-8);
     ctx.lineTo(pxStar-5,pyStar-18);
@@ -574,16 +587,9 @@ function drawXTChart(){
     ctx.fillStyle='#ffd27a';
     ctx.fill();
 
-    // Label “νέο t=0”
-    const lbl = (currentLang==='en') ? 'new t=0' : 'νέο t=0';
-    ctx.font='10px system-ui';
-    ctx.fillStyle='#ffd27a';
-    ctx.textAlign='left';
-    ctx.fillText(lbl, pxStar+6, pyStar-20);
-
     ctx.restore();
 
-    // Τονισμένη ουρά του ίδιου ημιτόνου από t* και μετά
+    // Τονισμένη ουρά του ίδιου ημιτόνου για ΜΙΑ περίοδο μετά το νέο t=0
     if(xtMarkShowTail){
       ctx.save();
       ctx.strokeStyle='rgba(127,255,212,0.9)';
@@ -591,11 +597,14 @@ function drawXTChart(){
       ctx.setLineDash([5,3]);
 
       const Ntail = 160;
+      const tEnd  = tStar + T;            // μία περίοδος μετά
+      const span  = tEnd - tStar;         // = T
       let first = true;
       for(let i=0;i<=Ntail;i++){
-        const tt = tStar + (T - tStar)*(i/Ntail);
-        const xx = A_m*Math.sin(omega*(tt+obsStartPlaybackOffset));
-        const px = tToX(tt);
+        const tt = tStar + span*(i/Ntail);
+        const tx = Math.max(tMin, Math.min(tMax, tt));
+        const xx = A_m*Math.sin(omega*(tx+obsStartPlaybackOffset));
+        const px = tToX(tx);
         const py = xToY(xx);
         if(first){
           ctx.beginPath();
@@ -1013,7 +1022,7 @@ function ensureVelocityChart(){
   sizeLawCanvas(vCan);
   drawVelocityChart();
 }
-function ensureAccelerationChart(){
+function ensureAccelerationChart(()=>{
   if(!aCan){
     aCan=document.createElement('canvas');
     lawCharts.appendChild(aCan);
