@@ -240,8 +240,10 @@ const A_px  = A_m*pxPerMeter;
 /* offset για avatars στις πράξεις από JSON. Προεπιλογή: -60 */
 let ACTS_AVATAR_OFFSET = -60;
 
-/* διαμόρφωση για marker στο x–t (auto ή manual) */
-let xtMarkerConfig = null;
+/* x–t marker state (βέλος + “ουρά” ημιτόνου) */
+let xtMarkActive   = false;
+let xtMarkTime     = null;   // σε δευτερόλεπτα, 0..T
+let xtMarkShowTail = false;  // αν θα τονίσουμε την καμπύλη από εκεί και μετά
 
 let ghost       = null;
 let ghostSpring = null;
@@ -392,7 +394,7 @@ function logMeasurement(tObs, xMeters){
   try{ tr.scrollIntoView({block:'end'}); }catch(e){}
 }
 
-/* ---------- x(t) canvas + auto marker ---------- */
+/* ---------- x(t) canvas ---------- */
 
 function buildSeriesData(){
   const N = 240;
@@ -420,53 +422,6 @@ function initXTChart(){
   drawXTChart();
 }
 
-/**
- * Ρύθμιση xtMarker από event:
- * - auto: "phaseZero" => βρίσκει μόνος του τη στιγμή που η φάση γίνεται 0
- * - t: αριθμός => explicit t (fallback/manual)
- */
-function configureXTMarkerFromEvent(ev){
-  const cfg = ev.xtMarker;
-  if(!cfg){
-    xtMarkerConfig = null;
-    return;
-  }
-
-  let tMark = null;
-
-  if(cfg.auto === 'phaseZero'){
-    // θέλουμε t ∈ [0,T) ώστε ω(t+offset) = 0 (mod 2π)
-    const offset = obsStartPlaybackOffset;
-    const offsetRed = ((offset % T)+T)%T;     // [0,T)
-    tMark = T - offsetRed;                    // υποψήφιο
-    if(tMark >= T-1e-6) tMark = 0;            // αν "πέσει" στο Τ, το ταυτίζουμε με 0
-  }
-  else if(typeof cfg.t === 'number'){
-    tMark = cfg.t;
-  }
-
-  if(tMark == null || !isFinite(tMark)){
-    xtMarkerConfig = null;
-    return;
-  }
-
-  // label από JSON (localised ανά γλώσσα στο κάθε dialogs-*.json)
-  const label = typeof cfg.label === 'string' ? cfg.label : '';
-
-  // χρώμα: αν ζητηθεί, του συγκεκριμένου θεατή
-  let color = '#ffd27a';
-  if(cfg.useViewerColor && ev.viewer){
-    const vinfo = viewerInfo(ev.viewer);
-    if(vinfo && vinfo.color) color = vinfo.color;
-  }
-
-  xtMarkerConfig = {
-    t: tMark,
-    label,
-    color
-  };
-}
-
 function drawXTChart(){
   if(!uXT) return;
   const ctx = uXT.getContext('2d');
@@ -491,6 +446,7 @@ function drawXTChart(){
     return mid-(x/xMaxAbs)*amp;
   }
 
+  // Grid
   ctx.save();
   ctx.strokeStyle='rgba(255,255,255,0.18)';
   ctx.lineWidth=1;
@@ -516,6 +472,7 @@ function drawXTChart(){
 
   ctx.restore();
 
+  // Άξονες
   ctx.strokeStyle='rgba(255,255,255,0.6)';
   ctx.lineWidth=1;
   ctx.setLineDash([]);
@@ -536,8 +493,10 @@ function drawXTChart(){
   ctx.rect(x0,yTop,x1-x0,yBot-yTop);
   ctx.stroke();
 
+  // Καμπύλη x(t)
   ctx.strokeStyle='#ffd27a';
   ctx.lineWidth=2;
+  ctx.setLineDash([]);
   ctx.beginPath();
   for(let i=0;i<tArr.length;i++){
     const tx=tArr[i];
@@ -548,6 +507,7 @@ function drawXTChart(){
   }
   ctx.stroke();
 
+  // Labels
   ctx.fillStyle='#fff';
   ctx.font='11px system-ui';
   ctx.fillText('x(t)', x0+4, yTop+10);
@@ -566,6 +526,7 @@ function drawXTChart(){
   ctx.fillText('0',  x0+4, xToY(0)+4);
   ctx.fillText('+A', x0+4, xToY(+A_m)+4);
 
+  // Οριζόντια γραμμή στο x0
   const x0val=A_m*Math.sin(omega*(0+obsStartPlaybackOffset));
   const yx0=xToY(x0val);
   ctx.strokeStyle='rgba(255,255,255,0.7)';
@@ -581,54 +542,76 @@ function drawXTChart(){
   const labelX0='x₀ ≈ '+x0val.toFixed(2)+' m';
   ctx.fillText(labelX0, x0+4, yx0-4);
 
-  /* --------- Βελάκι xtMarker (auto ή manual) --------- */
-  if(xtMarkerConfig && typeof xtMarkerConfig.t === 'number'){
-    let tMark = xtMarkerConfig.t;
-
-    // φροντίζουμε να είναι μέσα στο [0,T) για να μη βγει εκτός διαγράμματος
-    const period = T;
-    tMark = ((tMark % period)+period)%period;
-
-    const px = tToX(tMark);
-    const xVal = A_m*Math.sin(omega*(tMark+obsStartPlaybackOffset));
-    const py  = xToY(xVal);
-
-    const c = xtMarkerConfig.color || '#ffd27a';
+  // ---- Υπόδειξη σημείου καμπύλης & “ουρά” ημιτόνου από εκεί και μετά ----
+  if(xtMarkActive && xtMarkTime != null){
+    const tStar  = xtMarkTime;
+    const pxStar = tToX(tStar);
+    const pyStar = xToY(0); // πάνω στη γραμμή x=0
 
     ctx.save();
-    ctx.strokeStyle = c;
-    ctx.fillStyle   = c;
-    ctx.lineWidth   = 1.5;
 
-    // κάθετη γραμμή από τον άξονα t μέχρι λίγο πάνω από την καμπύλη
-    const arrowBottom = yBot;
-    const arrowTop    = py - 6;
+    // Σημείο πάνω στην καμπύλη
+    ctx.fillStyle='#ffeb99';
     ctx.beginPath();
-    ctx.moveTo(px, arrowBottom);
-    ctx.lineTo(px, arrowTop);
-    ctx.stroke();
-
-    // κεφάλι βέλους πάνω στο σημείο
-    ctx.beginPath();
-    ctx.moveTo(px, arrowTop-6);
-    ctx.lineTo(px-5, arrowTop+2);
-    ctx.lineTo(px+5, arrowTop+2);
-    ctx.closePath();
+    ctx.arc(pxStar,pyStar,3,0,Math.PI*2);
     ctx.fill();
 
-    // label πάνω από το βέλος (αν δόθηκε)
-    if(xtMarkerConfig.label){
-      ctx.font = '10px system-ui';
-      ctx.textAlign = 'center';
-      ctx.fillText(xtMarkerConfig.label, px, yTop-2 < 10 ? yTop+10 : yTop-4);
-      ctx.textAlign = 'left';
-    }
+    // Κάθετο βελάκι από πάνω προς το σημείο
+    const arrowTopY = yTop + 6;
+    ctx.strokeStyle='#ffd27a';
+    ctx.lineWidth=1.5;
+    ctx.beginPath();
+    ctx.moveTo(pxStar,arrowTopY);
+    ctx.lineTo(pxStar,pyStar-8);
+    ctx.stroke();
+
+    // Τρίγωνη αιχμή
+    ctx.beginPath();
+    ctx.moveTo(pxStar,pyStar-8);
+    ctx.lineTo(pxStar-5,pyStar-18);
+    ctx.lineTo(pxStar+5,pyStar-18);
+    ctx.closePath();
+    ctx.fillStyle='#ffd27a';
+    ctx.fill();
+
+    // Label “νέο t=0”
+    const lbl = (currentLang==='en') ? 'new t=0' : 'νέο t=0';
+    ctx.font='10px system-ui';
+    ctx.fillStyle='#ffd27a';
+    ctx.textAlign='left';
+    ctx.fillText(lbl, pxStar+6, pyStar-20);
 
     ctx.restore();
+
+    // Τονισμένη ουρά του ίδιου ημιτόνου από t* και μετά
+    if(xtMarkShowTail){
+      ctx.save();
+      ctx.strokeStyle='rgba(127,255,212,0.9)';
+      ctx.lineWidth=2;
+      ctx.setLineDash([5,3]);
+
+      const Ntail = 160;
+      let first = true;
+      for(let i=0;i<=Ntail;i++){
+        const tt = tStar + (T - tStar)*(i/Ntail);
+        const xx = A_m*Math.sin(omega*(tt+obsStartPlaybackOffset));
+        const px = tToX(tt);
+        const py = xToY(xx);
+        if(first){
+          ctx.beginPath();
+          ctx.moveTo(px,py);
+          first=false;
+        }else{
+          ctx.lineTo(px,py);
+        }
+      }
+      ctx.stroke();
+      ctx.restore();
+    }
   }
 }
 
-/* ---------- Νόμοι & mini-διαγράμματα ---------- */
+/* ---------- Νόμοι & mini διαγράμματα ---------- */
 
 let firstLawShown=false;
 
@@ -1068,6 +1051,15 @@ function showParamsBox(){
   paramsBoxEl.style.display='block';
 }
 
+/* υπολογισμός στιγμής όπου φάση γίνεται 0 (x=0, φορά προς τα δεξιά) */
+function computePhaseZeroCross(){
+  const n = Math.ceil(obsStartPlaybackOffset / T);
+  let tau = n*T - obsStartPlaybackOffset;
+  tau = ((tau % T)+T)%T;
+  if(tau > T) tau = T;
+  xtMarkTime = tau;
+}
+
 /* ---------- Θεατές / bubbles ---------- */
 
 function viewerInfo(idx1based){
@@ -1284,6 +1276,16 @@ function showDynBubble(ev){
 async function runAct1(){
   phase='act1';
   for(const ev of ACT1){
+
+    // Trigger για το x–t βελάκι από JSON
+    if(ev.xtMark){
+      if(xtMarkTime == null){
+        computePhaseZeroCross();
+      }
+      xtMarkActive   = true;
+      xtMarkShowTail = !!ev.xtMarkTail;
+    }
+
     if(ev.close){
       await closeCurtainToAct2();
       return;
@@ -1295,10 +1297,6 @@ async function runAct1(){
       if(ev.right){
         addLaw(ev.right);
         if(ev.alsoParams) showParamsBox();
-      }
-
-      if(ev.xtMarker){
-        configureXTMarkerFromEvent(ev);
       }
 
       if(ev.graph==='xt') initXTChart();
@@ -1318,10 +1316,6 @@ async function runAct1(){
         if(ev.alsoParams) showParamsBox();
       }
 
-      if(ev.xtMarker){
-        configureXTMarkerFromEvent(ev);
-      }
-
       if(ev.graph==='xt') initXTChart();
       if(ev.plot ==='v') ensureVelocityChart();
       if(ev.plot ==='a') ensureAccelerationChart();
@@ -1335,10 +1329,6 @@ async function runAct1(){
       addLaw(ev.right);
       if(ev.alsoParams) showParamsBox();
 
-      if(ev.xtMarker){
-        configureXTMarkerFromEvent(ev);
-      }
-
       if(ev.graph==='xt') initXTChart();
       if(ev.plot ==='v') ensureVelocityChart();
       if(ev.plot ==='a') ensureAccelerationChart();
@@ -1347,10 +1337,6 @@ async function runAct1(){
 
       await new Promise(r=>setTimeout(r,600));
       continue;
-    }
-
-    if(ev.xtMarker){
-      configureXTMarkerFromEvent(ev);
     }
 
     if(ev.graph==='xt') initXTChart();
@@ -1446,10 +1432,6 @@ async function runAct2(){
         if(ev.alsoParams) showParamsBox();
       }
 
-      if(ev.xtMarker){
-        configureXTMarkerFromEvent(ev);
-      }
-
       if(ev.graph==='xt') initXTChart();
       if(ev.plot ==='v') ensureVelocityChart();
       if(ev.plot ==='a') ensureAccelerationChart();
@@ -1463,10 +1445,6 @@ async function runAct2(){
       addLaw(ev.right);
       if(ev.alsoParams) showParamsBox();
 
-      if(ev.xtMarker){
-        configureXTMarkerFromEvent(ev);
-      }
-
       if(ev.graph==='xt') initXTChart();
       if(ev.plot ==='v') ensureVelocityChart();
       if(ev.plot ==='a') ensureAccelerationChart();
@@ -1475,10 +1453,6 @@ async function runAct2(){
 
       await new Promise(r=>setTimeout(r,600));
       continue;
-    }
-
-    if(ev.xtMarker){
-      configureXTMarkerFromEvent(ev);
     }
 
     if(ev.graph==='xt') initXTChart();
@@ -1569,12 +1543,12 @@ function addFoyerRow(item){
     l.style.width='60%';
     l.style.background=bgBase;
     l.style.borderLeft='4px solid '+tint(vi.color||'#ffffff',0.85);
+    l.style.verticalAlign='top';
 
     const r=document.createElement('td');
     r.className='cell cell-right';
     r.style.width='40%';
     r.style.background=bgBase;
-    l.style.verticalAlign='top';
     r.style.verticalAlign='top';
     r.style.borderLeft='4px solid '+tint(vi.color||'#ffffff',0.55);
 
@@ -1657,8 +1631,6 @@ function resetShow(){
   measureRowIdx=0;
   setMode('run');
 
-  xtMarkerConfig = null;
-
   startBtn.style.display='block';
   countdownOverlay.style.display='none';
   measureBox.style.display='none';
@@ -1683,6 +1655,11 @@ function resetShow(){
   actBubble.style.display='none';
   measureTBody.innerHTML='';
   hideAllViewerAvatars();
+
+  // reset x–t marker
+  xtMarkActive   = false;
+  xtMarkTime     = null;
+  xtMarkShowTail = false;
 
   if(uXT){
     xtChartEl.innerHTML='';
