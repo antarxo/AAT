@@ -199,11 +199,15 @@
     "alsoParams": true
   },
 {
+  "viewer": 3,
+  "left": "Ας βάλουμε εδώ το νέο t = 0...",
+  "graph": "xt",
   "xtMarker": {
     "auto": "phaseZero",
     "label": "εδώ βάζουμε νέο t = 0",
     "useViewerColor": true
-  },
+  }
+},
   {
     "viewer": 2,
     "xShift": 0,
@@ -765,6 +769,7 @@
     }
   ]
 }  
+
 
 
 
