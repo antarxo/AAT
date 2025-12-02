@@ -36,8 +36,10 @@
     <div class="sb-lineD" id="signLineD">(*) ... εσείς</div>
   </div>
 
+  <!-- 1. Χρονομετρητής -->
   <div class="clock" id="clock">t = 0.00 s<span class="hint" id="slowHint"></span></div>
 
+  <!-- 2. Πίνακας μετρήσεων t–x (πιο χαμηλός) -->
   <div class="measure-box" id="measureBox">
     <div class="mb-title" id="measureTitle">Μετρήσεις</div>
     <table>
@@ -48,8 +50,13 @@
     </table>
   </div>
 
+  <!-- 3. Γράφημα x–t -->
   <div id="xtChart"></div>
 
+  <!-- 4. Γράφημα x–sin(ωt) -->
+  <div id="xSinChart"></div>
+
+  <!-- 5. Πίνακας A, ω, φ₀ -->
   <div class="params-box" id="paramsBox">
     <div id="paramA"></div>
     <div id="paramW"></div>
@@ -140,8 +147,9 @@
   <div class="foyer-bubble" id="foyerBubble">ΘΕΑΤΗΣ</div>
 </div>
 
-<!-- ΠΡΟΣΘΗΚΗ: φόρτωση intro.js, χωρίς intro_boot.js -->
+<!-- Intro overlay (εξωτερικά js, χωρίς να πειράζουμε τη σκηνή) -->
 <script src="intro.js"></script>
+<script src="intro_boot.js"></script>
 
 <script>
 /* ---------- ΔΕΔΟΜΕΝΑ ΑΠΟ dialogs-*.json ---------- */
@@ -186,6 +194,7 @@ const lawsPane     = document.getElementById('laws');
 const lawsBody     = document.getElementById('lawsBody');
 const lawCharts    = document.getElementById('lawCharts');
 const xtChartEl    = document.getElementById('xtChart');
+const xSinChartEl  = document.getElementById('xSinChart');
 const audienceExtra= document.getElementById('audienceExtra');
 const audienceMain = document.querySelector('.audience-main');
 
@@ -408,6 +417,7 @@ function buildSeriesData(){
 
 function initXTChart(){
   if(uXT) return;
+  if(!xtChartEl) return;
   xtChartEl.style.display='block';
   const c = document.createElement('canvas');
   c.width = 210;
@@ -954,9 +964,12 @@ function ensureAxChart(){
   drawAxChart();
 }
 function ensureXSinChart(){
+  if(!xSinChartEl) return;
+  xSinChartEl.style.display='block';
   if(!xsCan){
     xsCan=document.createElement('canvas');
-    lawCharts.appendChild(xsCan);
+    xSinChartEl.innerHTML='';
+    xSinChartEl.appendChild(xsCan);
   }
   sizeLawCanvas(xsCan);
   drawXSinChart();
@@ -1457,9 +1470,9 @@ function addFoyerRow(item){
     r.style.verticalAlign='top';
     r.style.borderLeft='4px solid '+tint(vi.color||'#ffffff',0.55);
 
-    if(isFormulaBlock(item.right)){
-      r.classList.add('formula');
-    }
+    // Ουδέτερο: δεν αλλάζουμε ιδιαίτερα εμφάνιση για "formula"
+    // (αφήνω το isFormulaBlock αν το θες αργότερα για κάτι άλλο)
+    // if(isFormulaBlock(item.right)){ r.classList.add('formula'); }
 
     row.appendChild(l);
     row.appendChild(r);
@@ -1565,7 +1578,10 @@ function resetShow(){
     xtChartEl.innerHTML='';
     uXT=null;
   }
-  xtChartEl.style.display='none';
+  if(xSinChartEl){
+    xSinChartEl.innerHTML='';
+    xSinChartEl.style.display='none';
+  }
 
   stage.classList.remove('open');
   markerEl.style.left=centerX()+'px';
