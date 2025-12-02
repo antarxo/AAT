@@ -263,14 +263,27 @@ let actorFloorBottomPx  = null;
 
 let audienceLightsOn = true;
 
-/* Κατάσταση για το βελάκι / νέα καμπύλη στο x–t */
-const xtMarkState = {
+/* ---------- XT MARK (νέο t=0 + καμπύλη) ---------- */
+
+// Κατάσταση για το highlight στο x–t
+let xtMarkState = {
   active: false,
-  hasPoint: false,
-  hasTail: false,
-  hasZero: false,
-  t0: 0
+  showTail: false
 };
+
+// Βρίσκουμε τη στιγμή t_zero στο [0,T] όπου x περνάει πρώτη φορά από 0 με φορά προς τα δεξιά
+function xtZeroCrossingTime(){
+  // obsStartPlaybackOffset μπορεί να είναι >T, κρατάμε ισοδύναμο mod T
+  let off = obsStartPlaybackOffset % T;
+  if(off < 0) off += T;
+  if(off === 0) return 0;       // ήδη περνάει από 0 στο t=0
+  return T - off;               // αλλιώς στο τέλος της περιόδου που βλέπουμε
+}
+
+function triggerXtZeroMark(ev){
+  xtMarkState.active   = true;
+  xtMarkState.showTail = !!(ev && ev.xtMarkTail);
+}
 
 /* ---------- UI από JSON.ui ---------- */
 
@@ -410,43 +423,14 @@ function logMeasurement(tObs, xMeters){
   try{ tr.scrollIntoView({block:'end'}); }catch(e){}
 }
 
-/* ---------- Βοηθητικά για “φάση 0” στο x–t ---------- */
-
-function computePhaseZeroTime(){
-  let t0 = -obsStartPlaybackOffset;
-  t0 = t0 % T;
-  if(t0 < 0) t0 += T;
-  return t0;
-}
-
-function resetXtMark(){
-  xtMarkState.active  = false;
-  xtMarkState.hasPoint= false;
-  xtMarkState.hasTail = false;
-  xtMarkState.hasZero = false;
-  xtMarkState.t0      = 0;
-}
-
-function enableXtMark(ev){
-  const any = !!(ev.xtMark || ev.xtMarkTail || ev.xtZeroMark);
-  if(!any) return;
-  const t0 = computePhaseZeroTime();
-  xtMarkState.active   = true;
-  xtMarkState.hasPoint = !!ev.xtMark;
-  xtMarkState.hasTail  = !!ev.xtMarkTail;
-  xtMarkState.hasZero  = !!ev.xtZeroMark;
-  xtMarkState.t0       = t0;
-}
-
 /* ---------- x(t) canvas ---------- */
 
 function buildSeriesData(){
-  const N = 360;
-  const span = 2*T; // 2 περίοδοι για να χωράει η νέα καμπύλη
+  const N = 240;
   const tArr = new Array(N+1);
   const xArr = new Array(N+1);
   for(let i=0;i<=N;i++){
-    const tloc = (i/N)*span;
+    const tloc = (i/N)*T;
     tArr[i] = tloc;
     xArr[i] = A_m*Math.sin(omega*(tloc+obsStartPlaybackOffset));
   }
@@ -482,7 +466,7 @@ function drawXTChart(){
   const yBot=h-margin;
 
   const [tArr,xArr] = buildSeriesData();
-  const tMin=0, tMax=2*T;
+  const tMin=0, tMax=T;
   const xMaxAbs=A_m*1.1;
 
   function tToX(t){ return x0+(t-tMin)/(tMax-tMin)*(x1-x0); }
@@ -492,13 +476,13 @@ function drawXTChart(){
     return mid-(x/xMaxAbs)*amp;
   }
 
-  // grid
+  // Grid
   ctx.save();
   ctx.strokeStyle='rgba(255,255,255,0.18)';
   ctx.lineWidth=1;
   ctx.setLineDash([3,3]);
 
-  const tTicks=[0,T,2*T];
+  const tTicks=[0,T/2,T];
   tTicks.forEach(t=>{
     const xf=tToX(t);
     ctx.beginPath();
@@ -518,7 +502,7 @@ function drawXTChart(){
 
   ctx.restore();
 
-  // άξονες
+  // Άξονες + πλαίσιο
   ctx.strokeStyle='rgba(255,255,255,0.6)';
   ctx.lineWidth=1;
   ctx.setLineDash([]);
@@ -539,10 +523,9 @@ function drawXTChart(){
   ctx.rect(x0,yTop,x1-x0,yBot-yTop);
   ctx.stroke();
 
-  // βασική καμπύλη x(t)
+  // Καμπύλη x(t) βασική
   ctx.strokeStyle='#ffd27a';
   ctx.lineWidth=2;
-  ctx.setLineDash([]);
   ctx.beginPath();
   for(let i=0;i<tArr.length;i++){
     const tx=tArr[i];
@@ -553,7 +536,7 @@ function drawXTChart(){
   }
   ctx.stroke();
 
-  // labels αξόνων
+  // Labels αξόνων
   ctx.fillStyle='#fff';
   ctx.font='11px system-ui';
   ctx.fillText('x(t)', x0+4, yTop+10);
@@ -563,16 +546,16 @@ function drawXTChart(){
   ctx.fillText('t (s)', x1-20, yBot+12);
 
   ctx.textAlign='center';
-  ctx.fillText('0',  tToX(0),  yBot+10);
-  ctx.fillText('T',  tToX(T),  yBot+10);
-  ctx.fillText('2T', tToX(2*T),yBot+10);
+  ctx.fillText('0', tToX(0), yBot+10);
+  ctx.fillText((T/2).toFixed(1), tToX(T/2), yBot+10);
+  ctx.fillText(T.toFixed(1), tToX(T), yBot+10);
   ctx.textAlign='left';
 
   ctx.fillText('-A', x0+4, xToY(-A_m)+4);
   ctx.fillText('0',  x0+4, xToY(0)+4);
   ctx.fillText('+A', x0+4, xToY(+A_m)+4);
 
-  // γραμμή x0
+  // Γραμμή x0
   const x0val=A_m*Math.sin(omega*(0+obsStartPlaybackOffset));
   const yx0=xToY(x0val);
   ctx.strokeStyle='rgba(255,255,255,0.7)';
@@ -588,106 +571,131 @@ function drawXTChart(){
   const labelX0='x₀ ≈ '+x0val.toFixed(2)+' m';
   ctx.fillText(labelX0, x0+4, yx0-4);
 
-  /* ΒΕΛΑΚΙ + ΝΕΑ ΚΑΜΠΥΛΗ ΑΠΟ ΤΗ ΣΤΙΓΜΗ ΦΑΣΗΣ 0 (με xtMark* flags) */
+  /* ---------- XT MARK OVERLAY: νέο t=0 + κόκκινη στικτή καμπύλη ---------- */
   if(xtMarkState.active){
-    const t0 = xtMarkState.t0;
-    const tipT = Math.max(0, Math.min(2*T, t0));
-    const tipX = tToX(tipT);
-    const tipY = xToY(A_m*Math.sin(omega*(tipT+obsStartPlaybackOffset)));
+    const tZero = xtZeroCrossingTime();
+    const px = tToX(tZero);
+    const py = xToY(0);
 
-    // 1. Σημείο πάνω στην καμπύλη (xtMark)
-    if(xtMarkState.hasPoint){
-      ctx.save();
-      ctx.fillStyle='#ffeb3b';
-      ctx.beginPath();
-      ctx.arc(tipX,tipY,3,0,2*Math.PI);
-      ctx.fill();
-      ctx.restore();
+    // 1) Κόκκινη στικτή ημιτονοειδής καμπύλη από tZero και μετά
+    ctx.save();
+    ctx.strokeStyle='rgba(255,80,80,0.9)';
+    ctx.lineWidth=2;
+    ctx.setLineDash([5,4]);
+    const tStart = tZero;
+    const tEnd   = T; // σχεδιάζουμε από το σημείο μέχρι το τέλος του διαστήματος που βλέπει ο μαθητής
+    const N2 = 200;
+    ctx.beginPath();
+    for(let i=0;i<=N2;i++){
+      const t = tStart + (tEnd - tStart)*(i/N2);
+      const tPrime = t - tStart;           // νέο t' με t'=0 στο zero crossing
+      const xPred  = A_m*Math.sin(omega*tPrime);
+      const px2    = tToX(t);
+      const py2    = xToY(xPred);
+      if(i===0) ctx.moveTo(px2,py2); else ctx.lineTo(px2,py2);
     }
+    ctx.stroke();
+    ctx.restore();
 
-    // 2. Τονισμένη καμπύλη 1 περιόδου από t0 (xtMarkTail)
-    if(xtMarkState.hasTail){
+    // 2) Κόκκινη ουρά (κάθετη) αν ζητηθεί από το JSON (xtMarkTail)
+    if(xtMarkState.showTail){
       ctx.save();
-      ctx.strokeStyle='#ffeb3b';
-      ctx.lineWidth=2;
-      ctx.setLineDash([5,3]);
-      const N2 = 200;
-      let started = false;
+      ctx.strokeStyle='rgba(255,80,80,0.75)';
+      ctx.lineWidth=1.3;
+      ctx.setLineDash([3,3]);
       ctx.beginPath();
-      for(let i=0;i<=N2;i++){
-        const tCur = t0 + (i/N2)*T;
-        if(tCur < 0 || tCur > 2*T) continue;
-        const px = tToX(tCur);
-        const py = xToY(A_m*Math.sin(omega*(tCur+obsStartPlaybackOffset)));
-        if(!started){
-          ctx.moveTo(px,py);
-          started=true;
-        }else{
-          ctx.lineTo(px,py);
-        }
-      }
-      if(started) ctx.stroke();
-      ctx.restore();
-    }
-
-    // 3. Label “Νέο t = 0 εδώ” με βέλος (xtZeroMark)
-    if(xtMarkState.hasZero){
-      ctx.save();
-      const label = (currentLang==='en')
-        ? 'New t = 0 here'
-        : 'Νέο t = 0 εδώ';
-
-      ctx.font='11px system-ui';
-      const tw = ctx.measureText(label).width;
-      const boxW = tw + 16;
-      const boxH = 18;
-      let boxX = tipX - boxW/2;
-      const boxY = yTop - boxH - 6;
-      if(boxX < x0+4) boxX = x0+4;
-      if(boxX + boxW > x1-4) boxX = x1 - boxW - 4;
-
-      // χάπι
-      ctx.beginPath();
-      ctx.fillStyle='rgba(0,0,0,0.85)';
-      ctx.strokeStyle='#ffeb3b';
-      ctx.lineWidth=1.4;
-      ctx.moveTo(boxX+8,boxY);
-      ctx.lineTo(boxX+boxW-8,boxY);
-      ctx.quadraticCurveTo(boxX+boxW,boxY,boxX+boxW,boxY+8);
-      ctx.lineTo(boxX+boxW,boxY+boxH-8);
-      ctx.quadraticCurveTo(boxX+boxW,boxY+boxH,boxX+boxW-8,boxY+boxH);
-      ctx.lineTo(boxX+8,boxY+boxH);
-      ctx.quadraticCurveTo(boxX,boxY+boxH,boxX,boxY+boxH-8);
-      ctx.lineTo(boxX,boxY+8);
-      ctx.quadraticCurveTo(boxX,boxY,boxX+8,boxY);
-      ctx.closePath();
-      ctx.fill();
+      ctx.moveTo(px,yBot);
+      ctx.lineTo(px,py);
       ctx.stroke();
-
-      ctx.fillStyle='#ffeb3b';
-      ctx.textBaseline='middle';
-      ctx.fillText(label, boxX+8, boxY+boxH/2);
-
-      // βέλος προς την καμπύλη
-      const arrowStartY = boxY+boxH;
-      ctx.strokeStyle='#ffeb3b';
-      ctx.lineWidth=1.6;
-      ctx.beginPath();
-      ctx.moveTo(tipX, arrowStartY);
-      ctx.lineTo(tipX, tipY);
-      ctx.stroke();
-
-      const ah = 7;
-      const aw = 4;
-      ctx.beginPath();
-      ctx.moveTo(tipX, tipY);
-      ctx.lineTo(tipX-aw, tipY+ah);
-      ctx.lineTo(tipX+aw, tipY+ah);
-      ctx.closePath();
-      ctx.fill();
-
       ctx.restore();
     }
+
+    // 3) Κόκκινο marker στο σημείο (tZero, x=0)
+    ctx.save();
+    ctx.fillStyle='rgba(255,80,80,0.95)';
+    ctx.beginPath();
+    ctx.arc(px,py,3,0,Math.PI*2);
+    ctx.fill();
+    ctx.restore();
+
+    // 4) Χάπι "νέο t=0" + βέλος προς το σημείο
+    const labelText = (currentLang==='en') ? 'new t = 0' : 'νέο t = 0';
+    ctx.save();
+    ctx.font='10px system-ui';
+    const textWidth = ctx.measureText(labelText).width;
+    const padX = 6;
+    const padY = 3;
+    let labelX = px;
+    let labelY = yTop - 18;
+
+    // να μη βγαίνει έξω από το frame
+    const pillHalfW = textWidth/2 + padX;
+    if(labelX < x0 + pillHalfW + 4) labelX = x0 + pillHalfW + 4;
+    if(labelX > x1 - pillHalfW - 4) labelX = x1 - pillHalfW - 4;
+
+    const pillLeft   = labelX - pillHalfW;
+    const pillTop    = labelY - (8 + padY);
+    const pillWidth  = pillHalfW*2;
+    const pillHeight = 16 + 2*padY;
+    const r = 8;
+
+    // χάπι (rounded rect)
+    ctx.beginPath();
+    let x = pillLeft, y = pillTop, w2 = pillWidth, h2 = pillHeight;
+    ctx.moveTo(x+r,y);
+    ctx.lineTo(x+w2-r,y);
+    ctx.quadraticCurveTo(x+w2,y,x+w2,y+r);
+    ctx.lineTo(x+w2,y+h2-r);
+    ctx.quadraticCurveTo(x+w2,y+h2,x+w2-r,y+h2);
+    ctx.lineTo(x+r,y+h2);
+    ctx.quadraticCurveTo(x,y+h2,x,y+h2-r);
+    ctx.lineTo(x,y+r);
+    ctx.quadraticCurveTo(x,y,x+r,y);
+    ctx.closePath();
+    ctx.fillStyle='rgba(80,0,0,0.88)';
+    ctx.strokeStyle='rgba(255,80,80,0.95)';
+    ctx.lineWidth=1.3;
+    ctx.fill();
+    ctx.stroke();
+
+    // κείμενο
+    ctx.fillStyle='rgba(255,230,230,0.98)';
+    ctx.textBaseline='middle';
+    ctx.textAlign='center';
+    ctx.fillText(labelText,labelX,labelY);
+
+    // βέλος από το κάτω μέρος του χαπιού στο σημείο
+    const arrowStartX = labelX;
+    const arrowStartY = pillTop + pillHeight;
+    const arrowEndX   = px;
+    const arrowEndY   = py - 6;
+
+    ctx.strokeStyle='rgba(255,80,80,0.95)';
+    ctx.lineWidth=1.6;
+    ctx.setLineDash([]);
+    ctx.beginPath();
+    ctx.moveTo(arrowStartX,arrowStartY);
+    ctx.lineTo(arrowEndX,arrowEndY);
+    ctx.stroke();
+
+    // κεφαλή βέλους
+    const angle = Math.atan2(arrowEndY-arrowStartY, arrowEndX-arrowStartX);
+    const headLen = 8;
+    ctx.beginPath();
+    ctx.moveTo(arrowEndX,arrowEndY);
+    ctx.lineTo(
+      arrowEndX - headLen*Math.cos(angle - Math.PI/6),
+      arrowEndY - headLen*Math.sin(angle - Math.PI/6)
+    );
+    ctx.lineTo(
+      arrowEndX - headLen*Math.cos(angle + Math.PI/6),
+      arrowEndY - headLen*Math.sin(angle + Math.PI/6)
+    );
+    ctx.closePath();
+    ctx.fillStyle='rgba(255,80,80,0.95)';
+    ctx.fill();
+
+    ctx.restore();
   }
 }
 
@@ -1350,10 +1358,6 @@ function showDynBubble(ev){
 async function runAct1(){
   phase='act1';
   for(const ev of ACT1){
-    if(ev.xtMark || ev.xtMarkTail || ev.xtZeroMark){
-      enableXtMark(ev);
-    }
-
     if(ev.close){
       await closeCurtainToAct2();
       return;
@@ -1373,6 +1377,12 @@ async function runAct1(){
       if(ev.plot ==='ax')ensureAxChart();
       if(ev.plot ==='xsin')ensureXSinChart();
 
+      // >>> XT MARK trigger από JSON (π.χ. xtZeroMark: true, xtMarkTail: true)
+      if(ev.xtZeroMark){
+        initXTChart();
+        triggerXtZeroMark(ev);
+      }
+
       continue;
     }
 
@@ -1390,6 +1400,11 @@ async function runAct1(){
       if(ev.plot ==='ax')ensureAxChart();
       if(ev.plot ==='xsin')ensureXSinChart();
 
+      if(ev.xtZeroMark){
+        initXTChart();
+        triggerXtZeroMark(ev);
+      }
+
       continue;
     }
 
@@ -1403,6 +1418,11 @@ async function runAct1(){
       if(ev.plot ==='ax')ensureAxChart();
       if(ev.plot ==='xsin')ensureXSinChart();
 
+      if(ev.xtZeroMark){
+        initXTChart();
+        triggerXtZeroMark(ev);
+      }
+
       await new Promise(r=>setTimeout(r,600));
       continue;
     }
@@ -1412,6 +1432,11 @@ async function runAct1(){
     if(ev.plot ==='a') ensureAccelerationChart();
     if(ev.plot ==='ax')ensureAxChart();
     if(ev.plot ==='xsin')ensureXSinChart();
+
+    if(ev.xtZeroMark){
+      initXTChart();
+      triggerXtZeroMark(ev);
+    }
   }
 }
 
@@ -1489,10 +1514,6 @@ async function runAct2(){
   markerGhostEl.style.opacity='0';
 
   for(const ev of ACT2){
-    if(ev.xtMark || ev.xtMarkTail || ev.xtZeroMark){
-      enableXtMark(ev);
-    }
-
     if(ev.gStart) ghostActive=true;
     if(ev.gStop)  ghostActive=false;
 
@@ -1624,10 +1645,6 @@ function addFoyerRow(item){
     r.style.verticalAlign='top';
     r.style.borderLeft='4px solid '+tint(vi.color||'#ffffff',0.55);
 
-    if(isFormulaBlock(item.right)){
-      r.classList.add('formula');
-    }
-
     row.appendChild(l);
     row.appendChild(r);
 
@@ -1657,7 +1674,7 @@ async function runFoyer(){
   phase='foyer';
   setAudienceLights(true);
   foyerEl.style.display='block';
-  startBtn.style.display='none';
+  startBtn.style.display='none'; // μπαίνοντας φουαγιέ εξαφανίζουμε Έναρξη
   boardLeft.innerHTML='';
   boardRight.innerHTML='';
   foyerBubble.style.display='none';
@@ -1703,7 +1720,9 @@ function resetShow(){
   measureRowIdx=0;
   setMode('run');
 
-  resetXtMark();
+  // reset του xtMarkState
+  xtMarkState.active = false;
+  xtMarkState.showTail = false;
 
   startBtn.style.display='block';
   countdownOverlay.style.display='none';
