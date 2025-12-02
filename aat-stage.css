@@ -28,7 +28,7 @@ body{
 .curtain-upper,
 .curtain-side{
   position:absolute;
-  transition:transform 1.2s cubic-bezier(.2,.9,.2,1),opacity 1s;
+  transition:transform 1.2s cubic-bezier(.2,.9,.2,1),opacity 1s,filter .8s ease;
 }
 .curtain-top{
   top:0;
@@ -223,7 +223,7 @@ body{
   opacity:.9;
 }
 
-/* Ρολόι / Μετρήσεις / x–t */
+/* Ρολόι / Μετρήσεις / x–t / x–sin(ωt) / Params */
 
 .clock{
   position:absolute;
@@ -259,7 +259,7 @@ body{
   border-radius:8px;
   padding:6px 8px;
   display:none;
-  max-height:46vh;
+  max-height:28vh;      /* πιο χαμηλός πίνακας */
   overflow-y:auto;
   font-size:12px;
 }
@@ -295,35 +295,37 @@ body{
   transition:background .6s ease;
 }
 
+/* Γράφημα x–t */
 #xtChart{
   position:absolute;
   right:10px;
-  bottom:10px;
   width:240px;
-  height:180px;
+  height:160px;
+  top:calc(44px + 28vh + 10px);
   display:none;
   z-index:266;
   border:1px dashed rgba(255,255,255,.25);
   pointer-events:none;
 }
-.uplot{
-  background:rgba(0,0,0,.2);
-  border-radius:6px;
-}
-.u-legend{
-  display:none!important;
-}
-.u-axis text{
-  fill:#fff;
-}
-.u-grid line{
-  stroke:rgba(255,255,255,.25);
+
+/* Γράφημα x–sin(ωt) */
+#xSinChart{
+  position:absolute;
+  right:10px;
+  width:240px;
+  height:160px;
+  top:calc(44px + 28vh + 10px + 160px + 10px);
+  display:none;
+  z-index:266;
+  border:1px dashed rgba(255,255,255,.25);
+  pointer-events:none;
 }
 
+/* Πίνακας A, ω, φ₀ */
 .params-box{
   position:absolute;
   right:10px;
-  top:calc(44px + 46vh + 10px);
+  top:calc(44px + 28vh + 10px + 160px + 10px + 160px + 10px);
   z-index:268;
   background:rgba(0,0,0,.6);
   color:#fff;
@@ -369,6 +371,7 @@ body{
   top:calc(44px + 220px);
   width:210px;
   z-index:259;
+  transform:translateY(-130px); /* Σήκωμα στήλης mini-γραφημάτων */
 }
 .law-charts canvas{
   display:block;
@@ -645,25 +648,28 @@ body{
 .actbreak,
 .foyerbreak{
   position:absolute;
-  left:18%;
-  width:64%;
-  top:26%;
-  height:44%;
-  background:transparent; /* ΔΕΝ μαυρίζει πλέον όλη την περιοχή */
+  left:0;
+  top:0;
+  width:100%;
+  height:100%;
+  background:transparent; /* όχι full dark overlay */
   color:#fff;
   z-index:410;
   display:none;
   align-items:center;
   justify-content:center;
   text-align:center;
+  pointer-events:none;
 }
 .actbreak .box,
 .foyerbreak .box{
-  background:rgba(0,0,0,.7);
+  pointer-events:auto;
+  background:rgba(0,0,0,.8);
   border:1px solid rgba(255,255,255,.25);
   border-radius:12px;
   padding:16px 20px;
   max-width:520px;
+  margin:auto;
 }
 .actbreak h3,
 .foyerbreak h3{
@@ -752,21 +758,15 @@ body{
   background:rgba(0,0,0,.75);
 }
 
-/* Σήκωμα στήλης mini-γραφημάτων */
-.law-charts{
-  transform:translateY(-130px);
-}
-
 /* Φώτα κοινού + κουρτίνες dim */
 .audience-main,
-.audience-extra,
-.curtain-top,
-.curtain-upper,
-.curtain-side{
+.audience-extra{
   transition:filter .8s ease;
 }
 .audience-main.dimmed,
-.audience-extra.dimmed,
+.audience-extra.dimmed{
+  filter:brightness(0.5);
+}
 .curtain-top.dimmed,
 .curtain-upper.dimmed,
 .curtain-side.dimmed{
