@@ -207,7 +207,8 @@
   "left": "Ας μεταφέρουμε την αρχή του χρόνου εκεί που περνάει για πρώτη φορά από x=0 με φορά προς τα δεξιά…",
   "right": "",
   "xtMark": true,
-  "xtMarkTail": true
+  "xtMarkTail": true,
+	"xtZeroMark": true
 },
   {
     "viewer": 2,
@@ -770,6 +771,7 @@
     }
   ]
 }  
+
 
 
 
