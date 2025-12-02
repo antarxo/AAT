@@ -649,7 +649,7 @@ body{
   width:64%;
   top:26%;
   height:44%;
-  background:rgba(0,0,0,.55);
+  background:transparent; /* ΔΕΝ μαυρίζει πλέον όλη την περιοχή */
   color:#fff;
   z-index:410;
   display:none;
@@ -721,13 +721,6 @@ body{
   padding:6px 10px;
   border-bottom:1px dashed rgba(255,255,255,.18);
   white-space:pre-wrap;
-}
-.cell.formula{
-  color:#fffde7;
-  border-left-width:6px!important;
-  font-weight:600;
-  box-shadow:0 0 0 1px rgba(0,0,0,0.35) inset;
-  background:rgba(8,8,18,0.95)!important;
 }
 
 /* ---------- Μεταφορά πρώην inline styles ---------- */
