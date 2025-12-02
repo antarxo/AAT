@@ -249,6 +249,9 @@ const pxPerMeter = 50;
 const omega = 2*Math.PI/T;
 const A_px  = A_m*pxPerMeter;
 
+/* συνολικός χρόνος άξονα x–t: 2T */
+const XT_TOTAL_T = 2*T;
+
 /* offset για avatars στις πράξεις από JSON. Προεπιλογή: -60 */
 let ACTS_AVATAR_OFFSET = -60;
 
@@ -265,7 +268,6 @@ let audienceLightsOn = true;
 
 /* ---------- XT MARK (νέο t=0 + καμπύλη) ---------- */
 
-// Κατάσταση για το highlight στο x–t
 let xtMarkState = {
   active: false,
   showTail: false
@@ -273,11 +275,10 @@ let xtMarkState = {
 
 // Βρίσκουμε τη στιγμή t_zero στο [0,T] όπου x περνάει πρώτη φορά από 0 με φορά προς τα δεξιά
 function xtZeroCrossingTime(){
-  // obsStartPlaybackOffset μπορεί να είναι >T, κρατάμε ισοδύναμο mod T
   let off = obsStartPlaybackOffset % T;
   if(off < 0) off += T;
-  if(off === 0) return 0;       // ήδη περνάει από 0 στο t=0
-  return T - off;               // αλλιώς στο τέλος της περιόδου που βλέπουμε
+  if(off === 0) return 0;
+  return T - off;
 }
 
 function triggerXtZeroMark(ev){
@@ -427,10 +428,11 @@ function logMeasurement(tObs, xMeters){
 
 function buildSeriesData(){
   const N = 240;
+  const span = XT_TOTAL_T;
   const tArr = new Array(N+1);
   const xArr = new Array(N+1);
   for(let i=0;i<=N;i++){
-    const tloc = (i/N)*T;
+    const tloc = (i/N)*span;
     tArr[i] = tloc;
     xArr[i] = A_m*Math.sin(omega*(tloc+obsStartPlaybackOffset));
   }
@@ -466,7 +468,7 @@ function drawXTChart(){
   const yBot=h-margin;
 
   const [tArr,xArr] = buildSeriesData();
-  const tMin=0, tMax=T;
+  const tMin=0, tMax=XT_TOTAL_T;
   const xMaxAbs=A_m*1.1;
 
   function tToX(t){ return x0+(t-tMin)/(tMax-tMin)*(x1-x0); }
@@ -482,7 +484,7 @@ function drawXTChart(){
   ctx.lineWidth=1;
   ctx.setLineDash([3,3]);
 
-  const tTicks=[0,T/2,T];
+  const tTicks=[0, T, 2*T];
   tTicks.forEach(t=>{
     const xf=tToX(t);
     ctx.beginPath();
@@ -523,7 +525,7 @@ function drawXTChart(){
   ctx.rect(x0,yTop,x1-x0,yBot-yTop);
   ctx.stroke();
 
-  // Καμπύλη x(t) βασική
+  // Καμπύλη x(t) βασική (κίτρινη) σε 0..2T
   ctx.strokeStyle='#ffd27a';
   ctx.lineWidth=2;
   ctx.beginPath();
@@ -546,9 +548,9 @@ function drawXTChart(){
   ctx.fillText('t (s)', x1-20, yBot+12);
 
   ctx.textAlign='center';
-  ctx.fillText('0', tToX(0), yBot+10);
-  ctx.fillText((T/2).toFixed(1), tToX(T/2), yBot+10);
-  ctx.fillText(T.toFixed(1), tToX(T), yBot+10);
+  ctx.fillText('0',   tToX(0),   yBot+10);
+  ctx.fillText(T.toFixed(1),   tToX(T),   yBot+10);
+  ctx.fillText((2*T).toFixed(1), tToX(2*T), yBot+10);
   ctx.textAlign='left';
 
   ctx.fillText('-A', x0+4, xToY(-A_m)+4);
@@ -571,19 +573,20 @@ function drawXTChart(){
   const labelX0='x₀ ≈ '+x0val.toFixed(2)+' m';
   ctx.fillText(labelX0, x0+4, yx0-4);
 
-  /* ---------- XT MARK OVERLAY: νέο t=0 + κόκκινη στικτή καμπύλη ---------- */
+  /* ---------- XT MARK OVERLAY: νέο t=0 + κόκκινη καμπύλη ---------- */
   if(xtMarkState.active){
     const tZero = xtZeroCrossingTime();
     const px = tToX(tZero);
     const py = xToY(0);
 
-    // 1) Κόκκινη στικτή ημιτονοειδής καμπύλη από tZero και μετά
+    // 1) Κόκκινη ημιτονική καμπύλη (όχι στικτή) από tZero και για 1 περίοδο
     ctx.save();
     ctx.strokeStyle='rgba(255,80,80,0.9)';
     ctx.lineWidth=2;
-    ctx.setLineDash([5,4]);
+    ctx.setLineDash([]);
+    const chartTmax = XT_TOTAL_T;
     const tStart = tZero;
-    const tEnd   = T; // σχεδιάζουμε από το σημείο μέχρι το τέλος του διαστήματος που βλέπει ο μαθητής
+    const tEnd   = Math.min(chartTmax, tZero + T);
     const N2 = 200;
     ctx.beginPath();
     for(let i=0;i<=N2;i++){
@@ -628,7 +631,6 @@ function drawXTChart(){
     let labelX = px;
     let labelY = yTop - 18;
 
-    // να μη βγαίνει έξω από το frame
     const pillHalfW = textWidth/2 + padX;
     if(labelX < x0 + pillHalfW + 4) labelX = x0 + pillHalfW + 4;
     if(labelX > x1 - pillHalfW - 4) labelX = x1 - pillHalfW - 4;
@@ -639,18 +641,17 @@ function drawXTChart(){
     const pillHeight = 16 + 2*padY;
     const r = 8;
 
-    // χάπι (rounded rect)
     ctx.beginPath();
-    let x = pillLeft, y = pillTop, w2 = pillWidth, h2 = pillHeight;
-    ctx.moveTo(x+r,y);
-    ctx.lineTo(x+w2-r,y);
-    ctx.quadraticCurveTo(x+w2,y,x+w2,y+r);
-    ctx.lineTo(x+w2,y+h2-r);
-    ctx.quadraticCurveTo(x+w2,y+h2,x+w2-r,y+h2);
-    ctx.lineTo(x+r,y+h2);
-    ctx.quadraticCurveTo(x,y+h2,x,y+h2-r);
-    ctx.lineTo(x,y+r);
-    ctx.quadraticCurveTo(x,y,x+r,y);
+    let X = pillLeft, Y = pillTop, W2 = pillWidth, H2 = pillHeight;
+    ctx.moveTo(X+r,Y);
+    ctx.lineTo(X+W2-r,Y);
+    ctx.quadraticCurveTo(X+W2,Y,X+W2,Y+r);
+    ctx.lineTo(X+W2,Y+H2-r);
+    ctx.quadraticCurveTo(X+W2,Y+H2,X+W2-r,Y+H2);
+    ctx.lineTo(X+r,Y+H2);
+    ctx.quadraticCurveTo(X,Y+H2,X,Y+H2-r);
+    ctx.lineTo(X,Y+r);
+    ctx.quadraticCurveTo(X,Y,X+r,Y);
     ctx.closePath();
     ctx.fillStyle='rgba(80,0,0,0.88)';
     ctx.strokeStyle='rgba(255,80,80,0.95)';
@@ -658,13 +659,11 @@ function drawXTChart(){
     ctx.fill();
     ctx.stroke();
 
-    // κείμενο
     ctx.fillStyle='rgba(255,230,230,0.98)';
     ctx.textBaseline='middle';
     ctx.textAlign='center';
     ctx.fillText(labelText,labelX,labelY);
 
-    // βέλος από το κάτω μέρος του χαπιού στο σημείο
     const arrowStartX = labelX;
     const arrowStartY = pillTop + pillHeight;
     const arrowEndX   = px;
@@ -678,7 +677,6 @@ function drawXTChart(){
     ctx.lineTo(arrowEndX,arrowEndY);
     ctx.stroke();
 
-    // κεφαλή βέλους
     const angle = Math.atan2(arrowEndY-arrowStartY, arrowEndX-arrowStartX);
     const headLen = 8;
     ctx.beginPath();
@@ -1196,7 +1194,7 @@ function showViewerAvatar(idx1based){
   const base=parseFloat(el.dataset.baseBottom || '0') || 0;
   let bottom=base;
   if(phase==='act1' || phase==='act2'){
-    bottom=base+ACTS_AVATAR_OFFSET; // μόνο η εικόνα κατεβαίνει, οι σκέψεις/ετικέτες αγνοούν αυτό το offset
+    bottom=base+ACTS_AVATAR_OFFSET;
   }
   el.style.bottom=bottom+'px';
   el.classList.add('visible');
@@ -1377,7 +1375,6 @@ async function runAct1(){
       if(ev.plot ==='ax')ensureAxChart();
       if(ev.plot ==='xsin')ensureXSinChart();
 
-      // >>> XT MARK trigger από JSON (π.χ. xtZeroMark: true, xtMarkTail: true)
       if(ev.xtZeroMark){
         initXTChart();
         triggerXtZeroMark(ev);
@@ -1674,7 +1671,7 @@ async function runFoyer(){
   phase='foyer';
   setAudienceLights(true);
   foyerEl.style.display='block';
-  startBtn.style.display='none'; // μπαίνοντας φουαγιέ εξαφανίζουμε Έναρξη
+  startBtn.style.display='none';
   boardLeft.innerHTML='';
   boardRight.innerHTML='';
   foyerBubble.style.display='none';
@@ -1720,7 +1717,6 @@ function resetShow(){
   measureRowIdx=0;
   setMode('run');
 
-  // reset του xtMarkState
   xtMarkState.active = false;
   xtMarkState.showTail = false;
 
@@ -1884,7 +1880,6 @@ function animate(now){
   const xMeters=(hookX-cx)/pxPerMeter;
   logMeasurement(tObs,xMeters);
 
-  /* Ghost fade-in/out σαν ανάμνηση */
   if(ghost && ghostSpring){
     const target=ghostActive?1:0;
     const fadeSpeed=3;
