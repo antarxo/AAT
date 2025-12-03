@@ -261,7 +261,7 @@ body{
   border-radius:8px;
   padding:6px 8px;
   display:none;
-  max-height:28vh;      /* πιο χαμηλός πίνακας */
+  max-height:25vh;      /* πιο χαμηλός πίνακας */
   overflow-y:auto;
   font-size:12px;
 }
@@ -782,3 +782,4 @@ body{
 .viewers .viewer-avatar.lit{
   filter:brightness(0.8);
 }
+
