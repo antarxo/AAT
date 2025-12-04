@@ -90,17 +90,6 @@
       margin:4px 0;
     }
 
-    .two-columns{
-      display:grid;
-      grid-template-columns:2.2fr 1.3fr;
-      gap:16px;
-    }
-    @media(max-width:800px){
-      .two-columns{
-        grid-template-columns:1fr;
-      }
-    }
-
     figure{
       margin:4px 0 10px;
       background:#ffffff;
@@ -129,41 +118,65 @@
       color:#7c2d12;
     }
 
-    /* Διαλόγοι από JSON */
+    /* -------- Διάλογοι: δίστηλη παρουσίαση -------- */
+
     .dialog-block{
       margin-top:10px;
     }
-    .dialog-line{
-      margin:4px 0;
+
+    .dialog-table{
+      border-radius:10px;
+      border:1px solid #e5e7eb;
+      overflow:hidden;
+      background:#ffffff;
+    }
+
+    .dialog-row{
+      display:grid;
+      grid-template-columns:minmax(0,2.3fr) minmax(0,1.1fr);
+      border-top:1px solid #e5e7eb;
+    }
+    .dialog-row:first-child{
+      border-top:none;
+    }
+
+    .dialog-cell{
+      padding:8px 10px;
+      font-size:.95rem;
+      vertical-align:top;
+    }
+    .dialog-cell.left{
+      border-right:1px solid #e5e7eb;
+    }
+    .dialog-cell.right{
+      background:#f9fafb;
+      font-size:.88rem;
+      font-family:"SF Mono","JetBrains Mono","Fira Code","Courier New",monospace;
+      white-space:pre-wrap;
+    }
+
+    .speaker{
+      font-weight:600;
+      font-size:.88rem;
+      margin-bottom:2px;
+      color:#111827;
+    }
+    .speech{
       font-size:.95rem;
     }
-    .dialog-line .speaker{
-      font-weight:600;
-      margin-right:4px;
-    }
-    .dialog-line .text{
-      display:inline;
-    }
-    .dialog-law{
-      margin:2px 0 6px 20px;
-      font-size:.9rem;
-      font-family:"SF Mono","JetBrains Mono","Fira Code","Courier New",monospace;
-      color:#374151;
-    }
+
     .dialog-meta{
       margin-top:4px;
-      font-size:.8rem;
+      font-size:.78rem;
       color:#9ca3af;
     }
 
-    .foyer-block .dialog-line{
-      padding:4px 6px;
-      border-left:3px solid #e5e7eb;
-      background:#ffffff;
-      border-radius:4px;
+    /* Φουαγιέ μπορεί να είναι λίγο πιο “σφιχτό” */
+    .foyer-block .dialog-table{
+      margin-top:4px;
     }
-    .foyer-block .dialog-law{
-      margin-left:28px;
+    .foyer-block .dialog-cell.left{
+      background:#fdfefe;
     }
 
     .footer-note{
@@ -173,6 +186,12 @@
       font-size:.85rem;
       color:#6b7280;
     }
+
+    @media (max-width:768px){
+      .dialog-row{
+        grid-template-columns:1.8fr 1.2fr;
+      }
+    }
   </style>
 </head>
 <body>
@@ -181,7 +200,7 @@
   <header>
     <h1>Βιβλίο Παράστασης — Απλή Αρμονική Ταλάντωση</h1>
     <div class="subtitle">
-      Η ίδια παράσταση, σε ρυθμό ανάγνωσης. Διαλόγοι, νόμοι και διαγράμματα, από το dialogs-*.json.
+      Η ίδια παράσταση, σε ρυθμό ανάγνωσης: δίστηλη παρουσίαση διαλόγων και νόμων, κατευθείαν από το dialogs-*.json.
     </div>
   </header>
 
@@ -193,9 +212,10 @@
     <div class="card">
       <p>
         Στην παράσταση παρακολουθούμε τον ταλαντωτή <b>(m₁, D₁)</b> σε ευθύγραμμη
-        παλινδρομική κίνηση, η οποία περιγράφεται από νόμο τύπου
-        <span class="formula">x(t) = A·ημ(ωt + φ₀)</span>
+        παλινδρομική κίνηση, η οποία περιγράφεται από νόμο τύπου:
       </p>
+      <div class="formula">x(t) = A·ημ(ωt + φ₀)</div>
+
       <p>
         Όλες οι σκέψεις των θεατών, οι νόμοι που εμφανίζονται στη δεξιά στήλη και
         τα διαγράμματα x–t, x–ημ(ωt+φ₀), υ–t, a–t, a–x αναφέρονται στην
@@ -214,12 +234,11 @@
       <div class="note-box">
         Οι αριθμητικές τιμές <span data-param="A"></span>, <span data-param="T"></span>,
         <span data-param="omega"></span>, <span data-param="x0"></span>, <span data-param="phi0"></span>
-        ρυθμίζονται στο script στο τέλος της σελίδας. Το ίδιο template μπορεί να δουλέψει
-        για άλλο “σετ” τιμών της Α.Α.Τ.
+        ρυθμίζονται στο script στο τέλος της σελίδας. Το ίδιο template μπορεί να
+        χρησιμοποιηθεί για διαφορετικά “σετ” τιμών Α.Α.Τ.
       </div>
 
       <figure>
-        <!-- Screenshot σκηνής (προαιρετικά) -->
         <img src="stage_snapshot.png" alt="Στιγμιότυπο σκηνής (ενδεικτικό)">
         <figcaption>Ενδεικτικό στιγμιότυπο της σκηνής με τον ταλαντωτή (m₁, D₁) και το κοινό.</figcaption>
       </figure>
@@ -234,8 +253,8 @@
     <div class="card">
       <p class="muted">
         Οι παρακάτω γραμμές προέρχονται απευθείας από το <code>act1</code> του
-        <code>dialogs-*.json</code>. Ο αναγνώστης βλέπει με τη σειρά τις σκέψεις
-        των θεατών, όπως ακούγονται στην παράσταση.
+        <code>dialogs-*.json</code>. Στην αριστερή στήλη φαίνονται οι σκέψεις
+        των θεατών, στη δεξιά οι αντίστοιχοι νόμοι/τύποι που εμφανίζονται στη σκηνή.
       </p>
 
       <div id="act1Transcript" class="dialog-block"></div>
@@ -249,8 +268,8 @@
 
     <div class="card">
       <p class="muted">
-        Και εδώ ο κορμός προέρχεται από το <code>act2</code> του ίδιου JSON:
-        οι θεατές σχολιάζουν πώς “καταφέρνει” ο (m₁, D₁) να πραγματοποιεί Α.Α.Τ.
+        Ομοίως, η Πράξη 2 (<code>act2</code> στο JSON) καταγράφεται δίστηλα: διάλογος
+        αριστερά, νόμοι / συμπεράσματα στη δεξιά στήλη.
       </p>
 
       <div id="act2Transcript" class="dialog-block"></div>
@@ -264,9 +283,9 @@
 
     <div class="card">
       <p class="muted">
-        Το φουαγιέ (<code>foyer</code> στο JSON) μεταφέρεται επίσης εδώ, ώστε ο
-        αναγνώστης να μπορεί να μελετήσει με την ησυχία του τα συμπεράσματα,
-        τα σχόλια και τις “δεύτερες σκέψεις” των θεατών.
+        Το φουαγιέ (<code>foyer</code> στο JSON) μεταφέρεται επίσης σε δίστηλη μορφή,
+        ώστε ο αναγνώστης να ξαναδεί με άνεση τα σχόλια, τις επαναλήψεις των νόμων
+        και τα συμπεράσματα.
       </p>
 
       <div id="foyerTranscript" class="dialog-block foyer-block"></div>
@@ -275,9 +294,9 @@
 
   <div class="footer-note">
     Τεχνική σημείωση: η σελίδα διαβάζει το <code>dialogs-gr.json</code> ή
-    <code>dialogs-en.json</code> (ανάλογα με τη γλώσσα στο URL) και δημιουργεί
-    τον κορμό των διαλόγων αποκλειστικά από εκεί. Δεν χρειάζεται συγχρονισμός
-    “με το χέρι” για το περιεχόμενο.
+    <code>dialogs-en.json</code> (ανάλογα με τη γλώσσα στο URL: <code>?lang=gr</code> ή <code>?lang=en</code>)
+    και συνθέτει τον κορμό αποκλειστικά από εκεί. Δεν απαιτείται χειροκίνητος
+    συγχρονισμός περιεχομένου.
   </div>
 </div>
 
@@ -334,85 +353,79 @@
     return v.name_gr || ('Θεατής ' + viewerIdx1);
   }
 
-  // --------- Δημιουργία κορμού από act/foyer ----------
-  function buildActTranscript(events, container){
-    container.innerHTML = '';
-    if(!events || !events.length) return;
+  // --------- Κοινή ρουτίνα για δίστηλο block ----------
+  function buildDialogTable(events, isFoyer){
+    const wrapper = document.createElement('div');
+    wrapper.className = 'dialog-table';
 
-    events.forEach(ev => {
-      // αγνοούμε το close
-      if(ev.close) return;
+    if(!events || !events.length){
+      const emptyRow = document.createElement('div');
+      emptyRow.className = 'dialog-row';
+      const c1 = document.createElement('div');
+      const c2 = document.createElement('div');
+      c1.className = 'dialog-cell left';
+      c2.className = 'dialog-cell right';
+      c1.textContent = lang === 'en'
+        ? 'No content found in JSON.'
+        : 'Δεν βρέθηκε περιεχόμενο στο JSON.';
+      emptyRow.appendChild(c1);
+      emptyRow.appendChild(c2);
+      wrapper.appendChild(emptyRow);
+      return wrapper;
+    }
+
+    events.forEach(ev=>{
+      if(ev.close) return; // “τέλος παράστασης” κ.λπ.
+
+      const row = document.createElement('div');
+      row.className = 'dialog-row';
+
+      const leftCell  = document.createElement('div');
+      const rightCell = document.createElement('div');
+      leftCell.className  = 'dialog-cell left';
+      rightCell.className = 'dialog-cell right';
 
       const hasLeft  = ev.left  && String(ev.left).trim()  !== '';
       const hasRight = ev.right && String(ev.right).trim() !== '';
 
+      // Αριστερή στήλη: θεατής + κείμενο (με HTML όπως στο JSON)
       if(hasLeft){
-        const line = document.createElement('div');
-        line.className = 'dialog-line';
-
+        const sp = document.createElement('div');
+        sp.className = 'speaker';
         if(ev.viewer != null){
-          const sp = document.createElement('span');
-          sp.className = 'speaker';
-          sp.textContent = viewerName(ev.viewer) + ':';
-          line.appendChild(sp);
+          sp.textContent = viewerName(ev.viewer);
+        }else{
+          sp.textContent = lang === 'en' ? 'Narration' : 'Αφήγηση';
         }
 
-        const tx = document.createElement('span');
-        tx.className = 'text';
+        const speech = document.createElement('div');
+        speech.className = 'speech';
         const html = expandTemplate(ev.left).replaceAll('\n','<br>');
-        tx.innerHTML = html;
-        line.appendChild(tx);
+        speech.innerHTML = html;
 
-        container.appendChild(line);
+        leftCell.appendChild(sp);
+        leftCell.appendChild(speech);
+      }else{
+        leftCell.innerHTML = '&nbsp;';
       }
 
+      // Δεξιά στήλη: right (νόμοι/τύποι), όπως είναι στο JSON, με δυναμικά πεδία
       if(hasRight){
-        const lawDiv = document.createElement('div');
-        lawDiv.className = 'dialog-law';
-        lawDiv.textContent = expandTemplate(ev.right);
-        container.appendChild(lawDiv);
+        const lawHtml = expandTemplate(ev.right);
+        rightCell.innerHTML = lawHtml;
+      }else{
+        rightCell.innerHTML = '&nbsp;';
       }
+
+      row.appendChild(leftCell);
+      row.appendChild(rightCell);
+      wrapper.appendChild(row);
     });
+
+    return wrapper;
   }
 
-  function buildFoyerTranscript(events, container){
-    container.innerHTML = '';
-    if(!events || !events.length) return;
-
-    events.forEach(ev => {
-      const hasLeft  = ev.left  && String(ev.left).trim()  !== '';
-      const hasRight = ev.right && String(ev.right).trim() !== '';
-
-      if(hasLeft){
-        const line = document.createElement('div');
-        line.className = 'dialog-line';
-
-        if(ev.viewer != null){
-          const sp = document.createElement('span');
-          sp.className = 'speaker';
-          sp.textContent = viewerName(ev.viewer) + ':';
-          line.appendChild(sp);
-        }
-
-        const tx = document.createElement('span');
-        tx.className = 'text';
-        const html = expandTemplate(ev.left).replaceAll('\n','<br>');
-        tx.innerHTML = html;
-        line.appendChild(tx);
-
-        container.appendChild(line);
-      }
-
-      if(hasRight){
-        const lawDiv = document.createElement('div');
-        lawDiv.className = 'dialog-law';
-        lawDiv.textContent = expandTemplate(ev.right);
-        container.appendChild(lawDiv);
-      }
-    });
-  }
-
-  // --------- Φόρτωση dialogs-*.json ----------
+  // --------- Φόρτωση dialogs-*.json & γέμισμα σελίδας ----------
   async function loadDialogsAndBuildBook(){
     const file = (lang === 'en') ? 'dialogs-en.json' : 'dialogs-gr.json';
     try{
@@ -428,13 +441,17 @@
       const ACT2  = data.act2   || [];
       const FOYER = data.foyer  || [];
 
-      const act1Cont   = document.getElementById('act1Transcript');
-      const act2Cont   = document.getElementById('act2Transcript');
-      const foyerCont  = document.getElementById('foyerTranscript');
+      const act1Cont  = document.getElementById('act1Transcript');
+      const act2Cont  = document.getElementById('act2Transcript');
+      const foyerCont = document.getElementById('foyerTranscript');
 
-      buildActTranscript(ACT1,  act1Cont);
-      buildActTranscript(ACT2,  act2Cont);
-      buildFoyerTranscript(FOYER, foyerCont);
+      act1Cont.innerHTML  = '';
+      act2Cont.innerHTML  = '';
+      foyerCont.innerHTML = '';
+
+      act1Cont.appendChild( buildDialogTable(ACT1,false) );
+      act2Cont.appendChild( buildDialogTable(ACT2,false) );
+      foyerCont.appendChild( buildDialogTable(FOYER,true) );
 
     }catch(err){
       console.error(err);
