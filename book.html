@@ -2,35 +2,502 @@
 <html lang="el">
 <head>
   <meta charset="UTF-8">
-  <title>Βιβλίο Παράστασης — Α.Α.Τ.</title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <link rel="stylesheet" href="book.css">
+  <title>Βιβλίο Παράστασης — Απλή Αρμονική Ταλάντωση</title>
+  <style>
+    *{
+      box-sizing:border-box;
+      margin:0;
+      padding:0;
+    }
+    body{
+      font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      background:#f6f7fb;
+      color:#111827;
+      line-height:1.5;
+    }
+    .page{
+      max-width:980px;
+      margin:0 auto;
+      padding:24px 16px 40px;
+    }
+    header{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:16px;
+      margin-bottom:24px;
+      border-bottom:1px solid #e5e7eb;
+      padding-bottom:12px;
+    }
+    header h1{
+      font-size:1.6rem;
+      font-weight:700;
+      color:#111827;
+    }
+    header .subtitle{
+      font-size:.9rem;
+      color:#6b7280;
+      margin-top:4px;
+    }
+    .lang-switch{
+      display:flex;
+      gap:6px;
+    }
+    .lang-btn{
+      font-size:.8rem;
+      padding:4px 10px;
+      border-radius:999px;
+      border:1px solid #d1d5db;
+      background:#f9fafb;
+      cursor:pointer;
+      color:#111827;
+    }
+    .lang-btn.active{
+      background:#111827;
+      color:#f9fafb;
+      border-color:#111827;
+      font-weight:600;
+    }
+
+    h2{
+      font-size:1.3rem;
+      margin:24px 0 8px;
+      color:#111827;
+    }
+    h3{
+      font-size:1.05rem;
+      margin:18px 0 6px;
+      color:#111827;
+    }
+    p{
+      margin:6px 0;
+      font-size:.95rem;
+      color:#111827;
+    }
+    .muted{
+      color:#6b7280;
+      font-size:.9rem;
+    }
+
+    .card{
+      background:#ffffff;
+      border-radius:10px;
+      border:1px solid #e5e7eb;
+      padding:14px 16px;
+      box-shadow:0 8px 20px rgba(15,23,42,0.04);
+      margin-top:8px;
+    }
+
+    .laws-list{
+      list-style:decimal;
+      padding-left:18px;
+      margin-top:6px;
+      font-size:.95rem;
+    }
+    .laws-list li{
+      margin:4px 0;
+    }
+
+    .formula{
+      font-family:"SF Mono","JetBrains Mono","Fira Code","Courier New",monospace;
+      background:#f3f4f6;
+      border-radius:6px;
+      padding:6px 8px;
+      font-size:.9rem;
+      white-space:pre-wrap;
+    }
+
+    .dialog-section{
+      margin-top:18px;
+    }
+    .dialog-block{
+      background:#ffffff;
+      border-radius:10px;
+      border:1px solid #e5e7eb;
+      padding:10px 12px;
+      margin-top:8px;
+    }
+    .dialog-header{
+      display:flex;
+      justify-content:space-between;
+      align-items:baseline;
+      margin-bottom:4px;
+      gap:8px;
+    }
+    .dialog-speaker{
+      font-weight:600;
+      font-size:.9rem;
+      color:#111827;
+    }
+    .dialog-tag{
+      font-size:.75rem;
+      padding:2px 8px;
+      border-radius:999px;
+      background:#eff6ff;
+      color:#1d4ed8;
+    }
+    .dialog-left{
+      margin-top:4px;
+      font-size:.95rem;
+      white-space:pre-wrap;
+    }
+    .dialog-right{
+      margin-top:6px;
+      border-left:3px solid #f59e0b;
+      padding-left:8px;
+    }
+
+    .section-label{
+      display:inline-block;
+      font-size:.75rem;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      color:#6b7280;
+      margin-bottom:4px;
+    }
+
+    .footer-note{
+      margin-top:24px;
+      padding-top:12px;
+      border-top:1px dashed #d1d5db;
+      font-size:.85rem;
+      color:#6b7280;
+    }
+
+    @media (max-width:640px){
+      header{
+        flex-direction:column;
+        align-items:flex-start;
+      }
+      .page{
+        padding:18px 10px 30px;
+      }
+    }
+  </style>
 </head>
 <body>
-  <div class="book-shell">
-    <header class="book-header">
-      <div class="book-header-main">
-        <h1 id="bookTitle" class="book-title">Βιβλίο Παράστασης</h1>
-        <div id="bookSubtitle" class="book-subtitle">Α.Α.Τ. · (m₁, D₁)</div>
-        <div id="bookMeta" class="book-meta">
-          Ανασύνθεση διαλόγων, νόμων και σκηνών από την παράσταση.
-        </div>
+<div class="page">
+  <header>
+    <div>
+      <h1 id="bookTitle">Βιβλίο Παράστασης — Απλή Αρμονική Ταλάντωση</h1>
+      <div class="subtitle" id="bookSubtitle">
+        Σημειώσεις, νόμοι και διάλογοι από την παράσταση.
       </div>
-      <div class="book-header-side">
-        <div class="lang-box">
-          <span id="langLabel">Γλώσσα:</span>
-          <a href="?lang=gr" id="langGR" class="lang-link active">Ελληνικά</a>
-          <span class="lang-sep">·</span>
-          <a href="?lang=en" id="langEN" class="lang-link">English</a>
-        </div>
-      </div>
-    </header>
+    </div>
+    <div class="lang-switch">
+      <button class="lang-btn" data-lang="gr">GR</button>
+      <button class="lang-btn" data-lang="en">EN</button>
+    </div>
+  </header>
 
-    <main id="bookRoot" class="book-root">
-      <!-- Γεμίζει από book.js -->
-    </main>
+  <main id="bookRoot">
+    <!-- Περιεχόμενο χτίζεται δυναμικά από dialogs-*.json -->
+  </main>
+
+  <div class="footer-note" id="footerNote">
+    Το περιεχόμενο του βιβλίου αντλείται αυτόματα από τα ίδια δεδομένα διαλόγων με την θεατρική σκηνή.
   </div>
+</div>
 
-  <script src="book.js"></script>
+<script>
+(function(){
+  const urlParams = new URLSearchParams(window.location.search);
+  let currentLang = (urlParams.get('lang') === 'en') ? 'en' : 'gr';
+
+  const bookRoot    = document.getElementById('bookRoot');
+  const bookTitleEl = document.getElementById('bookTitle');
+  const bookSubtitleEl = document.getElementById('bookSubtitle');
+  const footerNoteEl   = document.getElementById('footerNote');
+
+  function setDocumentLang(){
+    document.documentElement.lang = (currentLang === 'en') ? 'en' : 'el';
+  }
+
+  function updateStaticTexts(){
+    if(currentLang === 'en'){
+      document.title = 'Show Book — Simple Harmonic Motion';
+      bookTitleEl.textContent   = 'Show Book — Simple Harmonic Motion';
+      bookSubtitleEl.textContent = 'Notes, laws and dialogues from the performance.';
+      footerNoteEl.textContent  =
+        'The content of this book is automatically built from the same dialogue data as the theatre scene.';
+    }else{
+      document.title = 'Βιβλίο Παράστασης — Απλή Αρμονική Ταλάντωση';
+      bookTitleEl.textContent   = 'Βιβλίο Παράστασης — Απλή Αρμονική Ταλάντωση';
+      bookSubtitleEl.textContent =
+        'Σημειώσεις, νόμοι και διάλογοι από την παράσταση.';
+      footerNoteEl.textContent =
+        'Το περιεχόμενο του βιβλίου αντλείται αυτόματα από τα ίδια δεδομένα διαλόγων με την θεατρική σκηνή.';
+    }
+  }
+
+  function updateLangButtons(){
+    document.querySelectorAll('.lang-btn').forEach(btn=>{
+      const lang = btn.getAttribute('data-lang');
+      btn.classList.toggle('active', lang === currentLang);
+    });
+  }
+
+  function gotoLang(lang){
+    const url = new URL(window.location.href);
+    url.searchParams.set('lang', lang);
+    window.location.href = url.toString();
+  }
+
+  function viewerName(viewers, idx1based){
+    const i = (idx1based || 1) - 1;
+    const v = viewers[i];
+    if(!v){
+      return (currentLang === 'en')
+        ? ('Viewer ' + (idx1based || 1))
+        : ('Θεατής ' + (idx1based || 1));
+    }
+    if(currentLang === 'en'){
+      return v.name_en || v.name_gr || ('Viewer ' + (idx1based || 1));
+    }
+    return v.name_gr || v.name_en || ('Θεατής ' + (idx1based || 1));
+  }
+
+  function createEl(tag, className, text){
+    const el = document.createElement(tag);
+    if(className) el.className = className;
+    if(text != null) el.textContent = text;
+    return el;
+  }
+
+  function nl2br(text){
+    return String(text || '').split('\n').join('\n');
+    // Σκόπιμα αφήνουμε \n, και χρησιμοποιούμε white-space:pre-wrap στο CSS.
+  }
+
+  function collectUniqueLaws(act1, act2, foyer){
+    const set = new Set();
+    function scanArr(arr){
+      (arr || []).forEach(ev=>{
+        if(ev && typeof ev.right === 'string' && ev.right.trim().length){
+          set.add(ev.right.trim());
+        }
+      });
+    }
+    scanArr(act1);
+    scanArr(act2);
+    scanArr(foyer);
+    return Array.from(set);
+  }
+
+  function renderIntroSection(root){
+    const section = document.createElement('section');
+    const label   = createEl('div','section-label',
+      currentLang === 'en' ? 'Overview' : 'Εισαγωγική εικόνα');
+    section.appendChild(label);
+
+    const h2 = createEl('h2',null,
+      currentLang === 'en'
+        ? 'What do we call Simple Harmonic Motion (SHM);'
+        : 'Τι εννοούμε όταν λέμε Απλή Αρμονική Ταλάντωση;'
+    );
+    section.appendChild(h2);
+
+    const card = createEl('div','card',null);
+
+    let p1, p2, p3;
+    if(currentLang === 'en'){
+      p1 = 'In this performance the motion is described by a law of the form:';
+      p2 = 'The motion is called Simple Harmonic Motion when the restoring force (and hence acceleration) is proportional and opposite to the displacement from equilibrium. In symbols: a = −ω²·x.';
+      p3 = 'The parameters A, ω, φ₀ (and the period T) decide the “personality” of the motion: how far it reaches, how fast it oscillates and where it starts on the sine curve.';
+    }else{
+      p1 = 'Στην παράσταση η κίνηση περιγράφεται από νόμο της μορφής:';
+      p2 = 'Μιλάμε για Απλή Αρμονική Ταλάντωση όταν η επαναφέρουσα δύναμη (και η επιτάχυνση) είναι ανάλογη και αντίθετη της απομάκρυνσης από τη Θ.Ισορροπίας: a = −ω²·x.';
+      p3 = 'Οι παράμετροι A, ω, φ₀ (και η περίοδος T) καθορίζουν τον “χαρακτήρα” της κίνησης: πόσο μακριά φτάνει, πόσο γρήγορα ταλαντώνεται και από ποιο σημείο του ημιτόνου ξεκινά.';
+    }
+
+    const p1el = createEl('p',null,p1);
+    const f    = createEl('div','formula','x(t) = A·sin(ωt + φ₀)');
+    const p2el = createEl('p',null,p2);
+    const p3el = createEl('p',null,p3);
+
+    card.appendChild(p1el);
+    card.appendChild(f);
+    card.appendChild(p2el);
+    card.appendChild(p3el);
+
+    section.appendChild(card);
+    root.appendChild(section);
+  }
+
+  function renderLawsSection(root, laws){
+    if(!laws.length) return;
+    const section = document.createElement('section');
+    const label   = createEl('div','section-label',
+      currentLang === 'en' ? 'Collected laws' : 'Συγκεντρωτικοί νόμοι');
+    section.appendChild(label);
+
+    const h2 = createEl('h2',null,
+      currentLang === 'en'
+        ? 'Laws that appear in the show'
+        : 'Νόμοι που εμφανίζονται στην παράσταση'
+    );
+    section.appendChild(h2);
+
+    const card = createEl('div','card',null);
+    const ul   = createEl('ul','laws-list',null);
+
+    laws.forEach(txt=>{
+      const li = document.createElement('li');
+      const fm = createEl('div','formula',txt);
+      li.appendChild(fm);
+      ul.appendChild(li);
+    });
+
+    card.appendChild(ul);
+    section.appendChild(card);
+    root.appendChild(section);
+  }
+
+  function renderDialogSection(root, titleGR, titleEN, tagTextGR, tagTextEN, arr, viewers){
+    if(!arr || !arr.length) return;
+
+    const section = createEl('section','dialog-section',null);
+    const label   = createEl('div','section-label',
+      currentLang === 'en' ? tagTextEN : tagTextGR);
+    const h2      = createEl('h2',null,
+      currentLang === 'en' ? titleEN : titleGR);
+
+    section.appendChild(label);
+    section.appendChild(h2);
+
+    arr.forEach((ev, idx)=>{
+      const hasLeft  = ev && typeof ev.left  === 'string' && ev.left.trim().length;
+      const hasRight = ev && typeof ev.right === 'string' && ev.right.trim().length;
+      if(!hasLeft && !hasRight) return;
+
+      const block = createEl('article','dialog-block',null);
+
+      const header = createEl('div','dialog-header',null);
+      const viewerIdx = ev.viewer || 1;
+      const spName = viewerName(viewers, viewerIdx);
+
+      const spEl  = createEl('div','dialog-speaker', spName);
+      const tagEl = createEl('div','dialog-tag',
+        currentLang === 'en' ? 'step ' + (idx+1) : 'βήμα ' + (idx+1));
+
+      header.appendChild(spEl);
+      header.appendChild(tagEl);
+      block.appendChild(header);
+
+      if(hasLeft){
+        const leftEl = createEl('div','dialog-left', nl2br(ev.left));
+        block.appendChild(leftEl);
+      }
+      if(hasRight){
+        const rightWrap = createEl('div','dialog-right',null);
+        const rightEl   = createEl('div','formula', ev.right);
+        rightWrap.appendChild(rightEl);
+        block.appendChild(rightWrap);
+      }
+
+      section.appendChild(block);
+    });
+
+    root.appendChild(section);
+  }
+
+  async function loadDataAndRender(){
+    const url = (currentLang === 'en') ? 'dialogs-en.json' : 'dialogs-gr.json';
+    bookRoot.innerHTML = '';
+
+    const infoP = createEl('p','muted',
+      currentLang === 'en'
+        ? 'Loading data from '+url+' …'
+        : 'Φόρτωση δεδομένων από το '+url+' …'
+    );
+    bookRoot.appendChild(infoP);
+
+    try{
+      const resp = await fetch(url, {cache:'no-store'});
+      if(!resp.ok){
+        infoP.textContent = (currentLang === 'en')
+          ? 'Could not load '+url+'.'
+          : 'Αδυναμία φόρτωσης του '+url+'.';
+        return;
+      }
+      const data = await resp.json();
+      const viewers = data.viewers || [];
+      const act1    = data.act1    || [];
+      const act2    = data.act2    || [];
+      const foyer   = data.foyer   || [];
+
+      const laws = collectUniqueLaws(act1, act2, foyer);
+
+      bookRoot.innerHTML = '';
+
+      // 1. Εισαγωγή στην ΑΑΤ
+      renderIntroSection(bookRoot);
+
+      // 2. Συγκεντρωτικοί νόμοι
+      renderLawsSection(bookRoot, laws);
+
+      // 3. Πράξη 1
+      renderDialogSection(
+        bookRoot,
+        'Πράξη 1 — Η κινηματική στα αλγεβρικά',
+        'Act I — Kinematics in algebraic form',
+        'Act I',
+        'Act I',
+        act1,
+        viewers
+      );
+
+      // 4. Πράξη 2
+      renderDialogSection(
+        bookRoot,
+        'Πράξη 2 — Από τη θέση στη δύναμη',
+        'Act II — From position to force',
+        'Act II',
+        'Act II',
+        act2,
+        viewers
+      );
+
+      // 5. Φουαγιέ (συζήτηση)
+      renderDialogSection(
+        bookRoot,
+        'Φουαγιέ — Συζήτηση & συμπεράσματα',
+        'Foyer — Discussion & conclusions',
+        'Foyer',
+        'Foyer',
+        foyer,
+        viewers
+      );
+
+    }catch(err){
+      console.error(err);
+      bookRoot.innerHTML = '';
+      const errP = createEl('p','muted',
+        (currentLang === 'en')
+          ? 'Unexpected error while loading data.'
+          : 'Παρουσιάστηκε απρόσμενο σφάλμα κατά τη φόρτωση των δεδομένων.'
+      );
+      bookRoot.appendChild(errP);
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', ()=>{
+    setDocumentLang();
+    updateStaticTexts();
+    updateLangButtons();
+
+    document.querySelectorAll('.lang-btn').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const lang = btn.getAttribute('data-lang');
+        if(lang === currentLang) return;
+        gotoLang(lang);
+      });
+    });
+
+    loadDataAndRender();
+  });
+})();
+</script>
 </body>
 </html>
