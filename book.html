@@ -129,16 +129,41 @@
       color:#7c2d12;
     }
 
-    .dialog-extract{
+    /* Διαλόγοι από JSON */
+    .dialog-block{
       margin-top:10px;
-      font-size:.95rem;
-      padding:8px 10px;
-      border-radius:8px;
-      background:#ffffff;
-      border:1px solid #e5e7eb;
     }
-    .dialog-extract .speaker{
+    .dialog-line{
+      margin:4px 0;
+      font-size:.95rem;
+    }
+    .dialog-line .speaker{
       font-weight:600;
+      margin-right:4px;
+    }
+    .dialog-line .text{
+      display:inline;
+    }
+    .dialog-law{
+      margin:2px 0 6px 20px;
+      font-size:.9rem;
+      font-family:"SF Mono","JetBrains Mono","Fira Code","Courier New",monospace;
+      color:#374151;
+    }
+    .dialog-meta{
+      margin-top:4px;
+      font-size:.8rem;
+      color:#9ca3af;
+    }
+
+    .foyer-block .dialog-line{
+      padding:4px 6px;
+      border-left:3px solid #e5e7eb;
+      background:#ffffff;
+      border-radius:4px;
+    }
+    .foyer-block .dialog-law{
+      margin-left:28px;
     }
 
     .footer-note{
@@ -156,181 +181,115 @@
   <header>
     <h1>Βιβλίο Παράστασης — Απλή Αρμονική Ταλάντωση</h1>
     <div class="subtitle">
-      Η ίδια παράσταση, σε ρυθμό ανάγνωσης. Σχόλια, νόμοι και διαγράμματα.
+      Η ίδια παράσταση, σε ρυθμό ανάγνωσης. Διαλόγοι, νόμοι και διαγράμματα, από το dialogs-*.json.
     </div>
   </header>
 
-  <!-- 1. Σκηνή & δεδομένα -->
+  <!-- ΜΕΡΟΣ Α: Σταθερές & σκηνή -->
   <section>
     <div class="section-label">Μέρος Α</div>
-    <h2>Σκηνή, ταλαντωτής και δεδομένα μέτρησης</h2>
+    <h2>Ο ταλαντωτής (m₁, D₁) και τα δεδομένα της Α.Α.Τ.</h2>
 
     <div class="card">
       <p>
         Στην παράσταση παρακολουθούμε τον ταλαντωτή <b>(m₁, D₁)</b> σε ευθύγραμμη
-        παλινδρομική κίνηση, που περιγράφεται από νόμο τύπου
+        παλινδρομική κίνηση, η οποία περιγράφεται από νόμο τύπου
         <span class="formula">x(t) = A·ημ(ωt + φ₀)</span>
       </p>
       <p>
-        Ο πίνακας μετρήσεων <b>x–t</b> που βλέπουν οι θεατές είναι προκαθορισμένος:
-        πρόκειται για συγκεκριμένη Α.Α.Τ. με σταθερές παραμέτρους
-        <b>A</b>, <b>T</b>, <b>ω</b>, (και αρχική φάση <b>φ₀</b>).
-        Στο βιβλίο αυτό κρατάμε τις ίδιες τιμές, ώστε κάθε τύπος και κάθε διάγραμμα
-        να αναφέρεται στην ίδια ακριβώς κίνηση.
+        Όλες οι σκέψεις των θεατών, οι νόμοι που εμφανίζονται στη δεξιά στήλη και
+        τα διαγράμματα x–t, x–ημ(ωt+φ₀), υ–t, a–t, a–x αναφέρονται στην
+        <b>ίδια συγκεκριμένη ταλάντωση</b> με σταθερές παραμέτρους A, T, ω, φ₀.
       </p>
 
-      <h3>Παράμετροι της Α.Α.Τ. στην παράσταση</h3>
+      <h3>Παράμετροι της κίνησης στην παράσταση</h3>
       <div class="params-list">
         <div>Πλάτος: A = <span class="value" data-param="A"></span> m</div>
         <div>Περίοδος: T = <span class="value" data-param="T"></span> s</div>
         <div>Γωνιακή συχνότητα: ω = <span class="value" data-param="omega"></span> rad/s</div>
+        <div>Αρχική απομάκρυνση: x₀ = <span class="value" data-param="x0"></span> m</div>
+        <div>Αρχική φάση: φ₀ = <span class="value" data-param="phi0"></span> °</div>
       </div>
 
       <div class="note-box">
-        Μπορείς να αλλάξεις τις αριθμητικές τιμές των A, T, ω στο
-        <b>&lt;script&gt;</b> στο τέλος της σελίδας. Όπου εμφανίζονται
-        <span data-param="A"></span>, <span data-param="T"></span>, <span data-param="omega"></span>
-        στο κείμενο, θα ενημερωθούν αυτόματα.
+        Οι αριθμητικές τιμές <span data-param="A"></span>, <span data-param="T"></span>,
+        <span data-param="omega"></span>, <span data-param="x0"></span>, <span data-param="phi0"></span>
+        ρυθμίζονται στο script στο τέλος της σελίδας. Το ίδιο template μπορεί να δουλέψει
+        για άλλο “σετ” τιμών της Α.Α.Τ.
       </div>
 
       <figure>
-        <!-- Βάλε εδώ εικόνα από τη σκηνή (π.χ. screenshot) -->
+        <!-- Screenshot σκηνής (προαιρετικά) -->
         <img src="stage_snapshot.png" alt="Στιγμιότυπο σκηνής (ενδεικτικό)">
         <figcaption>Ενδεικτικό στιγμιότυπο της σκηνής με τον ταλαντωτή (m₁, D₁) και το κοινό.</figcaption>
       </figure>
     </div>
   </section>
 
-  <!-- 2. Από x–t σε κριτήριο Α.Α.Τ. -->
+  <!-- ΜΕΡΟΣ Β: Πράξη 1 από JSON -->
   <section>
     <div class="section-label">Μέρος Β</div>
-    <h2>Από το διάγραμμα x–t στον έλεγχο για Α.Α.Τ.</h2>
-
-    <div class="two-columns">
-      <div>
-        <div class="card">
-          <p>
-            Η πρώτη πράξη εστιάζει στο <b>διάγραμμα x–t</b>. Οι μετρήσεις
-            της μετατόπισης x σε συνάρτηση με τον χρόνο t σχηματίζουν μια
-            ημιτονική καμπύλη με περίοδο <b>T = <span data-param="T"></span> s</b>
-            και πλάτος <b>A = <span data-param="A"></span> m</b>.
-          </p>
-          <p>
-            Για να ελέγξουμε αν η κίνηση είναι πράγματι Α.Α.Τ., οι θεατές
-            κατασκευάζουν το διάγραμμα <b>x–ημ(ωt + φ₀)</b>. Αν η κίνηση
-            υπακούει στον νόμο
-          </p>
-          <div class="formula">x(t) = A·ημ(ωt + φ₀)</div>
-          <p>
-            τότε τα σημεία (ημ(ωt + φ₀), x) ευθυγραμμίζονται, δηλαδή βρίσκονται σε
-            μια ευθεία γραμμή. Αυτό είναι το ουσιαστικό
-            <b>τεστ γραμμικότητας</b> της Α.Α.Τ.
-          </p>
-
-          <!-- Εδώ μπορείς να βάλεις δικά σου επεξηγηματικά σχόλια -->
-          <div class="note-box">
-            Σημείωση (για τον/την διδάσκοντα): εδώ μπορείς να προσθέσεις σχόλια
-            για το πώς οι μαθητές μπορούν να αναπαραστήσουν μόνοι τους τα
-            διαγράμματα σε χαρτί ή λογιστικό φύλλο.
-          </div>
-        </div>
-      </div>
-
-      <div>
-        <figure>
-          <!-- Εικόνα διάγραμμα x–t -->
-          <img src="xt_graph.png" alt="Διάγραμμα x–t (ενδεικτικό)">
-          <figcaption>Διάγραμμα x–t της ταλάντωσης για δύο περιόδους (0 → 2T).</figcaption>
-        </figure>
-
-        <figure>
-          <!-- Εικόνα διάγραμμα x–ημ(ωt+φ₀) -->
-          <img src="x_sin_graph.png" alt="Διάγραμμα x–ημ(ωt+φ₀) (ενδεικτικό)">
-          <figcaption>Διάγραμμα x–ημ(ωt+φ₀). Η ευθεία γραμμή πιστοποιεί την Α.Α.Τ.</figcaption>
-        </figure>
-      </div>
-    </div>
-  </section>
-
-  <!-- 3. Οι νόμοι της Α.Α.Τ. όπως προκύπτουν στην παράσταση -->
-  <section>
-    <div class="section-label">Μέρος Γ</div>
-    <h2>Το “σετ” των νόμων της Α.Α.Τ.</h2>
-
-    <div class="card">
-      <p>
-        Στη ροή της παράστασης, οι θεατές καταλήγουν προοδευτικά στο πλήρες
-        σετ των νόμων της Απλής Αρμονικής Ταλάντωσης για τον ταλαντωτή
-        (m₁, D₁):
-      </p>
-
-      <div class="formula">
-(1) x(t) = A·ημ(ωt + φ₀)
-(2) υ(t) = ωA·συν(ωt + φ₀)
-(3) a(t) = −ω²A·ημ(ωt + φ₀)
-(4) a(x) = −ω²·x
-      </div>
-
-      <p>
-        Ο νόμος (4) είναι το “κλειδί”: μας λέει ότι η επιτάχυνση είναι
-        <b>αναλογική και αντίθετη</b> της απομάκρυνσης x. Αυτή είναι η
-        δυναμική υπογραφή της Α.Α.Τ. και εξηγεί γιατί η κίνηση “γυρίζει”
-        πάντα προς τη Θέση Ισορροπίας.
-      </p>
-
-      <figure>
-        <!-- Εικόνα διαγράμματος a–x -->
-        <img src="ax_graph.png" alt="Διάγραμμα a–x (ενδεικτικό)">
-        <figcaption>Διάγραμμα a–x: η ευθεία με αρνητική κλίση (a = −ω²·x).</figcaption>
-      </figure>
-
-      <div class="note-box">
-        Hint: εδώ μπορείς να προσθέσεις ασκήσεις τύπου “βρες A, T, ω από
-        τα διαγράμματα”, ή να ζητήσεις από τους μαθητές να αναγνωρίσουν
-        την Α.Α.Τ. μόνο από τη μορφή του a–x.
-      </div>
-    </div>
-  </section>
-
-  <!-- 4. Απόσπασμα διαλόγων (σε μορφή βιβλίου) -->
-  <section>
-    <div class="section-label">Μέρος Δ</div>
-    <h2>Απόσπασμα διαλόγων σε μορφή αφήγησης</h2>
+    <h2>Πράξη 1 — Από το διάγραμμα x–t στο “σετ” των νόμων</h2>
 
     <div class="card">
       <p class="muted">
-        Εδώ μπορείς να μεταφέρεις αυτούσιους ή ελαφρά προσαρμοσμένους
-        διαλόγους από το <code>dialogs-*.json</code>, αλλά με πιο “βιβλιακή”
-        ροή. Παράδειγμα:
+        Οι παρακάτω γραμμές προέρχονται απευθείας από το <code>act1</code> του
+        <code>dialogs-*.json</code>. Ο αναγνώστης βλέπει με τη σειρά τις σκέψεις
+        των θεατών, όπως ακούγονται στην παράσταση.
       </p>
 
-      <div class="dialog-extract">
-        <p><span class="speaker">Θεατής 1:</span> Ο m₁D₁ ήταν ήδη σε κίνηση τη στιγμή t₀=0, με το άνοιγμα της κουρτίνας!</p>
-        <p><span class="speaker">Θεατής 5:</span> … και επαναλαμβανόμενη, περιοδική, άρα ταλάντωση!</p>
-        <p><span class="speaker">Θεατής 3:</span> Μήπως είναι Απλή Αρμονική Ταλάντωση; Αν είναι, οι μετρήσεις πρέπει να επαληθεύουν τον νόμο x = A·ημ(ωt + φ₀).</p>
-      </div>
+      <div id="act1Transcript" class="dialog-block"></div>
+    </div>
+  </section>
 
-      <div class="note-box">
-        Μπορείς να αντικαταστήσεις το παραπάνω απόσπασμα με επιλεγμένα
-        σημεία από την Πράξη 1, 2 ή το Φουαγιέ, ώστε ο αναγνώστης να
-        “ξαναζεί” το σκεπτικό χωρίς να χρειάζεται την ζωντανή σκηνή.
-      </div>
+  <!-- ΜΕΡΟΣ Γ: Πράξη 2 από JSON -->
+  <section>
+    <div class="section-label">Μέρος Γ</div>
+    <h2>Πράξη 2 — Δυναμική ερμηνεία της Α.Α.Τ.</h2>
+
+    <div class="card">
+      <p class="muted">
+        Και εδώ ο κορμός προέρχεται από το <code>act2</code> του ίδιου JSON:
+        οι θεατές σχολιάζουν πώς “καταφέρνει” ο (m₁, D₁) να πραγματοποιεί Α.Α.Τ.
+      </p>
+
+      <div id="act2Transcript" class="dialog-block"></div>
+    </div>
+  </section>
+
+  <!-- ΜΕΡΟΣ Δ: Φουαγιέ από JSON -->
+  <section>
+    <div class="section-label">Μέρος Δ</div>
+    <h2>Φουαγιέ — Συζήτηση μετά την παράσταση</h2>
+
+    <div class="card">
+      <p class="muted">
+        Το φουαγιέ (<code>foyer</code> στο JSON) μεταφέρεται επίσης εδώ, ώστε ο
+        αναγνώστης να μπορεί να μελετήσει με την ησυχία του τα συμπεράσματα,
+        τα σχόλια και τις “δεύτερες σκέψεις” των θεατών.
+      </p>
+
+      <div id="foyerTranscript" class="dialog-block foyer-block"></div>
     </div>
   </section>
 
   <div class="footer-note">
-    Τεχνική σημείωση: το κείμενο της σελίδας είναι κατά βάση στατικό.
-    Τα πεδία A, T, ω ενημερώνονται αυτόματα από το παρακάτω script.
-    Δεν απαιτείται πρόσβαση στο αρχικό JSON για να λειτουργήσει το βιβλίο.
+    Τεχνική σημείωση: η σελίδα διαβάζει το <code>dialogs-gr.json</code> ή
+    <code>dialogs-en.json</code> (ανάλογα με τη γλώσσα στο URL) και δημιουργεί
+    τον κορμό των διαλόγων αποκλειστικά από εκεί. Δεν χρειάζεται συγχρονισμός
+    “με το χέρι” για το περιεχόμενο.
   </div>
 </div>
 
 <script>
-  // ---- ΔΥΝΑΜΙΚΑ ΠΕΔΙΑ ΠΑΡΑΜΕΤΡΩΝ ----
-  // Ρύθμισε εδώ τις τιμές A, T (ό,τι έχεις και στη σκηνή)
-  const A = 3.0;       // m
-  const T = 6.0;       // s
-  const omega = 2 * Math.PI / T; // rad/s
+  // --------- ΠΑΡΑΜΕΤΡΟΙ ΑΑΤ (ίδιες με σκηνή, ρύθμισε εδώ) ----------
+  const A_val    = 3.0;   // m
+  const T_val    = 6.0;   // s
+  const omegaVal = 2 * Math.PI / T_val; // rad/s
+
+  // x0 και φ0 όπως θέλεις να “κλειδώσουν” στο βιβλίο
+  const x0_val      = 1.80;  // m (παράδειγμα)
+  const phi0_degVal = 35.0;  // deg (παράδειγμα)
 
   function setParam(name, valueStr){
     document.querySelectorAll('[data-param="'+name+'"]').forEach(el=>{
@@ -338,9 +297,151 @@
     });
   }
 
-  setParam('A',     A.toFixed(2));
-  setParam('T',     T.toFixed(2));
-  setParam('omega', omega.toFixed(3));
+  setParam('A',     A_val.toFixed(2));
+  setParam('T',     T_val.toFixed(2));
+  setParam('omega', omegaVal.toFixed(3));
+  setParam('x0',    x0_val.toFixed(2));
+  setParam('phi0',  phi0_degVal.toFixed(1));
+
+  function expandTemplate(tpl){
+    if(!tpl) return '';
+    return String(tpl)
+      .replaceAll('{A}',     A_val.toFixed(2))
+      .replaceAll('{T}',     T_val.toFixed(2))
+      .replaceAll('{omega}', omegaVal.toFixed(3))
+      .replaceAll('{x0}',    x0_val.toFixed(2))
+      .replaceAll('{phi0}',  phi0_degVal.toFixed(1));
+  }
+
+  // --------- Ανάγνωση γλώσσας από URL ----------
+  const urlParams = new URLSearchParams(window.location.search);
+  const lang = (urlParams.get('lang') === 'en') ? 'en' : 'gr';
+  document.documentElement.lang = (lang === 'en') ? 'en' : 'el';
+
+  // --------- Βοηθητικά για viewers ----------
+  let VIEWERS = [];
+
+  function viewerName(viewerIdx1){
+    const idx0 = (viewerIdx1 || 1) - 1;
+    const v = VIEWERS[idx0];
+    if(!v){
+      if(lang === 'en') return 'Viewer ' + viewerIdx1;
+      return 'Θεατής ' + viewerIdx1;
+    }
+    if(lang === 'en'){
+      return v.name_en || ('Viewer ' + viewerIdx1);
+    }
+    return v.name_gr || ('Θεατής ' + viewerIdx1);
+  }
+
+  // --------- Δημιουργία κορμού από act/foyer ----------
+  function buildActTranscript(events, container){
+    container.innerHTML = '';
+    if(!events || !events.length) return;
+
+    events.forEach(ev => {
+      // αγνοούμε το close
+      if(ev.close) return;
+
+      const hasLeft  = ev.left  && String(ev.left).trim()  !== '';
+      const hasRight = ev.right && String(ev.right).trim() !== '';
+
+      if(hasLeft){
+        const line = document.createElement('div');
+        line.className = 'dialog-line';
+
+        if(ev.viewer != null){
+          const sp = document.createElement('span');
+          sp.className = 'speaker';
+          sp.textContent = viewerName(ev.viewer) + ':';
+          line.appendChild(sp);
+        }
+
+        const tx = document.createElement('span');
+        tx.className = 'text';
+        const html = expandTemplate(ev.left).replaceAll('\n','<br>');
+        tx.innerHTML = html;
+        line.appendChild(tx);
+
+        container.appendChild(line);
+      }
+
+      if(hasRight){
+        const lawDiv = document.createElement('div');
+        lawDiv.className = 'dialog-law';
+        lawDiv.textContent = expandTemplate(ev.right);
+        container.appendChild(lawDiv);
+      }
+    });
+  }
+
+  function buildFoyerTranscript(events, container){
+    container.innerHTML = '';
+    if(!events || !events.length) return;
+
+    events.forEach(ev => {
+      const hasLeft  = ev.left  && String(ev.left).trim()  !== '';
+      const hasRight = ev.right && String(ev.right).trim() !== '';
+
+      if(hasLeft){
+        const line = document.createElement('div');
+        line.className = 'dialog-line';
+
+        if(ev.viewer != null){
+          const sp = document.createElement('span');
+          sp.className = 'speaker';
+          sp.textContent = viewerName(ev.viewer) + ':';
+          line.appendChild(sp);
+        }
+
+        const tx = document.createElement('span');
+        tx.className = 'text';
+        const html = expandTemplate(ev.left).replaceAll('\n','<br>');
+        tx.innerHTML = html;
+        line.appendChild(tx);
+
+        container.appendChild(line);
+      }
+
+      if(hasRight){
+        const lawDiv = document.createElement('div');
+        lawDiv.className = 'dialog-law';
+        lawDiv.textContent = expandTemplate(ev.right);
+        container.appendChild(lawDiv);
+      }
+    });
+  }
+
+  // --------- Φόρτωση dialogs-*.json ----------
+  async function loadDialogsAndBuildBook(){
+    const file = (lang === 'en') ? 'dialogs-en.json' : 'dialogs-gr.json';
+    try{
+      const resp = await fetch(file, {cache:'no-store'});
+      if(!resp.ok){
+        console.error('Δεν βρέθηκε', file);
+        return;
+      }
+      const data = await resp.json();
+
+      VIEWERS = data.viewers || [];
+      const ACT1  = data.act1   || [];
+      const ACT2  = data.act2   || [];
+      const FOYER = data.foyer  || [];
+
+      const act1Cont   = document.getElementById('act1Transcript');
+      const act2Cont   = document.getElementById('act2Transcript');
+      const foyerCont  = document.getElementById('foyerTranscript');
+
+      buildActTranscript(ACT1,  act1Cont);
+      buildActTranscript(ACT2,  act2Cont);
+      buildFoyerTranscript(FOYER, foyerCont);
+
+    }catch(err){
+      console.error(err);
+    }
+  }
+
+  loadDialogsAndBuildBook();
 </script>
 </body>
 </html>
