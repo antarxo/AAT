@@ -12,72 +12,53 @@
     }
     body{
       font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-      background:#f6f7fb;
+      background:#f5f7fb;
       color:#111827;
-      line-height:1.5;
+      line-height:1.6;
     }
     .page{
-      max-width:980px;
+      max-width:960px;
       margin:0 auto;
       padding:24px 16px 40px;
     }
     header{
-      display:flex;
-      justify-content:space-between;
-      align-items:flex-start;
-      gap:16px;
-      margin-bottom:24px;
       border-bottom:1px solid #e5e7eb;
       padding-bottom:12px;
+      margin-bottom:20px;
     }
     header h1{
-      font-size:1.6rem;
+      font-size:1.7rem;
       font-weight:700;
-      color:#111827;
+      margin-bottom:4px;
     }
     header .subtitle{
       font-size:.9rem;
       color:#6b7280;
-      margin-top:4px;
-    }
-    .lang-switch{
-      display:flex;
-      gap:6px;
-    }
-    .lang-btn{
-      font-size:.8rem;
-      padding:4px 10px;
-      border-radius:999px;
-      border:1px solid #d1d5db;
-      background:#f9fafb;
-      cursor:pointer;
-      color:#111827;
-    }
-    .lang-btn.active{
-      background:#111827;
-      color:#f9fafb;
-      border-color:#111827;
-      font-weight:600;
     }
 
     h2{
       font-size:1.3rem;
-      margin:24px 0 8px;
-      color:#111827;
+      margin:22px 0 8px;
     }
     h3{
       font-size:1.05rem;
-      margin:18px 0 6px;
-      color:#111827;
+      margin:16px 0 6px;
     }
     p{
       margin:6px 0;
       font-size:.95rem;
-      color:#111827;
     }
     .muted{
       color:#6b7280;
       font-size:.9rem;
+    }
+
+    .section-label{
+      font-size:.78rem;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      color:#6b7280;
+      margin-bottom:4px;
     }
 
     .card{
@@ -86,17 +67,17 @@
       border:1px solid #e5e7eb;
       padding:14px 16px;
       box-shadow:0 8px 20px rgba(15,23,42,0.04);
-      margin-top:8px;
+      margin-top:6px;
     }
 
-    .laws-list{
-      list-style:decimal;
-      padding-left:18px;
-      margin-top:6px;
+    .params-list{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+      gap:6px 18px;
       font-size:.95rem;
     }
-    .laws-list li{
-      margin:4px 0;
+    .params-list div span.value{
+      font-weight:600;
     }
 
     .formula{
@@ -106,398 +87,260 @@
       padding:6px 8px;
       font-size:.9rem;
       white-space:pre-wrap;
+      margin:4px 0;
     }
 
-    .dialog-section{
-      margin-top:18px;
+    .two-columns{
+      display:grid;
+      grid-template-columns:2.2fr 1.3fr;
+      gap:16px;
     }
-    .dialog-block{
+    @media(max-width:800px){
+      .two-columns{
+        grid-template-columns:1fr;
+      }
+    }
+
+    figure{
+      margin:4px 0 10px;
       background:#ffffff;
-      border-radius:10px;
-      border:1px solid #e5e7eb;
-      padding:10px 12px;
-      margin-top:8px;
+      border-radius:8px;
+      border:1px dashed #d1d5db;
+      padding:8px;
+      text-align:center;
     }
-    .dialog-header{
-      display:flex;
-      justify-content:space-between;
-      align-items:baseline;
-      margin-bottom:4px;
-      gap:8px;
+    figure img{
+      max-width:100%;
+      height:auto;
     }
-    .dialog-speaker{
-      font-weight:600;
-      font-size:.9rem;
-      color:#111827;
-    }
-    .dialog-tag{
-      font-size:.75rem;
-      padding:2px 8px;
-      border-radius:999px;
-      background:#eff6ff;
-      color:#1d4ed8;
-    }
-    .dialog-left{
+    figure figcaption{
+      font-size:.85rem;
+      color:#6b7280;
       margin-top:4px;
-      font-size:.95rem;
-      white-space:pre-wrap;
-    }
-    .dialog-right{
-      margin-top:6px;
-      border-left:3px solid #f59e0b;
-      padding-left:8px;
     }
 
-    .section-label{
-      display:inline-block;
-      font-size:.75rem;
-      text-transform:uppercase;
-      letter-spacing:.08em;
-      color:#6b7280;
-      margin-bottom:4px;
+    .note-box{
+      border-left:3px solid #f97316;
+      background:#fff7ed;
+      padding:8px 10px;
+      border-radius:6px;
+      font-size:.9rem;
+      margin-top:6px;
+      color:#7c2d12;
+    }
+
+    .dialog-extract{
+      margin-top:10px;
+      font-size:.95rem;
+      padding:8px 10px;
+      border-radius:8px;
+      background:#ffffff;
+      border:1px solid #e5e7eb;
+    }
+    .dialog-extract .speaker{
+      font-weight:600;
     }
 
     .footer-note{
-      margin-top:24px;
-      padding-top:12px;
+      margin-top:26px;
+      padding-top:10px;
       border-top:1px dashed #d1d5db;
       font-size:.85rem;
       color:#6b7280;
-    }
-
-    @media (max-width:640px){
-      header{
-        flex-direction:column;
-        align-items:flex-start;
-      }
-      .page{
-        padding:18px 10px 30px;
-      }
     }
   </style>
 </head>
 <body>
 <div class="page">
+
   <header>
-    <div>
-      <h1 id="bookTitle">Βιβλίο Παράστασης — Απλή Αρμονική Ταλάντωση</h1>
-      <div class="subtitle" id="bookSubtitle">
-        Σημειώσεις, νόμοι και διάλογοι από την παράσταση.
-      </div>
-    </div>
-    <div class="lang-switch">
-      <button class="lang-btn" data-lang="gr">GR</button>
-      <button class="lang-btn" data-lang="en">EN</button>
+    <h1>Βιβλίο Παράστασης — Απλή Αρμονική Ταλάντωση</h1>
+    <div class="subtitle">
+      Η ίδια παράσταση, σε ρυθμό ανάγνωσης. Σχόλια, νόμοι και διαγράμματα.
     </div>
   </header>
 
-  <main id="bookRoot">
-    <!-- Περιεχόμενο χτίζεται δυναμικά από dialogs-*.json -->
-  </main>
+  <!-- 1. Σκηνή & δεδομένα -->
+  <section>
+    <div class="section-label">Μέρος Α</div>
+    <h2>Σκηνή, ταλαντωτής και δεδομένα μέτρησης</h2>
 
-  <div class="footer-note" id="footerNote">
-    Το περιεχόμενο του βιβλίου αντλείται αυτόματα από τα ίδια δεδομένα διαλόγων με την θεατρική σκηνή.
+    <div class="card">
+      <p>
+        Στην παράσταση παρακολουθούμε τον ταλαντωτή <b>(m₁, D₁)</b> σε ευθύγραμμη
+        παλινδρομική κίνηση, που περιγράφεται από νόμο τύπου
+        <span class="formula">x(t) = A·ημ(ωt + φ₀)</span>
+      </p>
+      <p>
+        Ο πίνακας μετρήσεων <b>x–t</b> που βλέπουν οι θεατές είναι προκαθορισμένος:
+        πρόκειται για συγκεκριμένη Α.Α.Τ. με σταθερές παραμέτρους
+        <b>A</b>, <b>T</b>, <b>ω</b>, (και αρχική φάση <b>φ₀</b>).
+        Στο βιβλίο αυτό κρατάμε τις ίδιες τιμές, ώστε κάθε τύπος και κάθε διάγραμμα
+        να αναφέρεται στην ίδια ακριβώς κίνηση.
+      </p>
+
+      <h3>Παράμετροι της Α.Α.Τ. στην παράσταση</h3>
+      <div class="params-list">
+        <div>Πλάτος: A = <span class="value" data-param="A"></span> m</div>
+        <div>Περίοδος: T = <span class="value" data-param="T"></span> s</div>
+        <div>Γωνιακή συχνότητα: ω = <span class="value" data-param="omega"></span> rad/s</div>
+      </div>
+
+      <div class="note-box">
+        Μπορείς να αλλάξεις τις αριθμητικές τιμές των A, T, ω στο
+        <b>&lt;script&gt;</b> στο τέλος της σελίδας. Όπου εμφανίζονται
+        <span data-param="A"></span>, <span data-param="T"></span>, <span data-param="omega"></span>
+        στο κείμενο, θα ενημερωθούν αυτόματα.
+      </div>
+
+      <figure>
+        <!-- Βάλε εδώ εικόνα από τη σκηνή (π.χ. screenshot) -->
+        <img src="stage_snapshot.png" alt="Στιγμιότυπο σκηνής (ενδεικτικό)">
+        <figcaption>Ενδεικτικό στιγμιότυπο της σκηνής με τον ταλαντωτή (m₁, D₁) και το κοινό.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- 2. Από x–t σε κριτήριο Α.Α.Τ. -->
+  <section>
+    <div class="section-label">Μέρος Β</div>
+    <h2>Από το διάγραμμα x–t στον έλεγχο για Α.Α.Τ.</h2>
+
+    <div class="two-columns">
+      <div>
+        <div class="card">
+          <p>
+            Η πρώτη πράξη εστιάζει στο <b>διάγραμμα x–t</b>. Οι μετρήσεις
+            της μετατόπισης x σε συνάρτηση με τον χρόνο t σχηματίζουν μια
+            ημιτονική καμπύλη με περίοδο <b>T = <span data-param="T"></span> s</b>
+            και πλάτος <b>A = <span data-param="A"></span> m</b>.
+          </p>
+          <p>
+            Για να ελέγξουμε αν η κίνηση είναι πράγματι Α.Α.Τ., οι θεατές
+            κατασκευάζουν το διάγραμμα <b>x–ημ(ωt + φ₀)</b>. Αν η κίνηση
+            υπακούει στον νόμο
+          </p>
+          <div class="formula">x(t) = A·ημ(ωt + φ₀)</div>
+          <p>
+            τότε τα σημεία (ημ(ωt + φ₀), x) ευθυγραμμίζονται, δηλαδή βρίσκονται σε
+            μια ευθεία γραμμή. Αυτό είναι το ουσιαστικό
+            <b>τεστ γραμμικότητας</b> της Α.Α.Τ.
+          </p>
+
+          <!-- Εδώ μπορείς να βάλεις δικά σου επεξηγηματικά σχόλια -->
+          <div class="note-box">
+            Σημείωση (για τον/την διδάσκοντα): εδώ μπορείς να προσθέσεις σχόλια
+            για το πώς οι μαθητές μπορούν να αναπαραστήσουν μόνοι τους τα
+            διαγράμματα σε χαρτί ή λογιστικό φύλλο.
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <figure>
+          <!-- Εικόνα διάγραμμα x–t -->
+          <img src="xt_graph.png" alt="Διάγραμμα x–t (ενδεικτικό)">
+          <figcaption>Διάγραμμα x–t της ταλάντωσης για δύο περιόδους (0 → 2T).</figcaption>
+        </figure>
+
+        <figure>
+          <!-- Εικόνα διάγραμμα x–ημ(ωt+φ₀) -->
+          <img src="x_sin_graph.png" alt="Διάγραμμα x–ημ(ωt+φ₀) (ενδεικτικό)">
+          <figcaption>Διάγραμμα x–ημ(ωt+φ₀). Η ευθεία γραμμή πιστοποιεί την Α.Α.Τ.</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. Οι νόμοι της Α.Α.Τ. όπως προκύπτουν στην παράσταση -->
+  <section>
+    <div class="section-label">Μέρος Γ</div>
+    <h2>Το “σετ” των νόμων της Α.Α.Τ.</h2>
+
+    <div class="card">
+      <p>
+        Στη ροή της παράστασης, οι θεατές καταλήγουν προοδευτικά στο πλήρες
+        σετ των νόμων της Απλής Αρμονικής Ταλάντωσης για τον ταλαντωτή
+        (m₁, D₁):
+      </p>
+
+      <div class="formula">
+(1) x(t) = A·ημ(ωt + φ₀)
+(2) υ(t) = ωA·συν(ωt + φ₀)
+(3) a(t) = −ω²A·ημ(ωt + φ₀)
+(4) a(x) = −ω²·x
+      </div>
+
+      <p>
+        Ο νόμος (4) είναι το “κλειδί”: μας λέει ότι η επιτάχυνση είναι
+        <b>αναλογική και αντίθετη</b> της απομάκρυνσης x. Αυτή είναι η
+        δυναμική υπογραφή της Α.Α.Τ. και εξηγεί γιατί η κίνηση “γυρίζει”
+        πάντα προς τη Θέση Ισορροπίας.
+      </p>
+
+      <figure>
+        <!-- Εικόνα διαγράμματος a–x -->
+        <img src="ax_graph.png" alt="Διάγραμμα a–x (ενδεικτικό)">
+        <figcaption>Διάγραμμα a–x: η ευθεία με αρνητική κλίση (a = −ω²·x).</figcaption>
+      </figure>
+
+      <div class="note-box">
+        Hint: εδώ μπορείς να προσθέσεις ασκήσεις τύπου “βρες A, T, ω από
+        τα διαγράμματα”, ή να ζητήσεις από τους μαθητές να αναγνωρίσουν
+        την Α.Α.Τ. μόνο από τη μορφή του a–x.
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. Απόσπασμα διαλόγων (σε μορφή βιβλίου) -->
+  <section>
+    <div class="section-label">Μέρος Δ</div>
+    <h2>Απόσπασμα διαλόγων σε μορφή αφήγησης</h2>
+
+    <div class="card">
+      <p class="muted">
+        Εδώ μπορείς να μεταφέρεις αυτούσιους ή ελαφρά προσαρμοσμένους
+        διαλόγους από το <code>dialogs-*.json</code>, αλλά με πιο “βιβλιακή”
+        ροή. Παράδειγμα:
+      </p>
+
+      <div class="dialog-extract">
+        <p><span class="speaker">Θεατής 1:</span> Ο m₁D₁ ήταν ήδη σε κίνηση τη στιγμή t₀=0, με το άνοιγμα της κουρτίνας!</p>
+        <p><span class="speaker">Θεατής 5:</span> … και επαναλαμβανόμενη, περιοδική, άρα ταλάντωση!</p>
+        <p><span class="speaker">Θεατής 3:</span> Μήπως είναι Απλή Αρμονική Ταλάντωση; Αν είναι, οι μετρήσεις πρέπει να επαληθεύουν τον νόμο x = A·ημ(ωt + φ₀).</p>
+      </div>
+
+      <div class="note-box">
+        Μπορείς να αντικαταστήσεις το παραπάνω απόσπασμα με επιλεγμένα
+        σημεία από την Πράξη 1, 2 ή το Φουαγιέ, ώστε ο αναγνώστης να
+        “ξαναζεί” το σκεπτικό χωρίς να χρειάζεται την ζωντανή σκηνή.
+      </div>
+    </div>
+  </section>
+
+  <div class="footer-note">
+    Τεχνική σημείωση: το κείμενο της σελίδας είναι κατά βάση στατικό.
+    Τα πεδία A, T, ω ενημερώνονται αυτόματα από το παρακάτω script.
+    Δεν απαιτείται πρόσβαση στο αρχικό JSON για να λειτουργήσει το βιβλίο.
   </div>
 </div>
 
 <script>
-(function(){
-  const urlParams = new URLSearchParams(window.location.search);
-  let currentLang = (urlParams.get('lang') === 'en') ? 'en' : 'gr';
+  // ---- ΔΥΝΑΜΙΚΑ ΠΕΔΙΑ ΠΑΡΑΜΕΤΡΩΝ ----
+  // Ρύθμισε εδώ τις τιμές A, T (ό,τι έχεις και στη σκηνή)
+  const A = 3.0;       // m
+  const T = 6.0;       // s
+  const omega = 2 * Math.PI / T; // rad/s
 
-  const bookRoot    = document.getElementById('bookRoot');
-  const bookTitleEl = document.getElementById('bookTitle');
-  const bookSubtitleEl = document.getElementById('bookSubtitle');
-  const footerNoteEl   = document.getElementById('footerNote');
-
-  function setDocumentLang(){
-    document.documentElement.lang = (currentLang === 'en') ? 'en' : 'el';
-  }
-
-  function updateStaticTexts(){
-    if(currentLang === 'en'){
-      document.title = 'Show Book — Simple Harmonic Motion';
-      bookTitleEl.textContent   = 'Show Book — Simple Harmonic Motion';
-      bookSubtitleEl.textContent = 'Notes, laws and dialogues from the performance.';
-      footerNoteEl.textContent  =
-        'The content of this book is automatically built from the same dialogue data as the theatre scene.';
-    }else{
-      document.title = 'Βιβλίο Παράστασης — Απλή Αρμονική Ταλάντωση';
-      bookTitleEl.textContent   = 'Βιβλίο Παράστασης — Απλή Αρμονική Ταλάντωση';
-      bookSubtitleEl.textContent =
-        'Σημειώσεις, νόμοι και διάλογοι από την παράσταση.';
-      footerNoteEl.textContent =
-        'Το περιεχόμενο του βιβλίου αντλείται αυτόματα από τα ίδια δεδομένα διαλόγων με την θεατρική σκηνή.';
-    }
-  }
-
-  function updateLangButtons(){
-    document.querySelectorAll('.lang-btn').forEach(btn=>{
-      const lang = btn.getAttribute('data-lang');
-      btn.classList.toggle('active', lang === currentLang);
+  function setParam(name, valueStr){
+    document.querySelectorAll('[data-param="'+name+'"]').forEach(el=>{
+      el.textContent = valueStr;
     });
   }
 
-  function gotoLang(lang){
-    const url = new URL(window.location.href);
-    url.searchParams.set('lang', lang);
-    window.location.href = url.toString();
-  }
-
-  function viewerName(viewers, idx1based){
-    const i = (idx1based || 1) - 1;
-    const v = viewers[i];
-    if(!v){
-      return (currentLang === 'en')
-        ? ('Viewer ' + (idx1based || 1))
-        : ('Θεατής ' + (idx1based || 1));
-    }
-    if(currentLang === 'en'){
-      return v.name_en || v.name_gr || ('Viewer ' + (idx1based || 1));
-    }
-    return v.name_gr || v.name_en || ('Θεατής ' + (idx1based || 1));
-  }
-
-  function createEl(tag, className, text){
-    const el = document.createElement(tag);
-    if(className) el.className = className;
-    if(text != null) el.textContent = text;
-    return el;
-  }
-
-  function nl2br(text){
-    return String(text || '').split('\n').join('\n');
-    // Σκόπιμα αφήνουμε \n, και χρησιμοποιούμε white-space:pre-wrap στο CSS.
-  }
-
-  function collectUniqueLaws(act1, act2, foyer){
-    const set = new Set();
-    function scanArr(arr){
-      (arr || []).forEach(ev=>{
-        if(ev && typeof ev.right === 'string' && ev.right.trim().length){
-          set.add(ev.right.trim());
-        }
-      });
-    }
-    scanArr(act1);
-    scanArr(act2);
-    scanArr(foyer);
-    return Array.from(set);
-  }
-
-  function renderIntroSection(root){
-    const section = document.createElement('section');
-    const label   = createEl('div','section-label',
-      currentLang === 'en' ? 'Overview' : 'Εισαγωγική εικόνα');
-    section.appendChild(label);
-
-    const h2 = createEl('h2',null,
-      currentLang === 'en'
-        ? 'What do we call Simple Harmonic Motion (SHM);'
-        : 'Τι εννοούμε όταν λέμε Απλή Αρμονική Ταλάντωση;'
-    );
-    section.appendChild(h2);
-
-    const card = createEl('div','card',null);
-
-    let p1, p2, p3;
-    if(currentLang === 'en'){
-      p1 = 'In this performance the motion is described by a law of the form:';
-      p2 = 'The motion is called Simple Harmonic Motion when the restoring force (and hence acceleration) is proportional and opposite to the displacement from equilibrium. In symbols: a = −ω²·x.';
-      p3 = 'The parameters A, ω, φ₀ (and the period T) decide the “personality” of the motion: how far it reaches, how fast it oscillates and where it starts on the sine curve.';
-    }else{
-      p1 = 'Στην παράσταση η κίνηση περιγράφεται από νόμο της μορφής:';
-      p2 = 'Μιλάμε για Απλή Αρμονική Ταλάντωση όταν η επαναφέρουσα δύναμη (και η επιτάχυνση) είναι ανάλογη και αντίθετη της απομάκρυνσης από τη Θ.Ισορροπίας: a = −ω²·x.';
-      p3 = 'Οι παράμετροι A, ω, φ₀ (και η περίοδος T) καθορίζουν τον “χαρακτήρα” της κίνησης: πόσο μακριά φτάνει, πόσο γρήγορα ταλαντώνεται και από ποιο σημείο του ημιτόνου ξεκινά.';
-    }
-
-    const p1el = createEl('p',null,p1);
-    const f    = createEl('div','formula','x(t) = A·sin(ωt + φ₀)');
-    const p2el = createEl('p',null,p2);
-    const p3el = createEl('p',null,p3);
-
-    card.appendChild(p1el);
-    card.appendChild(f);
-    card.appendChild(p2el);
-    card.appendChild(p3el);
-
-    section.appendChild(card);
-    root.appendChild(section);
-  }
-
-  function renderLawsSection(root, laws){
-    if(!laws.length) return;
-    const section = document.createElement('section');
-    const label   = createEl('div','section-label',
-      currentLang === 'en' ? 'Collected laws' : 'Συγκεντρωτικοί νόμοι');
-    section.appendChild(label);
-
-    const h2 = createEl('h2',null,
-      currentLang === 'en'
-        ? 'Laws that appear in the show'
-        : 'Νόμοι που εμφανίζονται στην παράσταση'
-    );
-    section.appendChild(h2);
-
-    const card = createEl('div','card',null);
-    const ul   = createEl('ul','laws-list',null);
-
-    laws.forEach(txt=>{
-      const li = document.createElement('li');
-      const fm = createEl('div','formula',txt);
-      li.appendChild(fm);
-      ul.appendChild(li);
-    });
-
-    card.appendChild(ul);
-    section.appendChild(card);
-    root.appendChild(section);
-  }
-
-  function renderDialogSection(root, titleGR, titleEN, tagTextGR, tagTextEN, arr, viewers){
-    if(!arr || !arr.length) return;
-
-    const section = createEl('section','dialog-section',null);
-    const label   = createEl('div','section-label',
-      currentLang === 'en' ? tagTextEN : tagTextGR);
-    const h2      = createEl('h2',null,
-      currentLang === 'en' ? titleEN : titleGR);
-
-    section.appendChild(label);
-    section.appendChild(h2);
-
-    arr.forEach((ev, idx)=>{
-      const hasLeft  = ev && typeof ev.left  === 'string' && ev.left.trim().length;
-      const hasRight = ev && typeof ev.right === 'string' && ev.right.trim().length;
-      if(!hasLeft && !hasRight) return;
-
-      const block = createEl('article','dialog-block',null);
-
-      const header = createEl('div','dialog-header',null);
-      const viewerIdx = ev.viewer || 1;
-      const spName = viewerName(viewers, viewerIdx);
-
-      const spEl  = createEl('div','dialog-speaker', spName);
-      const tagEl = createEl('div','dialog-tag',
-        currentLang === 'en' ? 'step ' + (idx+1) : 'βήμα ' + (idx+1));
-
-      header.appendChild(spEl);
-      header.appendChild(tagEl);
-      block.appendChild(header);
-
-      if(hasLeft){
-        const leftEl = createEl('div','dialog-left', nl2br(ev.left));
-        block.appendChild(leftEl);
-      }
-      if(hasRight){
-        const rightWrap = createEl('div','dialog-right',null);
-        const rightEl   = createEl('div','formula', ev.right);
-        rightWrap.appendChild(rightEl);
-        block.appendChild(rightWrap);
-      }
-
-      section.appendChild(block);
-    });
-
-    root.appendChild(section);
-  }
-
-  async function loadDataAndRender(){
-    const url = (currentLang === 'en') ? 'dialogs-en.json' : 'dialogs-gr.json';
-    bookRoot.innerHTML = '';
-
-    const infoP = createEl('p','muted',
-      currentLang === 'en'
-        ? 'Loading data from '+url+' …'
-        : 'Φόρτωση δεδομένων από το '+url+' …'
-    );
-    bookRoot.appendChild(infoP);
-
-    try{
-      const resp = await fetch(url, {cache:'no-store'});
-      if(!resp.ok){
-        infoP.textContent = (currentLang === 'en')
-          ? 'Could not load '+url+'.'
-          : 'Αδυναμία φόρτωσης του '+url+'.';
-        return;
-      }
-      const data = await resp.json();
-      const viewers = data.viewers || [];
-      const act1    = data.act1    || [];
-      const act2    = data.act2    || [];
-      const foyer   = data.foyer   || [];
-
-      const laws = collectUniqueLaws(act1, act2, foyer);
-
-      bookRoot.innerHTML = '';
-
-      // 1. Εισαγωγή στην ΑΑΤ
-      renderIntroSection(bookRoot);
-
-      // 2. Συγκεντρωτικοί νόμοι
-      renderLawsSection(bookRoot, laws);
-
-      // 3. Πράξη 1
-      renderDialogSection(
-        bookRoot,
-        'Πράξη 1 — Η κινηματική στα αλγεβρικά',
-        'Act I — Kinematics in algebraic form',
-        'Act I',
-        'Act I',
-        act1,
-        viewers
-      );
-
-      // 4. Πράξη 2
-      renderDialogSection(
-        bookRoot,
-        'Πράξη 2 — Από τη θέση στη δύναμη',
-        'Act II — From position to force',
-        'Act II',
-        'Act II',
-        act2,
-        viewers
-      );
-
-      // 5. Φουαγιέ (συζήτηση)
-      renderDialogSection(
-        bookRoot,
-        'Φουαγιέ — Συζήτηση & συμπεράσματα',
-        'Foyer — Discussion & conclusions',
-        'Foyer',
-        'Foyer',
-        foyer,
-        viewers
-      );
-
-    }catch(err){
-      console.error(err);
-      bookRoot.innerHTML = '';
-      const errP = createEl('p','muted',
-        (currentLang === 'en')
-          ? 'Unexpected error while loading data.'
-          : 'Παρουσιάστηκε απρόσμενο σφάλμα κατά τη φόρτωση των δεδομένων.'
-      );
-      bookRoot.appendChild(errP);
-    }
-  }
-
-  document.addEventListener('DOMContentLoaded', ()=>{
-    setDocumentLang();
-    updateStaticTexts();
-    updateLangButtons();
-
-    document.querySelectorAll('.lang-btn').forEach(btn=>{
-      btn.addEventListener('click', ()=>{
-        const lang = btn.getAttribute('data-lang');
-        if(lang === currentLang) return;
-        gotoLang(lang);
-      });
-    });
-
-    loadDataAndRender();
-  });
-})();
+  setParam('A',     A.toFixed(2));
+  setParam('T',     T.toFixed(2));
+  setParam('omega', omega.toFixed(3));
 </script>
 </body>
 </html>
