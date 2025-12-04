@@ -110,7 +110,7 @@
   </div>
   <button class="btn-end"  id="btnEndShow">Τέλος Παράστασης</button>
   <button class="btn-foyer" id="btnFoyer"   title="Φουαγιέ">Φουαγιέ</button>
-<button class="btn-book" id="btnBook">📖 Βιβλίο Παράστασης</button>
+  <button class="btn-book"  id="btnBook"    title="Βιβλίο Παράστασης">📖 Βιβλίο Παράστασης</button>
 
   <button class="start-btn" id="startBtn">Έναρξη</button>
 
@@ -212,6 +212,7 @@ const btnPlay    = document.getElementById('btnPlay');
 const btnReset   = document.getElementById('btnReset');
 const btnEndShow = document.getElementById('btnEndShow');
 const btnFoyer   = document.getElementById('btnFoyer');
+const btnBook    = document.getElementById('btnBook');   // 🔴 ΝΕΟ
 
 const actBreak   = document.getElementById('actBreak');
 const btnAct2    = document.getElementById('btnAct2');
@@ -1693,8 +1694,7 @@ async function runFoyer(){
   }
 }
 
-/* ---------- Κουμπιά / mode ---------- <button class="btn-book" id="btnBook">📖 Βιβλίο Παράστασης</button>*/
-
+/* ---------- Κουμπιά / mode ---------- */
 
 function setMode(newMode){
   mode=newMode;
@@ -1782,6 +1782,14 @@ btnEndShow.addEventListener('click',()=>{
     resetShow();
   }
 });
+
+/* 🔴 ΝΕΟ: Book button -> ανοίγει book.html με τρέχουσα γλώσσα */
+if (btnBook) {
+  btnBook.addEventListener('click', () => {
+    const lang = (currentLang === 'en') ? 'en' : 'gr';
+    window.open('book.html?lang=' + lang, '_blank');
+  });
+}
 
 /* ---------- Έναρξη με countdown ---------- */
 
