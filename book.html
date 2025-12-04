@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+  <meta charset="UTF-8">
+  <title>Βιβλίο Παράστασης — Α.Α.Τ.</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="stylesheet" href="book.css">
+</head>
+<body>
+  <div class="book-shell">
+    <header class="book-header">
+      <div class="book-header-main">
+        <h1 id="bookTitle" class="book-title">Βιβλίο Παράστασης</h1>
+        <div id="bookSubtitle" class="book-subtitle">Α.Α.Τ. · (m₁, D₁)</div>
+        <div id="bookMeta" class="book-meta">
+          Ανασύνθεση διαλόγων, νόμων και σκηνών από την παράσταση.
+        </div>
+      </div>
+      <div class="book-header-side">
+        <div class="lang-box">
+          <span id="langLabel">Γλώσσα:</span>
+          <a href="?lang=gr" id="langGR" class="lang-link active">Ελληνικά</a>
+          <span class="lang-sep">·</span>
+          <a href="?lang=en" id="langEN" class="lang-link">English</a>
+        </div>
+      </div>
+    </header>
+
+    <main id="bookRoot" class="book-root">
+      <!-- Γεμίζει από book.js -->
+    </main>
+  </div>
+
+  <script src="book.js"></script>
+</body>
+</html>
