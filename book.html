@@ -158,11 +158,45 @@
     .speaker{
       font-weight:600;
       font-size:.88rem;
-      margin-bottom:2px;
+      margin-bottom:4px;
       color:#111827;
     }
+
+    /* badge με avatar + όνομα θεατή */
+    .speaker-badge{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:2px 8px;
+      border-radius:999px;
+      background:#e5e7eb;
+      font-size:.82rem;
+      color:#111827;
+    }
+    .speaker-avatar{
+      width:22px;
+      height:22px;
+      border-radius:999px;
+      background-size:cover;
+      background-position:center;
+      background-repeat:no-repeat;
+      flex-shrink:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:.75rem;
+      font-weight:700;
+      color:#ffffff;
+      text-shadow:0 0 3px rgba(0,0,0,0.5);
+      border:1px solid rgba(255,255,255,0.7);
+    }
+    .speaker-name{
+      white-space:nowrap;
+    }
+
     .speech{
       font-size:.95rem;
+      margin-top:2px;
     }
 
     .dialog-meta{
@@ -353,6 +387,23 @@
     return v.name_gr || ('Θεατής ' + viewerIdx1);
   }
 
+  function viewerInitial(viewerIdx1){
+    const name = viewerName(viewerIdx1);
+    return name ? name.trim()[0] || '?' : '?';
+  }
+
+  function viewerColor(viewerIdx1){
+    const idx0 = (viewerIdx1 || 1) - 1;
+    const v = VIEWERS[idx0];
+    return (v && v.color) ? v.color : '#4b5563';
+  }
+
+  function viewerImg(viewerIdx1){
+    const idx0 = (viewerIdx1 || 1) - 1;
+    const v = VIEWERS[idx0];
+    return (v && v.img) ? v.img : null;
+  }
+
   // --------- Κοινή ρουτίνα για δίστηλο block ----------
   function buildDialogTable(events, isFoyer){
     const wrapper = document.createElement('div');
@@ -392,11 +443,40 @@
       if(hasLeft){
         const sp = document.createElement('div');
         sp.className = 'speaker';
+
+        const badge = document.createElement('div');
+        badge.className = 'speaker-badge';
+
+        const avatar = document.createElement('div');
+        avatar.className = 'speaker-avatar';
+
         if(ev.viewer != null){
-          sp.textContent = viewerName(ev.viewer);
+          const vColor = viewerColor(ev.viewer);
+          const vImg   = viewerImg(ev.viewer);
+
+          avatar.style.backgroundColor = vColor;
+
+          if(vImg){
+            avatar.style.backgroundImage = 'url("'+vImg+'")';
+          }else{
+            avatar.textContent = viewerInitial(ev.viewer);
+          }
         }else{
-          sp.textContent = lang === 'en' ? 'Narration' : 'Αφήγηση';
+          avatar.style.backgroundColor = '#6b7280';
+          avatar.textContent = lang === 'en' ? 'N' : 'Α';
         }
+
+        const nameSpan = document.createElement('span');
+        nameSpan.className = 'speaker-name';
+        if(ev.viewer != null){
+          nameSpan.textContent = viewerName(ev.viewer);
+        }else{
+          nameSpan.textContent = (lang === 'en') ? 'Narration' : 'Αφήγηση';
+        }
+
+        badge.appendChild(avatar);
+        badge.appendChild(nameSpan);
+        sp.appendChild(badge);
 
         const speech = document.createElement('div');
         speech.className = 'speech';
