@@ -15,6 +15,13 @@ body{
   font-family:Inter,system-ui,sans-serif;
   color:#fff;
 }
+const btnBook = document.getElementById('btnBook');
+if (btnBook) {
+  btnBook.addEventListener('click', () => {
+    const lang = (currentLang === 'en') ? 'en' : 'gr';
+    window.open('book.html?lang=' + lang, '_blank');
+  });
+}
 
 .stage{
   position:relative;
@@ -782,4 +789,5 @@ body{
 .viewers .viewer-avatar.lit{
   filter:brightness(0.8);
 }
+
 
