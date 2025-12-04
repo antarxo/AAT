@@ -1,0 +1,322 @@
+:root {
+  --bg-page: #f5f5f7;
+  --bg-paper: #ffffff;
+  --ink: #222222;
+  --ink-soft: #555555;
+  --ink-muted: #777777;
+  --border-soft: #dddddd;
+  --accent: #c0392b;
+  --chip-bg: #fbeaea;
+  --chip-border: #e4a3a3;
+  --law-bg: #fafafa;
+  --law-border: #e0e0e0;
+  --shadow-soft: 0 14px 40px rgba(0, 0, 0, 0.12);
+  --radius-lg: 14px;
+  --radius-md: 9px;
+  --radius-sm: 999px;
+  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--ink);
+  background: radial-gradient(circle at top, #fdfdfd 0%, var(--bg-page) 40%, #e7e7ee 100%);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Κεντρικό "βιβλίο" */
+
+.book-shell {
+  max-width: 1040px;
+  margin: 24px auto 32px auto;
+  padding: 0 12px;
+}
+
+.book-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.book-header-main {
+  flex: 1 1 auto;
+  min-width: 220px;
+}
+
+.book-title {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.book-subtitle {
+  margin-top: 4px;
+  font-size: 15px;
+  color: var(--ink-soft);
+}
+
+.book-meta {
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--ink-muted);
+}
+
+.book-header-side {
+  flex: 0 0 auto;
+  min-width: 180px;
+  text-align: right;
+}
+
+.lang-box {
+  font-size: 13px;
+  color: var(--ink-muted);
+}
+
+.lang-link {
+  font-size: 13px;
+  color: var(--ink-soft);
+  text-decoration: none;
+  padding: 2px 6px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+}
+
+.lang-link:hover {
+  border-color: rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.8);
+}
+
+.lang-link.active {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: #fff;
+}
+
+.lang-sep {
+  margin: 0 4px;
+  color: var(--ink-muted);
+}
+
+/* Paper */
+
+.book-root {
+  background: var(--bg-paper);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-soft);
+  padding: 20px 22px 24px 22px;
+}
+
+/* Ενότητες */
+
+.act-section {
+  margin-bottom: 28px;
+}
+
+.act-section:last-of-type {
+  margin-bottom: 0;
+}
+
+.act-title {
+  margin: 0 0 10px 0;
+  font-size: 19px;
+  font-weight: 600;
+  border-bottom: 1px solid var(--border-soft);
+  padding-bottom: 4px;
+}
+
+.act-tagline {
+  margin: 2px 0 12px 0;
+  font-size: 13px;
+  color: var(--ink-muted);
+}
+
+/* Γραμμές διαλόγου */
+
+.dialog-row {
+  display: grid;
+  grid-template-columns: minmax(0, 2.4fr) minmax(0, 1.3fr);
+  gap: 14px;
+  padding: 10px 0;
+  border-bottom: 1px dashed rgba(0, 0, 0, 0.07);
+}
+
+.dialog-row:last-child {
+  border-bottom: none;
+}
+
+.dialog-main {
+  min-width: 0;
+}
+
+.dialog-side {
+  min-width: 0;
+  font-size: 14px;
+}
+
+.dialog-main-inner {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+/* Avatar / ομιλητής */
+
+.speaker-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background-size: cover;
+  background-position: center;
+  background-color: #eee;
+  border: 2px solid rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
+}
+
+.speaker-avatar.initials {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  background: #999;
+}
+
+.speaker-meta {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.speaker-name {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.speaker-role {
+  font-size: 11px;
+  color: var(--ink-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* Κείμενο διαλόγου */
+
+.dialog-text {
+  margin-top: 4px;
+  font-size: 14px;
+}
+
+.dialog-text b {
+  font-weight: 600;
+}
+
+.dialog-text sub,
+.dialog-text sup {
+  font-size: 0.78em;
+}
+
+/* Στήλη νόμων / τύπων */
+
+.law-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.law-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-muted);
+}
+
+.law-block {
+  padding: 6px 8px;
+  border-radius: var(--radius-md);
+  background: var(--law-bg);
+  border: 1px solid var(--law-border);
+  font-family: "Segoe UI", system-ui, sans-serif;
+  font-size: 13px;
+}
+
+.law-block b {
+  font-weight: 600;
+}
+
+/* Chips για "σκηνικά" (γράφημα, βέλος κ.λπ.) */
+
+.stage-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.stage-chip {
+  font-size: 11px;
+  padding: 2px 7px;
+  border-radius: var(--radius-sm);
+  background: var(--chip-bg);
+  border: 1px solid var(--chip-border);
+  color: var(--accent);
+  white-space: nowrap;
+}
+
+/* Μικρά helpers */
+
+.muted {
+  color: var(--ink-muted);
+  font-size: 12px;
+}
+
+/* Responsive */
+
+@media (max-width: 820px) {
+  .book-shell {
+    margin-top: 14px;
+  }
+
+  .book-root {
+    padding: 16px 14px 20px 14px;
+  }
+
+  .dialog-row {
+    grid-template-columns: 1fr;
+  }
+
+  .dialog-side {
+    padding-left: 48px;
+  }
+}
+
+@media (max-width: 520px) {
+  .book-header {
+    align-items: flex-start;
+  }
+
+  .book-header-side {
+    text-align: left;
+  }
+
+  .dialog-side {
+    padding-left: 0;
+  }
+}
