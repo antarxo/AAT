@@ -246,14 +246,14 @@
       "plot": "xsin"
     },
     {
-      "viewer": 5
+      "viewer": 5,
       "xShift": 0,
       "yOffset": 0,
       "typeMs": 2500,
       "pauseMs": 800,
       "left": "..., <b>άρα η κίνηση είναι ΑΑΤ! </b>",
       "right": "x=Αημ(ωt+φ₀) (1)",
-      "alsoParams": true,
+      "alsoParams": true
     },
     {
       "viewer": 3,
@@ -827,4 +827,5 @@
     }
   ]
 }
+
 
