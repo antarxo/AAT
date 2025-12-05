@@ -212,7 +212,7 @@ const btnPlay    = document.getElementById('btnPlay');
 const btnReset   = document.getElementById('btnReset');
 const btnEndShow = document.getElementById('btnEndShow');
 const btnFoyer   = document.getElementById('btnFoyer');
-const btnBook    = document.getElementById('btnBook');   // 🔴 ΝΕΟ
+const btnBook    = document.getElementById('btnBook');   // βιβλίο
 
 const actBreak   = document.getElementById('actBreak');
 const btnAct2    = document.getElementById('btnAct2');
@@ -235,6 +235,9 @@ let obsStartPlaybackOffset = 0;
 let lastSampleObsTime = -Infinity;
 let sampleInterval = 0.4;
 let measureRowIdx = 0;
+
+/* αποθήκευση μετρήσεων για το βιβλίο */
+let MEASURE_SAMPLES = [];
 
 let mode = 'run';
 
@@ -415,6 +418,9 @@ function logMeasurement(tObs, xMeters){
   if(!obsStarted || mode==='pause') return;
   if(tObs - lastSampleObsTime < sampleInterval) return;
   lastSampleObsTime = tObs;
+
+  MEASURE_SAMPLES.push({ t: tObs, x: xMeters });
+
   const tr = document.createElement('tr');
   tr.className='new';
   tr.innerHTML =
@@ -581,7 +587,7 @@ function drawXTChart(){
     const px = tToX(tZero);
     const py = xToY(0);
 
-    // 1) Κόκκινη ημιτονική καμπύλη (όχι στικτή) από tZero και για 1 περίοδο
+    // 1) Κόκκινη ημιτονική καμπύλη από tZero και για 1 περίοδο
     ctx.save();
     ctx.strokeStyle='rgba(255,80,80,0.9)';
     ctx.lineWidth=2;
@@ -623,7 +629,7 @@ function drawXTChart(){
     ctx.fill();
     ctx.restore();
 
-    // 4) Χάπι "νέο t=0" + βέλος προς το σημείο
+    // 4) Χάπι "νέο t=0" + βέλος προς το σημείο (μέσα στο πλαίσιο, να μην κόβεται)
     const labelText = (currentLang==='en') ? 'new t = 0' : 'νέο t = 0';
     ctx.save();
     ctx.font='10px system-ui';
@@ -631,7 +637,7 @@ function drawXTChart(){
     const padX = 6;
     const padY = 3;
     let labelX = px;
-    let labelY = yTop - 18;
+    let labelY = yTop + 14;  // χαμηλότερα ώστε να είναι μέσα στο γράφημα
 
     const pillHalfW = textWidth/2 + padX;
     if(labelX < x0 + pillHalfW + 4) labelX = x0 + pillHalfW + 4;
@@ -1719,6 +1725,8 @@ function resetShow(){
   measureRowIdx=0;
   setMode('run');
 
+  MEASURE_SAMPLES = [];
+
   xtMarkState.active = false;
   xtMarkState.showTail = false;
 
@@ -1783,9 +1791,27 @@ btnEndShow.addEventListener('click',()=>{
   }
 });
 
-/* 🔴 ΝΕΟ: Book button -> ανοίγει book.html με τρέχουσα γλώσσα */
+/* export δεδομένων προς book.html */
+function exportRunToBook(){
+  try{
+    const phi0deg = ((omega*obsStartPlaybackOffset)*180/Math.PI+360)%360;
+    const payload = {
+      A: A_m,
+      T,
+      omega,
+      phi0deg,
+      samples: MEASURE_SAMPLES
+    };
+    localStorage.setItem('aat_run', JSON.stringify(payload));
+  }catch(e){
+    console.error('exportRunToBook error', e);
+  }
+}
+
+/* Book button -> αποθήκευση run + άνοιγμα book.html */
 if (btnBook) {
   btnBook.addEventListener('click', () => {
+    exportRunToBook();
     const lang = (currentLang === 'en') ? 'en' : 'gr';
     window.open('book.html?lang=' + lang, '_blank');
   });
