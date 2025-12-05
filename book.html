@@ -286,7 +286,7 @@
 
     <div class="card">
       <p class="muted">
-        Οι παρακάτω γραμμές προέρχονται απευθείας από το <code>act1</code> του
+        Οι παρακάτω γραμμές προέρχονται από το <code>act1</code> του
         <code>dialogs-*.json</code>. Στην αριστερή στήλη φαίνονται οι σκέψεις
         των θεατών, στη δεξιά οι αντίστοιχοι νόμοι/τύποι που εμφανίζονται στη σκηνή.
       </p>
@@ -329,8 +329,7 @@
   <div class="footer-note">
     Τεχνική σημείωση: η σελίδα διαβάζει το <code>dialogs-gr.json</code> ή
     <code>dialogs-en.json</code> (ανάλογα με τη γλώσσα στο URL: <code>?lang=gr</code> ή <code>?lang=en</code>)
-    και συνθέτει τον κορμό αποκλειστικά από εκεί. Δεν απαιτείται χειροκίνητος
-    συγχρονισμός περιεχομένου.
+    και συνθέτει τον κορμό κυρίως από εκεί, με επιπλέον δομή από το <code>book.json</code>.
   </div>
 </div>
 
@@ -356,7 +355,6 @@
   setParam('x0',    x0_val.toFixed(2));
   setParam('phi0',  phi0_degVal.toFixed(1));
 
-  // Αντικατάσταση {A},{T},{omega},{x0},{phi0} σε κείμενα
   function expandTemplate(tpl){
     if(!tpl) return '';
     return String(tpl)
@@ -372,7 +370,7 @@
   const lang = (urlParams.get('lang') === 'en') ? 'en' : 'gr';
   document.documentElement.lang = (lang === 'en') ? 'en' : 'el';
 
-  // --------- Viewers από dialogs-*.json ----------
+  // --------- Βοηθητικά για viewers ----------
   let VIEWERS = [];
 
   function viewerName(viewerIdx1){
@@ -388,7 +386,24 @@
     return v.name_gr || ('Θεατής ' + viewerIdx1);
   }
 
-  // --------- Δίστηλος πίνακας για διαλόγους ----------
+  function viewerInitial(viewerIdx1){
+    const name = viewerName(viewerIdx1);
+    return name ? name.trim()[0] || '?' : '?';
+  }
+
+  function viewerColor(viewerIdx1){
+    const idx0 = (viewerIdx1 || 1) - 1;
+    const v = VIEWERS[idx0];
+    return (v && v.color) ? v.color : '#4b5563';
+  }
+
+  function viewerImg(viewerIdx1){
+    const idx0 = (viewerIdx1 || 1) - 1;
+    const v = VIEWERS[idx0];
+    return (v && v.img) ? v.img : null;
+  }
+
+  // --------- Κοινή ρουτίνα για δίστηλο block (διάλογοι) ----------
   function buildDialogTable(events, isFoyer){
     const wrapper = document.createElement('div');
     wrapper.className = 'dialog-table';
@@ -427,11 +442,40 @@
       if(hasLeft){
         const sp = document.createElement('div');
         sp.className = 'speaker';
+
+        const badge = document.createElement('div');
+        badge.className = 'speaker-badge';
+
+        const avatar = document.createElement('div');
+        avatar.className = 'speaker-avatar';
+
         if(ev.viewer != null){
-          sp.textContent = viewerName(ev.viewer);
+          const vColor = viewerColor(ev.viewer);
+          const vImg   = viewerImg(ev.viewer);
+
+          avatar.style.backgroundColor = vColor;
+
+          if(vImg){
+            avatar.style.backgroundImage = 'url("'+vImg+'")';
+          }else{
+            avatar.textContent = viewerInitial(ev.viewer);
+          }
         }else{
-          sp.textContent = lang === 'en' ? 'Narration' : 'Αφήγηση';
+          avatar.style.backgroundColor = '#6b7280';
+          avatar.textContent = lang === 'en' ? 'N' : 'Α';
         }
+
+        const nameSpan = document.createElement('span');
+        nameSpan.className = 'speaker-name';
+        if(ev.viewer != null){
+          nameSpan.textContent = viewerName(ev.viewer);
+        }else{
+          nameSpan.textContent = (lang === 'en') ? 'Narration' : 'Αφήγηση';
+        }
+
+        badge.appendChild(avatar);
+        badge.appendChild(nameSpan);
+        sp.appendChild(badge);
 
         const speech = document.createElement('div');
         speech.className = 'speech';
@@ -485,14 +529,14 @@
         foyer: FOYER
       };
 
-      // Containers
+      // Containers για τις ενότητες
       const act1Cont  = document.getElementById('act1Transcript');
       const act2Cont  = document.getElementById('act2Transcript');
       const foyerCont = document.getElementById('foyerTranscript');
 
-      if(act1Cont) act1Cont.innerHTML  = '';
-      if(act2Cont) act2Cont.innerHTML  = '';
-      if(foyerCont)foyerCont.innerHTML = '';
+      if(act1Cont)  act1Cont.innerHTML  = '';
+      if(act2Cont)  act2Cont.innerHTML  = '';
+      if(foyerCont) foyerCont.innerHTML = '';
 
       // 2. Προσπάθεια φόρτωσης book.json
       let bookData = null;
@@ -505,19 +549,19 @@
         console.error('Σφάλμα ανάγνωσης book.json:', e);
       }
 
-      // Αν δεν υπάρχει book.json ή είναι άδειο -> fallback: όπως παλιά
+      // Αν δεν υπάρχει book.json ή είναι άκυρο -> fallback: πλήρεις πράξεις όπως πριν
       if(!bookData || !Array.isArray(bookData.sections)){
-        console.warn('Δεν βρέθηκε book.json ή είναι άκυρο. Fallback σε πλήρεις πράξεις.');
-        if(act1Cont) act1Cont.appendChild( buildDialogTable(ACT1,false) );
-        if(act2Cont) act2Cont.appendChild( buildDialogTable(ACT2,false) );
-        if(foyerCont)foyerCont.appendChild( buildDialogTable(FOYER,true) );
+        console.warn('Δεν βρέθηκε book.json ή δεν έχει σωστή δομή. Fallback σε πλήρεις πράξεις.');
+        if(act1Cont)  act1Cont.appendChild( buildDialogTable(ACT1,false) );
+        if(act2Cont)  act2Cont.appendChild( buildDialogTable(ACT2,false) );
+        if(foyerCont) foyerCont.appendChild( buildDialogTable(FOYER,true) );
         return;
       }
 
       const sections = bookData.sections || [];
 
       sections.forEach(sec=>{
-        const secId   = sec.id || '';
+        const secId = sec.id || '';
         const targetId =
           sec.target ||
           (secId === 'act1'  ? 'act1Transcript'  :
@@ -533,7 +577,7 @@
         blocks.forEach(block=>{
           if(!block || !block.type) return;
 
-          // 2.1. Blocks τύπου "dialogs": παίρνουν κομμάτι από act1/act2/foyer
+          // 2.1. Blocks τύπου "dialogs": κομμάτι από act1/act2/foyer
           if(block.type === 'dialogs'){
             const srcName = block.source || secId;
             const src = sources[srcName] || [];
@@ -555,7 +599,7 @@
             return;
           }
 
-          // 2.2. Blocks τύπου "note": σχόλια/επεξηγήσεις (html μέσα σε note-box)
+          // 2.2. Blocks τύπου "note": σχολιαστικό κείμενο με note-box
           if(block.type === 'note'){
             const box = document.createElement('div');
             box.className = 'note-box';
@@ -564,7 +608,7 @@
             return;
           }
 
-          // 2.3. Blocks τύπου "html": ωμό HTML όπως είναι (μπορεί να περιέχει <figure>, εικόνες κ.λπ.)
+          // 2.3. Blocks τύπου "html": ωμό HTML (π.χ. figure με εικόνα)
           if(block.type === 'html'){
             const div = document.createElement('div');
             div.innerHTML = expandTemplate(block.html || '');
