@@ -266,7 +266,8 @@
       "xtMark": false,
       "xtMarkTail": false,
       "xtZeroMark": false,
-      "param": true
+      "param": true,
+      "alsoParams": true
     },
     {
       "viewer": 2,
