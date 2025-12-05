@@ -221,6 +221,38 @@
       color:#6b7280;
     }
 
+    /* -------- Γραφήματα (full nerd mode) -------- */
+
+    .chart-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+      gap:10px;
+      margin-top:12px;
+    }
+    .chart-card{
+      background:#ffffff;
+      border-radius:10px;
+      border:1px solid #e5e7eb;
+      padding:8px 10px;
+      box-shadow:0 4px 12px rgba(15,23,42,0.03);
+    }
+    .chart-title{
+      font-size:.9rem;
+      font-weight:600;
+      margin-bottom:4px;
+      color:#111827;
+    }
+    .chart-canvas{
+      display:block;
+      width:100%;
+      height:150px;
+    }
+    .chart-caption{
+      margin-top:4px;
+      font-size:.8rem;
+      color:#6b7280;
+    }
+
     @media (max-width:768px){
       .dialog-row{
         grid-template-columns:1.8fr 1.2fr;
@@ -276,6 +308,40 @@
         <img src="stage_snapshot.png" alt="Στιγμιότυπο σκηνής (ενδεικτικό)">
         <figcaption>Ενδεικτικό στιγμιότυπο της σκηνής με τον ταλαντωτή (m₁, D₁) και το κοινό.</figcaption>
       </figure>
+
+      <h3>Γραφική απεικόνιση της ίδιας ταλάντωσης</h3>
+      <p class="muted">
+        Τα παρακάτω γραφήματα υπολογίζονται από τις τιμές A, T, ω, x₀, φ₀ που φαίνονται παραπάνω
+        και αντιστοιχούν στην ίδια Α.Α.Τ. που “παίζει” στη θεατρική σκηνή.
+      </p>
+
+      <div class="chart-grid">
+        <div class="chart-card">
+          <div class="chart-title">Διάγραμμα x–t (2 περίοδοι)</div>
+          <canvas id="chart_xt" class="chart-canvas"></canvas>
+          <div class="chart-caption">Η απομάκρυνση x(t) σε συνάρτηση με τον χρόνο, για 2 περιόδους.</div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Διάγραμμα υ–t</div>
+          <canvas id="chart_vt" class="chart-canvas"></canvas>
+          <div class="chart-caption">Η ταχύτητα υ(t) της Α.Α.Τ. με μέγιστη τιμή υ<sub>max</sub>=ωA.</div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Διάγραμμα a–t</div>
+          <canvas id="chart_at" class="chart-canvas"></canvas>
+          <div class="chart-caption">Η επιτάχυνση a(t) = −ω²A·ημ(ωt+φ₀).</div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Διάγραμμα a–x</div>
+          <canvas id="chart_ax" class="chart-canvas"></canvas>
+          <div class="chart-caption">Η γραμμική σχέση a(x) = −ω²·x, χαρακτηριστική της Α.Α.Τ.</div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Διάγραμμα x–ημ(ωt+φ₀)</div>
+          <canvas id="chart_xsin" class="chart-canvas"></canvas>
+          <div class="chart-caption">Η x σε συνάρτηση με το ημ(ωt+φ₀). Για Α.Α.Τ. τα σημεία ευθυγραμμίζονται.</div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -286,7 +352,7 @@
 
     <div class="card">
       <p class="muted">
-        Οι παρακάτω γραμμές προέρχονται από το <code>act1</code> του
+        Οι παρακάτω γραμμές προέρχονται απευθείας από το <code>act1</code> του
         <code>dialogs-*.json</code>. Στην αριστερή στήλη φαίνονται οι σκέψεις
         των θεατών, στη δεξιά οι αντίστοιχοι νόμοι/τύποι που εμφανίζονται στη σκηνή.
       </p>
@@ -329,7 +395,9 @@
   <div class="footer-note">
     Τεχνική σημείωση: η σελίδα διαβάζει το <code>dialogs-gr.json</code> ή
     <code>dialogs-en.json</code> (ανάλογα με τη γλώσσα στο URL: <code>?lang=gr</code> ή <code>?lang=en</code>)
-    και συνθέτει τον κορμό κυρίως από εκεί, με επιπλέον δομή από το <code>book.json</code>.
+    και συνθέτει τον κορμό αποκλειστικά από εκεί. Δεν απαιτείται χειροκίνητος
+    συγχρονισμός περιεχομένου. Τα γραφήματα υπολογίζονται από τις ίδιες παραμέτρους
+    A, T, ω, x₀, φ₀.
   </div>
 </div>
 
@@ -403,7 +471,7 @@
     return (v && v.img) ? v.img : null;
   }
 
-  // --------- Κοινή ρουτίνα για δίστηλο block (διάλογοι) ----------
+  // --------- Κοινή ρουτίνα για δίστηλο block ----------
   function buildDialogTable(events, isFoyer){
     const wrapper = document.createElement('div');
     wrapper.className = 'dialog-table';
@@ -504,126 +572,581 @@
     return wrapper;
   }
 
-  // --------- Φόρτωση dialogs + book.json και σύνθεση βιβλίου ----------
+  // --------- Φόρτωση dialogs-*.json & γέμισμα σελίδας ----------
   async function loadDialogsAndBuildBook(){
-    const dialogsFile = (lang === 'en') ? 'dialogs-en.json' : 'dialogs-gr.json';
-    const bookFile    = 'book.json';
-
+    const file = (lang === 'en') ? 'dialogs-en.json' : 'dialogs-gr.json';
     try{
-      // 1. Φόρτωση dialogs-*.json
-      const respDialogs = await fetch(dialogsFile, {cache:'no-store'});
-      if(!respDialogs.ok){
-        console.error('Δεν βρέθηκε', dialogsFile);
+      const resp = await fetch(file, {cache:'no-store'});
+      if(!resp.ok){
+        console.error('Δεν βρέθηκε', file);
         return;
       }
-      const data = await respDialogs.json();
+      const data = await resp.json();
 
       VIEWERS = data.viewers || [];
       const ACT1  = data.act1   || [];
       const ACT2  = data.act2   || [];
       const FOYER = data.foyer  || [];
 
-      const sources = {
-        act1:  ACT1,
-        act2:  ACT2,
-        foyer: FOYER
-      };
-
-      // Containers για τις ενότητες
       const act1Cont  = document.getElementById('act1Transcript');
       const act2Cont  = document.getElementById('act2Transcript');
       const foyerCont = document.getElementById('foyerTranscript');
 
-      if(act1Cont)  act1Cont.innerHTML  = '';
-      if(act2Cont)  act2Cont.innerHTML  = '';
-      if(foyerCont) foyerCont.innerHTML = '';
+      act1Cont.innerHTML  = '';
+      act2Cont.innerHTML  = '';
+      foyerCont.innerHTML = '';
 
-      // 2. Προσπάθεια φόρτωσης book.json
-      let bookData = null;
-      try{
-        const respBook = await fetch(bookFile, {cache:'no-store'});
-        if(respBook.ok){
-          bookData = await respBook.json();
-        }
-      }catch(e){
-        console.error('Σφάλμα ανάγνωσης book.json:', e);
-      }
-
-      // Αν δεν υπάρχει book.json ή είναι άκυρο -> fallback: πλήρεις πράξεις όπως πριν
-      if(!bookData || !Array.isArray(bookData.sections)){
-        console.warn('Δεν βρέθηκε book.json ή δεν έχει σωστή δομή. Fallback σε πλήρεις πράξεις.');
-        if(act1Cont)  act1Cont.appendChild( buildDialogTable(ACT1,false) );
-        if(act2Cont)  act2Cont.appendChild( buildDialogTable(ACT2,false) );
-        if(foyerCont) foyerCont.appendChild( buildDialogTable(FOYER,true) );
-        return;
-      }
-
-      const sections = bookData.sections || [];
-
-      sections.forEach(sec=>{
-        const secId = sec.id || '';
-        const targetId =
-          sec.target ||
-          (secId === 'act1'  ? 'act1Transcript'  :
-           secId === 'act2'  ? 'act2Transcript'  :
-           secId === 'foyer' ? 'foyerTranscript' :
-           null);
-
-        if(!targetId) return;
-        const container = document.getElementById(targetId);
-        if(!container) return;
-
-        const blocks = sec.blocks || [];
-        blocks.forEach(block=>{
-          if(!block || !block.type) return;
-
-          // 2.1. Blocks τύπου "dialogs": κομμάτι από act1/act2/foyer
-          if(block.type === 'dialogs'){
-            const srcName = block.source || secId;
-            const src = sources[srcName] || [];
-            if(!src.length) return;
-
-            let from = Number.isInteger(block.from) ? block.from : 0;
-            let to   = Number.isInteger(block.to)   ? block.to   : (src.length - 1);
-
-            if(from < 0) from = 0;
-            if(to < 0 || to >= src.length) to = src.length - 1;
-            if(from > to) return;
-
-            const slice = src.slice(from, to + 1);
-            const table = buildDialogTable(
-              slice,
-              secId === 'foyer' || srcName === 'foyer'
-            );
-            container.appendChild(table);
-            return;
-          }
-
-          // 2.2. Blocks τύπου "note": σχολιαστικό κείμενο με note-box
-          if(block.type === 'note'){
-            const box = document.createElement('div');
-            box.className = 'note-box';
-            box.innerHTML = expandTemplate(block.html || '');
-            container.appendChild(box);
-            return;
-          }
-
-          // 2.3. Blocks τύπου "html": ωμό HTML (π.χ. figure με εικόνα)
-          if(block.type === 'html'){
-            const div = document.createElement('div');
-            div.innerHTML = expandTemplate(block.html || '');
-            container.appendChild(div);
-            return;
-          }
-        });
-      });
+      act1Cont.appendChild( buildDialogTable(ACT1,false) );
+      act2Cont.appendChild( buildDialogTable(ACT2,false) );
+      foyerCont.appendChild( buildDialogTable(FOYER,true) );
 
     }catch(err){
       console.error(err);
     }
   }
 
-  loadDialogsAndBuildBook();
+  // --------- Βοηθητικά για γραφήματα (canvas) ----------
+
+  function setupChartCanvas(id){
+    const canvas = document.getElementById(id);
+    if(!canvas) return null;
+    const rect = canvas.getBoundingClientRect();
+    const width = Math.max(260, Math.floor(rect.width));
+    const height = 150;
+    canvas.width = width;
+    canvas.height = height;
+    return canvas.getContext('2d');
+  }
+
+  function drawAxesBox(ctx, x0, y0, x1, y1){
+    ctx.beginPath();
+    ctx.rect(x0, y0, x1 - x0, y1 - y0);
+    ctx.stroke();
+  }
+
+  // x(t) για 0..2T
+  function drawChartXT(){
+    const ctx = setupChartCanvas('chart_xt');
+    if(!ctx) return;
+    const w = ctx.canvas.width;
+    const h = ctx.canvas.height;
+
+    ctx.clearRect(0,0,w,h);
+    const margin = 22;
+    const xL = margin;
+    const xR = w - margin;
+    const yT = margin;
+    const yB = h - margin;
+
+    const tMin = 0;
+    const tMax = 2 * T_val;
+    const xMaxAbs = A_val * 1.1;
+
+    function tToX(t){
+      return xL + (t - tMin) / (tMax - tMin) * (xR - xL);
+    }
+    function xToY(x){
+      const mid = (yT + yB) / 2;
+      const amp = (yB - yT) / 2;
+      return mid - (x / xMaxAbs) * amp;
+    }
+
+    ctx.save();
+    ctx.strokeStyle = 'rgba(148,163,184,0.6)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4,3]);
+
+    const tTicks = [0, T_val, 2*T_val];
+    tTicks.forEach(t=>{
+      const xx = tToX(t);
+      ctx.beginPath();
+      ctx.moveTo(xx,yT);
+      ctx.lineTo(xx,yB);
+      ctx.stroke();
+    });
+
+    const xTicks = [-A_val, 0, A_val];
+    xTicks.forEach(x=>{
+      const yy = xToY(x);
+      ctx.beginPath();
+      ctx.moveTo(xL,yy);
+      ctx.lineTo(xR,yy);
+      ctx.stroke();
+    });
+
+    ctx.restore();
+
+    ctx.strokeStyle = 'rgba(15,23,42,0.8)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([]);
+
+    const y0line = xToY(0);
+    ctx.beginPath();
+    ctx.moveTo(xL,y0line);
+    ctx.lineTo(xR,y0line);
+    ctx.stroke();
+
+    const xAxis0 = tToX(0);
+    ctx.beginPath();
+    ctx.moveTo(xAxis0,yT);
+    ctx.lineTo(xAxis0,yB);
+    ctx.stroke();
+
+    drawAxesBox(ctx,xL,yT,xR,yB);
+
+    ctx.strokeStyle = '#2563eb';
+    ctx.lineWidth = 2;
+    const N = 300;
+    const phi0 = phi0_degVal * Math.PI / 180;
+    ctx.beginPath();
+    for(let i=0;i<=N;i++){
+      const t = tMin + (tMax - tMin) * (i / N);
+      const x = A_val * Math.sin(omegaVal * t + phi0);
+      const px = tToX(t);
+      const py = xToY(x);
+      if(i===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
+    }
+    ctx.stroke();
+
+    ctx.fillStyle = '#111827';
+    ctx.font = '11px system-ui';
+    ctx.fillText('x(t)', xL + 4, yT + 12);
+
+    ctx.font = '10px system-ui';
+    ctx.fillText('x (m)', xL + 4, yT - 4);
+    ctx.fillText('t (s)', xR - 20, yB + 12);
+
+    ctx.textAlign = 'center';
+    ctx.fillText('0', tToX(0), yB + 11);
+    ctx.fillText(T_val.toFixed(1), tToX(T_val), yB + 11);
+    ctx.fillText((2*T_val).toFixed(1), tToX(2*T_val), yB + 11);
+    ctx.textAlign = 'left';
+
+    ctx.fillText('-A', xL + 4, xToY(-A_val) + 4);
+    ctx.fillText('0',  xL + 4, xToY(0) + 4);
+    ctx.fillText('+A', xL + 4, xToY(+A_val) + 4);
+  }
+
+  function drawChartVT(){
+    const ctx = setupChartCanvas('chart_vt');
+    if(!ctx) return;
+    const w = ctx.canvas.width;
+    const h = ctx.canvas.height;
+
+    ctx.clearRect(0,0,w,h);
+    const margin = 22;
+    const xL = margin;
+    const xR = w - margin;
+    const yT = margin;
+    const yB = h - margin;
+
+    const tMin = 0;
+    const tMax = T_val;
+    const vmax = omegaVal * A_val;
+    const vMaxAbs = vmax * 1.1;
+
+    function tToX(t){
+      return xL + (t - tMin) / (tMax - tMin) * (xR - xL);
+    }
+    function vToY(v){
+      const mid = (yT + yB) / 2;
+      const amp = (yB - yT) / 2;
+      return mid - (v / vMaxAbs) * amp;
+    }
+
+    ctx.save();
+    ctx.strokeStyle = 'rgba(148,163,184,0.6)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4,3]);
+
+    const tTicks = [0, T_val/2, T_val];
+    tTicks.forEach(t=>{
+      const xx = tToX(t);
+      ctx.beginPath();
+      ctx.moveTo(xx,yT);
+      ctx.lineTo(xx,yB);
+      ctx.stroke();
+    });
+
+    const vTicks = [-vmax, 0, vmax];
+    vTicks.forEach(v=>{
+      const yy = vToY(v);
+      ctx.beginPath();
+      ctx.moveTo(xL,yy);
+      ctx.lineTo(xR,yy);
+      ctx.stroke();
+    });
+
+    ctx.restore();
+
+    ctx.strokeStyle = 'rgba(15,23,42,0.8)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([]);
+
+    const y0line = vToY(0);
+    ctx.beginPath();
+    ctx.moveTo(xL,y0line);
+    ctx.lineTo(xR,y0line);
+    ctx.stroke();
+
+    const xAxis0 = tToX(0);
+    ctx.beginPath();
+    ctx.moveTo(xAxis0,yT);
+    ctx.lineTo(xAxis0,yB);
+    ctx.stroke();
+
+    drawAxesBox(ctx,xL,yT,xR,yB);
+
+    ctx.strokeStyle = '#16a34a';
+    ctx.lineWidth = 2;
+    const N = 240;
+    const phi0 = phi0_degVal * Math.PI / 180;
+    ctx.beginPath();
+    for(let i=0;i<=N;i++){
+      const t = tMin + (tMax - tMin)*(i/N);
+      const v = omegaVal * A_val * Math.cos(omegaVal * t + phi0);
+      const px = tToX(t);
+      const py = vToY(v);
+      if(i===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
+    }
+    ctx.stroke();
+
+    ctx.fillStyle = '#111827';
+    ctx.font = '11px system-ui';
+    const labelV = (lang === 'en') ? 'v(t)' : 'υ(t)';
+    ctx.fillText(labelV, xL+4, yT+12);
+
+    ctx.font = '10px system-ui';
+    const vAxis = (lang === 'en') ? 'v (m/s)' : 'υ (m/s)';
+    ctx.fillText(vAxis, xL+4, yT-4);
+    ctx.fillText('t (s)', xR-24, yB+12);
+
+    ctx.textAlign = 'center';
+    ctx.fillText('0', tToX(0), yB+11);
+    ctx.fillText((T_val/2).toFixed(1), tToX(T_val/2), yB+11);
+    ctx.fillText(T_val.toFixed(1), tToX(T_val), yB+11);
+    ctx.textAlign = 'left';
+
+    const vmaxLabel = ((lang==='en')?'v_max ≈ ':'υ_max ≈ ') + vmax.toFixed(2);
+    ctx.fillText(vmaxLabel, xL+4, yB-4);
+  }
+
+  function drawChartAT(){
+    const ctx = setupChartCanvas('chart_at');
+    if(!ctx) return;
+    const w = ctx.canvas.width;
+    const h = ctx.canvas.height;
+
+    ctx.clearRect(0,0,w,h);
+    const margin = 22;
+    const xL = margin;
+    const xR = w - margin;
+    const yT = margin;
+    const yB = h - margin;
+
+    const tMin = 0;
+    const tMax = T_val;
+    const amax = omegaVal * omegaVal * A_val;
+    const aMaxAbs = amax * 1.1;
+
+    function tToX(t){
+      return xL + (t - tMin) / (tMax - tMin) * (xR - xL);
+    }
+    function aToY(a){
+      const mid = (yT + yB) / 2;
+      const amp = (yB - yT) / 2;
+      return mid - (a / aMaxAbs) * amp;
+    }
+
+    ctx.save();
+    ctx.strokeStyle = 'rgba(148,163,184,0.6)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4,3]);
+
+    const tTicks = [0, T_val/2, T_val];
+    tTicks.forEach(t=>{
+      const xx = tToX(t);
+      ctx.beginPath();
+      ctx.moveTo(xx,yT);
+      ctx.lineTo(xx,yB);
+      ctx.stroke();
+    });
+
+    const aTicks = [-amax, 0, amax];
+    aTicks.forEach(a=>{
+      const yy = aToY(a);
+      ctx.beginPath();
+      ctx.moveTo(xL,yy);
+      ctx.lineTo(xR,yy);
+      ctx.stroke();
+    });
+
+    ctx.restore();
+
+    ctx.strokeStyle = 'rgba(15,23,42,0.8)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([]);
+
+    const y0line = aToY(0);
+    ctx.beginPath();
+    ctx.moveTo(xL,y0line);
+    ctx.lineTo(xR,y0line);
+    ctx.stroke();
+
+    const xAxis0 = tToX(0);
+    ctx.beginPath();
+    ctx.moveTo(xAxis0,yT);
+    ctx.lineTo(xAxis0,yB);
+    ctx.stroke();
+
+    drawAxesBox(ctx,xL,yT,xR,yB);
+
+    ctx.strokeStyle = '#dc2626';
+    ctx.lineWidth = 2;
+    const N = 240;
+    const phi0 = phi0_degVal * Math.PI / 180;
+    ctx.beginPath();
+    for(let i=0;i<=N;i++){
+      const t = tMin + (tMax - tMin)*(i/N);
+      const a = - amax * Math.sin(omegaVal * t + phi0);
+      const px = tToX(t);
+      const py = aToY(a);
+      if(i===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
+    }
+    ctx.stroke();
+
+    ctx.fillStyle = '#111827';
+    ctx.font = '11px system-ui';
+    ctx.fillText('a(t)', xL+4, yT+12);
+
+    ctx.font = '10px system-ui';
+    ctx.fillText('a (m/s²)', xL+4, yT-4);
+    ctx.fillText('t (s)', xR-24, yB+12);
+
+    ctx.textAlign = 'center';
+    ctx.fillText('0', tToX(0), yB+11);
+    ctx.fillText((T_val/2).toFixed(1), tToX(T_val/2), yB+11);
+    ctx.fillText(T_val.toFixed(1), tToX(T_val), yB+11);
+    ctx.textAlign = 'left';
+
+    const amaxLabel = 'a_max ≈ ' + amax.toFixed(2);
+    ctx.fillText(amaxLabel, xL+4, yB-4);
+  }
+
+  function drawChartAX(){
+    const ctx = setupChartCanvas('chart_ax');
+    if(!ctx) return;
+    const w = ctx.canvas.width;
+    const h = ctx.canvas.height;
+
+    ctx.clearRect(0,0,w,h);
+    const margin = 26;
+    const xL = margin;
+    const xR = w - margin;
+    const yT = margin;
+    const yB = h - margin;
+
+    const xMin = -A_val * 1.1;
+    const xMax = +A_val * 1.1;
+    const amax = omegaVal * omegaVal * A_val;
+    const aMin = -amax * 1.1;
+    const aMax = +amax * 1.1;
+
+    function xToCX(x){
+      return xL + (x - xMin) / (xMax - xMin) * (xR - xL);
+    }
+    function aToCY(a){
+      return yB - (a - aMin) / (aMax - aMin) * (yB - yT);
+    }
+
+    ctx.save();
+    ctx.strokeStyle = 'rgba(148,163,184,0.6)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4,3]);
+
+    const xTicks = [xMin, -A_val, 0, +A_val, xMax];
+    xTicks.forEach(x=>{
+      const xx = xToCX(x);
+      ctx.beginPath();
+      ctx.moveTo(xx,yT);
+      ctx.lineTo(xx,yB);
+      ctx.stroke();
+    });
+
+    const aTicks = [aMin, -amax, 0, +amax, aMax];
+    aTicks.forEach(a=>{
+      const yy = aToCY(a);
+      ctx.beginPath();
+      ctx.moveTo(xL,yy);
+      ctx.lineTo(xR,yy);
+      ctx.stroke();
+    });
+
+    ctx.restore();
+
+    ctx.strokeStyle = 'rgba(15,23,42,0.8)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([]);
+
+    const y0line = aToCY(0);
+    ctx.beginPath();
+    ctx.moveTo(xL,y0line);
+    ctx.lineTo(xR,y0line);
+    ctx.stroke();
+
+    const x0line = xToCX(0);
+    ctx.beginPath();
+    ctx.moveTo(x0line,yT);
+    ctx.lineTo(x0line,yB);
+    ctx.stroke();
+
+    drawAxesBox(ctx,xL,yT,xR,yB);
+
+    ctx.strokeStyle = '#7c3aed';
+    ctx.lineWidth = 2;
+    const pLx = -A_val;
+    const pLa = +omegaVal*omegaVal*A_val;
+    const pRx = +A_val;
+    const pRa = -omegaVal*omegaVal*A_val;
+    ctx.beginPath();
+    ctx.moveTo(xToCX(pLx), aToCY(pLa));
+    ctx.lineTo(xToCX(pRx), aToCY(pRa));
+    ctx.stroke();
+
+    ctx.fillStyle = '#111827';
+    ctx.font = '11px system-ui';
+    ctx.fillText('a–x', xL+4, yT+12);
+
+    ctx.font = '10px system-ui';
+    ctx.fillText('x (m)', xR-34, (yT+yB)/2 - 4);
+    ctx.fillText('a (m/s²)', xL+4, yT-4);
+
+    ctx.fillText('a = -ω²·x', xL+4, yB-4);
+  }
+
+  function drawChartXSin(){
+    const ctx = setupChartCanvas('chart_xsin');
+    if(!ctx) return;
+    const w = ctx.canvas.width;
+    const h = ctx.canvas.height;
+
+    ctx.clearRect(0,0,w,h);
+    const margin = 22;
+    const xL = margin;
+    const xR = w - margin;
+    const yT = margin;
+    const yB = h - margin;
+
+    const sMin = -1.1;
+    const sMax = +1.1;
+    const xMin = -A_val * 1.1;
+    const xMax = +A_val * 1.1;
+
+    function sToCX(s){
+      return xL + (s - sMin) / (sMax - sMin) * (xR - xL);
+    }
+    function xToCY(x){
+      return yB - (x - xMin) / (xMax - xMin) * (yB - yT);
+    }
+
+    ctx.save();
+    ctx.strokeStyle = 'rgba(148,163,184,0.6)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4,3]);
+
+    const sTicks = [-1,0,+1];
+    sTicks.forEach(s=>{
+      const xx = sToCX(s);
+      ctx.beginPath();
+      ctx.moveTo(xx,yT);
+      ctx.lineTo(xx,yB);
+      ctx.stroke();
+    });
+
+    const xTicks = [-A_val,0,+A_val];
+    xTicks.forEach(x=>{
+      const yy = xToCY(x);
+      ctx.beginPath();
+      ctx.moveTo(xL,yy);
+      ctx.lineTo(xR,yy);
+      ctx.stroke();
+    });
+
+    ctx.restore();
+
+    ctx.strokeStyle = 'rgba(15,23,42,0.8)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([]);
+
+    const s0x = sToCX(0);
+    ctx.beginPath();
+    ctx.moveTo(s0x,yT);
+    ctx.lineTo(s0x,yB);
+    ctx.stroke();
+
+    const x0y = xToCY(0);
+    ctx.beginPath();
+    ctx.moveTo(xL,x0y);
+    ctx.lineTo(xR,x0y);
+    ctx.stroke();
+
+    drawAxesBox(ctx,xL,yT,xR,yB);
+
+    ctx.strokeStyle = '#f97316';
+    ctx.lineWidth = 2;
+    const N = 200;
+    ctx.beginPath();
+    for(let i=0;i<=N;i++){
+      const s = -1 + 2*(i/N);
+      const x = A_val * s;
+      const px = sToCX(s);
+      const py = xToCY(x);
+      if(i===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
+    }
+    ctx.stroke();
+
+    ctx.fillStyle = '#111827';
+    ctx.font = '11px system-ui';
+    const title = (lang === 'en') ? 'x–sin(ωt+φ₀)' : 'x–ημ(ωt+φ₀)';
+    ctx.fillText(title, xL+4, yT+12);
+
+    ctx.font = '10px system-ui';
+    const sLabel = (lang === 'en') ? 'sin(ωt+φ₀)' : 'ημ(ωt+φ₀)';
+    ctx.fillText('x (m)', xL+4, yT-4);
+    ctx.fillText(sLabel, xR-60, yB+12);
+
+    ctx.textAlign = 'center';
+    ctx.fillText('-1', sToCX(-1), yB+11);
+    ctx.fillText('0',  sToCX(0),  yB+11);
+    ctx.fillText('+1', sToCX(+1), yB+11);
+    ctx.textAlign = 'left';
+
+    ctx.fillText('-A', xL+4, xToCY(-A_val)+4);
+    ctx.fillText('0',  xL+4, xToCY(0)+4);
+    ctx.fillText('+A', xL+4, xToCY(+A_val)+4);
+  }
+
+  function initCharts(){
+    drawChartXT();
+    drawChartVT();
+    drawChartAT();
+    drawChartAX();
+    drawChartXSin();
+
+    window.addEventListener('resize', () => {
+      drawChartXT();
+      drawChartVT();
+      drawChartAT();
+      drawChartAX();
+      drawChartXSin();
+    });
+  }
+
+  // --------- Bootstrap ---------
+  window.addEventListener('load', () => {
+    loadDialogsAndBuildBook();
+    initCharts();
+  });
 </script>
 </body>
 </html>
