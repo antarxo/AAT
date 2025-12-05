@@ -253,6 +253,7 @@
       "pauseMs": 800,
       "left": "..., <b>άρα η κίνηση είναι ΑΑΤ! και αφού το <b>x₀={x0} m</b>, θα υπάρχει αρχική φάση <b>φ₀={phi0}°</b>. Χαχα, ένα το κρατούμενο! Προχωράμε!</b>",
       "right": "x=Αημ(ωt+φ₀) (1)",
+      "param": true,
       "alsoParams": true
     },
     {
@@ -266,7 +267,7 @@
       "xtMark": false,
       "xtMarkTail": false,
       "xtZeroMark": false,
-      "param": true
+      
       
     },
     {
@@ -827,6 +828,7 @@
     }
   ]
 }
+
 
 
 
