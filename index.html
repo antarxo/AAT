@@ -212,7 +212,7 @@ const btnPlay    = document.getElementById('btnPlay');
 const btnReset   = document.getElementById('btnReset');
 const btnEndShow = document.getElementById('btnEndShow');
 const btnFoyer   = document.getElementById('btnFoyer');
-const btnBook    = document.getElementById('btnBook');   // βιβλίο
+const btnBook    = document.getElementById('btnBook');
 
 const actBreak   = document.getElementById('actBreak');
 const btnAct2    = document.getElementById('btnAct2');
@@ -236,9 +236,6 @@ let lastSampleObsTime = -Infinity;
 let sampleInterval = 0.4;
 let measureRowIdx = 0;
 
-/* αποθήκευση μετρήσεων για το βιβλίο */
-let MEASURE_SAMPLES = [];
-
 let mode = 'run';
 
 let uXT = null;   // x–t canvas
@@ -256,6 +253,9 @@ const A_px  = A_m*pxPerMeter;
 
 /* συνολικός χρόνος άξονα x–t: 2T */
 const XT_TOTAL_T = 2*T;
+
+/* κλειδί για export στο βιβλίο */
+const BOOK_STORAGE_KEY = 'AAT_BOOK_DATA_V1';
 
 /* offset για avatars στις πράξεις από JSON. Προεπιλογή: -60 */
 let ACTS_AVATAR_OFFSET = -60;
@@ -418,9 +418,6 @@ function logMeasurement(tObs, xMeters){
   if(!obsStarted || mode==='pause') return;
   if(tObs - lastSampleObsTime < sampleInterval) return;
   lastSampleObsTime = tObs;
-
-  MEASURE_SAMPLES.push({ t: tObs, x: xMeters });
-
   const tr = document.createElement('tr');
   tr.className='new';
   tr.innerHTML =
@@ -629,7 +626,7 @@ function drawXTChart(){
     ctx.fill();
     ctx.restore();
 
-    // 4) Χάπι "νέο t=0" + βέλος προς το σημείο (μέσα στο πλαίσιο, να μην κόβεται)
+    // 4) Χάπι "νέο t=0" + βέλος προς το σημείο (λίγο πιο χαμηλά για να μη κόβεται)
     const labelText = (currentLang==='en') ? 'new t = 0' : 'νέο t = 0';
     ctx.save();
     ctx.font='10px system-ui';
@@ -637,7 +634,7 @@ function drawXTChart(){
     const padX = 6;
     const padY = 3;
     let labelX = px;
-    let labelY = yTop + 14;  // χαμηλότερα ώστε να είναι μέσα στο γράφημα
+    let labelY = yTop + 10;   // μέσα στο πλαίσιο, όχι πάνω από το border
 
     const pillHalfW = textWidth/2 + padX;
     if(labelX < x0 + pillHalfW + 4) labelX = x0 + pillHalfW + 4;
@@ -1146,6 +1143,45 @@ function showParamsBox(){
   paramWEl.textContent  = 'ω = '+omega.toFixed(3)+' rad/s';
   paramPhiEl.textContent= 'φ₀ = '+phi0deg.toFixed(1)+'°';
   paramsBoxEl.style.display='block';
+}
+
+/* ---------- Export δεδομένων για βιβλίο ---------- */
+
+function collectBookData(){
+  const rows = [];
+  const trs = measureTBody ? measureTBody.querySelectorAll('tr') : [];
+  trs.forEach(tr=>{
+    const tds = tr.querySelectorAll('td');
+    if(tds.length < 3) return;
+    const idx = parseInt(tds[0].textContent.trim(),10);
+    const t   = parseFloat(String(tds[1].textContent).replace(',','.'));
+    const x   = parseFloat(String(tds[2].textContent).replace(',','.'));
+    if(isNaN(t) || isNaN(x)) return;
+    rows.push({ idx, t, x });
+  });
+  const phi0deg=((omega*obsStartPlaybackOffset)*180/Math.PI+360)%360;
+  const x0 = x0Val();
+  return {
+    timestamp: Date.now(),
+    lang: currentLang,
+    params: {
+      A: A_m,
+      T: T,
+      omega: omega,
+      x0: x0,
+      phi0_deg: phi0deg
+    },
+    samples: rows
+  };
+}
+
+function saveBookData(){
+  try{
+    const data = collectBookData();
+    localStorage.setItem(BOOK_STORAGE_KEY, JSON.stringify(data));
+  }catch(e){
+    console.error('Book data save failed', e);
+  }
 }
 
 /* ---------- Θεατές / bubbles ---------- */
@@ -1725,8 +1761,6 @@ function resetShow(){
   measureRowIdx=0;
   setMode('run');
 
-  MEASURE_SAMPLES = [];
-
   xtMarkState.active = false;
   xtMarkState.showTail = false;
 
@@ -1791,27 +1825,10 @@ btnEndShow.addEventListener('click',()=>{
   }
 });
 
-/* export δεδομένων προς book.html */
-function exportRunToBook(){
-  try{
-    const phi0deg = ((omega*obsStartPlaybackOffset)*180/Math.PI+360)%360;
-    const payload = {
-      A: A_m,
-      T,
-      omega,
-      phi0deg,
-      samples: MEASURE_SAMPLES
-    };
-    localStorage.setItem('aat_run', JSON.stringify(payload));
-  }catch(e){
-    console.error('exportRunToBook error', e);
-  }
-}
-
-/* Book button -> αποθήκευση run + άνοιγμα book.html */
+/* Book button -> σώζει live δεδομένα και ανοίγει book.html */
 if (btnBook) {
   btnBook.addEventListener('click', () => {
-    exportRunToBook();
+    saveBookData();
     const lang = (currentLang === 'en') ? 'en' : 'gr';
     window.open('book.html?lang=' + lang, '_blank');
   });
