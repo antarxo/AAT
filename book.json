@@ -6,6 +6,12 @@
       "title_en": "Act I — Kinematic description",
       "blocks": [
         {
+          "type": "image",
+          "src": "stage_snapshot.png",
+          "caption_gr": "Στιγμιότυπο από τη σκηνή με τον ταλαντωτή (m₁, D₁) και το κοινό.",
+          "caption_en": "Stage snapshot with oscillator (m₁, D₁) and the audience."
+        },
+        {
           "type": "note",
           "html_gr": "Σε αυτή την πράξη ο στόχος είναι να <b>αναγνωριστεί</b> αν η κίνηση είναι Α.Α.Τ. μόνο από το διάγραμμα <b>x–t</b> και τις μετρήσεις.",
           "html_en": "In this act the goal is to <b>identify</b> whether the motion is S.H.M. only from the <b>x–t</b> graph and the measurements."
@@ -28,8 +34,8 @@
     },
     {
       "id": "act2",
-      "title_gr": "Πράξη 2 — Δυναμική περιγραφή",
-      "title_en": "Act II — Dynamic description",
+      "title_gr": "Πράξη 2 — Δυναμική ερμηνεία της Α.Α.Τ.",
+      "title_en": "Act II — Dynamic description of S.H.M.",
       "blocks": [
         {
           "type": "note",
@@ -51,8 +57,13 @@
       "blocks": [
         {
           "type": "note",
-          "html_gr": "Στο φουαγιέ γίνεται ανασκόπηση: <b>τι μάθαμε</b> για A, T, ω, φ₀, x₀ και πώς όλα αυτά δένουν με τους νόμους της Α.Α.Τ.",
-          "html_en": "In the foyer we recap: <b>what we learned</b> about A, T, ω, φ₀, x₀ and how all of these tie together with the laws of S.H.M."
+          "html_gr": "Στο φουαγιέ γίνεται ανασκόπηση: <b>τι μάθαμε</b> για A, T, ω, φ₀, x₀ και πώς όλα αυτά δένουν με τους νόμους (1)–(4).",
+          "html_en": "In the foyer we recap: <b>what we learned</b> about A, T, ω, φ₀, x₀ and how all these connect with the laws (1)–(4)."
+        },
+        {
+          "type": "html",
+          "html_gr": "<p class=\"muted\">Εδώ μπορείς να προσθέσεις ελεύθερο κείμενο, σύνοψη, οδηγίες προς τον/την διδάσκοντα/ουσα κ.λπ. μέσα από το <code>book.json</code>.</p>",
+          "html_en": "<p class=\"muted\">Here you may add free text, summary, teacher notes etc. directly via <code>book.json</code>.</p>"
         },
         {
           "type": "dialogs",
