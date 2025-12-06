@@ -212,7 +212,7 @@ const btnPlay    = document.getElementById('btnPlay');
 const btnReset   = document.getElementById('btnReset');
 const btnEndShow = document.getElementById('btnEndShow');
 const btnFoyer   = document.getElementById('btnFoyer');
-const btnBook    = document.getElementById('btnBook');
+const btnBook    = document.getElementById('btnBook');   // 📖
 
 const actBreak   = document.getElementById('actBreak');
 const btnAct2    = document.getElementById('btnAct2');
@@ -236,6 +236,9 @@ let lastSampleObsTime = -Infinity;
 let sampleInterval = 0.4;
 let measureRowIdx = 0;
 
+/* 📖 Δείγματα για το Βιβλίο Παράστασης */
+let bookSamples = [];
+
 let mode = 'run';
 
 let uXT = null;   // x–t canvas
@@ -253,9 +256,6 @@ const A_px  = A_m*pxPerMeter;
 
 /* συνολικός χρόνος άξονα x–t: 2T */
 const XT_TOTAL_T = 2*T;
-
-/* κλειδί για export στο βιβλίο */
-const BOOK_STORAGE_KEY = 'AAT_BOOK_DATA_V1';
 
 /* offset για avatars στις πράξεις από JSON. Προεπιλογή: -60 */
 let ACTS_AVATAR_OFFSET = -60;
@@ -418,15 +418,25 @@ function logMeasurement(tObs, xMeters){
   if(!obsStarted || mode==='pause') return;
   if(tObs - lastSampleObsTime < sampleInterval) return;
   lastSampleObsTime = tObs;
+
+  const idx = ++measureRowIdx;
+
   const tr = document.createElement('tr');
   tr.className='new';
   tr.innerHTML =
-    '<td>'+(++measureRowIdx)+'</td>'+
+    '<td>'+idx+'</td>'+
     '<td>'+tObs.toFixed(2)+'</td>'+
     '<td>'+xMeters.toFixed(2)+'</td>';
   measureTBody.appendChild(tr);
   setTimeout(()=>tr.classList.remove('new'),650);
   try{ tr.scrollIntoView({block:'end'}); }catch(e){}
+
+  // 📖 αποθήκευση για το Βιβλίο Παράστασης
+  bookSamples.push({
+    idx: idx,
+    t: tObs,
+    x: xMeters
+  });
 }
 
 /* ---------- x(t) canvas ---------- */
@@ -626,15 +636,16 @@ function drawXTChart(){
     ctx.fill();
     ctx.restore();
 
-    // 4) Χάπι "νέο t=0" + βέλος προς το σημείο (λίγο πιο χαμηλά για να μη κόβεται)
+    // 4) Χάπι "νέο t=0" + βέλος προς το σημείο (μέσα στα όρια του καμβά)
     const labelText = (currentLang==='en') ? 'new t = 0' : 'νέο t = 0';
     ctx.save();
     ctx.font='10px system-ui';
     const textWidth = ctx.measureText(labelText).width;
     const padX = 6;
     const padY = 3;
+
     let labelX = px;
-    let labelY = yTop + 10;   // μέσα στο πλαίσιο, όχι πάνω από το border
+    let labelY = yTop + 6;  // λίγο κάτω από το πάνω όριο, για να μην κόβεται
 
     const pillHalfW = textWidth/2 + padX;
     if(labelX < x0 + pillHalfW + 4) labelX = x0 + pillHalfW + 4;
@@ -1145,42 +1156,35 @@ function showParamsBox(){
   paramsBoxEl.style.display='block';
 }
 
-/* ---------- Export δεδομένων για βιβλίο ---------- */
+/* 📖 Export δεδομένων παράστασης για το Βιβλίο */
 
-function collectBookData(){
-  const rows = [];
-  const trs = measureTBody ? measureTBody.querySelectorAll('tr') : [];
-  trs.forEach(tr=>{
-    const tds = tr.querySelectorAll('td');
-    if(tds.length < 3) return;
-    const idx = parseInt(tds[0].textContent.trim(),10);
-    const t   = parseFloat(String(tds[1].textContent).replace(',','.'));
-    const x   = parseFloat(String(tds[2].textContent).replace(',','.'));
-    if(isNaN(t) || isNaN(x)) return;
-    rows.push({ idx, t, x });
-  });
-  const phi0deg=((omega*obsStartPlaybackOffset)*180/Math.PI+360)%360;
-  const x0 = x0Val();
-  return {
-    timestamp: Date.now(),
-    lang: currentLang,
-    params: {
-      A: A_m,
-      T: T,
-      omega: omega,
-      x0: x0,
-      phi0_deg: phi0deg
-    },
-    samples: rows
-  };
-}
-
-function saveBookData(){
+function exportBookDataToStorage(){
   try{
-    const data = collectBookData();
-    localStorage.setItem(BOOK_STORAGE_KEY, JSON.stringify(data));
+    const A = A_m;
+    const Tval = T;
+    const omegaVal = omega;
+
+    const x0 = x0Val();
+    const phi0deg = ((omega*obsStartPlaybackOffset)*180/Math.PI+360)%360;
+
+    const payload = {
+      params: {
+        A: A,
+        T: Tval,
+        omega: omegaVal,
+        x0: x0,
+        phi0_deg: phi0deg
+      },
+      samples: bookSamples.map(s => ({
+        idx: s.idx,
+        t: s.t,
+        x: s.x
+      }))
+    };
+
+    localStorage.setItem('AAT_BOOK_DATA_V1', JSON.stringify(payload));
   }catch(e){
-    console.error('Book data save failed', e);
+    console.error('exportBookDataToStorage error', e);
   }
 }
 
@@ -1759,6 +1763,7 @@ function resetShow(){
   obsStartPlaybackOffset=0;
   lastSampleObsTime=-Infinity;
   measureRowIdx=0;
+  bookSamples = [];   // 📖 reset δείγματα
   setMode('run');
 
   xtMarkState.active = false;
@@ -1825,10 +1830,11 @@ btnEndShow.addEventListener('click',()=>{
   }
 });
 
-/* Book button -> σώζει live δεδομένα και ανοίγει book.html */
+/* 📖 Book button -> πρώτα export, μετά άνοιγμα */
+
 if (btnBook) {
   btnBook.addEventListener('click', () => {
-    saveBookData();
+    exportBookDataToStorage();
     const lang = (currentLang === 'en') ? 'en' : 'gr';
     window.open('book.html?lang=' + lang, '_blank');
   });
