@@ -112,6 +112,17 @@
       max-width:420px;
     }
 
+    .params-list{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+      gap:6px 18px;
+      font-size:.95rem;
+      margin-top:8px;
+    }
+    .params-list div span.value{
+      font-weight:600;
+    }
+
     /* -------- Διάλογοι: δίστηλη παρουσίαση -------- */
 
     .dialog-block{
@@ -276,37 +287,70 @@
   <header>
     <h1>Βιβλίο Παράστασης — Απλή Αρμονική Ταλάντωση</h1>
     <div class="subtitle">
-      Η ίδια παράσταση, σε ρυθμό ανάγνωσης: δίστηλη παρουσίαση διαλόγων, νόμων και γραφημάτων, με πρόσθετα σχόλια από το <code>book.json</code>.
+      Η ίδια παράσταση, σε ρυθμό ανάγνωσης: δίστηλη παρουσίαση διαλόγων, νόμων και γραφημάτων,
+      με πρόσθετα σχόλια από το <code>book.json</code> και δεδομένα από το live.
     </div>
   </header>
 
   <div id="bookContent"></div>
 
   <div class="footer-note">
-    Τεχνική σημείωση: η σελίδα διαβάζει το <code>dialogs-*.json</code> για το σενάριο
-    και το <code>book.json</code> για το πρόσθετο υλικό (σημειώσεις, εικόνες, κείμενα),
-    και συνθέτει τον κορμό δυναμικά ανάλογα με τη γλώσσα στο URL: <code>?lang=gr</code> ή <code>?lang=en</code>.
+    Τεχνική σημείωση: η σελίδα διαβάζει το <code>dialogs-*.json</code> για το σενάριο,
+    το <code>book.json</code> για το πρόσθετο υλικό (σημειώσεις, εικόνες, κείμενα)
+    και, αν υπάρχει, τα live δεδομένα από το <code>localStorage</code> (κλειδί
+    <code>AAT_BOOK_DATA_V1</code>) που γράφει η σκηνή όταν πατήσεις
+    «Βιβλίο Παράστασης».
   </div>
 </div>
 
 <script>
-  /* --------- Ρυθμίσεις ΑΑΤ (ίδιες με σκηνή για αριθμητικά) ---------- */
+  /* --------- Ρυθμίσεις ΑΑΤ (default, αν δεν υπάρχουν live δεδομένα) ---------- */
   const A_val    = 3.0;   // m
   const T_val    = 6.0;   // s
   const omegaVal = 2 * Math.PI / T_val; // rad/s
-
-  // Αν θες να “κλειδώσεις” τα ίδια με τη σκηνή:
   const x0_val      = 1.80;  // m (παράδειγμα)
   const phi0_degVal = 35.0;  // deg (παράδειγμα)
 
+  const BOOK_STORAGE_KEY = 'AAT_BOOK_DATA_V1';
+
+  let LIVE_BOOK_DATA = null;
+
+  function loadLiveBookData(){
+    try{
+      const raw = localStorage.getItem(BOOK_STORAGE_KEY);
+      if(!raw) return null;
+      const data = JSON.parse(raw);
+      if(!data || typeof data !== 'object') return null;
+      return data;
+    }catch(e){
+      console.error('loadLiveBookData error', e);
+      return null;
+    }
+  }
+
   function expandTemplate(tpl){
     if(!tpl) return '';
+    let A = A_val;
+    let T = T_val;
+    let omega = omegaVal;
+    let x0 = x0_val;
+    let phi0 = phi0_degVal;
+
+    if(LIVE_BOOK_DATA && LIVE_BOOK_DATA.params){
+      const p = LIVE_BOOK_DATA.params;
+      if(typeof p.A === 'number') A = p.A;
+      if(typeof p.T === 'number') T = p.T;
+      if(typeof p.omega === 'number') omega = p.omega;
+      if(typeof p.x0 === 'number') x0 = p.x0;
+      if(typeof p.phi0_deg === 'number') phi0 = p.phi0_deg;
+    }
+
     return String(tpl)
-      .replaceAll('{A}',     A_val.toFixed(2))
-      .replaceAll('{T}',     T_val.toFixed(2))
-      .replaceAll('{omega}', omegaVal.toFixed(3))
-      .replaceAll('{x0}',    x0_val.toFixed(2))
-      .replaceAll('{phi0}',  phi0_degVal.toFixed(1));
+      .replaceAll('{A}',     A.toFixed(2))
+      .replaceAll('{T}',     T.toFixed(2))
+      .replaceAll('{omega}', omega.toFixed(3))
+      .replaceAll('{x0}',    x0.toFixed(2))
+      .replaceAll('{phi0}',  phi0.toFixed(1));
   }
 
   /* --------- Γλώσσα από URL ---------- */
@@ -377,6 +421,40 @@
     }
 
     return tags;
+  }
+
+  /* --------- Σύνοψη παραμέτρων από live δεδομένα ---------- */
+
+  function renderParamsSummary(){
+    const wrap = document.createElement('div');
+    wrap.className = 'params-list';
+
+    let A = A_val, T = T_val, omega = omegaVal, x0 = x0_val, phi0 = phi0_degVal;
+    if(LIVE_BOOK_DATA && LIVE_BOOK_DATA.params){
+      const p = LIVE_BOOK_DATA.params;
+      if(typeof p.A === 'number') A = p.A;
+      if(typeof p.T === 'number') T = p.T;
+      if(typeof p.omega === 'number') omega = p.omega;
+      if(typeof p.x0 === 'number') x0 = p.x0;
+      if(typeof p.phi0_deg === 'number') phi0 = p.phi0_deg;
+    }
+
+    const items = [
+      { label_gr:'Πλάτος: A = ', label_en:'Amplitude: A = ', value: A.toFixed(2)+' m' },
+      { label_gr:'Περίοδος: T = ', label_en:'Period: T = ', value: T.toFixed(2)+' s' },
+      { label_gr:'Γωνιακή συχνότητα: ω = ', label_en:'Angular frequency: ω = ', value: omega.toFixed(3)+' rad/s' },
+      { label_gr:'Αρχική απομάκρυνση: x₀ = ', label_en:'Initial displacement: x₀ = ', value: x0.toFixed(2)+' m' },
+      { label_gr:'Αρχική φάση: φ₀ = ', label_en:'Initial phase: φ₀ = ', value: phi0.toFixed(1)+'°' }
+    ];
+
+    items.forEach(it=>{
+      const div = document.createElement('div');
+      const label = (lang === 'en') ? it.label_en : it.label_gr;
+      div.innerHTML = label + '<span class="value">'+it.value+'</span>';
+      wrap.appendChild(div);
+    });
+
+    return wrap;
   }
 
   /* --------- Αντιστοίχιση annotations ανά index διαλόγου ---------- */
@@ -628,6 +706,111 @@
     return wrapCard;
   }
 
+  function renderMeasurementsBlock(block){
+    const card = document.createElement('div');
+    card.className = 'card';
+
+    const titleText =
+      (lang === 'en' ? block.title_en : block.title_gr) ||
+      block.title_gr || block.title_en ||
+      ((lang === 'en') ? 'Sample measurements t–x' : 'Δείγμα μετρήσεων t–x από την παράσταση');
+
+    const h3 = document.createElement('h3');
+    h3.textContent = titleText;
+    card.appendChild(h3);
+
+    const noteHtml =
+      (lang === 'en' ? block.noteHtml_en : block.noteHtml_gr) ||
+      block.noteHtml_gr || block.noteHtml_en;
+
+    if(noteHtml){
+      const p = document.createElement('p');
+      p.className = 'muted';
+      p.innerHTML = noteHtml;
+      card.appendChild(p);
+    }
+
+    const data = LIVE_BOOK_DATA && Array.isArray(LIVE_BOOK_DATA.samples)
+      ? LIVE_BOOK_DATA.samples
+      : [];
+
+    if(data.length === 0){
+      const msg = document.createElement('p');
+      msg.className = 'muted';
+      msg.style.marginTop = '8px';
+      msg.textContent = (lang === 'en')
+        ? 'No live measurements were found. Run the performance and press the Book button again to sync the data.'
+        : 'Δεν βρέθηκαν μετρήσεις από ζωντανή παράσταση. Τρέξε την παράσταση και πάτησε ξανά το κουμπί «Βιβλίο Παράστασης» για να συγχρονιστούν τα δεδομένα.';
+      card.appendChild(msg);
+      return card;
+    }
+
+    const maxRows = (typeof block.maxRows === 'number' && block.maxRows > 0)
+      ? Math.floor(block.maxRows)
+      : 12;
+
+    const table = document.createElement('table');
+    table.style.width = '100%';
+    table.style.borderCollapse = 'collapse';
+    table.style.marginTop = '8px';
+    table.style.fontSize = '.9rem';
+
+    const thead = document.createElement('thead');
+    const hr = document.createElement('tr');
+    thead.appendChild(hr);
+
+    ['#','t (s)','x (m)'].forEach((txt,i)=>{
+      const th = document.createElement('th');
+      th.textContent = txt;
+      th.style.borderBottom = '1px solid #e5e7eb';
+      th.style.textAlign = (i===0?'left':'right');
+      th.style.padding = '4px 6px';
+      hr.appendChild(th);
+    });
+
+    const tbody = document.createElement('tbody');
+
+    data.slice(0, maxRows).forEach(row=>{
+      const tr = document.createElement('tr');
+      const tdIdx = document.createElement('td');
+      const tdT   = document.createElement('td');
+      const tdX   = document.createElement('td');
+
+      tdIdx.textContent = row.idx != null ? row.idx : '';
+      tdT.textContent   = (typeof row.t === 'number') ? row.t.toFixed(2) : '';
+      tdX.textContent   = (typeof row.x === 'number') ? row.x.toFixed(2) : '';
+
+      [tdIdx,tdT,tdX].forEach((td,i)=>{
+        td.style.padding = '3px 6px';
+        td.style.borderBottom = '1px solid #f3f4f6';
+        td.style.textAlign = (i===0?'left':'right');
+      });
+
+      tr.appendChild(tdIdx);
+      tr.appendChild(tdT);
+      tr.appendChild(tdX);
+      tbody.appendChild(tr);
+    });
+
+    table.appendChild(thead);
+    table.appendChild(tbody);
+    card.appendChild(table);
+
+    if(block.showParams !== false){
+      const paramsHeader = document.createElement('p');
+      paramsHeader.className = 'muted';
+      paramsHeader.style.marginTop = '10px';
+      paramsHeader.textContent = (lang === 'en')
+        ? 'Parameters of the S.H.M. used in the performance:'
+        : 'Παράμετροι της Α.Α.Τ. που χρησιμοποιήθηκαν στην παράσταση:';
+      card.appendChild(paramsHeader);
+
+      card.appendChild( renderParamsSummary() );
+    }
+
+    return card;
+  }
+
   function renderSection(section){
     const sec = document.createElement('section');
 
@@ -653,6 +836,8 @@
         sec.appendChild( renderImageBlock(block) );
       }else if(block.type === 'dialogs'){
         sec.appendChild( renderDialogsBlock(block) );
+      }else if(block.type === 'measurements'){
+        sec.appendChild( renderMeasurementsBlock(block) );
       }
     });
 
@@ -682,6 +867,7 @@
   async function buildBookPage(){
     try{
       await loadDialogs();
+      LIVE_BOOK_DATA = loadLiveBookData();
       const book = await loadBook();
 
       const content = document.getElementById('bookContent');
