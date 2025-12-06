@@ -1,47 +1,146 @@
 {
+  "meta": {
+    "version": 1,
+    "defaultLang": "gr"
+  },
   "sections": [
     {
+      "id": "intro",
+      "title_gr": "Εισαγωγή στην Απλή Αρμονική Ταλάντωση",
+      "title_en": "Introduction to Simple Harmonic Motion",
+      "blocks": [
+        {
+          "type": "html",
+          "html_gr": "<p>Έφτασε η στιγμή που περίμενες! Σε αυτό το βιβλίο παρακολουθούμε την ίδια παράσταση Α.Α.Τ., αλλά σε ρυθμό ανάγνωσης.</p>",
+          "html_en": "<p>The moment you were waiting for! In this book we revisit the SHM performance at reading pace.</p>"
+        },
+        {
+          "type": "image",
+          "src": "img/stage_snapshot.png",
+          "caption_gr": "Η σκηνή με τον ταλαντωτή (m₁, D₁) και το κοινό.",
+          "caption_en": "Stage with the oscillator (m₁, D₁) and the audience.",
+          "width": "full"
+        }
+      ]
+    },
+
+    {
       "id": "act1",
+      "title_gr": "Πράξη 1 — Από τις μετρήσεις και το x–t στην αναγνώριση της Α.Α.Τ.",
+      "title_en": "Act I — From measurements and x–t to recognizing SHM",
       "blocks": [
         {
           "type": "note",
-          "html": "Σε αυτή την πράξη ο στόχος είναι να <b>αναγνωριστεί</b> αν η κίνηση είναι Α.Α.Τ. μόνο από το διάγραμμα <b>x–t</b> και τις μετρήσεις."
+          "html_gr": "Σε αυτή την πράξη ο στόχος είναι να <b>αναγνωριστεί</b> αν η κίνηση είναι Α.Α.Τ. μόνο από το διάγραμμα <b>x–t</b> και τις μετρήσεις.",
+          "html_en": "In this act the goal is to <b>recognize</b> whether the motion is SHM using only the <b>x–t</b> graph and the measurements."
+        },
+        {
+          "type": "html",
+          "html_gr": "<h3>Πίνακας χαρακτηριστικών τιμών t–x</h3><p>Ο παρακάτω πίνακας είναι απόσπασμα των μετρήσεων που έγιναν κατά τη διάρκεια της παράστασης.</p>",
+          "html_en": "<h3>Table of characteristic t–x values</h3><p>The following table is a partial extract of the measurements taken during the performance.</p>"
+        },
+        {
+          "type": "image",
+          "src": "img/table_tx_live.png",
+          "caption_gr": "Πίνακας μερικών μετρήσεων t–x από την παράσταση.",
+          "caption_en": "Table with some t–x measurements from the show.",
+          "width": "half"
         },
         {
           "type": "dialogs",
           "source": "act1",
           "from": 0,
-          "to": -1
+          "to": -1,
+          "annotations": [
+            {
+              "at": 2,
+              "noteHtml_gr": "Στο σημείο αυτό ο θεατής συνδέει την περίοδο <b>T</b> με την απόσταση ανάμεσα σε διαδοχικές κορυφές του x–t.",
+              "noteHtml_en": "At this point the viewer connects the period <b>T</b> with the distance between successive peaks of the x–t graph.",
+              "images": [
+                {
+                  "src": "img/xt_zoom_peaks.png",
+                  "caption_gr": "Μεγέθυνση του διαγράμματος x–t για τον εντοπισμό της περιόδου T.",
+                  "caption_en": "Zoomed x–t graph to identify the period T."
+                }
+              ]
+            },
+            {
+              "at": 5,
+              "noteHtml_gr": "Εδώ κλειδώνουν οι αριθμητικές τιμές <b>A</b>, <b>T</b>, <b>ω</b>, <b>x₀</b>, <b>φ₀</b> για όλη την υπόλοιπη παράσταση.",
+              "noteHtml_en": "Here the numerical values of <b>A</b>, <b>T</b>, <b>ω</b>, <b>x₀</b>, <b>φ₀</b> are fixed for the rest of the performance.",
+              "images": []
+            }
+          ]
         }
       ]
     },
+
     {
       "id": "act2",
+      "title_gr": "Πράξη 2 — Δυναμική ερμηνεία της Α.Α.Τ.",
+      "title_en": "Act II — Dynamical interpretation of SHM",
       "blocks": [
         {
           "type": "note",
-          "html": "Εδώ οι θεατές περνούν στη <b>δυναμική</b> περιγραφή: δυνάμεις, επιτάχυνση, νόμος <b>a(x) = −ω²x</b> και σύνδεση με τα διαγράμματα."
+          "html_gr": "Σε αυτή την πράξη οι θεατές περνούν στη <b>δυναμική</b> περιγραφή: δυνάμεις, επιτάχυνση, νόμος <b>a(x) = −ω²x</b> και σύνδεση με τα διαγράμματα.",
+          "html_en": "In this act viewers move to the <b>dynamical</b> description: forces, acceleration, the law <b>a(x) = −ω²x</b>, and its relation to the graphs."
         },
         {
           "type": "dialogs",
           "source": "act2",
           "from": 0,
-          "to": -1
+          "to": -1,
+          "annotations": [
+            {
+              "at": 3,
+              "noteHtml_gr": "Εδώ εμφανίζεται το διάγραμμα <b>a–x</b> ως ευθεία γραμμή με κλίση −ω².",
+              "noteHtml_en": "Here the <b>a–x</b> graph appears as a straight line with slope −ω².",
+              "images": [
+                {
+                  "src": "img/ax_line.png",
+                  "caption_gr": "Το διάγραμμα a–x με κλίση −ω² για τον (m₁, D₁).",
+                  "caption_en": "The a–x diagram with slope −ω² for (m₁, D₁)."
+                }
+              ]
+            },
+            {
+              "at": 6,
+              "noteHtml_gr": "Στη σκηνή προβάλλεται η <span style=\"color:#ff4444;\">κόκκινη καμπύλη</span> με το βέλος στο νέο t = 0, πάνω στο x–t.",
+              "noteHtml_en": "On stage we see the <span style=\"color:#ff4444;\">red curve</span> with the arrow at the new t = 0 on top of x–t.",
+              "images": [
+                {
+                  "src": "img/xt_red_curve.png",
+                  "caption_gr": "Το διάγραμμα x–t με την κόκκινη καμπύλη πρόβλεψης μετά το νέο t = 0.",
+                  "caption_en": "The x–t graph with the red prediction curve after the new t = 0."
+                }
+              ]
+            }
+          ]
         }
       ]
     },
+
     {
       "id": "foyer",
+      "title_gr": "Φουαγιέ — Συζήτηση μετά την παράσταση",
+      "title_en": "Foyer — Discussion after the performance",
       "blocks": [
         {
           "type": "note",
-          "html": "Στο φουαγιέ γίνεται ανασκόπηση: <b>τι μάθαμε</b> για A, T, ω, φ₀, x₀ και πώς όλα αυτά δένουν με τους νόμους (1)–(4)."
+          "html_gr": "Στο φουαγιέ γίνεται ανασκόπηση: <b>τι μάθαμε</b> για A, T, ω, φ₀, x₀ και πώς όλα αυτά δένουν με τους νόμους (1)–(4).",
+          "html_en": "In the foyer we recap: <b>what we learned</b> about A, T, ω, φ₀, x₀ and how these tie together with laws (1)–(4)."
         },
         {
           "type": "dialogs",
           "source": "foyer",
           "from": 0,
-          "to": -1
+          "to": -1,
+          "annotations": []
+        },
+        {
+          "type": "html",
+          "html_gr": "<h3>Σύνοψη για τον εκπαιδευτικό</h3><p>Εδώ μπορείς να προσθέσεις οδηγίες διδασκαλίας, προτεινόμενες ερωτήσεις, ή επεκτάσεις για άλλες δραστηριότητες.</p>",
+          "html_en": "<h3>Summary for the teacher</h3><p>Here you can add teaching tips, suggested questions, or extensions for further activities.</p>"
         }
       ]
     }
