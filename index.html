@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Θεατρική Σκηνή — Ενιαία Έκδοση (Act I + Act II + Φουαγιέ)</title>
+  <title>Θεatrική Σκηνή — Ενιαία Έκδοση (Act I + Act II + Φουαγιέ)</title>
 
-  <!-- uPlot για x–t (παραμένει, παρότι τώρα το x–t είναι δικό μας canvas) -->
+  <!-- uPlot για x–t (παρότι τώρα το x–t είναι δικό μας canvas) -->
   <link rel="stylesheet" href="https://unpkg.com/uplot@1.6.30/dist/uPlot.min.css">
   <script src="https://unpkg.com/uplot@1.6.30/dist/uPlot.iife.min.js"></script>
 
@@ -39,7 +39,7 @@
   <!-- 1. Χρονομετρητής -->
   <div class="clock" id="clock">t = 0.00 s<span class="hint" id="slowHint"></span></div>
 
-  <!-- 2. Πίνακας μετρήσεων t–x (πιο χαμηλός) -->
+  <!-- 2. Πίνακας μετρήσεων t–x -->
   <div class="measure-box" id="measureBox">
     <div class="mb-title" id="measureTitle">Μετρήσεις</div>
     <table>
@@ -148,7 +148,7 @@
   <div class="foyer-bubble" id="foyerBubble">ΘΕΑΤΗΣ</div>
 </div>
 
-<!-- Intro overlay (εξωτερικά js, χωρίς να πειράζουμε τη σκηνή) -->
+<!-- Intro overlay -->
 <script src="intro.js"></script>
 <script src="intro_boot.js"></script>
 
@@ -169,7 +169,7 @@ let currentLang = 'gr';  // 'gr' ή 'en'
 let btnLangGR = null;
 let btnLangEN = null;
 
-/* Κατάσταση παράστασης για locks κουμπιών */
+/* Κατάσταση παράστασης */
 let phase = 'idle'; // idle, countdown, act1, act2, between2andFoyer, foyer
 
 /* ---------- Φυσική / σκηνή ---------- */
@@ -212,7 +212,7 @@ const btnPlay    = document.getElementById('btnPlay');
 const btnReset   = document.getElementById('btnReset');
 const btnEndShow = document.getElementById('btnEndShow');
 const btnFoyer   = document.getElementById('btnFoyer');
-const btnBook    = document.getElementById('btnBook');   // 🔴
+const btnBook    = document.getElementById('btnBook');
 
 const actBreak   = document.getElementById('actBreak');
 const btnAct2    = document.getElementById('btnAct2');
@@ -276,7 +276,6 @@ let xtMarkState = {
   showTail: false
 };
 
-// Βρίσκουμε τη στιγμή t_zero στο [0,T] όπου x περνάει πρώτη φορά από 0 με φορά προς τα δεξιά
 function xtZeroCrossingTime(){
   let off = obsStartPlaybackOffset % T;
   if(off < 0) off += T;
@@ -613,7 +612,7 @@ function drawXTChart(){
     ctx.beginPath();
     for(let i=0;i<=N2;i++){
       const t = tStart + (tEnd - tStart)*(i/N2);
-      const tPrime = t - tStart;           // t' με t'=0 στο zero crossing
+      const tPrime = t - tStart;
       const xPred  = A_m*Math.sin(omega*tPrime);
       const px2    = tToX(t);
       const py2    = xToY(xPred);
@@ -749,8 +748,6 @@ function sizeLawCanvas(c){
   c.style.width=w+'px';
   c.style.height=h+'px';
 }
-
-/* v(t), a(t), a–x, x–sin(ωt) */
 
 function drawVelocityChart(){
   if(!vCan) return;
@@ -1595,17 +1592,6 @@ function closeCurtainToAct2(){
 
 /* ---------- Φουαγιέ ---------- */
 
-function isFormulaBlock(text){
-  const s=String(text||'').trim();
-  if(!s) return false;
-  if(/^\(\d+\)/.test(s)) return true;
-  if(/[ΑA]\.[ΔD]\.[ΜM]\.[ΕE]\.[ΤT]/.test(s)) return true;
-  if(/M\.E\.C/.test(s)) return true;
-  if(/[⇒⇔]/.test(s)) return true;
-  if(/Νόμος του Νεύτωνα/i.test(s) || /Newton’s law/i.test(s)) return true;
-  return false;
-}
-
 function setFoyerSpeaker(idx1based){
   const {x,y,info}=getViewerAvatarCenter(idx1based);
   if(!info) return;
@@ -1756,7 +1742,7 @@ function resetShow(){
   obsStartPlaybackOffset=0;
   lastSampleObsTime=-Infinity;
   measureRowIdx=0;
-  bookSamples = []; // καθάρισμα για νέα παράσταση
+  bookSamples = [];
   setMode('run');
 
   xtMarkState.active = false;
@@ -1843,7 +1829,7 @@ function beginObservation(){
     obsStartPlaybackOffset=playbackTime;
     lastSampleObsTime = -Infinity;
 
-    // ΠΡΩΤΟ ΔΕΙΓΜΑ: t = 0, x = x₀
+    // ΠΡΩΤΟ ΔΕΙΓΜΑ: t = 0, x = x₀ (γραμμή #1 στον πίνακα)
     const x0Meters = x0Val();
     appendSampleRow(0, x0Meters, 1);
   }
