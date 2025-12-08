@@ -2,22 +2,24 @@
   "sections": [
     {
       "id": "act1",
+      "title_gr": "Πράξη 1 — Από το διάγραμμα x–t στο \"σετ\" των νόμων",
+      "title_en": "Act I — From the x–t plot to the law set",
       "blocks": [
         {
           "type": "note",
           "html_gr": "Σε αυτή την πράξη ο στόχος είναι να <b>αναγνωριστεί</b> αν η κίνηση είναι Α.Α.Τ. μόνο από το διάγραμμα <b>x–t</b> και τις μετρήσεις.",
-          "html_en": "In this act the goal is to <b>identify</b> whether the motion is SHM using only the <b>x–t</b> graph and the measurement table."
+          "html_en": "In this act the goal is to <b>recognise</b> whether the motion is SHM only from the <b>x–t</b> plot and the measurements."
         },
         {
-          "type": "measurements",
-          "maxRows": 12
+          "type": "table_tx",
+          "id": "tx_act1",
+          "rows": 10,
+          "tMaxMul": 2
         },
         {
-          "type": "image",
-          "src": "xt_demo.png",
-          "alt": "Ενδεικτικό διάγραμμα x–t",
-          "caption_gr": "Σχηματικό διάγραμμα x–t του ταλαντωτή (ενδεικτική απεικόνιση).",
-          "caption_en": "Schematic x–t diagram of the oscillator (illustrative)."
+          "type": "chart_xt",
+          "id": "xt_act1",
+          "withZeroMark": true
         },
         {
           "type": "dialogs",
@@ -29,11 +31,13 @@
     },
     {
       "id": "act2",
+      "title_gr": "Πράξη 2 — Δυναμική ερμηνεία της Α.Α.Τ.",
+      "title_en": "Act II — Dynamic interpretation of SHM",
       "blocks": [
         {
           "type": "note",
-          "html_gr": "Εδώ οι θεατές περνούν στη <b>δυναμική</b> περιγραφή: δυνάμεις, επιτάχυνση, νόμος <b>a(x) = −ω²x</b> και σύνδεση με τα διαγράμματα.",
-          "html_en": "Here the viewers move to the <b>dynamic</b> description: forces, acceleration, the law <b>a(x) = −ω²x</b> and its link to the graphs."
+          "html_gr": "Εδώ οι θεατές περνούν στη <b>δυναμική</b> περιγραφή: δυνάμεις, επιτάχυνση, νόμος <b>a(x) = −ω²·x</b> και σύνδεση με τα διαγράμματα.",
+          "html_en": "Here the viewers move to the <b>dynamic</b> description: forces, acceleration, the law <b>a(x) = −ω²·x</b> and the link with the plots."
         },
         {
           "type": "dialogs",
@@ -45,11 +49,13 @@
     },
     {
       "id": "foyer",
+      "title_gr": "Φουαγιέ — Συζήτηση μετά την παράσταση",
+      "title_en": "Foyer — Discussion after the show",
       "blocks": [
         {
           "type": "note",
           "html_gr": "Στο φουαγιέ γίνεται ανασκόπηση: <b>τι μάθαμε</b> για A, T, ω, φ₀, x₀ και πώς όλα αυτά δένουν με τους νόμους (1)–(4).",
-          "html_en": "In the foyer we review: <b>what we learned</b> about A, T, ω, φ₀, x₀ and how they connect with laws (1)–(4)."
+          "html_en": "In the foyer we recap: <b>what we learned</b> about A, T, ω, φ₀, x₀ and how these connect with laws (1)–(4)."
         },
         {
           "type": "dialogs",
