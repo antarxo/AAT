@@ -154,6 +154,12 @@
       font-family:"SF Mono","JetBrains Mono","Fira Code","Courier New",monospace;
       white-space:pre-wrap;
     }
+    .dialog-cell.right .law-text{
+      margin-bottom:4px;
+    }
+    .dialog-cell.right .diagram-canvas{
+      margin-top:6px;
+    }
 
     .speaker{
       font-weight:600;
@@ -240,7 +246,7 @@
       margin-top:8px;
     }
 
-    /* t–x table δεξιά / block τύπου txTable */
+    /* t–x table (block τύπου txTable) */
     .tx-table-block h3{
       font-size:1rem;
       margin-bottom:4px;
@@ -273,7 +279,7 @@
       font-weight:600;
     }
 
-    /* Διάγραμμα block (x–t κ.λπ.) */
+    /* Διάγραμμα block (γενικό) */
     .diagram-block{
       margin-top:10px;
     }
@@ -487,155 +493,7 @@
     return 'rgba('+r+','+g+','+b+','+alpha+')';
   }
 
-  /* ---------- Δίστηλο table διαλόγων (ίδιο look με πριν) ---------- */
-
-  function buildDialogTable(events, isFoyer){
-    const wrapper = document.createElement('div');
-    wrapper.className = 'dialog-block';
-
-    const tbl = document.createElement('div');
-    tbl.className = 'dialog-table';
-    wrapper.appendChild(tbl);
-
-    if(!events || !events.length){
-      const row = document.createElement('div');
-      row.className = 'dialog-row';
-      const c1 = document.createElement('div');
-      const c2 = document.createElement('div');
-      c1.className = 'dialog-cell left';
-      c2.className = 'dialog-cell right';
-      c1.textContent = (lang === 'en')
-        ? 'No content found in JSON.'
-        : 'Δεν βρέθηκε περιεχόμενο στο JSON.';
-      c2.innerHTML = '&nbsp;';
-      row.appendChild(c1);
-      row.appendChild(c2);
-      tbl.appendChild(row);
-      return wrapper;
-    }
-
-    events.forEach(ev=>{
-      const row = document.createElement('div');
-      row.className = 'dialog-row';
-
-      const leftCell  = document.createElement('div');
-      const rightCell = document.createElement('div');
-      leftCell.className  = 'dialog-cell left';
-      rightCell.className = 'dialog-cell right';
-
-      const hasLeft  = ev.left  && String(ev.left).trim()  !== '';
-      const hasRight = ev.right && String(ev.right).trim() !== '';
-
-      if(hasLeft){
-        const sp = document.createElement('div');
-        sp.className = 'speaker';
-
-        const badge = document.createElement('div');
-        badge.className = 'speaker-badge';
-
-        const avatar = document.createElement('div');
-        avatar.className = 'speaker-avatar';
-
-        if(ev.viewer != null){
-          const vColor = viewerColor(ev.viewer);
-          const vImg   = viewerImg(ev.viewer);
-          avatar.style.backgroundColor = vColor;
-          if(vImg){
-            avatar.style.backgroundImage = 'url("'+vImg+'")';
-          }else{
-            avatar.textContent = viewerInitial(ev.viewer);
-          }
-        }else{
-          avatar.style.backgroundColor = '#6b7280';
-          avatar.textContent = (lang === 'en') ? 'N' : 'Α';
-        }
-
-        const nameSpan = document.createElement('span');
-        nameSpan.className = 'speaker-name';
-        if(ev.viewer != null){
-          nameSpan.textContent = viewerName(ev.viewer);
-        }else{
-          nameSpan.textContent = (lang === 'en') ? 'Narration' : 'Αφήγηση';
-        }
-
-        badge.appendChild(avatar);
-        badge.appendChild(nameSpan);
-        sp.appendChild(badge);
-
-        const speech = document.createElement('div');
-        speech.className = 'speech';
-        const html = expandTemplate(ev.left).replaceAll('\n','<br>');
-        speech.innerHTML = html;
-
-        leftCell.appendChild(sp);
-        leftCell.appendChild(speech);
-      }else{
-        leftCell.innerHTML = '&nbsp;';
-      }
-
-      if(hasRight){
-        const lawHtml = expandTemplate(ev.right);
-        rightCell.innerHTML = lawHtml;
-      }else{
-        rightCell.innerHTML = '&nbsp;';
-      }
-
-      row.appendChild(leftCell);
-      row.appendChild(rightCell);
-      tbl.appendChild(row);
-    });
-
-    return wrapper;
-  }
-
-  /* ---------- Block: πίνακας t–x (θεωρητικός, από A,T,φ₀) ---------- */
-
-  function generateTxSamples(maxRows){
-    const rows = [];
-    const N = maxRows && maxRows>2 ? maxRows : 12;
-    const phi = phi0_radVal;
-    for(let i=0;i<N;i++){
-      const t = (T_val * i)/(N-1); // 0..T
-      const x = A_val * Math.sin(omegaVal*t + phi);
-      rows.push({ t, x });
-    }
-    return rows;
-  }
-
-  function buildTxTableBlock(block){
-    const wrap = document.createElement('div');
-    wrap.className = 'book-block tx-table-block';
-
-    const title = document.createElement('h3');
-    title.textContent = block.title || 'Πίνακας μετρήσεων x–t (θεωρητικά δείγματα)';
-    wrap.appendChild(title);
-
-    const tbl = document.createElement('table');
-    tbl.className = 'tx-table';
-    const thead = document.createElement('thead');
-    thead.innerHTML = '<tr><th>#</th><th>t (s)</th><th>x (m)</th></tr>';
-    tbl.appendChild(thead);
-
-    const tbody = document.createElement('tbody');
-    const samples = generateTxSamples(block.maxRows);
-
-    samples.forEach((row,idx)=>{
-      const tr = document.createElement('tr');
-      const isX0 = Math.abs(row.t - 0) < 1e-6; // η πρώτη γραμμή
-      if(isX0) tr.classList.add('is-x0');
-      tr.innerHTML =
-        '<td>'+(idx+1)+'</td>'+
-        '<td>'+row.t.toFixed(2)+'</td>'+
-        '<td>'+row.x.toFixed(2)+'</td>';
-      tbody.appendChild(tr);
-    });
-
-    tbl.appendChild(tbody);
-    wrap.appendChild(tbl);
-    return wrap;
-  }
-
-  /* ---------- Block: διάγραμμα x–t με κόκκινη καμπύλη ---------- */
+  /* ---------- Διαγράμματα (x–t, v–t, a–t, a–x, x–sin(ωt)) ---------- */
 
   function drawXtDiagram(canvas, opts){
     const ctx = canvas.getContext('2d');
@@ -759,13 +617,13 @@
     const labelX0 = 'x₀ ≈ '+x0_val.toFixed(2)+' m';
     ctx.fillText(labelX0, x0+4, yx0-4);
 
-    // Αν δεν θέλουμε κόκκινη καμπύλη, σταματάμε εδώ
-    if(!opts || !opts.markNewZero) return;
+    const markNewZero = opts && opts.markNewZero;
+
+    if(!markNewZero) return;
 
     // t_zero: πρώτη διέλευση από x=0 με θετική κλίση (upward crossing)
     const twoPi = 2*Math.PI;
     let phi = phi0_radVal;
-    // ωt + φ = 2kπ  => t = (2kπ - φ)/ω, με k τέτοιο ώστε t>=0, μικρότερο δυνατό
     let k = Math.ceil(phi / twoPi);
     let tZero = (2*k*Math.PI - phi) / omegaVal;
     if(tZero < 0){
@@ -892,6 +750,571 @@
     ctx.restore();
   }
 
+  function drawVelocityDiagram(canvas){
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width = 260;
+    const H = canvas.height = 150;
+
+    const margin=18;
+    const x0=margin;
+    const x1=W-margin;
+    const y0=H/2;
+
+    const vmax=omegaVal*A_val;
+    const yAmp=(H/2-margin);
+    const scaleV=yAmp/(1.1*vmax);
+
+    ctx.clearRect(0,0,W,H);
+
+    ctx.save();
+    ctx.strokeStyle='rgba(148,163,184,0.35)';
+    ctx.lineWidth=1;
+    ctx.setLineDash([3,3]);
+
+    const tTicks=[0,T_val/2,T_val];
+    tTicks.forEach(t=>{
+      const xf=x0+(x1-x0)*(t/T_val);
+      ctx.beginPath();
+      ctx.moveTo(xf,margin);
+      ctx.lineTo(xf,H-margin);
+      ctx.stroke();
+    });
+
+    const vTicks=[-vmax,-vmax/2,0,vmax/2,vmax];
+    vTicks.forEach(v=>{
+      const yf=y0-v*scaleV;
+      ctx.beginPath();
+      ctx.moveTo(x0,yf);
+      ctx.lineTo(x1,yf);
+      ctx.stroke();
+    });
+
+    ctx.restore();
+
+    ctx.strokeStyle='rgba(148,163,184,0.9)';
+    ctx.lineWidth=1;
+    ctx.setLineDash([]);
+    ctx.beginPath();
+    ctx.moveTo(x0,y0);
+    ctx.lineTo(x1,y0);
+    ctx.moveTo(x0,margin);
+    ctx.lineTo(x0,H-margin);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.rect(x0,margin,x1-x0,H-2*margin);
+    ctx.stroke();
+
+    const N=200;
+    ctx.strokeStyle='#ffd27a';
+    ctx.lineWidth=2;
+    ctx.beginPath();
+    for(let i=0;i<=N;i++){
+      const t=(i/N)*T_val;
+      const v=vmax*Math.cos(omegaVal*t + phi0_radVal);
+      const xf=x0+(x1-x0)*(t/T_val);
+      const yf=y0-v*scaleV;
+      if(i===0) ctx.moveTo(xf,yf); else ctx.lineTo(xf,yf);
+    }
+    ctx.stroke();
+
+    ctx.fillStyle='#e5e7eb';
+    ctx.font='11px system-ui';
+    const labelVt=(lang==='en')?'v(t)':'υ(t)';
+    ctx.fillText(labelVt,x0+4,margin+10);
+
+    ctx.font='10px system-ui';
+    const vAxisLabel=(lang==='en')?'v (m/s)':'υ (m/s)';
+    ctx.fillText(vAxisLabel,x0+4,margin-4);
+    ctx.fillText('t',x1-6,y0+12);
+    ctx.fillText('0',x0-10,y0+4);
+
+    ctx.textAlign='center';
+    ctx.fillText('0',x0,H-margin+10);
+    ctx.fillText((T_val/2).toFixed(1),(x0+x1)/2,H-margin+10);
+    ctx.fillText(T_val.toFixed(1),x1,H-margin+10);
+    ctx.textAlign='left';
+
+    const vmaxLabel=((lang==='en')?'v_max ≈ ':'υ_max ≈ ')+vmax.toFixed(2);
+    ctx.fillText(vmaxLabel,x0+4,H-margin+4);
+  }
+
+  function drawAccelerationDiagram(canvas){
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width = 260;
+    const H = canvas.height = 150;
+
+    const margin=18;
+    const x0=margin;
+    const x1=W-margin;
+    const y0=H/2;
+
+    const amax=omegaVal*omegaVal*A_val;
+    const yAmp=(H/2-margin);
+    const scaleA=yAmp/(1.1*amax);
+
+    ctx.clearRect(0,0,W,H);
+
+    ctx.save();
+    ctx.strokeStyle='rgba(148,163,184,0.35)';
+    ctx.lineWidth=1;
+    ctx.setLineDash([3,3]);
+
+    const tTicks=[0,T_val/2,T_val];
+    tTicks.forEach(t=>{
+      const xf=x0+(x1-x0)*(t/T_val);
+      ctx.beginPath();
+      ctx.moveTo(xf,margin);
+      ctx.lineTo(xf,H-margin);
+      ctx.stroke();
+    });
+
+    const aTicks=[-amax,-amax/2,0,amax/2,amax];
+    aTicks.forEach(a=>{
+      const yf=y0-a*scaleA;
+      ctx.beginPath();
+      ctx.moveTo(x0,yf);
+      ctx.lineTo(x1,yf);
+      ctx.stroke();
+    });
+
+    ctx.restore();
+
+    ctx.strokeStyle='rgba(148,163,184,0.9)';
+    ctx.lineWidth=1;
+    ctx.setLineDash([]);
+    ctx.beginPath();
+    ctx.moveTo(x0,y0);
+    ctx.lineTo(x1,y0);
+    ctx.moveTo(x0,margin);
+    ctx.lineTo(x0,H-margin);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.rect(x0,margin,x1-x0,H-2*margin);
+    ctx.stroke();
+
+    const N=200;
+    ctx.strokeStyle='#ffd27a';
+    ctx.lineWidth=2;
+    ctx.beginPath();
+    for(let i=0;i<=N;i++){
+      const t=(i/N)*T_val;
+      const a=-amax*Math.sin(omegaVal*t + phi0_radVal);
+      const xf=x0+(x1-x0)*(t/T_val);
+      const yf=y0-a*scaleA;
+      if(i===0) ctx.moveTo(xf,yf); else ctx.lineTo(xf,yf);
+    }
+    ctx.stroke();
+
+    ctx.fillStyle='#e5e7eb';
+    ctx.font='11px system-ui';
+    ctx.fillText('a(t)',x0+4,margin+10);
+
+    ctx.font='10px system-ui';
+    ctx.fillText('a (m/s²)',x0+4,margin-4);
+    ctx.fillText('t',x1-6,y0+12);
+    ctx.fillText('0',x0-10,y0+4);
+
+    ctx.textAlign='center';
+    ctx.fillText('0',x0,H-margin+10);
+    ctx.fillText((T_val/2).toFixed(1),(x0+x1)/2,H-margin+10);
+    ctx.fillText(T_val.toFixed(1),x1,H-margin+10);
+    ctx.textAlign='left';
+
+    const amaxLabel='a_max ≈ '+amax.toFixed(2);
+    ctx.fillText(amaxLabel,x0+4,H-margin+4);
+  }
+
+  function drawAxDiagram(canvas){
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width = 260;
+    const H = canvas.height = 150;
+
+    ctx.clearRect(0,0,W,H);
+
+    const margin=22;
+    const x0=margin;
+    const x1=W-margin;
+    const y0=margin;
+    const y1=H-margin;
+
+    const xMid=(x0+x1)/2;
+    const yMid=(y0+y1)/2;
+
+    const amax=omegaVal*omegaVal*A_val;
+
+    const pxPerX=(x1-x0)/(2*A_val);
+    const pxPerA=(y1-y0)/(2*amax);
+
+    function toCanvas(x,a){
+      const cx=xMid+x*pxPerX;
+      const cy=yMid-a*pxPerA;
+      return {cx,cy};
+    }
+
+    ctx.save();
+    ctx.strokeStyle='rgba(148,163,184,0.35)';
+    ctx.lineWidth=1;
+    ctx.setLineDash([3,3]);
+
+    const xTicks=[-A_val,-A_val/2,0,A_val/2,A_val];
+    xTicks.forEach(x=>{
+      const p=toCanvas(x,0);
+      ctx.beginPath();
+      ctx.moveTo(p.cx,y0);
+      ctx.lineTo(p.cx,y1);
+      ctx.stroke();
+    });
+
+    const aTicks=[-amax,-amax/2,0,amax/2,amax];
+    aTicks.forEach(a=>{
+      const p=toCanvas(0,a);
+      ctx.beginPath();
+      ctx.moveTo(x0,p.cy);
+      ctx.lineTo(x1,p.cy);
+      ctx.stroke();
+    });
+
+    ctx.restore();
+
+    ctx.strokeStyle='rgba(148,163,184,0.9)';
+    ctx.lineWidth=1;
+    ctx.setLineDash([]);
+    ctx.beginPath();
+    ctx.moveTo(xMid,y0);
+    ctx.lineTo(xMid,y1);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(x0,yMid);
+    ctx.lineTo(x1,yMid);
+    ctx.stroke();
+
+    ctx.strokeStyle='#ffd27a';
+    ctx.lineWidth=2;
+    ctx.beginPath();
+    const pL=toCanvas(-A_val, omegaVal*omegaVal*A_val);
+    const pR=toCanvas(+A_val,-omegaVal*omegaVal*A_val);
+    ctx.moveTo(pL.cx,pL.cy);
+    ctx.lineTo(pR.cx,pR.cy);
+    ctx.stroke();
+
+    ctx.fillStyle='#e5e7eb';
+    ctx.font='11px system-ui';
+    ctx.fillText('a–x',x0+4,y0+10);
+
+    ctx.font='10px system-ui';
+    ctx.fillText('x (m)',x1-32,yMid-4);
+    ctx.fillText('a (m/s²)',xMid+6,y0+10);
+
+    ctx.fillText('a = -ω²·x',x0+4,y1-4);
+    ctx.fillText('A = '+A_val.toFixed(2)+' m',x0+4,y1-18);
+    const amaxLabel='a_max ≈ '+amax.toFixed(2);
+    ctx.fillText(amaxLabel,x0+4,y1-32);
+  }
+
+  function drawXSinDiagram(canvas){
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width = 260;
+    const H = canvas.height = 150;
+
+    ctx.clearRect(0,0,W,H);
+
+    const margin=22;
+    const x0=margin;
+    const x1=W-margin;
+    const y0=margin;
+    const y1=H-margin;
+
+    const Smin=-1.1, Smax=+1.1;
+    const xmin=-1.1*A_val, xmax=+1.1*A_val;
+
+    function SToX(S){ return x0+(S-Smin)/(Smax-Smin)*(x1-x0); }
+    function xToY(x){ return y1-(x-xmin)/(xmax-xmin)*(y1-y0); }
+
+    ctx.save();
+    ctx.strokeStyle='rgba(148,163,184,0.35)';
+    ctx.lineWidth=1;
+    ctx.setLineDash([3,3]);
+
+    const STicks=[-1,-0.5,0,0.5,1];
+    STicks.forEach(S=>{
+      const xx=SToX(S);
+      ctx.beginPath();
+      ctx.moveTo(xx,y0);
+      ctx.lineTo(xx,y1);
+      ctx.stroke();
+    });
+
+    const xTicks=[-A_val,-A_val/2,0,A_val/2,A_val];
+    xTicks.forEach(x=>{
+      const yy=xToY(x);
+      ctx.beginPath();
+      ctx.moveTo(x0,yy);
+      ctx.lineTo(x1,yy);
+      ctx.stroke();
+    });
+
+    ctx.restore();
+
+    ctx.strokeStyle='rgba(148,163,184,0.9)';
+    ctx.lineWidth=1;
+    ctx.setLineDash([]);
+
+    const xAxisS0=SToX(0);
+    const yx0=xToY(0);
+
+    ctx.beginPath();
+    ctx.moveTo(xAxisS0,y0);
+    ctx.lineTo(xAxisS0,y1);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(x0,yx0);
+    ctx.lineTo(x1,yx0);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.rect(x0,y0,x1-x0,y1-y0);
+    ctx.stroke();
+
+    ctx.strokeStyle='#ffd27a';
+    ctx.lineWidth=2;
+    ctx.beginPath();
+    const S1=-1,S2=+1;
+    const x1L=A_val*S1;
+    const x2L=A_val*S2;
+    ctx.moveTo(SToX(S1),xToY(x1L));
+    ctx.lineTo(SToX(S2),xToY(x2L));
+    ctx.stroke();
+
+    ctx.fillStyle='#e5e7eb';
+    ctx.font='11px system-ui';
+    const title=(lang==='en')?'x–sin(ωt)':'x–ημ(ωt)';
+    ctx.fillText(title,x0+4,y0+10);
+
+    ctx.font='10px system-ui';
+    const xLabel='x (m)';
+    const sLabel=(lang==='en')?'sin(ωt)':'ημ(ωt)';
+    ctx.fillText(xLabel,x0+4,y0-4);
+    ctx.fillText(sLabel,x1-40,y1+12);
+
+    ctx.textAlign='center';
+    ctx.fillText('-1',SToX(-1),y1+10);
+    ctx.fillText('0', SToX(0), y1+10);
+    ctx.fillText('+1',SToX(+1),y1+10);
+    ctx.textAlign='left';
+
+    ctx.fillText('-A',x0+4,xToY(-A_val)+4);
+    ctx.fillText('0', x0+4,xToY(0)+4);
+    ctx.fillText('+A',x0+4,xToY(+A_val)+4);
+  }
+
+  function appendChartsForEvent(ev, rightCell){
+    let added = false;
+
+    if(ev.graph === 'xt' || ev.xtZeroMark){
+      const c = document.createElement('canvas');
+      c.className = 'diagram-canvas';
+      rightCell.appendChild(c);
+      drawXtDiagram(c, { markNewZero: !!ev.xtZeroMark });
+      added = true;
+    }
+
+    if(ev.plot === 'v'){
+      const c = document.createElement('canvas');
+      c.className = 'diagram-canvas';
+      rightCell.appendChild(c);
+      drawVelocityDiagram(c);
+      added = true;
+    }
+
+    if(ev.plot === 'a'){
+      const c = document.createElement('canvas');
+      c.className = 'diagram-canvas';
+      rightCell.appendChild(c);
+      drawAccelerationDiagram(c);
+      added = true;
+    }
+
+    if(ev.plot === 'ax'){
+      const c = document.createElement('canvas');
+      c.className = 'diagram-canvas';
+      rightCell.appendChild(c);
+      drawAxDiagram(c);
+      added = true;
+    }
+
+    if(ev.plot === 'xsin'){
+      const c = document.createElement('canvas');
+      c.className = 'diagram-canvas';
+      rightCell.appendChild(c);
+      drawXSinDiagram(c);
+      added = true;
+    }
+
+    return added;
+  }
+
+  /* ---------- Δίστηλο table διαλόγων (ίδιο look με πριν, + inline διαγράμματα) ---------- */
+
+  function buildDialogTable(events, isFoyer){
+    const wrapper = document.createElement('div');
+    wrapper.className = 'dialog-block';
+
+    const tbl = document.createElement('div');
+    tbl.className = 'dialog-table';
+    wrapper.appendChild(tbl);
+
+    if(!events || !events.length){
+      const row = document.createElement('div');
+      row.className = 'dialog-row';
+      const c1 = document.createElement('div');
+      const c2 = document.createElement('div');
+      c1.className = 'dialog-cell left';
+      c2.className = 'dialog-cell right';
+      c1.textContent = (lang === 'en')
+        ? 'No content found in JSON.'
+        : 'Δεν βρέθηκε περιεχόμενο στο JSON.';
+      c2.innerHTML = '&nbsp;';
+      row.appendChild(c1);
+      row.appendChild(c2);
+      tbl.appendChild(row);
+      return wrapper;
+    }
+
+    events.forEach(ev=>{
+      const row = document.createElement('div');
+      row.className = 'dialog-row';
+
+      const leftCell  = document.createElement('div');
+      const rightCell = document.createElement('div');
+      leftCell.className  = 'dialog-cell left';
+      rightCell.className = 'dialog-cell right';
+
+      const hasLeft  = ev.left  && String(ev.left).trim()  !== '';
+      const hasRight = ev.right && String(ev.right).trim() !== '';
+
+      if(hasLeft){
+        const sp = document.createElement('div');
+        sp.className = 'speaker';
+
+        const badge = document.createElement('div');
+        badge.className = 'speaker-badge';
+
+        const avatar = document.createElement('div');
+        avatar.className = 'speaker-avatar';
+
+        if(ev.viewer != null){
+          const vColor = viewerColor(ev.viewer);
+          const vImg   = viewerImg(ev.viewer);
+          avatar.style.backgroundColor = vColor;
+          if(vImg){
+            avatar.style.backgroundImage = 'url("'+vImg+'")';
+          }else{
+            avatar.textContent = viewerInitial(ev.viewer);
+          }
+        }else{
+          avatar.style.backgroundColor = '#6b7280';
+          avatar.textContent = (lang === 'en') ? 'N' : 'Α';
+        }
+
+        const nameSpan = document.createElement('span');
+        nameSpan.className = 'speaker-name';
+        if(ev.viewer != null){
+          nameSpan.textContent = viewerName(ev.viewer);
+        }else{
+          nameSpan.textContent = (lang === 'en') ? 'Narration' : 'Αφήγηση';
+        }
+
+        badge.appendChild(avatar);
+        badge.appendChild(nameSpan);
+        sp.appendChild(badge);
+
+        const speech = document.createElement('div');
+        speech.className = 'speech';
+        const html = expandTemplate(ev.left).replaceAll('\n','<br>');
+        speech.innerHTML = html;
+
+        leftCell.appendChild(sp);
+        leftCell.appendChild(speech);
+      }else{
+        leftCell.innerHTML = '&nbsp;';
+      }
+
+      if(hasRight){
+        const lawBox = document.createElement('div');
+        lawBox.className = 'law-text';
+        lawBox.innerHTML = expandTemplate(ev.right);
+        rightCell.appendChild(lawBox);
+      }else{
+        const emptyLaw = document.createElement('div');
+        emptyLaw.className = 'law-text';
+        emptyLaw.innerHTML = '&nbsp;';
+        rightCell.appendChild(emptyLaw);
+      }
+
+      // 🔴 εδώ πλέον τα γραφήματα εμφανίζονται στη δεξιά στήλη, στην ώρα τους
+      appendChartsForEvent(ev, rightCell);
+
+      row.appendChild(leftCell);
+      row.appendChild(rightCell);
+      tbl.appendChild(row);
+    });
+
+    return wrapper;
+  }
+
+  /* ---------- Block: πίνακας t–x (θεωρητικός, από A,T,φ₀) ---------- */
+
+  function generateTxSamples(maxRows){
+    const rows = [];
+    const N = maxRows && maxRows>2 ? maxRows : 12;
+    const phi = phi0_radVal;
+    for(let i=0;i<N;i++){
+      const t = (T_val * i)/(N-1); // 0..T
+      const x = A_val * Math.sin(omegaVal*t + phi);
+      rows.push({ t, x });
+    }
+    return rows;
+  }
+
+  function buildTxTableBlock(block){
+    const wrap = document.createElement('div');
+    wrap.className = 'book-block tx-table-block';
+
+    const title = document.createElement('h3');
+    title.textContent = block.title || 'Πίνακας μετρήσεων x–t (θεωρητικά δείγματα)';
+    wrap.appendChild(title);
+
+    const tbl = document.createElement('table');
+    tbl.className = 'tx-table';
+    const thead = document.createElement('thead');
+    thead.innerHTML = '<tr><th>#</th><th>t (s)</th><th>x (m)</th></tr>';
+    tbl.appendChild(thead);
+
+    const tbody = document.createElement('tbody');
+    const samples = generateTxSamples(block.maxRows);
+
+    samples.forEach((row,idx)=>{
+      const tr = document.createElement('tr');
+      const isX0 = Math.abs(row.t - 0) < 1e-6;
+      if(isX0) tr.classList.add('is-x0');
+      tr.innerHTML =
+        '<td>'+(idx+1)+'</td>'+
+        '<td>'+row.t.toFixed(2)+'</td>'+
+        '<td>'+row.x.toFixed(2)+'</td>';
+      tbody.appendChild(tr);
+    });
+
+    tbl.appendChild(tbody);
+    wrap.appendChild(tbl);
+    return wrap;
+  }
+
+  /* ---------- Block: διάγραμμα από book.json (π.χ. συνολικό x–t) ---------- */
+
   function buildDiagramBlock(block){
     const wrap = document.createElement('div');
     wrap.className = 'book-block diagram-block';
@@ -914,10 +1337,17 @@
       wrap.appendChild(cap);
     }
 
-    // προς το παρόν υποστηρίζουμε μόνο x–t με κόκκινη καμπύλη
     const kind = (block.kind || '').toLowerCase();
     if(kind === 'xt_marked' || kind === 'xt'){
       drawXtDiagram(canvas, { markNewZero: (kind === 'xt_marked') });
+    }else if(kind === 'v'){
+      drawVelocityDiagram(canvas);
+    }else if(kind === 'a'){
+      drawAccelerationDiagram(canvas);
+    }else if(kind === 'ax'){
+      drawAxDiagram(canvas);
+    }else if(kind === 'xsin'){
+      drawXSinDiagram(canvas);
     }
 
     return wrap;
@@ -994,7 +1424,6 @@
 
     const sec = sections.find(s => s.id === sectionId);
 
-    // Αν δεν υπάρχει αντίστοιχο section στο book.json, fallback: όλο το act
     if(!sec){
       const sourceArr = DATA[sectionId] || [];
       container.appendChild( buildDialogTable(sourceArr, sectionId==='foyer') );
