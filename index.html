@@ -39,7 +39,7 @@
   <!-- 1. Χρονομετρητής -->
   <div class="clock" id="clock">t = 0.00 s<span class="hint" id="slowHint"></span></div>
 
-  <!-- 2. Πίνακας μετρήσεων t–x (θα πάει δεξιά με JS) -->
+  <!-- 2. Πίνακας μετρήσεων t–x (δεξιά) -->
   <div class="measure-box" id="measureBox">
     <div class="mb-title" id="measureTitle">Μετρήσεις</div>
     <table>
@@ -1862,9 +1862,9 @@ function beginObservation(){
   measureBox.style.position = 'absolute';
   measureBox.style.left = 'auto';
   measureBox.style.right = '24px';
-  measureBox.style.top = '120px';
+  measureBox.style.top = '80px';       // ΠΙΟ ΨΗΛΑ (ήταν 120px)
   measureBox.style.width = '240px';
-  measureBox.style.maxHeight = '220px';
+  measureBox.style.maxHeight = '160px'; // ΠΙΟ ΧΑΜΗΛΟ (ήταν 220px)
   measureBox.style.overflowY = 'auto';
 
   markerEl.style.opacity='1';
