@@ -345,8 +345,8 @@
       <div class="note-box">
         Οι αριθμητικές τιμές <span data-param="A"></span>, <span data-param="T"></span>,
         <span data-param="omega"></span>, <span data-param="x0"></span>, <span data-param="phi0"></span>
-        ρυθμίζονται στο script στο τέλος της σελίδας. Το ίδιο template μπορεί να
-        χρησιμοποιηθεί για διαφορετικά “σετ” τιμών Α.Α.Τ.
+        προέρχονται από τη ζωντανή παράσταση (μέσω <code>localStorage</code>) ώστε όλα,
+        από τον πίνακα t–x μέχρι τα γραφήματα, να είναι απολύτως συνεπή.
       </div>
 
       <figure>
@@ -404,21 +404,55 @@
 
   <div class="footer-note">
     Τεχνική σημείωση: η σελίδα διαβάζει το <code>dialogs-gr.json</code> ή
-    <code>dialogs-en.json</code> (ανάλογα με τη γλώσσα στο URL: <code>?lang=gr</code> ή <code>?lang=en</code>)
-    και τη δομή <code>book.json</code>. Ο κορμός του “βιβλίου” (ενότητες, σημειώσεις,
-    πίνακας t–x, διαγράμματα, διάλογοι) προκύπτει αποκλειστικά από αυτά.
+    <code>dialogs-en.json</code> (ανάλογα με τη γλώσσα στο URL: <code>?lang=gr</code> ή <code>?lang=en</code>),
+    τη δομή <code>book.json</code> και τα φυσικά μεγέθη της παράστασης από
+    <code>localStorage["aat_book_physics"]</code>, ώστε όλα τα x₀, A, ω, φ₀ να ταυτίζονται
+    με αυτά που “είδε” ο θεατής στη σκηνή.
   </div>
 </div>
 
 <script>
-  /* ---------- Σταθερές ΑΑΤ για το βιβλίο (συνεπείς μεταξύ τους) ---------- */
+  /* ---------- Σταθερές ΑΑΤ για το βιβλίο (override από localStorage) ---------- */
 
-  const A_val       = 3.0;            // m
-  const T_val       = 6.0;            // s
-  const omegaVal    = 2 * Math.PI / T_val; // rad/s
-  const phi0_degVal = 35.0;           // deg
-  const phi0_radVal = phi0_degVal * Math.PI / 180;
-  const x0_val      = A_val * Math.sin(phi0_radVal); // ώστε x0 = A·sinφ₀
+  const BOOK_PHYSICS_KEY = 'aat_book_physics';
+
+  let A_val       = 3.0;            // m (default)
+  let T_val       = 6.0;            // s (default)
+  let omegaVal    = 2 * Math.PI / T_val; // rad/s (default)
+  let phi0_degVal = 35.0;           // deg (default)
+  let phi0_radVal = phi0_degVal * Math.PI / 180;
+  let x0_val      = A_val * Math.sin(phi0_radVal); // default
+
+  function loadPhysicsFromStorage(){
+    try{
+      const raw = localStorage.getItem(BOOK_PHYSICS_KEY);
+      if(!raw) return;
+      const obj = JSON.parse(raw);
+
+      if(typeof obj.A === 'number') A_val = obj.A;
+      if(typeof obj.T === 'number' && obj.T > 0) T_val = obj.T;
+
+      if(typeof obj.omega === 'number' && obj.omega > 0){
+        omegaVal = obj.omega;
+      }else{
+        omegaVal = 2 * Math.PI / T_val;
+      }
+
+      if(typeof obj.phi0_deg === 'number'){
+        phi0_degVal = obj.phi0_deg;
+      }
+
+      phi0_radVal = phi0_degVal * Math.PI / 180;
+
+      if(typeof obj.x0 === 'number'){
+        x0_val = obj.x0;
+      }else{
+        x0_val = A_val * Math.sin(phi0_radVal);
+      }
+    }catch(e){
+      // αν κάτι πάει στραβά, μένουμε στα default
+    }
+  }
 
   function setParam(name, valueStr){
     document.querySelectorAll('[data-param="'+name+'"]').forEach(el=>{
@@ -618,7 +652,6 @@
     ctx.fillText(labelX0, x0+4, yx0-4);
 
     const markNewZero = opts && opts.markNewZero;
-
     if(!markNewZero) return;
 
     // t_zero: πρώτη διέλευση από x=0 με θετική κλίση (upward crossing)
@@ -1255,7 +1288,7 @@
         rightCell.appendChild(emptyLaw);
       }
 
-      // 🔴 εδώ πλέον τα γραφήματα εμφανίζονται στη δεξιά στήλη, στην ώρα τους
+      // εδώ πλέον τα γραφήματα εμφανίζονται στη δεξιά στήλη, στην ώρα τους (από τα flags του JSON)
       appendChartsForEvent(ev, rightCell);
 
       row.appendChild(leftCell);
@@ -1266,7 +1299,7 @@
     return wrapper;
   }
 
-  /* ---------- Block: πίνακας t–x (θεωρητικός, από A,T,φ₀) ---------- */
+  /* ---------- Block: πίνακας t–x (θεωρητικός, από A,T,φ₀ αλλά με x₀ ίδιο) ---------- */
 
   function generateTxSamples(maxRows){
     const rows = [];
@@ -1476,8 +1509,9 @@
   }
 
   document.addEventListener('DOMContentLoaded', ()=>{
-    initParams();
-    loadDialogsAndBuildBook();
+    loadPhysicsFromStorage();  // 1. παίρνουμε A, T, ω, φ₀, x₀ από τη σκηνή
+    initParams();              // 2. γεμίζουμε τα πεδία κειμένου στην κορυφή
+    loadDialogsAndBuildBook(); // 3. χτίζουμε ενότητες + διαλόγους + διαγράμματα
   });
 </script>
 </body>
