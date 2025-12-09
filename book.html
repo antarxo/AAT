@@ -296,8 +296,8 @@
 <div class="page">
 
   <header>
-    <h1>Βιβλίο Παράστασης — Απλή Αρμονική Ταλάντωση</h1>
-    <div class="subtitle">
+    <h1 id="pageTitle">Βιβλίο Παράστασης — Απλή Αρμονική Ταλάντωση</h1>
+    <div class="subtitle" id="pageSubtitle">
       Η ίδια παράσταση, σε ρυθμό ανάγνωσης: πίνακας μετρήσεων, δίστηλη παρουσίαση διαλόγων και νόμων,
       με τα διαγράμματα να εμφανίζονται στη «στιγμή» που τα καλούν οι θεατές.
     </div>
@@ -305,11 +305,11 @@
 
   <!-- ΜΕΡΟΣ Α: Σταθερές & σκηνή -->
   <section>
-    <div class="section-label">Μέρος Α</div>
-    <h2>Ο ταλαντωτής (m₁, D₁) και τα δεδομένα της Α.Α.Τ.</h2>
+    <div class="section-label" id="partA_label">Μέρος Α</div>
+    <h2 id="partA_title">Ο ταλαντωτής (m₁, D₁) και τα δεδομένα της Α.Α.Τ.</h2>
 
     <div class="card">
-      <p>
+      <p id="partA_intro">
         Στην παράσταση παρακολουθούμε τον ταλαντωτή <b>(m₁, D₁)</b> σε ευθύγραμμη
         παλινδρομική κίνηση, η οποία περιγράφεται από νόμο τύπου:
       </p>
@@ -330,7 +330,7 @@
         <div>Αρχική φάση: φ₀ = <span class="value" data-param="phi0"></span> °</div>
       </div>
 
-      <div class="note-box">
+      <div class="note-box" id="partA_note">
         Οι αριθμητικές τιμές <span data-param="A"></span>, <span data-param="T"></span>,
         <span data-param="omega"></span>, <span data-param="x0"></span>, <span data-param="phi0"></span>
         προέρχονται από την ίδια παράσταση (όπως καταγράφηκε στη σκηνή) και
@@ -339,17 +339,19 @@
 
       <figure>
         <img src="stage_snapshot.png" alt="Στιγμιότυπο σκηνής (ενδεικτικό)">
-        <figcaption>Ενδεικτικό στιγμιότυπο της σκηνής με τον ταλαντωτή (m₁, D₁) και το κοινό.</figcaption>
+        <figcaption id="partA_figcaption">
+          Ενδεικτικό στιγμιότυπο της σκηνής με τον ταλαντωτή (m₁, D₁) και το κοινό.
+        </figcaption>
       </figure>
     </div>
   </section>
 
   <!-- Πίνακας t–x (basic, πριν την Πράξη 1) -->
   <section>
-    <div class="section-label">Μετρήσεις</div>
-    <h2>Πίνακας μετρήσεων θέσης–χρόνου από την παράσταση</h2>
+    <div class="section-label" id="tx_label">Μετρήσεις</div>
+    <h2 id="tx_title">Πίνακας μετρήσεων θέσης–χρόνου από την παράσταση</h2>
     <div class="card">
-      <p class="muted">
+      <p class="muted" id="tx_intro">
         Ο παρακάτω πίνακας δημιουργείται αυτόματα από τις μετρήσεις που έγιναν live στη σκηνή
         (όπως αποθηκεύτηκαν στο <code>localStorage.bookSamples</code>). Η πρώτη γραμμή
         αντιστοιχεί στο δείγμα <b>t = 0, x = x₀</b>.
@@ -369,11 +371,11 @@
 
   <!-- ΜΕΡΟΣ Β: Πράξη 1 -->
   <section>
-    <div class="section-label">Μέρος Β</div>
-    <h2>Πράξη 1 — Από το διάγραμμα x–t στο “σετ” των νόμων</h2>
+    <div class="section-label" id="partB_label">Μέρος Β</div>
+    <h2 id="partB_title">Πράξη 1 — Από το διάγραμμα x–t στο “σετ” των νόμων</h2>
 
     <div class="card">
-      <p class="muted">
+      <p class="muted" id="act1_intro">
         Οι παρακάτω γραμμές προέρχονται απευθείας από το <code>act1</code> του
         <code>dialogs-*.json</code>. Στην αριστερή στήλη φαίνονται οι σκέψεις
         των θεατών, στη δεξιά οι αντίστοιχοι νόμοι/τύποι και, στις κατάλληλες
@@ -386,11 +388,11 @@
 
   <!-- ΜΕΡΟΣ Γ: Πράξη 2 -->
   <section>
-    <div class="section-label">Μέρος Γ</div>
-    <h2>Πράξη 2 — Δυναμική ερμηνεία της Α.Α.Τ.</h2>
+    <div class="section-label" id="partC_label">Μέρος Γ</div>
+    <h2 id="partC_title">Πράξη 2 — Δυναμική ερμηνεία της Α.Α.Τ.</h2>
 
     <div class="card">
-      <p class="muted">
+      <p class="muted" id="act2_intro">
         Ομοίως, η Πράξη 2 (<code>act2</code> στο JSON) καταγράφεται δίστηλα: διάλογος
         αριστερά, νόμοι / συμπεράσματα στη δεξιά στήλη, μαζί με τα διαγράμματα υ–t,
         a–t και a–x στη στιγμή που τα καλούν οι θεατές.
@@ -402,11 +404,11 @@
 
   <!-- ΜΕΡΟΣ Δ: Φουαγιέ -->
   <section>
-    <div class="section-label">Μέρος Δ</div>
-    <h2>Φουαγιέ — Συζήτηση μετά την παράσταση</h2>
+    <div class="section-label" id="partD_label">Μέρος Δ</div>
+    <h2 id="partD_title">Φουαγιέ — Συζήτηση μετά την παράσταση</h2>
 
     <div class="card">
-      <p class="muted">
+      <p class="muted" id="foyer_intro">
         Το φουαγιέ (<code>foyer</code> στο JSON) μεταφέρεται επίσης σε δίστηλη μορφή,
         ώστε ο αναγνώστης να ξαναδεί με άνεση τα σχόλια, τις επαναλήψεις των νόμων
         και τα συμπεράσματα.
@@ -416,7 +418,7 @@
     </div>
   </section>
 
-  <div class="footer-note">
+  <div class="footer-note" id="footerNote">
     Τεχνική σημείωση: η σελίδα διαβάζει το <code>dialogs-gr.json</code> ή
     <code>dialogs-en.json</code> (ανάλογα με τη γλώσσα στο URL: <code>?lang=gr</code> ή <code>?lang=en</code>)
     για τα basic (πίνακας t–x, διάλογοι, διαγράμματα) και προαιρετικά ένα
@@ -688,12 +690,10 @@
 
     if(withRed){
       const phi0 = phi0_degVal * Math.PI/180;
-      // tZero: πρώτο μηδενισμό προς τα δεξιά
-      const tZero = (Math.PI - phi0)/omegaVal; // θ=π → x=0 με sin
+      const tZero = (Math.PI - phi0)/omegaVal;
       const tStart = Math.max(0, tZero);
       const tEnd   = Math.min(tMax, tZero + T_val);
 
-      // κόκκινη x(t') με t'=0 στο tZero
       ctx.save();
       ctx.strokeStyle='rgba(248,113,113,0.95)';
       ctx.lineWidth=2;
@@ -710,7 +710,6 @@
       }
       ctx.stroke();
 
-      // pill + βελάκι
       const px0 = tToX(tZero);
       const py0 = xToY(0);
       const labelText = (lang==='en')?'new t = 0':'νέο t = 0';
@@ -1232,9 +1231,62 @@
     return wrapper;
   }
 
-  // --------- book-*.json για πρόσθετα (note/html/image/diagram) ----------
+  // --------- book-*.json για πρόσθετα & meta ----------
 
   let BOOK_CFG = null;
+
+  function applyBookMetaTexts(){
+    if(!BOOK_CFG || !BOOK_CFG.meta) return;
+    const meta = BOOK_CFG.meta;
+
+    function setText(id, value, asHtml){
+      if(value == null) return;
+      const el = document.getElementById(id);
+      if(!el) return;
+      if(asHtml) el.innerHTML = value;
+      else el.textContent = value;
+    }
+
+    // header
+    if(meta.header){
+      setText('pageTitle', meta.header.title, false);
+      setText('pageSubtitle', meta.header.subtitle, true);
+    }
+
+    const parts = meta.parts || {};
+
+    if(parts.partA){
+      setText('partA_label', parts.partA.label, false);
+      setText('partA_title', parts.partA.title, false);
+      setText('partA_intro', parts.partA.introHtml, true);
+      setText('partA_note',  parts.partA.noteHtml,  true);
+      setText('partA_figcaption', parts.partA.figcaptionHtml, true);
+    }
+    if(parts.tx){
+      setText('tx_label', parts.tx.label, false);
+      setText('tx_title', parts.tx.title, false);
+      setText('tx_intro', parts.tx.introHtml, true);
+    }
+    if(parts.partB){
+      setText('partB_label', parts.partB.label, false);
+      setText('partB_title', parts.partB.title, false);
+      setText('act1_intro',  parts.partB.introHtml, true);
+    }
+    if(parts.partC){
+      setText('partC_label', parts.partC.label, false);
+      setText('partC_title', parts.partC.title, false);
+      setText('act2_intro',  parts.partC.introHtml, true);
+    }
+    if(parts.partD){
+      setText('partD_label', parts.partD.label, false);
+      setText('partD_title', parts.partD.title, false);
+      setText('foyer_intro', parts.partD.introHtml, true);
+    }
+
+    if(meta.footerHtml){
+      setText('footerNote', meta.footerHtml, true);
+    }
+  }
 
   async function loadBookConfig(){
     const file = (lang === 'en') ? 'book-en.json' : 'book-gr.json';
@@ -1287,7 +1339,6 @@
       wrap.appendChild(cap);
       div.appendChild(wrap);
 
-      // απλή χαρτογράφηση kinds -> draw*
       switch(block.kind){
         case 'xt':
           drawXT(c, block.options && block.options.showRedCurve);
@@ -1305,7 +1356,6 @@
           drawAX(c);
           break;
         default:
-          // άγνωστο kind → placeholder
           const ctx = c.getContext('2d');
           c.width = 210; c.height=80;
           ctx.fillStyle='#111827';
@@ -1329,7 +1379,6 @@
       : null;
 
     if(!secCfg){
-      // basic fallback: όλο το acts[] σε ένα block
       const block = document.createElement('div');
       block.appendChild(buildDialogTable(events, sectionId));
       cont.appendChild(block);
@@ -1350,7 +1399,6 @@
         wrap.appendChild(buildDialogTable(slice, sectionId));
         cont.appendChild(wrap);
       }else{
-        // note / html / image / diagram
         const extra = createExtraCard(block);
         cont.appendChild(extra);
       }
@@ -1374,7 +1422,6 @@
       ACT2    = data.act2    || [];
       FOYER   = data.foyer   || [];
 
-      // reset diagState
       diagState.act1 = { xt:false, xtRed:false, v:false, a:false, ax:false, xsin:false };
       diagState.act2 = { xt:false, xtRed:false, v:false, a:false, ax:false, xsin:false };
       diagState.foyer= { xt:false, xtRed:false, v:false, a:false, ax:false, xsin:false };
@@ -1384,7 +1431,6 @@
         buildSectionFromConfig('act2', ACT2, 'act2Transcript');
         buildSectionFromConfig('foyer',FOYER,'foyerTranscript');
       }else{
-        // basic μόνο, χωρίς book.json
         const act1Cont  = document.getElementById('act1Transcript');
         const act2Cont  = document.getElementById('act2Transcript');
         const foyerCont = document.getElementById('foyerTranscript');
@@ -1418,6 +1464,7 @@
   window.addEventListener('load', async ()=>{
     loadParamsAndSamples();
     await loadBookConfig();      // optional
+    applyBookMetaTexts();        // πατάει σταθερά κείμενα αν υπάρχουν στο JSON
     await loadDialogsAndBuildBook();
   });
 </script>
