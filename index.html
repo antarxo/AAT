@@ -212,7 +212,7 @@ const btnPlay    = document.getElementById('btnPlay');
 const btnReset   = document.getElementById('btnReset');
 const btnEndShow = document.getElementById('btnEndShow');
 const btnFoyer   = document.getElementById('btnFoyer');
-const btnBook    = document.getElementById('btnBook');   // 🔴 ΝΕΟ
+const btnBook    = document.getElementById('btnBook');   // 📖  κουμπί βιβλίου
 
 const actBreak   = document.getElementById('actBreak');
 const btnAct2    = document.getElementById('btnAct2');
@@ -254,8 +254,8 @@ const A_px  = A_m*pxPerMeter;
 /* συνολικός χρόνος άξονα x–t: 2T */
 const XT_TOTAL_T = 2*T;
 
-/* physics export για το βιβλίο */
-const BOOK_PHYSICS_KEY = 'aat_book_physics';
+/* offset για avatars στις πράξεις από JSON. Προεπιλογή: -60 */
+let ACTS_AVATAR_OFFSET = -60;
 
 let ghost       = null;
 let ghostSpring = null;
@@ -424,6 +424,38 @@ function logMeasurement(tObs, xMeters){
   measureTBody.appendChild(tr);
   setTimeout(()=>tr.classList.remove('new'),650);
   try{ tr.scrollIntoView({block:'end'}); }catch(e){}
+}
+
+/* ---------- ΜΕΤΑΒΙΒΑΣΗ ΠΡΟΣ BOOK (bookSamples + bookParams) ---------- */
+
+function exportBookDataToStorage(){
+  try{
+    // 1) Δείγματα t–x από τον πίνακα μετρήσεων
+    const rows = measureTBody ? measureTBody.querySelectorAll('tr') : [];
+    const samples = [];
+    rows.forEach(tr=>{
+      const cells = tr.children;
+      if(cells.length >= 3){
+        const t = parseFloat(cells[1].textContent.replace(',','.')) || 0;
+        const x = parseFloat(cells[2].textContent.replace(',','.')) || 0;
+        samples.push({ t, x });
+      }
+    });
+    localStorage.setItem('bookSamples', JSON.stringify(samples));
+
+    // 2) Παράμετροι A, T, ω, x0, φ0 από την ίδια παράσταση
+    const phi0deg = ((omega*obsStartPlaybackOffset)*180/Math.PI + 360) % 360;
+    const params = {
+      A: A_m,
+      T: T,
+      omega: omega,
+      x0: x0Val(),
+      phi0Deg: phi0deg
+    };
+    localStorage.setItem('bookParams', JSON.stringify(params));
+  }catch(e){
+    console.error('exportBookDataToStorage error', e);
+  }
 }
 
 /* ---------- x(t) canvas ---------- */
@@ -631,7 +663,7 @@ function drawXTChart(){
     const padX = 6;
     const padY = 3;
     let labelX = px;
-    let labelY = yTop - 18;
+    let labelY = yTop - 18;  // λίγο κάτω από το frame για να μην κόβεται
 
     const pillHalfW = textWidth/2 + padX;
     if(labelX < x0 + pillHalfW + 4) labelX = x0 + pillHalfW + 4;
@@ -935,8 +967,12 @@ function drawAxChart(){
     return {cx,cy};
   }
 
+  ctx.clearRect(0,0,w,h);
+  ctx.fillStyle='#020617';
+  ctx.fillRect(0,0,w,h);
+
   ctx.save();
-  ctx.strokeStyle='rgba(255,255,255,0.18)';
+  ctx.strokeStyle='rgba(148,163,184,0.25)';
   ctx.lineWidth=1;
   ctx.setLineDash([3,3]);
 
@@ -960,7 +996,7 @@ function drawAxChart(){
 
   ctx.restore();
 
-  ctx.strokeStyle='rgba(255,255,255,0.6)';
+  ctx.strokeStyle='rgba(226,232,240,0.85)';
   ctx.lineWidth=1;
   ctx.setLineDash([]);
   ctx.beginPath();
@@ -982,7 +1018,7 @@ function drawAxChart(){
   ctx.lineTo(pR.cx,pR.cy);
   ctx.stroke();
 
-  ctx.fillStyle='#fff';
+  ctx.fillStyle='#e5e7eb';
   ctx.font='11px system-ui';
   ctx.fillText('a–x',x0+4,y0+10);
 
@@ -1015,8 +1051,12 @@ function drawXSinChart(){
   function SToX(S){ return x0+(S-Smin)/(Smax-Smin)*(x1-x0); }
   function xToY(x){ return y1-(x-xmin)/(xmax-xmin)*(y1-y0); }
 
+  ctx.clearRect(0,0,w,h);
+  ctx.fillStyle='#020617';
+  ctx.fillRect(0,0,w,h);
+
   ctx.save();
-  ctx.strokeStyle='rgba(255,255,255,0.18)';
+  ctx.strokeStyle='rgba(148,163,184,0.25)';
   ctx.lineWidth=1;
   ctx.setLineDash([3,3]);
 
@@ -1040,7 +1080,7 @@ function drawXSinChart(){
 
   ctx.restore();
 
-  ctx.strokeStyle='rgba(255,255,255,0.6)';
+  ctx.strokeStyle='rgba(226,232,240,0.85)';
   ctx.lineWidth=1;
   ctx.setLineDash([]);
 
@@ -1071,7 +1111,7 @@ function drawXSinChart(){
   ctx.lineTo(SToX(S2),xToY(x2L));
   ctx.stroke();
 
-  ctx.fillStyle='#fff';
+  ctx.fillStyle='#e5e7eb';
   ctx.font='11px system-ui';
   const title=(currentLang==='en')?'x–sin(ωt)':'x–ημ(ωt)';
   ctx.fillText(title,x0+4,y0+10);
@@ -1134,30 +1174,12 @@ function ensureXSinChart(){
 function x0Val(){
   return A_m*Math.sin(omega*(0+obsStartPlaybackOffset));
 }
-
 function showParamsBox(){
   const phi0deg=((omega*obsStartPlaybackOffset)*180/Math.PI+360)%360;
   paramAEl.textContent  = 'A = '+A_m.toFixed(2)+' m';
   paramWEl.textContent  = 'ω = '+omega.toFixed(3)+' rad/s';
   paramPhiEl.textContent= 'φ₀ = '+phi0deg.toFixed(1)+'°';
   paramsBoxEl.style.display='block';
-}
-
-/* export των φυσικών μεγεθών για το βιβλίο (ώστε x₀, φ₀ κ.λπ. να είναι ίδια παντού) */
-function exportBookPhysics(){
-  try{
-    const phi0deg = ((omega*obsStartPlaybackOffset)*180/Math.PI+360)%360;
-    const payload = {
-      A: A_m,
-      T: T,
-      omega: omega,
-      phi0_deg: phi0deg,
-      x0: x0Val()
-    };
-    localStorage.setItem(BOOK_PHYSICS_KEY, JSON.stringify(payload));
-  }catch(e){
-    // σιωπηρά fail, δεν μας απασχολεί στο θέατρο
-  }
 }
 
 /* ---------- Θεατές / bubbles ---------- */
@@ -1801,9 +1823,10 @@ btnEndShow.addEventListener('click',()=>{
   }
 });
 
-/* 🔴 ΝΕΟ: Book button -> ανοίγει book.html με τρέχουσα γλώσσα */
+/* 📖 BOOK BUTTON: πρώτα export στο localStorage, μετά άνοιγμα βιβλίου */
 if (btnBook) {
   btnBook.addEventListener('click', () => {
+    exportBookDataToStorage();
     const lang = (currentLang === 'en') ? 'en' : 'gr';
     window.open('book.html?lang=' + lang, '_blank');
   });
@@ -1817,8 +1840,6 @@ function beginObservation(){
   if(!obsStarted){
     obsStarted=true;
     obsStartPlaybackOffset=playbackTime;
-    /* μόλις "κλειδώσουν" οι αρχικές συνθήκες, τις γράφουμε για το βιβλίο */
-    exportBookPhysics();
   }
   clockEl.style.display='block';
   measureBox.style.display='block';
