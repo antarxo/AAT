@@ -493,7 +493,7 @@
     if(bookData) showParams(bookData);
 
     const dialogsUrl = (lang==='en')? 'dialogs-en.json' : 'dialogs-gr.json';
-    const bookJsonUrl = 'book.json';
+    const bookJsonUrl = 'book-gr.json';
 
     try{
       const [respDialogs, respBook] = await Promise.all([
@@ -516,7 +516,7 @@
       if(respBook.ok){
         bookDef = await respBook.json();
       }else{
-        addWarning('Δεν βρέθηκε book.json – χρησιμοποιείται κενός ορισμός.');
+        addWarning('Δεν βρέθηκε book-gr.json – χρησιμοποιείται κενός ορισμός.');
       }
 
       const sections = Array.isArray(bookDef.sections)? bookDef.sections : [];
@@ -527,7 +527,7 @@
       });
 
       if(!sections.length){
-        addWarning('Το book.json δεν περιέχει sections.');
+        addWarning('Το book-gr.json δεν περιέχει sections.');
       }
     }catch(e){
       console.error(e);
@@ -540,3 +540,4 @@
 </script>
 </body>
 </html>
+
