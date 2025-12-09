@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Θεatrική Σκηνή — Ενιαία Έκδοση (Act I + Act II + Φουαγιέ)</title>
+  <title>Θεατρική Σκηνή — Ενιαία Έκδοση (Act I + Act II + Φουαγιέ)</title>
 
-  <!-- uPlot για x–t (παρότι τώρα το x–t είναι δικό μας canvas) -->
+  <!-- uPlot για x–t (παραμένει, παρότι τώρα το x–t είναι δικό μας canvas) -->
   <link rel="stylesheet" href="https://unpkg.com/uplot@1.6.30/dist/uPlot.min.css">
   <script src="https://unpkg.com/uplot@1.6.30/dist/uPlot.iife.min.js"></script>
 
@@ -39,7 +39,7 @@
   <!-- 1. Χρονομετρητής -->
   <div class="clock" id="clock">t = 0.00 s<span class="hint" id="slowHint"></span></div>
 
-  <!-- 2. Πίνακας μετρήσεων t–x -->
+  <!-- 2. Πίνακας μετρήσεων t–x (πιο χαμηλός) -->
   <div class="measure-box" id="measureBox">
     <div class="mb-title" id="measureTitle">Μετρήσεις</div>
     <table>
@@ -148,7 +148,7 @@
   <div class="foyer-bubble" id="foyerBubble">ΘΕΑΤΗΣ</div>
 </div>
 
-<!-- Intro overlay -->
+<!-- Intro overlay (εξωτερικά js, χωρίς να πειράζουμε τη σκηνή) -->
 <script src="intro.js"></script>
 <script src="intro_boot.js"></script>
 
@@ -169,7 +169,7 @@ let currentLang = 'gr';  // 'gr' ή 'en'
 let btnLangGR = null;
 let btnLangEN = null;
 
-/* Κατάσταση παράστασης */
+/* Κατάσταση παράστασης για locks κουμπιών */
 let phase = 'idle'; // idle, countdown, act1, act2, between2andFoyer, foyer
 
 /* ---------- Φυσική / σκηνή ---------- */
@@ -212,7 +212,7 @@ const btnPlay    = document.getElementById('btnPlay');
 const btnReset   = document.getElementById('btnReset');
 const btnEndShow = document.getElementById('btnEndShow');
 const btnFoyer   = document.getElementById('btnFoyer');
-const btnBook    = document.getElementById('btnBook');
+const btnBook    = document.getElementById('btnBook');   // 🔴 ΝΕΟ
 
 const actBreak   = document.getElementById('actBreak');
 const btnAct2    = document.getElementById('btnAct2');
@@ -235,7 +235,6 @@ let obsStartPlaybackOffset = 0;
 let lastSampleObsTime = -Infinity;
 let sampleInterval = 0.4;
 let measureRowIdx = 0;
-let bookSamples = []; // 📖 δείγματα t–x για το βιβλίο
 
 let mode = 'run';
 
@@ -255,8 +254,8 @@ const A_px  = A_m*pxPerMeter;
 /* συνολικός χρόνος άξονα x–t: 2T */
 const XT_TOTAL_T = 2*T;
 
-/* offset για avatars στις πράξεις από JSON. Προεπιλογή: -60 */
-let ACTS_AVATAR_OFFSET = -60;
+/* physics export για το βιβλίο */
+const BOOK_PHYSICS_KEY = 'aat_book_physics';
 
 let ghost       = null;
 let ghostSpring = null;
@@ -276,6 +275,7 @@ let xtMarkState = {
   showTail: false
 };
 
+// Βρίσκουμε τη στιγμή t_zero στο [0,T] όπου x περνάει πρώτη φορά από 0 με φορά προς τα δεξιά
 function xtZeroCrossingTime(){
   let off = obsStartPlaybackOffset % T;
   if(off < 0) off += T;
@@ -411,38 +411,19 @@ function updateRuler(){
   }
 }
 
-function appendSampleRow(tObs, xMeters, forceIdx) {
-  let idx;
-  if (typeof forceIdx === 'number') {
-    idx = forceIdx;
-    if (idx > measureRowIdx) measureRowIdx = idx;
-  } else {
-    idx = ++measureRowIdx;
-  }
-
-  const tr = document.createElement('tr');
-  tr.className = 'new';
-  tr.innerHTML =
-    '<td>' + idx + '</td>' +
-    '<td>' + tObs.toFixed(2) + '</td>' +
-    '<td>' + xMeters.toFixed(2) + '</td>';
-  measureTBody.appendChild(tr);
-  setTimeout(() => tr.classList.remove('new'), 650);
-  try { tr.scrollIntoView({ block:'end' }); } catch(e) {}
-
-  // 📖 αποθήκευση για το βιβλίο
-  bookSamples.push({
-    idx: idx,
-    t: tObs,
-    x: xMeters
-  });
-}
-
 function logMeasurement(tObs, xMeters){
   if(!obsStarted || mode==='pause') return;
   if(tObs - lastSampleObsTime < sampleInterval) return;
   lastSampleObsTime = tObs;
-  appendSampleRow(tObs, xMeters);
+  const tr = document.createElement('tr');
+  tr.className='new';
+  tr.innerHTML =
+    '<td>'+(++measureRowIdx)+'</td>'+
+    '<td>'+tObs.toFixed(2)+'</td>'+
+    '<td>'+xMeters.toFixed(2)+'</td>';
+  measureTBody.appendChild(tr);
+  setTimeout(()=>tr.classList.remove('new'),650);
+  try{ tr.scrollIntoView({block:'end'}); }catch(e){}
 }
 
 /* ---------- x(t) canvas ---------- */
@@ -600,7 +581,7 @@ function drawXTChart(){
     const px = tToX(tZero);
     const py = xToY(0);
 
-    // 1) Κόκκινη ημιτονική καμπύλη από tZero και για 1 περίοδο
+    // 1) Κόκκινη ημιτονική καμπύλη (όχι στικτή) από tZero και για 1 περίοδο
     ctx.save();
     ctx.strokeStyle='rgba(255,80,80,0.9)';
     ctx.lineWidth=2;
@@ -612,7 +593,7 @@ function drawXTChart(){
     ctx.beginPath();
     for(let i=0;i<=N2;i++){
       const t = tStart + (tEnd - tStart)*(i/N2);
-      const tPrime = t - tStart;
+      const tPrime = t - tStart;           // νέο t' με t'=0 στο zero crossing
       const xPred  = A_m*Math.sin(omega*tPrime);
       const px2    = tToX(t);
       const py2    = xToY(xPred);
@@ -748,6 +729,8 @@ function sizeLawCanvas(c){
   c.style.width=w+'px';
   c.style.height=h+'px';
 }
+
+/* v(t), a(t), a–x, x–sin(ωt) */
 
 function drawVelocityChart(){
   if(!vCan) return;
@@ -1151,12 +1134,30 @@ function ensureXSinChart(){
 function x0Val(){
   return A_m*Math.sin(omega*(0+obsStartPlaybackOffset));
 }
+
 function showParamsBox(){
   const phi0deg=((omega*obsStartPlaybackOffset)*180/Math.PI+360)%360;
   paramAEl.textContent  = 'A = '+A_m.toFixed(2)+' m';
   paramWEl.textContent  = 'ω = '+omega.toFixed(3)+' rad/s';
   paramPhiEl.textContent= 'φ₀ = '+phi0deg.toFixed(1)+'°';
   paramsBoxEl.style.display='block';
+}
+
+/* export των φυσικών μεγεθών για το βιβλίο (ώστε x₀, φ₀ κ.λπ. να είναι ίδια παντού) */
+function exportBookPhysics(){
+  try{
+    const phi0deg = ((omega*obsStartPlaybackOffset)*180/Math.PI+360)%360;
+    const payload = {
+      A: A_m,
+      T: T,
+      omega: omega,
+      phi0_deg: phi0deg,
+      x0: x0Val()
+    };
+    localStorage.setItem(BOOK_PHYSICS_KEY, JSON.stringify(payload));
+  }catch(e){
+    // σιωπηρά fail, δεν μας απασχολεί στο θέατρο
+  }
 }
 
 /* ---------- Θεατές / bubbles ---------- */
@@ -1592,6 +1593,17 @@ function closeCurtainToAct2(){
 
 /* ---------- Φουαγιέ ---------- */
 
+function isFormulaBlock(text){
+  const s=String(text||'').trim();
+  if(!s) return false;
+  if(/^\(\d+\)/.test(s)) return true;
+  if(/[ΑA]\.[ΔD]\.[ΜM]\.[ΕE]\.[ΤT]/.test(s)) return true;
+  if(/M\.E\.C/.test(s)) return true;
+  if(/[⇒⇔]/.test(s)) return true;
+  if(/Νόμος του Νεύτωνα/i.test(s) || /Newton’s law/i.test(s)) return true;
+  return false;
+}
+
 function setFoyerSpeaker(idx1based){
   const {x,y,info}=getViewerAvatarCenter(idx1based);
   if(!info) return;
@@ -1700,25 +1712,6 @@ async function runFoyer(){
   }
 }
 
-/* ---------- Export προς βιβλίο ---------- */
-
-function exportBookDataToStorage() {
-  try {
-    const phi0deg = ((omega * obsStartPlaybackOffset) * 180 / Math.PI + 360) % 360;
-    const data = {
-      A: A_m,
-      T: T,
-      omega: omega,
-      x0: x0Val(),
-      phi0: phi0deg,
-      samples: bookSamples
-    };
-    localStorage.setItem('aatBookData', JSON.stringify(data));
-  } catch (e) {
-    console.error('exportBookDataToStorage error', e);
-  }
-}
-
 /* ---------- Κουμπιά / mode ---------- */
 
 function setMode(newMode){
@@ -1742,7 +1735,6 @@ function resetShow(){
   obsStartPlaybackOffset=0;
   lastSampleObsTime=-Infinity;
   measureRowIdx=0;
-  bookSamples = [];
   setMode('run');
 
   xtMarkState.active = false;
@@ -1809,10 +1801,9 @@ btnEndShow.addEventListener('click',()=>{
   }
 });
 
-/* 📖 Book button -> αποθήκευση + άνοιγμα book.html */
+/* 🔴 ΝΕΟ: Book button -> ανοίγει book.html με τρέχουσα γλώσσα */
 if (btnBook) {
   btnBook.addEventListener('click', () => {
-    exportBookDataToStorage();
     const lang = (currentLang === 'en') ? 'en' : 'gr';
     window.open('book.html?lang=' + lang, '_blank');
   });
@@ -1823,17 +1814,12 @@ if (btnBook) {
 function beginObservation(){
   stage.classList.add('open');
   setAudienceLights(false);
-
   if(!obsStarted){
     obsStarted=true;
     obsStartPlaybackOffset=playbackTime;
-    lastSampleObsTime = -Infinity;
-
-    // ΠΡΩΤΟ ΔΕΙΓΜΑ: t = 0, x = x₀ (γραμμή #1 στον πίνακα)
-    const x0Meters = x0Val();
-    appendSampleRow(0, x0Meters, 1);
+    /* μόλις "κλειδώσουν" οι αρχικές συνθήκες, τις γράφουμε για το βιβλίο */
+    exportBookPhysics();
   }
-
   clockEl.style.display='block';
   measureBox.style.display='block';
   markerEl.style.opacity='1';
