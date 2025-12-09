@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Θεατρική Σκηνή — Ενιαία Έκδοση (Act I + Act II + Φουαγιέ)</title>
 
-  <!-- uPlot για x–t (παραμένει, παρότι τώρα το x–t είναι δικό μας canvas) -->
+  <!-- uPlot για x–t (κρατάμε το include) -->
   <link rel="stylesheet" href="https://unpkg.com/uplot@1.6.30/dist/uPlot.min.css">
   <script src="https://unpkg.com/uplot@1.6.30/dist/uPlot.iife.min.js"></script>
 
@@ -27,7 +27,7 @@
 
   <div class="spotlight" id="spotlight"></div>
 
-  <!-- Ταμπέλα τίτλου (default κείμενα – θα αντικατασταθούν από JSON.ui) -->
+  <!-- Ταμπέλα τίτλου -->
   <div class="signboard">
     <h1 id="signTitle">Πράξη 1η: Η Κινηματική στα ... Αλγεβρικά</h1>
     <div class="sb-lineA" id="signLineA">Πρωταγωνιστεί ο ταλαντωτής (m₁, D₁) και οι θεαποιοί(*)</div>
@@ -39,7 +39,7 @@
   <!-- 1. Χρονομετρητής -->
   <div class="clock" id="clock">t = 0.00 s<span class="hint" id="slowHint"></span></div>
 
-  <!-- 2. Πίνακας μετρήσεων t–x (πιο χαμηλός) -->
+  <!-- 2. Πίνακας μετρήσεων t–x -->
   <div class="measure-box" id="measureBox">
     <div class="mb-title" id="measureTitle">Μετρήσεις</div>
     <table>
@@ -50,7 +50,7 @@
     </table>
   </div>
 
-  <!-- 3. Γράφημα x–t -->
+  <!-- 3. Γράφημα x–t (canvas) -->
   <div id="xtChart"></div>
 
   <!-- 4. Γράφημα x–sin(ωt) -->
@@ -148,7 +148,7 @@
   <div class="foyer-bubble" id="foyerBubble">ΘΕΑΤΗΣ</div>
 </div>
 
-<!-- Intro overlay (εξωτερικά js, χωρίς να πειράζουμε τη σκηνή) -->
+<!-- Intro overlay -->
 <script src="intro.js"></script>
 <script src="intro_boot.js"></script>
 
@@ -212,7 +212,7 @@ const btnPlay    = document.getElementById('btnPlay');
 const btnReset   = document.getElementById('btnReset');
 const btnEndShow = document.getElementById('btnEndShow');
 const btnFoyer   = document.getElementById('btnFoyer');
-const btnBook    = document.getElementById('btnBook');   // 🔴 ΝΕΟ
+const btnBook    = document.getElementById('btnBook');
 
 const actBreak   = document.getElementById('actBreak');
 const btnAct2    = document.getElementById('btnAct2');
@@ -275,7 +275,6 @@ let xtMarkState = {
   showTail: false
 };
 
-// Βρίσκουμε τη στιγμή t_zero στο [0,T] όπου x περνάει πρώτη φορά από 0 με φορά προς τα δεξιά
 function xtZeroCrossingTime(){
   let off = obsStartPlaybackOffset % T;
   if(off < 0) off += T;
@@ -527,7 +526,7 @@ function drawXTChart(){
   ctx.rect(x0,yTop,x1-x0,yBot-yTop);
   ctx.stroke();
 
-  // Καμπύλη x(t) βασική (κίτρινη) σε 0..2T
+  // Καμπύλη x(t) βασική (κίτρινη) 0..2T
   ctx.strokeStyle='#ffd27a';
   ctx.lineWidth=2;
   ctx.beginPath();
@@ -575,13 +574,13 @@ function drawXTChart(){
   const labelX0='x₀ ≈ '+x0val.toFixed(2)+' m';
   ctx.fillText(labelX0, x0+4, yx0-4);
 
-  /* ---------- XT MARK OVERLAY: νέο t=0 + κόκκινη καμπύλη ---------- */
+  /* ---------- XT MARK: νέο t=0 + κόκκινη καμπύλη ---------- */
   if(xtMarkState.active){
     const tZero = xtZeroCrossingTime();
     const px = tToX(tZero);
     const py = xToY(0);
 
-    // 1) Κόκκινη καμπύλη: ΙΔΙΑ ΑΑΤ με την κίτρινη, απλώς τονίζει το κομμάτι από tZero μέχρι tZero+T
+    // Κόκκινη καμπύλη (ίδια ΑΑΤ, τονίζει διάστημα tZero..tZero+T)
     ctx.save();
     ctx.strokeStyle='rgba(255,80,80,0.9)';
     ctx.lineWidth=2;
@@ -593,10 +592,7 @@ function drawXTChart(){
     ctx.beginPath();
     for(let i=0;i<=N2;i++){
       const t = tStart + (tEnd - tStart)*(i/N2);
-
-      // ίδια φάση με την κίτρινη: x(t) = A·sin(ω(t + obsStartPlaybackOffset))
       const xPred  = A_m*Math.sin(omega*(t+obsStartPlaybackOffset));
-
       const px2    = tToX(t);
       const py2    = xToY(xPred);
       if(i===0) ctx.moveTo(px2,py2); else ctx.lineTo(px2,py2);
@@ -604,7 +600,7 @@ function drawXTChart(){
     ctx.stroke();
     ctx.restore();
 
-    // 2) Κόκκινη ουρά (κάθετη) αν ζητηθεί από το JSON (xtMarkTail)
+    // Κάθετη ουρά αν ζητηθεί
     if(xtMarkState.showTail){
       ctx.save();
       ctx.strokeStyle='rgba(255,80,80,0.75)';
@@ -617,7 +613,7 @@ function drawXTChart(){
       ctx.restore();
     }
 
-    // 3) Κόκκινο marker στο σημείο (tZero, x=0)
+    // Σημείο
     ctx.save();
     ctx.fillStyle='rgba(255,80,80,0.95)';
     ctx.beginPath();
@@ -625,7 +621,7 @@ function drawXTChart(){
     ctx.fill();
     ctx.restore();
 
-    // 4) Χάπι "νέο t=0" + βέλος προς το σημείο — ΚΑΤΕΒΑΣΜΕΝΟ ~10px
+    // Χάπι "νέο t=0" (10px πιο κάτω από πριν)
     const labelText = (currentLang==='en') ? 'new t = 0' : 'νέο t = 0';
     ctx.save();
     ctx.font='10px system-ui';
@@ -633,9 +629,7 @@ function drawXTChart(){
     const padX = 6;
     const padY = 3;
 
-    // Πριν: let labelY = yTop - 18;
-    // Τώρα: ~10px πιο κάτω
-    let labelY = yTop - 18 + 10;
+    let labelY = yTop - 18 + 10; // <- κατέβηκε
 
     let labelX = px;
     const pillHalfW = textWidth/2 + padX;
@@ -1788,7 +1782,7 @@ btnEndShow.addEventListener('click',()=>{
   }
 });
 
-/* 🔴 ΝΕΟ: Book button -> ανοίγει book.html με τρέχουσα γλώσσα */
+/* Book button: απλά ανοίγει book.html (η μεταφορά δεδομένων μένει όπως την έχεις εσύ) */
 if (btnBook) {
   btnBook.addEventListener('click', () => {
     const lang = (currentLang === 'en') ? 'en' : 'gr';
@@ -1798,17 +1792,30 @@ if (btnBook) {
 
 /* ---------- Έναρξη με countdown ---------- */
 
+/* 🧠 ΕΔΩ ΕΙΝΑΙ ΤΟ ΧΕΙΡΟΥΡΓΕΙΟ ΓΙΑ ΤΟ t=0  */
 function beginObservation(){
   stage.classList.add('open');
   setAudienceLights(false);
 
   if(!obsStarted){
-    // κλειδώνουμε τη φάση της ταλάντωσης
+    // Κλειδώνουμε φάση
     obsStarted = true;
     obsStartPlaybackOffset = playbackTime;
 
-    // ΠΡΩΤΟ ΔΕΙΓΜΑ: t = 0, x0 (ίδια ΑΑΤ με τα διαγράμματα)
-    logMeasurement(0, x0Val());
+    // ΠΡΩΤΟ ΔΕΙΓΜΑ t = 0, x0 ΣΤΟΝ ΠΙΝΑΚΑ (ΧΕΙΡΟΚΙΝΗΤΑ)
+    const x0 = x0Val();
+    const tr = document.createElement('tr');
+    tr.className = 'new';
+    measureRowIdx = 1;
+    tr.innerHTML =
+      '<td>1</td>' +
+      '<td>0.00</td>' +
+      '<td>' + x0.toFixed(2) + '</td>';
+    measureTBody.appendChild(tr);
+    setTimeout(() => tr.classList.remove('new'), 650);
+
+    // ώστε το επόμενο δείγμα > 0s να γράφεται σωστά
+    lastSampleObsTime = 0;
   }
 
   clockEl.style.display='block';
