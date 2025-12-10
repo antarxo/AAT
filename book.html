@@ -414,19 +414,64 @@
       if(!raw) return;
       const data = JSON.parse(raw);
       if(!data) return;
-      const p = data.params || {};
-      if(typeof p.A === 'number')     BOOK_PARAMS.A = p.A;
-      if(typeof p.T === 'number')     BOOK_PARAMS.T = p.T;
-      if(typeof p.omega === 'number') BOOK_PARAMS.omega = p.omega;
-      if(typeof p.x0 === 'number')    BOOK_PARAMS.x0 = p.x0;
-      if(typeof p.phi0 === 'number')      BOOK_PARAMS.phi0 = p.phi0;
-      else if(typeof p.phi0Deg === 'number') BOOK_PARAMS.phi0 = p.phi0Deg;
 
-      const samples = data.samples || data.bookSamples;
+      const p = data.params || data || {};
+
+      // Συμβατότητα ονομάτων: A ή A_m
+      const Acand = (typeof p.A === 'number') ? p.A :
+                    (typeof p.A_m === 'number') ? p.A_m :
+                    (typeof data.A === 'number') ? data.A :
+                    BOOK_PARAMS.A;
+      BOOK_PARAMS.A = Acand;
+
+      const Tcand = (typeof p.T === 'number') ? p.T :
+                    (typeof p.period === 'number') ? p.period :
+                    (typeof data.T === 'number') ? data.T :
+                    BOOK_PARAMS.T;
+      BOOK_PARAMS.T = Tcand;
+
+      const omegaCand = (typeof p.omega === 'number') ? p.omega :
+                        (typeof data.omega === 'number') ? data.omega :
+                        (2*Math.PI/BOOK_PARAMS.T);
+      BOOK_PARAMS.omega = omegaCand;
+
+      const x0cand = (typeof p.x0 === 'number') ? p.x0 :
+                     (typeof data.x0 === 'number') ? data.x0 :
+                     BOOK_PARAMS.x0;
+      BOOK_PARAMS.x0 = x0cand;
+
+      const phi0CandDeg =
+        (typeof p.phi0Deg === 'number') ? p.phi0Deg :
+        (typeof p.phi0 === 'number')    ? p.phi0 :
+        (typeof data.phi0Deg === 'number') ? data.phi0Deg :
+        BOOK_PARAMS.phi0;
+      BOOK_PARAMS.phi0 = phi0CandDeg;
+
+      const samples =
+        (Array.isArray(data.samples)      && data.samples)      ||
+        (Array.isArray(data.bookSamples)  && data.bookSamples)  ||
+        (Array.isArray(data.txSamples)    && data.txSamples)    || [];
+
       if(Array.isArray(samples)){
         BOOK_SAMPLES = samples
           .filter(s => s && typeof s.t === 'number' && typeof s.x === 'number')
           .sort((a,b)=>a.t-b.t);
+      }
+
+      // Αν υπάρχει δείγμα με t≈0, χρησιμοποιούμε αυτό για x0
+      if(BOOK_SAMPLES.length){
+        let best = BOOK_SAMPLES[0];
+        let bestAbs = Math.abs(best.t);
+        for(const s of BOOK_SAMPLES){
+          const a = Math.abs(s.t);
+          if(a < bestAbs){
+            bestAbs = a;
+            best = s;
+          }
+        }
+        if(best && bestAbs <= 0.05){ // κοντά στο t=0
+          BOOK_PARAMS.x0 = best.x;
+        }
       }
     }catch(e){
       console.error('loadParamsFromStorage error', e);
@@ -465,6 +510,7 @@
   let ACT1 = [];
   let ACT2 = [];
   let FOYER = [];
+  let act1SamplesInjected = false; // για να μπει ο πίνακας t–x μόνο μια φορά
 
   function viewerName(idx1){
     const i = (idx1 || 1) - 1;
@@ -684,20 +730,18 @@
     const labelX0 = 'x₀ ≈ '+x0val.toFixed(2)+' m';
     ctx.fillText(labelX0, x0+4, yx0-4);
 
-    /* --- ΚΟΚΚΙΝΗ ΚΑΜΠΥΛΗ + ΧΑΠΙ "νέο t=0" (όπως στο index) --- */
+    /* --- ΚΟΚΚΙΝΗ ΚΑΜΠΥΛΗ + ΧΑΠΙ "νέο t=0" --- */
     if(opts && opts.highlightZero){
       const omegaSafe = omega || (2*Math.PI/T);
       let tZero = 0;
       if(omegaSafe > 0 && T > 0){
-        // ίδια λογική με xtZeroCrossingTime αλλά μέσω φάσης
-        const offRaw = phi0 / omegaSafe;   // off = obsStartPlaybackOffset
-        let off = offRaw % T;
-        if(off < 0) off += T;
-        if(Math.abs(off) < 1e-6){
-          tZero = 0;
-        }else{
-          tZero = T - off;
-        }
+        const phi = phi0; // ήδη σε rad
+        // x(t) = A sin(ωt + φ0) ⇒ θέλουμε x=0 με θετική φορά (π/2, 5π/2 κλπ.)
+        // για απλότητα, παίρνουμε το πρώτο μη αρνητικό t όπου ωt+φ0 ≈ π/2
+        const target = Math.PI/2;
+        let dt = (target - phi)/omegaSafe;
+        while(dt < 0) dt += T;
+        tZero = dt;
       }
 
       const px = tToX(tZero);
@@ -1441,8 +1485,11 @@
       const dlgBlock = document.createElement('div');
       dlgBlock.className = 'dialog-block';
 
-      const includeSamples = (source === 'act1');
+      // Πίνακας t–x μόνο στο πρώτο dialogs block της act1
+      const includeSamples = (source === 'act1' && !act1SamplesInjected);
       dlgBlock.appendChild( buildDialogTable(evs, {includeSamples}) );
+      if(includeSamples) act1SamplesInjected = true;
+
       container.appendChild(dlgBlock);
       return;
     }
@@ -1531,6 +1578,7 @@
         b.className = 'dialog-block';
         b.appendChild( buildDialogTable(ACT1, {includeSamples:true}) );
         act1Blocks.appendChild(b);
+        act1SamplesInjected = true;
       }
       if(act2Blocks){
         const b = document.createElement('div');
