@@ -626,8 +626,10 @@
         anythingRight = true;
       }
 
-      if(ev.graph === 'xt'){
-        // εδώ περνάμε και info για κόκκινη καμπύλη / ουρά, όπως στο dialogs JSON
+      const hasXtMark = !!ev.xtZeroMark || !!ev.xtMarkTail;
+
+      // x–t: είτε γραμμή graph:"xt" είτε απλά xtZeroMark/xtMarkTail (όπως στη σκηνή)
+      if(ev.graph === 'xt' || hasXtMark){
         addDiagram(
           'xt',
           'Διάγραμμα x–t',
@@ -637,6 +639,7 @@
           }
         );
       }
+
       if(ev.plot === 'xsin'){
         addDiagram('xsin', 'Διάγραμμα x–ημ(ωt)');
       }
