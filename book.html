@@ -80,7 +80,7 @@
     <div class="section-label">Πράξη 1</div>
     <h2>Από τις μετρήσεις t–x στους νόμους της κίνησης</h2>
 
-    <div class="layout-grid act1-layout">
+    <div class="act1-top-grid">
       <div class="act1-top-left">
         <div class="card">
           <div class="card-body">
@@ -109,13 +109,13 @@
           <div id="txTableContainer">
             <table class="tx-table">
               <thead>
-                <tr>
-                  <th>t (s)</th>
-                  <th>x (m)</th>
-                </tr>
+              <tr>
+                <th>t (s)</th>
+                <th>x (m)</th>
+              </tr>
               </thead>
               <tbody id="txTableBody">
-                <!-- γεμίζει δυναμικά -->
+              <!-- γεμίζει δυναμικά -->
               </tbody>
             </table>
           </div>
@@ -131,8 +131,8 @@
           <!-- optional chips -->
         </div>
       </div>
-      <div class="card-body dialog-body" id="act1Transcript">
-        <!-- γεμίζει δυναμικά από dialogs-*.json + book.json -->
+      <div class="card-body dialog-body">
+        <div id="act1Transcript" class="dialog-block"></div>
       </div>
     </div>
   </section>
@@ -149,8 +149,8 @@
           <!-- optional chips -->
         </div>
       </div>
-      <div class="card-body dialog-body" id="act2Transcript">
-        <!-- γεμίζει δυναμικά -->
+      <div class="card-body dialog-body">
+        <div id="act2Transcript" class="dialog-block"></div>
       </div>
     </div>
   </section>
@@ -167,8 +167,8 @@
           <!-- optional chips -->
         </div>
       </div>
-      <div class="card-body dialog-body" id="foyerTranscript">
-        <!-- γεμίζει δυναμικά -->
+      <div class="card-body dialog-body">
+        <div id="foyerTranscript" class="dialog-block"></div>
       </div>
     </div>
   </section>
@@ -208,7 +208,7 @@
       </div>
     </div>
 
-    <div class="small-note">
+    <div class="footer-note">
       Τεχνική σημείωση: η σελίδα διαβάζει το <code>aatBookData</code> από το
       <code>localStorage</code> (κουμπί «Βιβλίο Παράστασης» στη σκηνή), το
       <code>dialogs-*.json</code> για το σενάριο και το <code>book.json</code> για
