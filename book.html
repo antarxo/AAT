@@ -7,217 +7,216 @@
   <link rel="stylesheet" href="book.css">
 </head>
 <body>
-<div class="page">
+  <div class="page">
+    <header>
+      <h1>Βιβλίο Παράστασης — Απλή Αρμονική Ταλάντωση</h1>
+      <div class="subtitle">
+        Η ίδια παράσταση, σε ρυθμό ανάγνωσης. Πίνακας t–x πάνω δεξιά, και από κάτω διάλογοι / νόμοι / γραφήματα στη ροή τους.
+      </div>
+    </header>
 
-  <header>
-    <h1>Βιβλίο Παράστασης — Απλή Αρμονική Ταλάντωση</h1>
-    <div class="subtitle">
-      Η ίδια παράσταση, σε ρυθμό ανάγνωσης. Πίνακας t–x πάνω δεξιά, και από κάτω διάλογοι / νόμοι / γραφήματα στη ροή τους.
-    </div>
-  </header>
+    <!-- ΜΕΡΟΣ Α: Σταθερά στοιχεία ταλάντωσης -->
+    <section>
+      <div class="section-label">Δεδομένα κίνησης</div>
+      <h2>Παράμετροι της Α.Α.Τ. στην παράσταση</h2>
 
-  <!-- ΜΕΡΟΣ Α: Σταθερά στοιχεία ταλάντωσης -->
-  <section>
-    <div class="section-label">Δεδομένα κίνησης</div>
-    <h2>Παράμετροι της Α.Α.Τ. στην παράσταση</h2>
+      <div class="card">
+        <div class="card-body">
+          <p>
+            Η κίνηση είναι Απλή Αρμονική Ταλάντωση (Α.Α.Τ.) με γνωστές παραμέτρους.
+            Η σκηνή ρυθμίστηκε κάποια στιγμή με ένα συγκεκριμένο πλάτος, περίοδο και
+            φάση. Αυτά τα δεδομένα «τα παίρνει» το βιβλίο για να έχεις μία συνεπή
+            εικόνα ανάγνωσης.
+          </p>
 
-    <div class="card">
-      <div class="card-body">
-        <p>
-          Η κίνηση είναι Απλή Αρμονική Ταλάντωση (Α.Α.Τ.) με γνωστές παραμέτρους.
-          Η σκηνή ρυθμίστηκε κάποια στιγμή με ένα συγκεκριμένο πλάτος, περίοδο και
-          φάση. Αυτά τα δεδομένα «τα παίρνει» το βιβλίο για να έχεις μία συνεπή
-          εικόνα ανάγνωσης.
-        </p>
+          <div class="param-grid">
+            <div class="param-item">
+              <div class="param-label">Πλάτος A</div>
+              <div class="param-value"><span data-param="A">—</span> m</div>
+              <div class="param-note">Μέγιστη απομάκρυνση από τη Θ.Ι.</div>
+            </div>
+            <div class="param-item">
+              <div class="param-label">Περίοδος T</div>
+              <div class="param-value"><span data-param="T">—</span> s</div>
+              <div class="param-note">Χρόνος για μία πλήρη ταλάντωση</div>
+            </div>
+            <div class="param-item">
+              <div class="param-label">Γωνιακή συχνότητα ω</div>
+              <div class="param-value"><span data-param="omega">—</span> rad/s</div>
+              <div class="param-note">ω = 2π/T</div>
+            </div>
+            <div class="param-item">
+              <div class="param-label">Φάση φ₀</div>
+              <div class="param-value"><span data-param="phi0Deg">—</span>°</div>
+              <div class="param-note">Φάση τη στιγμή t = 0</div>
+            </div>
+            <div class="param-item">
+              <div class="param-label">Αρχική απομάκρυνση x₀</div>
+              <div class="param-value"><span data-param="x0">—</span> m</div>
+              <div class="param-note">x₀ = A·ημ(φ₀)</div>
+            </div>
+            <div class="param-item">
+              <div class="param-label">Αρχική ταχύτητα υ₀</div>
+              <div class="param-value"><span data-param="v0">—</span> m/s</div>
+              <div class="param-note">
+                Σημάδι: <span data-param="vSignSymbol">υ=0</span>
+                (<span data-param="vSignWord">μηδενική</span>)
+              </div>
+            </div>
+          </div>
 
-        <div class="param-grid">
-          <div class="param-item">
-            <div class="param-label">Πλάτος A</div>
-            <div class="param-value"><span data-param="A">—</span> m</div>
-            <div class="param-note">Μέγιστη απομάκρυνση από τη Θ.Ι.</div>
+          <div class="small-note">
+            Οι τιμές αυτές έρχονται από τη σκηνή (κουμπί «Βιβλίο Παράστασης»).
+            Αν κάτι λείπει από τα αποθηκευμένα δεδομένα, χρησιμοποιούνται «τυπικές»
+            τιμές για μια Α.Α.Τ. τύπου σχολικού παραδείγματος.
           </div>
-          <div class="param-item">
-            <div class="param-label">Περίοδος T</div>
-            <div class="param-value"><span data-param="T">—</span> s</div>
-            <div class="param-note">Χρόνος για μία πλήρη ταλάντωση</div>
-          </div>
-          <div class="param-item">
-            <div class="param-label">Γωνιακή συχνότητα ω</div>
-            <div class="param-value"><span data-param="omega">—</span> rad/s</div>
-            <div class="param-note">ω = 2π/T</div>
-          </div>
-          <div class="param-item">
-            <div class="param-label">Φάση φ₀</div>
-            <div class="param-value"><span data-param="phi0Deg">—</span>°</div>
-            <div class="param-note">Φάση τη στιγμή t = 0</div>
-          </div>
-          <div class="param-item">
-            <div class="param-label">Αρχική απομάκρυνση x₀</div>
-            <div class="param-value"><span data-param="x0">—</span> m</div>
-            <div class="param-note">x₀ = A·ημ(φ₀)</div>
-          </div>
-          <div class="param-item">
-            <div class="param-label">Αρχική ταχύτητα υ₀</div>
-            <div class="param-value"><span data-param="v0">—</span> m/s</div>
-            <div class="param-note">
-              Σημάδι: <span data-param="vSignSymbol">υ=0</span>
-              (<span data-param="vSignWord">μηδενική</span>)
+        </div>
+      </div>
+    </section>
+
+    <!-- ΜΕΡΟΣ Β: Πράξη 1 με πίνακα t–x και διαλόγους -->
+    <section>
+      <div class="section-label">Πράξη 1</div>
+      <h2>Από τις μετρήσεις t–x στους νόμους της κίνησης</h2>
+
+      <div class="act1-top-grid">
+        <div class="act1-top-left">
+          <div class="card">
+            <div class="card-body">
+              <h3>Τι βλέπεις στη σκηνή;</h3>
+              <p>
+                Στην Πράξη 1, οι θεατές προσπαθούν να «διαβάσουν» την κίνηση
+                από τις μετρήσεις t–x και από το διάγραμμα x–t. Η σκηνή
+                προχωράει διαδοχικά, αλλά εδώ η ροή είναι πιο ήρεμη:
+                μπορείς να σταθείς σε κάθε βήμα.
+              </p>
+              <p class="muted">
+                Ο πίνακας στα δεξιά περιέχει τα ζεύγη (t, x) από τη ζωντανή παράσταση.
+                Κάτω από αυτόν ξεκινούν οι διάλογοι: αριστερά οι θεατές, δεξιά οι νόμοι
+                και τα γραφήματα στη στιγμή που εμφανίζονται στο σενάριο.
+              </p>
             </div>
           </div>
         </div>
-
-        <div class="small-note">
-          Οι τιμές αυτές έρχονται από τη σκηνή (κουμπί «Βιβλίο Παράστασης»).
-          Αν κάτι λείπει από τα αποθηκευμένα δεδομένα, χρησιμοποιούνται «τυπικές»
-          τιμές για μια Α.Α.Τ. τύπου σχολικού παραδείγματος.
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ΜΕΡΟΣ Β: Πράξη 1 με πίνακα t–x και διαλόγους -->
-  <section>
-    <div class="section-label">Πράξη 1</div>
-    <h2>Από τις μετρήσεις t–x στους νόμους της κίνησης</h2>
-
-    <div class="act1-top-grid">
-      <div class="act1-top-left">
-        <div class="card">
-          <div class="card-body">
-            <h3>Τι βλέπεις στη σκηνή;</h3>
-            <p>
-              Στην Πράξη 1, οι θεατές προσπαθούν να «διαβάσουν» την κίνηση
-              από τις μετρήσεις t–x και από το διάγραμμα x–t. Η σκηνή
-              προχωράει διαδοχικά, αλλά εδώ η ροή είναι πιο ήρεμη:
-              μπορείς να σταθείς σε κάθε βήμα.
-            </p>
-            <p class="muted">
-              Ο πίνακας στα δεξιά περιέχει τα ζεύγη (t, x) από τη ζωντανή παράσταση.
-              Κάτω από αυτόν ξεκινούν οι διάλογοι: αριστερά οι θεατές, δεξιά οι νόμοι
-              και τα γραφήματα στη στιγμή που εμφανίζονται στο σενάριο.
-            </p>
+        <div class="act1-top-right">
+          <h3>Πίνακας μετρήσεων t–x</h3>
+          <p class="muted">
+            Η πρώτη γραμμή αντιστοιχεί στο t = 0 με x = x₀. Εμφανίζονται μέχρι περίπου
+            δύο περίοδοι· ο πίνακας είναι scrollable.
+          </p>
+          <div id="txTableWrapper">
+            <div id="txTableContainer">
+              <table class="tx-table">
+                <thead>
+                  <tr>
+                    <th>t (s)</th>
+                    <th>x (m)</th>
+                  </tr>
+                </thead>
+                <tbody id="txTableBody">
+                  <!-- γεμίζει δυναμικά -->
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
-      <div class="act1-top-right">
-        <h3>Πίνακας μετρήσεων t–x</h3>
-        <p class="muted">
-          Η πρώτη γραμμή αντιστοιχεί στο t = 0 με x = x₀. Εμφανίζονται μέχρι περίπου
-          δύο περίοδοι· ο πίνακας είναι scrollable.
-        </p>
-        <div id="txTableWrapper">
-          <div id="txTableContainer">
-            <table class="tx-table">
-              <thead>
-              <tr>
-                <th>t (s)</th>
-                <th>x (m)</th>
-              </tr>
-              </thead>
-              <tbody id="txTableBody">
-              <!-- γεμίζει δυναμικά -->
-              </tbody>
-            </table>
+
+      <!-- Διάλογοι Πράξης 1: θεατές / νόμοι / γραφήματα -->
+      <div class="card dialog-card">
+        <div class="card-header-row">
+          <div class="card-header-title">Διάλογοι Πράξης 1</div>
+          <div class="card-header-tags" id="act1Tags">
+            <!-- optional chips -->
           </div>
         </div>
-      </div>
-    </div>
-
-    <!-- Διάλογοι Πράξης 1: θεατές / νόμοι / γραφήματα -->
-    <div class="card dialog-card">
-      <div class="card-header-row">
-        <div class="card-header-title">Διάλογοι Πράξης 1</div>
-        <div class="card-header-tags" id="act1Tags">
-          <!-- optional chips -->
+        <div class="card-body dialog-body">
+          <div id="act1Transcript" class="dialog-block"></div>
         </div>
       </div>
-      <div class="card-body dialog-body">
-        <div id="act1Transcript" class="dialog-block"></div>
-      </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- ΜΕΡΟΣ Γ: Πράξη 2 -->
-  <section>
-    <div class="section-label">Πράξη 2</div>
-    <h2>Από τους νόμους στην πρόβλεψη της κίνησης</h2>
+    <!-- ΜΕΡΟΣ Γ: Πράξη 2 -->
+    <section>
+      <div class="section-label">Πράξη 2</div>
+      <h2>Από τους νόμους στην πρόβλεψη της κίνησης</h2>
 
-    <div class="card dialog-card">
-      <div class="card-header-row">
-        <div class="card-header-title">Διάλογοι Πράξης 2</div>
-        <div class="card-header-tags" id="act2Tags">
-          <!-- optional chips -->
+      <div class="card dialog-card">
+        <div class="card-header-row">
+          <div class="card-header-title">Διάλογοι Πράξης 2</div>
+          <div class="card-header-tags" id="act2Tags">
+            <!-- optional chips -->
+          </div>
+        </div>
+        <div class="card-body dialog-body">
+          <div id="act2Transcript" class="dialog-block"></div>
         </div>
       </div>
-      <div class="card-body dialog-body">
-        <div id="act2Transcript" class="dialog-block"></div>
-      </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- ΜΕΡΟΣ Δ: Φουαγιέ -->
-  <section>
-    <div class="section-label">Φουαγιέ</div>
-    <h2>Συζητώντας «απ\' έξω» για την παράσταση</h2>
+    <!-- ΜΕΡΟΣ Δ: Φουαγιέ -->
+    <section>
+      <div class="section-label">Φουαγιέ</div>
+      <h2>Συζητώντας «απ' έξω» για την παράσταση</h2>
 
-    <div class="card dialog-card">
-      <div class="card-header-row">
-        <div class="card-header-title">Συζήτηση στο φουαγιέ</div>
-        <div class="card-header-tags" id="foyerTags">
-          <!-- optional chips -->
+      <div class="card dialog-card">
+        <div class="card-header-row">
+          <div class="card-header-title">Συζήτηση στο φουαγιέ</div>
+          <div class="card-header-tags" id="foyerTags">
+            <!-- optional chips -->
+          </div>
+        </div>
+        <div class="card-body dialog-body">
+          <div id="foyerTranscript" class="dialog-block"></div>
         </div>
       </div>
-      <div class="card-body dialog-body">
-        <div id="foyerTranscript" class="dialog-block"></div>
+    </section>
+
+    <!-- ΜΕΡΟΣ Ε: Υποσημείωση για τα δεδομένα -->
+    <section>
+      <div class="section-label">Τεχνική σημείωση</div>
+      <h2>Από πού έρχονται τα δεδομένα;</h2>
+
+      <div class="card">
+        <div class="card-body">
+          <p>
+            Η σελίδα αυτή δεν «ξαναπαίζει» την παράσταση· διαβάζει ό,τι έχει ήδη
+            συμβεί στη σκηνή και το οργανώνει για ανάγνωση. Συγκεκριμένα:
+          </p>
+          <ul class="bullet-list">
+            <li>
+              Παίρνει το <code>aatBookData</code> από το <code>localStorage</code>
+              (κουμπί «Βιβλίο Παράστασης» στη σκηνή) για τις παραμέτρους A, T, ω,
+              x₀, φ₀ και τα δείγματα του πίνακα t–x.
+            </li>
+            <li>
+              Φορτώνει το σενάριο από τα <code>dialogs-*.json</code>, ώστε οι
+              διάλογοι να είναι ίδιοι με της ζωντανής παράστασης.
+            </li>
+            <li>
+              Διαβάζει το <code>book.json</code> για πρόσθετα blocks
+              (<code>note</code>, <code>html</code>, <code>diagram</code>, <code>image</code>)
+              που συμπληρώνουν το βιβλίο χωρίς να αλλάζουν τη ροή.
+            </li>
+          </ul>
+          <p class="muted">
+            Αν κάποιο από αυτά λείπει ή δεν είναι διαθέσιμο, η σελίδα συνεχίζει
+            με ό,τι έχει: εμφανίζει τους διαλόγους σε πλήρη μορφή, χωρίς τα
+            πρόσθετα blocks από το book.json, και με τυπικές παραμέτρους A, T, ω.
+          </p>
+        </div>
       </div>
-    </div>
-  </section>
 
-  <!-- ΜΕΡΟΣ Ε: Υποσημείωση για τα δεδομένα -->
-  <section>
-    <div class="section-label">Τεχνική σημείωση</div>
-    <h2>Από πού έρχονται τα δεδομένα;</h2>
-
-    <div class="card">
-      <div class="card-body">
-        <p>
-          Η σελίδα αυτή δεν «ξαναπαίζει» την παράσταση· διαβάζει ό,τι έχει ήδη
-          συμβεί στη σκηνή και το οργανώνει για ανάγνωση. Συγκεκριμένα:
-        </p>
-        <ul class="bullet-list">
-          <li>
-            Παίρνει το <code>aatBookData</code> από το <code>localStorage</code>
-            (κουμπί «Βιβλίο Παράστασης» στη σκηνή) για τις παραμέτρους A, T, ω,
-            x₀, φ₀ και τα δείγματα του πίνακα t–x.
-          </li>
-          <li>
-            Φορτώνει το σενάριο από τα <code>dialogs-*.json</code>, ώστε οι
-            διάλογοι να είναι ίδιοι με της ζωντανής παράστασης.
-          </li>
-          <li>
-            Διαβάζει το <code>book.json</code> για πρόσθετα blocks
-            (<code>note</code>, <code>html</code>, <code>diagram</code>, <code>image</code>)
-            που συμπληρώνουν το βιβλίο χωρίς να αλλάζουν τη ροή.
-          </li>
-        </ul>
-        <p class="muted">
-          Αν κάποιο από αυτά λείπει ή δεν είναι διαθέσιμο, η σελίδα συνεχίζει
-          με ό,τι έχει: εμφανίζει τους διαλόγους σε πλήρη μορφή, χωρίς τα
-          πρόσθετα blocks από το book.json, και με τυπικές παραμέτρους A, T, ω.
-        </p>
+      <div class="footer-note">
+        Τεχνική σημείωση: η σελίδα διαβάζει το <code>aatBookData</code> από το
+        <code>localStorage</code> (κουμπί «Βιβλίο Παράστασης» στη σκηνή), το
+        <code>dialogs-*.json</code> για το σενάριο και το <code>book.json</code> για
+        πρόσθετα blocks (note/html/diagram/image). Αν κάτι λείπει, γίνεται graceful fallback.
       </div>
-    </div>
+    </section>
+  </div>
 
-    <div class="footer-note">
-      Τεχνική σημείωση: η σελίδα διαβάζει το <code>aatBookData</code> από το
-      <code>localStorage</code> (κουμπί «Βιβλίο Παράστασης» στη σκηνή), το
-      <code>dialogs-*.json</code> για το σενάριο και το <code>book.json</code> για
-      πρόσθετα blocks (note/html/diagram/image). Αν κάτι λείπει, γίνεται graceful fallback.
-    </div>
-  </section>
+  <script src="book.js"></script>
 
-</div>
-
-<script src="book.js"></script>
 </body>
 </html>
