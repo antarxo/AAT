@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Θεατρική Σκηνή — Ενιαία Έκδοση (Act I + Act II + Φουαγιέ)</title>
 
-  <!-- uPlot για x–t (κρατάμε το include) -->
+  <!-- uPlot για x–t (παραμένει, παρότι τώρα το x–t είναι δικό μας canvas) -->
   <link rel="stylesheet" href="https://unpkg.com/uplot@1.6.30/dist/uPlot.min.css">
   <script src="https://unpkg.com/uplot@1.6.30/dist/uPlot.iife.min.js"></script>
 
@@ -27,7 +27,7 @@
 
   <div class="spotlight" id="spotlight"></div>
 
-  <!-- Ταμπέλα τίτλου -->
+  <!-- Ταμπέλα τίτλου (default κείμενα – θα αντικατασταθούν από JSON.ui) -->
   <div class="signboard">
     <h1 id="signTitle">Πράξη 1η: Η Κινηματική στα ... Αλγεβρικά</h1>
     <div class="sb-lineA" id="signLineA">Πρωταγωνιστεί ο ταλαντωτής (m₁, D₁) και οι θεαποιοί(*)</div>
@@ -39,7 +39,7 @@
   <!-- 1. Χρονομετρητής -->
   <div class="clock" id="clock">t = 0.00 s<span class="hint" id="slowHint"></span></div>
 
-  <!-- 2. Πίνακας μετρήσεων t–x (δεξιά) -->
+  <!-- 2. Πίνακας μετρήσεων t–x -->
   <div class="measure-box" id="measureBox">
     <div class="mb-title" id="measureTitle">Μετρήσεις</div>
     <table>
@@ -50,7 +50,7 @@
     </table>
   </div>
 
-  <!-- 3. Γράφημα x–t (canvas) -->
+  <!-- 3. Γράφημα x–t -->
   <div id="xtChart"></div>
 
   <!-- 4. Γράφημα x–sin(ωt) -->
@@ -78,7 +78,7 @@
   </div>
   <!-- ghost δείκτης -->
   <div class="marker" id="markerGhost">
-    <div class="marker-line"></div>
+    <div class.marker-line></div>
     <div class="marker-tip"></div>
   </div>
 
@@ -244,6 +244,10 @@ let aCan = null;  // a–t
 let axCan = null; // a–x
 let xsCan = null; // x–sin(ωt)
 
+/* βιβλίο / export δεδομένων */
+let BOOK_SAMPLES = [];
+const BOOK_STORAGE_KEY = 'aatBookData';
+
 const m   = 70;
 const T   = 6.0;
 const A_m = 3.0;
@@ -253,14 +257,9 @@ const A_px  = A_m*pxPerMeter;
 
 /* συνολικός χρόνος άξονα x–t: 2T */
 const XT_TOTAL_T = 2*T;
-/* Μέγιστος χρόνος καταγραφής στον πίνακα: 2 περίοδοι */
-const MAX_MEAS_T = 2*T;
 
 /* offset για avatars στις πράξεις από JSON. Προεπιλογή: -60 */
 let ACTS_AVATAR_OFFSET = -60;
-
-/* samples για το Βιβλίο */
-let bookSamples = [];
 
 let ghost       = null;
 let ghostSpring = null;
@@ -280,6 +279,7 @@ let xtMarkState = {
   showTail: false
 };
 
+// Βρίσκουμε τη στιγμή t_zero στο [0,T] όπου x περνάει πρώτη φορά από 0 με φορά προς τα δεξιά
 function xtZeroCrossingTime(){
   let off = obsStartPlaybackOffset % T;
   if(off < 0) off += T;
@@ -415,11 +415,10 @@ function updateRuler(){
   }
 }
 
-/* ---------- καταγραφή μετρήσεων (με όριο 2Τ και samples για βιβλίο) ---------- */
+/* ---------- Δειγματοληψία t–x (πίνακας + βιβλίο) ---------- */
 
 function logMeasurement(tObs, xMeters){
   if(!obsStarted || mode==='pause') return;
-  if(tObs < 0 || tObs > MAX_MEAS_T) return;
   if(tObs - lastSampleObsTime < sampleInterval) return;
   lastSampleObsTime = tObs;
 
@@ -433,8 +432,12 @@ function logMeasurement(tObs, xMeters){
   setTimeout(()=>tr.classList.remove('new'),650);
   try{ tr.scrollIntoView({block:'end'}); }catch(e){}
 
-  // για το Βιβλίο
-  bookSamples.push({ t: tObs, x: xMeters });
+  // Καταγραφή και για το βιβλίο
+  BOOK_SAMPLES.push({
+    idx: measureRowIdx,
+    t: parseFloat(tObs.toFixed(2)),
+    x: parseFloat(xMeters.toFixed(2))
+  });
 }
 
 /* ---------- x(t) canvas ---------- */
@@ -538,7 +541,7 @@ function drawXTChart(){
   ctx.rect(x0,yTop,x1-x0,yBot-yTop);
   ctx.stroke();
 
-  // Καμπύλη x(t) βασική
+  // Καμπύλη x(t) βασική (κίτρινη) σε 0..2T
   ctx.strokeStyle='#ffd27a';
   ctx.lineWidth=2;
   ctx.beginPath();
@@ -551,7 +554,7 @@ function drawXTChart(){
   }
   ctx.stroke();
 
-  // Labels
+  // Labels αξόνων
   ctx.fillStyle='#fff';
   ctx.font='11px system-ui';
   ctx.fillText('x(t)', x0+4, yTop+10);
@@ -586,13 +589,13 @@ function drawXTChart(){
   const labelX0='x₀ ≈ '+x0val.toFixed(2)+' m';
   ctx.fillText(labelX0, x0+4, yx0-4);
 
-  /* ---------- XT MARK: νέο t=0 + κόκκινη καμπύλη ---------- */
+  /* ---------- XT MARK OVERLAY: νέο t=0 + κόκκινη καμπύλη ---------- */
   if(xtMarkState.active){
     const tZero = xtZeroCrossingTime();
     const px = tToX(tZero);
     const py = xToY(0);
 
-    // Κόκκινη καμπύλη (διάστημα tZero..tZero+T)
+    // 1) Κόκκινη ημιτονική καμπύλη από tZero και για 1 περίοδο
     ctx.save();
     ctx.strokeStyle='rgba(255,80,80,0.9)';
     ctx.lineWidth=2;
@@ -604,7 +607,8 @@ function drawXTChart(){
     ctx.beginPath();
     for(let i=0;i<=N2;i++){
       const t = tStart + (tEnd - tStart)*(i/N2);
-      const xPred  = A_m*Math.sin(omega*(t+obsStartPlaybackOffset));
+      const tPrime = t - tStart;
+      const xPred  = A_m*Math.sin(omega*tPrime);
       const px2    = tToX(t);
       const py2    = xToY(xPred);
       if(i===0) ctx.moveTo(px2,py2); else ctx.lineTo(px2,py2);
@@ -612,7 +616,7 @@ function drawXTChart(){
     ctx.stroke();
     ctx.restore();
 
-    // Κάθετη ουρά αν ζητηθεί
+    // 2) Κόκκινη ουρά (κάθετη) αν ζητηθεί
     if(xtMarkState.showTail){
       ctx.save();
       ctx.strokeStyle='rgba(255,80,80,0.75)';
@@ -625,7 +629,7 @@ function drawXTChart(){
       ctx.restore();
     }
 
-    // Σημείο
+    // 3) Κόκκινο marker στο σημείο (tZero, x=0)
     ctx.save();
     ctx.fillStyle='rgba(255,80,80,0.95)';
     ctx.beginPath();
@@ -633,17 +637,16 @@ function drawXTChart(){
     ctx.fill();
     ctx.restore();
 
-    // Χάπι "νέο t=0" (10px πιο κάτω)
+    // 4) Χάπι "νέο t=0" + βέλος
     const labelText = (currentLang==='en') ? 'new t = 0' : 'νέο t = 0';
     ctx.save();
     ctx.font='10px system-ui';
     const textWidth = ctx.measureText(labelText).width;
     const padX = 6;
     const padY = 3;
-
-    let labelY = yTop - 18 + 10; // κατεβασμένο
-
     let labelX = px;
+    let labelY = yTop - 18;
+
     const pillHalfW = textWidth/2 + padX;
     if(labelX < x0 + pillHalfW + 4) labelX = x0 + pillHalfW + 4;
     if(labelX > x1 - pillHalfW - 4) labelX = x1 - pillHalfW - 4;
@@ -1140,40 +1143,52 @@ function ensureXSinChart(){
   drawXSinChart();
 }
 
-/* ---------- Παράμετροι ΑΑΤ ---------- */
+/* ---------- Παράμετροι ΑΑΤ & helpers για βιβλίο ---------- */
 
 function x0Val(){
   return A_m*Math.sin(omega*(0+obsStartPlaybackOffset));
 }
+
+function getPhi0Deg(){
+  const phi0deg = ((omega*obsStartPlaybackOffset)*180/Math.PI+360)%360;
+  return phi0deg;
+}
+
+function getV0(){
+  // v(0) = ω A cos(ω(0+offset))
+  const v0 = omega*A_m*Math.cos(omega*(0+obsStartPlaybackOffset));
+  return v0;
+}
+
+function getVSignSymbol(v0){
+  const eps = 1e-6;
+  if(v0>eps)  return 'υ>0';
+  if(v0<-eps) return 'υ<0';
+  return 'υ=0';
+}
+
+function getVSignWord(v0){
+  const eps = 1e-6;
+  if(currentLang==='en'){
+    if(v0>eps)  return 'positive';
+    if(v0<-eps) return 'negative';
+    return 'zero';
+  }else{
+    if(v0>eps)  return 'θετική';
+    if(v0<-eps) return 'αρνητική';
+    return 'μηδενική';
+  }
+}
+
 function showParamsBox(){
-  const phi0deg=((omega*obsStartPlaybackOffset)*180/Math.PI+360)%360;
+  const phi0deg = getPhi0Deg();
   paramAEl.textContent  = 'A = '+A_m.toFixed(2)+' m';
   paramWEl.textContent  = 'ω = '+omega.toFixed(3)+' rad/s';
   paramPhiEl.textContent= 'φ₀ = '+phi0deg.toFixed(1)+'°';
   paramsBoxEl.style.display='block';
 }
 
-/* ---------- Εξαγωγή δεδομένων για Βιβλίο ---------- */
-
-function exportBookDataToStorage(){
-  try{
-    const phi0deg=((omega*obsStartPlaybackOffset)*180/Math.PI+360)%360;
-    const x0=x0Val();
-    const payload={
-      A: A_m,
-      T: T,
-      omega: omega,
-      phi0deg: phi0deg,
-      x0: x0,
-      samples: bookSamples || []
-    };
-    localStorage.setItem('aatBookData', JSON.stringify(payload));
-  }catch(e){
-    console.error('exportBookDataToStorage error',e);
-  }
-}
-
-/* ---------- Θεατές / bubbles ---------- */
+/* ---------- Θεατές / bubbles κ.λπ. (ίδιος κώδικας όπως πριν) ---------- */
 
 function viewerInfo(idx1based){
   const i=(idx1based||1)-1;
@@ -1337,17 +1352,22 @@ function showBubbleForEvent(ev){
   });
 }
 
-/* Δυναμικό κείμενο με {A},{T},{omega},{x0},{phi0} */
+/* Δυναμικό κείμενο με {A},{T},{omega},{x0},{phi0},{vSignSymbol},{vSignWord} */
 function expandDynTemplate(tpl){
   if(!tpl) return '';
-  const x0=x0Val().toFixed(2);
-  const phi0deg=((omega*obsStartPlaybackOffset)*180/Math.PI+360)%360;
+  const x0 = x0Val().toFixed(2);
+  const phi0deg = getPhi0Deg();
+  const v0 = getV0();
+  const vSym = getVSignSymbol(v0);
+  const vWord = getVSignWord(v0);
   return String(tpl)
     .replaceAll('{A}',A_m.toFixed(2))
     .replaceAll('{T}',T.toFixed(2))
     .replaceAll('{omega}',omega.toFixed(3))
     .replaceAll('{x0}',x0)
-    .replaceAll('{phi0}',phi0deg.toFixed(1));
+    .replaceAll('{phi0}',phi0deg.toFixed(1))
+    .replaceAll('{vSignSymbol}', vSym)
+    .replaceAll('{vSignWord}', vWord);
 }
 
 function showDynBubble(ev){
@@ -1748,6 +1768,7 @@ function resetShow(){
   obsStartPlaybackOffset=0;
   lastSampleObsTime=-Infinity;
   measureRowIdx=0;
+  BOOK_SAMPLES = [];
   setMode('run');
 
   xtMarkState.active = false;
@@ -1808,17 +1829,42 @@ function resetShow(){
 
 btnReset.addEventListener('click',resetShow);
 
-/* Τέλος παράστασης: σώζουμε δεδομένα βιβλίου και κάνουμε reset */
 btnEndShow.addEventListener('click',()=>{
-  exportBookDataToStorage();
-  resetShow();
+  if(phase==='idle' || phase==='foyer'){
+    resetShow();
+  }
 });
 
-/* Book button: σώζει και ανοίγει book.html */
+/* ---------- Export για Βιβλίο ---------- */
+
+function exportBookDataToStorage(){
+  try{
+    const x0 = x0Val();
+    const phi0deg = getPhi0Deg();
+    const payload = {
+      A: A_m,
+      T: T,
+      omega: omega,
+      x0: x0,
+      phi0Deg: phi0deg,
+      samples: BOOK_SAMPLES.map(s=>({
+        idx: s.idx,
+        t: s.t,
+        x: s.x
+      }))
+    };
+    localStorage.setItem(BOOK_STORAGE_KEY, JSON.stringify(payload));
+  }catch(e){
+    console.error('exportBookDataToStorage failed', e);
+  }
+}
+
+/* Book button: αποθήκευση + άνοιγμα book.html */
+
 if (btnBook) {
   btnBook.addEventListener('click', () => {
-    exportBookDataToStorage();
     const lang = (currentLang === 'en') ? 'en' : 'gr';
+    exportBookDataToStorage();
     window.open('book.html?lang=' + lang, '_blank');
   });
 }
@@ -1828,45 +1874,14 @@ if (btnBook) {
 function beginObservation(){
   stage.classList.add('open');
   setAudienceLights(false);
-
   if(!obsStarted){
-    obsStarted = true;
-    obsStartPlaybackOffset = playbackTime;
-
-    // reset samples για βιβλίο
-    bookSamples = [];
-
-    // ΠΡΩΤΟ ΔΕΙΓΜΑ t = 0, x0 ΣΤΟΝ ΠΙΝΑΚΑ
-    const x0 = x0Val();
-    const tr = document.createElement('tr');
-    tr.className = 'new';
-    measureRowIdx = 1;
-    tr.innerHTML =
-      '<td>1</td>' +
-      '<td>0.00</td>' +
-      '<td>' + x0.toFixed(2) + '</td>';
-    measureTBody.appendChild(tr);
-    setTimeout(() => tr.classList.remove('new'), 650);
-
-    // το πρώτο δείγμα στο bookSamples
-    bookSamples.push({ t: 0, x: x0 });
-
-    // ώστε τα υπόλοιπα να γράφονται μετά από 0
-    lastSampleObsTime = 0;
+    obsStarted=true;
+    obsStartPlaybackOffset=playbackTime;
+    // Καταγραφή του t=0, x0 ως πρώτη εγγραφή
+    logMeasurement(0, x0Val());
   }
-
   clockEl.style.display='block';
   measureBox.style.display='block';
-
-  // θέση πίνακα: δεξιά, μικρό πλαίσιο με scrollbar
-  measureBox.style.position = 'absolute';
-  measureBox.style.left = 'auto';
-  measureBox.style.right = '4px';
-  measureBox.style.top = '60px';       // ΠΙΟ ΨΗΛΑ (ήταν 120px)
-  measureBox.style.width = '240px';
-  measureBox.style.maxHeight = '140px'; // ΠΙΟ ΧΑΜΗΛΟ (ήταν 220px)
-  measureBox.style.overflowY = 'auto';
-
   markerEl.style.opacity='1';
   markerGhostEl.style.opacity='0';
   updateRuler();
