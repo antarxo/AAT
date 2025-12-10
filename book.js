@@ -100,31 +100,48 @@ function buildTXTable(samples){
 }
 
 // Δημιουργία badge ομιλητή
-function viewerName(ev){
-  if(!ev || typeof ev.viewerIndex !== 'number') return '';
-  const idx = ev.viewerIndex - 1;
-  if(idx < 0 || idx >= VIEWERS.length) return '';
-  const v = VIEWERS[idx];
-  return v && v.name ? v.name : '';
+function viewerName(viewerIdx1){
+  const idx0 = (viewerIdx1 || 1) - 1;
+  if(idx0 < 0 || idx0 >= VIEWERS.length) return '';
+  const v = VIEWERS[idx0];
+  if(!v) return '';
+  if(lang === 'en'){
+    return v.name_en || v.name_gr || ('Viewer ' + viewerIdx1);
+  }else{
+    return v.name_gr || ('Θεατής ' + viewerIdx1);
+  }
 }
 
-function createAvatarElement(ev){
+function viewerInitial(viewerIdx1){
+  const name = viewerName(viewerIdx1);
+  return name ? (name.trim()[0] || '?') : '?';
+}
+
+function viewerColor(viewerIdx1){
+  const idx0 = (viewerIdx1 || 1) - 1;
+  const v = VIEWERS[idx0];
+  return (v && v.color) ? v.color : '#4b5563';
+}
+
+function viewerImg(viewerIdx1){
+  const idx0 = (viewerIdx1 || 1) - 1;
+  const v = VIEWERS[idx0];
+  return (v && v.img) ? v.img : null;
+}
+
+function createAvatarElement(viewerIdx1){
+  const imgUrl = viewerImg(viewerIdx1);
+  if(imgUrl){
+    const img = document.createElement('img');
+    img.className = 'speaker-avatar-img';
+    img.src = imgUrl;
+    img.alt = viewerName(viewerIdx1);
+    return img;
+  }
   const span = document.createElement('span');
   span.className = 'speaker-avatar-circle';
-
-  const name = viewerName(ev);
-  if(!name){
-    span.textContent = (lang === 'en') ? 'N' : 'Α';
-    return span;
-  }
-  const parts = name.trim().split(/\s+/);
-  let initials = '';
-  if(parts.length === 1){
-    initials = parts[0].charAt(0).toUpperCase();
-  }else{
-    initials = (parts[0].charAt(0) + parts[parts.length-1].charAt(0)).toUpperCase();
-  }
-  span.textContent = initials;
+  span.style.background = viewerColor(viewerIdx1);
+  span.textContent = viewerInitial(viewerIdx1);
   return span;
 }
 
@@ -140,18 +157,18 @@ function buildDialogRow(ev, contextLabel){
   rightCell.className = 'dialog-cell dialog-cell-right';
 
   // Αριστερά: θεατής + λόγια
-  if(ev.viewerIndex && ev.textLeft){
+  if(ev.viewer && ev.textLeft){
     const sp = document.createElement('div');
     sp.className = 'speaker-line';
 
     const badge = document.createElement('div');
     badge.className = 'speaker-badge';
 
-    const avatar = createAvatarElement(ev);
+    const avatar = createAvatarElement(ev.viewer);
     const nameSpan = document.createElement('span');
     nameSpan.className = 'speaker-name';
 
-    const nm = viewerName(ev);
+    const nm = viewerName(ev.viewer);
     if(nm){
       nameSpan.textContent = nm;
     }else{
@@ -164,86 +181,118 @@ function buildDialogRow(ev, contextLabel){
 
     const speech = document.createElement('div');
     speech.className = 'speech';
-    speech.innerHTML = ev.textLeft.replaceAll('\n','<br>');
+    speech.innerHTML = (ev.textLeft || '').replaceAll('\n','<br>');
 
     leftCell.appendChild(sp);
     leftCell.appendChild(speech);
   }else if(ev.textLeft){
     const p = document.createElement('div');
     p.className = 'speech';
-    p.innerHTML = ev.textLeft.replaceAll('\n','<br>');
+    p.innerHTML = (ev.textLeft || '').replaceAll('\n','<br>');
     leftCell.appendChild(p);
   }
 
-  // Δεξιά: νόμοι / γραφήματα
-  if(ev.textRight || ev.laws || ev.diagram){
-    const blockDiv = document.createElement('div');
+  // Δεξιά: νόμοι / διαγράμματα / πρόσθετα
+  let anythingRight = false;
 
-    if(ev.textRight){
-      const p = document.createElement('div');
-      p.className = 'speech';
-      p.innerHTML = ev.textRight.replaceAll('\n','<br>');
-      blockDiv.appendChild(p);
+  // περιγραφή / κείμενο δεξιά (textRight)
+  if(ev.textRight){
+    const p = document.createElement('div');
+    p.className = 'speech';
+    p.innerHTML = (ev.textRight || '').replaceAll('\n','<br>');
+    rightCell.appendChild(p);
+    anythingRight = true;
+  }
+
+  // νόμοι (laws array)
+  if(ev.laws && Array.isArray(ev.laws) && ev.laws.length){
+    const lawTitle = document.createElement('div');
+    lawTitle.className = 'block-title';
+    lawTitle.textContent = (lang === 'en')
+      ? 'Relations used at this step'
+      : 'Σχέσεις που χρησιμοποιούνται σε αυτό το βήμα';
+    rightCell.appendChild(lawTitle);
+
+    const pre = document.createElement('div');
+    pre.className = 'law-text';
+    pre.textContent = localizeTrig(ev.laws.join('\n'));
+    rightCell.appendChild(pre);
+    anythingRight = true;
+  }
+
+  // απλό label για κατάσταση
+  if(ev.tag){
+    const tag = document.createElement('span');
+    tag.className = 'inline-tag';
+    const dot = document.createElement('span');
+    dot.className = 'inline-dot';
+    const lbl = document.createElement('span');
+    lbl.textContent = ev.tag;
+    tag.appendChild(dot);
+    tag.appendChild(lbl);
+    rightCell.appendChild(tag);
+    anythingRight = true;
+  }
+
+  // διαγράμματα από πεδία ev.graph / ev.plot (όπως στη σκηνή)
+  function addDiagram(kind, caption, extraOpts){
+    const box = document.createElement('div');
+    box.className = 'diagram-inline';
+    const canv = document.createElement('canvas');
+    const id = `${contextLabel}-${kind}-${idx}`;
+    canv.id = id;
+    box.appendChild(canv);
+    if(caption){
+      const cap = document.createElement('div');
+      cap.className = 'diagram-caption';
+      cap.textContent = caption;
+      box.appendChild(cap);
     }
+    rightCell.appendChild(box);
+    diagramJobs.push(Object.assign({ id, kind }, (extraOpts || {})));
+    anythingRight = true;
+  }
 
-    if(ev.laws && Array.isArray(ev.laws)){
-      const lawTitle = document.createElement('div');
-      lawTitle.className = 'block-title';
-      lawTitle.textContent = (lang === 'en') ? 'Relations used at this step' : 'Σχέσεις που χρησιμοποιούνται σε αυτό το βήμα';
-      blockDiv.appendChild(lawTitle);
+  const hasXtMark = !!ev.xtZeroMark || !!ev.xtMarkTail;
 
-      const pre = document.createElement('div');
-      pre.className = 'law-text';
-      pre.textContent = localizeTrig(ev.laws.join('\n'));
-      blockDiv.appendChild(pre);
-    }
-
-    if(ev.diagram){
-      const diagWrap = document.createElement('div');
-      diagWrap.className = 'diagram-wrapper';
-
-      const label = document.createElement('div');
-      label.className = 'diagram-label';
-
-      let lbl = '';
-      switch(ev.diagram){
-        case 'xt':
-          lbl = (lang === 'en') ? 'Displacement–time diagram x–t' : 'Διάγραμμα θέσης–χρόνου x–t';
-          break;
-        case 'v':
-          lbl = (lang === 'en') ? 'Velocity–time diagram v–t' : 'Διάγραμμα ταχύτητας–χρόνου υ–t';
-          break;
-        case 'a':
-          lbl = (lang === 'en') ? 'Acceleration–time diagram a–t' : 'Διάγραμμα επιτάχυνσης–χρόνου α–t';
-          break;
-        case 'ax':
-          lbl = (lang === 'en') ? 'Acceleration–displacement a–x' : 'Διάγραμμα επιτάχυνσης–θέσης α–x';
-          break;
-        case 'xsin':
-          lbl = (lang === 'en') ? 'x(t) as A·sin(ωt+φ₀)' : 'x(t) ως A·ημ(ωt+φ₀)';
-          break;
-        default:
-          lbl = '';
+  // x–t: είτε γραμμή graph:"xt" είτε απλά xtZeroMark/xtMarkTail (όπως στη σκηνή)
+  if(ev.graph === 'xt' || hasXtMark){
+    addDiagram(
+      'xt',
+      (lang === 'en') ? 'x–t diagram' : 'Διάγραμμα x–t',
+      {
+        tZeroMark: ev.xtZeroMark,
+        tZeroHasTail: ev.xtMarkTail
       }
-      label.textContent = lbl;
-      diagWrap.appendChild(label);
+    );
+  }
 
-      const cwrap = document.createElement('div');
-      cwrap.className = 'diagram-canvas-wrap';
-      const canvas = document.createElement('canvas');
-      canvas.dataset.diagram = ev.diagram;
-      cwrap.appendChild(canvas);
-      diagWrap.appendChild(cwrap);
+  // v–t
+  if(ev.graph === 'v'){
+    addDiagram(
+      'v',
+      (lang === 'en') ? 'v–t diagram' : 'Διάγραμμα υ–t'
+    );
+  }
 
-      diagramJobs.push({
-        canvas,
-        kind: ev.diagram
-      });
+  // a–t
+  if(ev.graph === 'a'){
+    addDiagram(
+      'a',
+      (lang === 'en') ? 'a–t diagram' : 'Διάγραμμα α–t'
+    );
+  }
 
-      blockDiv.appendChild(diagWrap);
-    }
+  // a–x
+  if(ev.graph === 'ax'){
+    addDiagram(
+      'ax',
+      (lang === 'en') ? 'a–x diagram' : 'Διάγραμμα α–x'
+    );
+  }
 
-    rightCell.appendChild(blockDiv);
+  if(!anythingRight){
+    rightCell.classList.add('dialog-cell-right-empty');
   }
 
   row.appendChild(leftCell);
@@ -266,8 +315,8 @@ function buildDialogTable(events, contextLabel){
     return container;
   }
 
-  events.forEach(ev=>{
-    const row = buildDialogRow(ev, contextLabel);
+  events.forEach((ev, idx)=>{
+    const row = buildDialogRow(ev, contextLabel, idx);
     container.appendChild(row);
   });
 
@@ -326,16 +375,18 @@ function renderSection(sectionId, events, container, contextLabel){
       diagWrap.appendChild(label);
 
       const cwrap = document.createElement('div');
-      cwrap.className = 'diagram-canvas-wrap';
+      cwrap.className = 'diagram-inline';
       const canvas = document.createElement('canvas');
-      const id = block.kind || block.diagram || 'xt';
-      canvas.dataset.diagram = id;
+      const id = block.id || `${sectionId}-${block.kind || 'custom'}`;
+      canvas.id = id;
       cwrap.appendChild(canvas);
       diagWrap.appendChild(cwrap);
 
       diagramJobs.push({
-        canvas,
-        kind: block.kind || 'xt'
+        id,
+        kind: block.kind || 'xt',
+        tZeroMark: block.tZeroMark,
+        tZeroHasTail: block.tZeroHasTail
       });
 
       inner.appendChild(diagWrap);
@@ -376,22 +427,24 @@ function drawXTChart(canvas, opts){
   const w = canvas.width  = 260;
   const h = canvas.height = 140;
 
-  const margin = 22;
+  const margin = 24;
   const x0 = margin;
   const x1 = w - margin;
   const yTop = margin;
   const yBot = h - margin;
 
-  const tMin = 0;
-  const tMax = 2*gT;
+  const tZero = (opts && typeof opts.tZeroMark === 'number') ? opts.tZeroMark : 0;
+  const hasTail = !!(opts && opts.tZeroHasTail);
+
+  const tStart = tZero - gT*0.4;
+  const tEnd   = tZero + gT*1.6;
   const A = gA;
   const omega = gOmega;
-  const phi0 = gPhi0Rad;
 
-  function tToXcoord(t){
-    return x0 + (t - tMin)/(tMax - tMin) * (x1 - x0);
+  function tToX(t){
+    return x0 + (t - tStart)/(tEnd - tStart) * (x1 - x0);
   }
-  function xToYcoord(x){
+  function xToY(x){
     const maxAbs = A;
     const norm = (x + maxAbs)/(2*maxAbs);
     return yBot - norm*(yBot-yTop);
@@ -406,42 +459,74 @@ function drawXTChart(canvas, opts){
   ctx.strokeStyle = '#e5e7eb';
   ctx.lineWidth = 1;
 
-  const yMid = xToYcoord(0);
+  const yMid = xToY(0);
   ctx.beginPath();
   ctx.moveTo(x0,yMid);
   ctx.lineTo(x1,yMid);
   ctx.stroke();
 
-  const tTicks=[0,gT,2*gT];
-  tTicks.forEach(t=>{
-    const xf=tToXcoord(t);
+  [tStart, tZero, tEnd].forEach(t=>{
+    const xf=tToX(t);
     ctx.beginPath();
     ctx.moveTo(xf,yTop);
     ctx.lineTo(xf,yBot);
     ctx.stroke();
   });
 
+  const px0 = tToX(tZero);
+  const x0val = A*Math.sin(gOmega*(tZero - tZero) + gPhi0Rad);
+  const py0 = xToY(x0val);
+
+  ctx.save();
   ctx.strokeStyle = '#111827';
-  ctx.lineWidth = 1.4;
+  ctx.lineWidth = 1.5;
   ctx.beginPath();
-  const steps = 200;
-  for(let i=0;i<=steps;i++){
-    const t = tMin + (tMax-tMin)*i/steps;
-    const x = A*Math.sin(omega*t + phi0);
-    const X = tToXcoord(t);
-    const Y = xToYcoord(x);
-    if(i===0){
-      ctx.moveTo(X,Y);
-    }else{
-      ctx.lineTo(X,Y);
-    }
+  const N = 260;
+  for(let i=0;i<=N;i++){
+    const t = tStart + (tEnd - tStart)*(i/N);
+    const x = A*Math.sin(gOmega*(t - tZero) + gPhi0Rad);
+    const px = tToX(t);
+    const py = xToY(x);
+    if(i===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
   }
   ctx.stroke();
+  ctx.restore();
+
+  // κόκκινη «νέα» x–t με t'=0 στο tZero
+  ctx.save();
+  ctx.strokeStyle = 'rgba(220,38,38,0.95)';
+  ctx.lineWidth = 2;
+  ctx.setLineDash([]);
+  const N2 = 200;
+  ctx.beginPath();
+  for(let i=0;i<=N2;i++){
+    const t = tZero + (tEnd - tZero)*(i/N2);
+    const tPrime = t - tZero;
+    const x = gA*Math.sin(gOmega*tPrime);
+    const px = tToX(t);
+    const py = xToY(x);
+    if(i===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
+  }
+  ctx.stroke();
+  ctx.restore();
+
+  // κάθετη ουρά, αν ζητηθεί
+  if(showTail){
+    ctx.save();
+    ctx.strokeStyle='rgba(220,38,38,0.75)';
+    ctx.setLineDash([3,3]);
+    ctx.lineWidth=1.3;
+    ctx.beginPath();
+    ctx.moveTo(px0,yBot);
+    ctx.lineTo(px0,py0);
+    ctx.stroke();
+    ctx.restore();
+  }
 
   ctx.fillStyle='#111827';
   ctx.font='11px system-ui, sans-serif';
   ctx.textAlign='right';
-  ctx.fillText('x(t)', x1, yTop+10);
+  ctx.fillText('x–t', x1, yTop+10);
 
   ctx.restore();
 }
@@ -452,7 +537,7 @@ function drawVChart(canvas){
   const w = canvas.width  = 260;
   const h = canvas.height = 140;
 
-  const margin = 22;
+  const margin = 24;
   const x0 = margin;
   const x1 = w - margin;
   const yTop = margin;
@@ -526,7 +611,7 @@ function drawVChart(canvas){
   ctx.fillStyle='#111827';
   ctx.font='11px system-ui, sans-serif';
   ctx.textAlign='right';
-  ctx.fillText('υ(t)', x1, yTop+10);
+  ctx.fillText('υ–t', x1, yTop+10);
 
   ctx.restore();
 }
@@ -537,7 +622,7 @@ function drawAChart(canvas){
   const w = canvas.width  = 260;
   const h = canvas.height = 140;
 
-  const margin = 22;
+  const margin = 24;
   const x0 = margin;
   const x1 = w - margin;
   const yTop = margin;
@@ -612,7 +697,7 @@ function drawAChart(canvas){
   ctx.fillStyle='#111827';
   ctx.font='11px system-ui, sans-serif';
   ctx.textAlign='right';
-  ctx.fillText('α(t)', x1, yTop+10);
+  ctx.fillText('α–t', x1, yTop+10);
 
   ctx.restore();
 }
@@ -623,7 +708,7 @@ function drawAXChart(canvas){
   const w = canvas.width  = 260;
   const h = canvas.height = 140;
 
-  const margin = 22;
+  const margin = 24;
   const x0 = margin;
   const x1 = w - margin;
   const yTop = margin;
@@ -692,92 +777,16 @@ function drawAXChart(canvas){
   ctx.restore();
 }
 
-function drawXSinChart(canvas){
-  if(!canvas) return;
-  const ctx = canvas.getContext('2d');
-  const w = canvas.width  = 260;
-  const h = canvas.height = 140;
-
-  const margin = 22;
-  const x0 = margin;
-  const x1 = w - margin;
-  const yTop = margin;
-  const yBot = h - margin;
-
-  const tMin = 0;
-  const tMax = 2*gT;
-  const A = gA;
-  const omega = gOmega;
-  const phi0 = gPhi0Rad;
-
-  function tToXcoord(t){
-    return x0 + (t - tMin)/(tMax - tMin) * (x1 - x0);
-  }
-  function xToYcoord(x){
-    const maxAbs = A;
-    const norm = (x + maxAbs)/(2*maxAbs);
-    return yBot - norm*(yBot-yTop);
-  }
-
-  ctx.clearRect(0,0,w,h);
-  ctx.save();
-
-  ctx.fillStyle = '#ffffff';
-  ctx.fillRect(0,0,w,h);
-
-  ctx.strokeStyle = '#e5e7eb';
-  ctx.lineWidth = 1;
-
-  const yMid = xToYcoord(0);
-  ctx.beginPath();
-  ctx.moveTo(x0,yMid);
-  ctx.lineTo(x1,yMid);
-  ctx.stroke();
-
-  const tTicks=[0,gT,2*gT];
-  tTicks.forEach(t=>{
-    const xf=tToXcoord(t);
-    ctx.beginPath();
-    ctx.moveTo(xf,yTop);
-    ctx.lineTo(xf,yBot);
-    ctx.stroke();
-  });
-
-  ctx.strokeStyle = '#0f766e';
-  ctx.lineWidth = 1.4;
-  ctx.beginPath();
-  const steps = 200;
-  for(let i=0;i<=steps;i++){
-    const t = tMin + (tMax-tMin)*i/steps;
-    const x = A*Math.sin(omega*t + phi0);
-    const X = tToXcoord(t);
-    const Y = xToYcoord(x);
-    if(i===0){
-      ctx.moveTo(X,Y);
-    }else{
-      ctx.lineTo(X,Y);
-    }
-  }
-  ctx.stroke();
-
-  ctx.fillStyle='#111827';
-  ctx.font='11px system-ui, sans-serif';
-  ctx.textAlign='right';
-  ctx.fillText('x(t)=A·ημ(ωt+φ₀)', x1, yTop+10);
-
-  ctx.restore();
-}
-
 // Εκτέλεση όλων των αναμονών για διαγράμματα
 function renderDiagramJobs(){
   diagramJobs.forEach(job=>{
-    const canvas = job.canvas;
+    const canvas = document.getElementById(job.id);
+    if(!canvas) return;
     switch(job.kind){
-      case 'xt':   drawXTChart(canvas);         break;
-      case 'xsin': drawXSinChart(canvas);      break;
-      case 'v':    drawVChart(canvas);         break;
-      case 'a':    drawAChart(canvas);         break;
-      case 'ax':   drawAXChart(canvas);        break;
+      case 'xt':   drawXTChart(canvas, job); break;
+      case 'v':    drawVChart(canvas);       break;
+      case 'a':    drawAChart(canvas);       break;
+      case 'ax':   drawAXChart(canvas);      break;
     }
   });
 }
