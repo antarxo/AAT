@@ -404,7 +404,7 @@
     T: 6.0,
     omega: 2*Math.PI/6.0,
     x0: 1.80,
-    phi0: 35.0
+    phi0: 35.0  // μοίρες
   };
   let BOOK_SAMPLES = [];
 
@@ -417,36 +417,47 @@
 
       const p = data.params || data || {};
 
-      // Συμβατότητα ονομάτων: A ή A_m
+      // A: από A ή A_m
       const Acand = (typeof p.A === 'number') ? p.A :
                     (typeof p.A_m === 'number') ? p.A_m :
                     (typeof data.A === 'number') ? data.A :
                     BOOK_PARAMS.A;
       BOOK_PARAMS.A = Acand;
 
+      // T: από T ή period
       const Tcand = (typeof p.T === 'number') ? p.T :
                     (typeof p.period === 'number') ? p.period :
                     (typeof data.T === 'number') ? data.T :
                     BOOK_PARAMS.T;
       BOOK_PARAMS.T = Tcand;
 
+      // ω: άμεσα ή από T
       const omegaCand = (typeof p.omega === 'number') ? p.omega :
                         (typeof data.omega === 'number') ? data.omega :
                         (2*Math.PI/BOOK_PARAMS.T);
       BOOK_PARAMS.omega = omegaCand;
 
+      // x0
       const x0cand = (typeof p.x0 === 'number') ? p.x0 :
                      (typeof data.x0 === 'number') ? data.x0 :
                      BOOK_PARAMS.x0;
       BOOK_PARAMS.x0 = x0cand;
 
-      const phi0CandDeg =
-        (typeof p.phi0Deg === 'number') ? p.phi0Deg :
-        (typeof p.phi0 === 'number')    ? p.phi0 :
-        (typeof data.phi0Deg === 'number') ? data.phi0Deg :
-        BOOK_PARAMS.phi0;
-      BOOK_PARAMS.phi0 = phi0CandDeg;
+      // φ0 – FIX: αν έρχεται ως radians, το γυρνάμε σε μοίρες
+      let phi0Deg;
+      if (typeof p.phi0Deg === 'number') {
+        phi0Deg = p.phi0Deg;
+      } else if (typeof p.phi0 === 'number') {
+        // το p.phi0 το θεωρούμε σε radians
+        phi0Deg = p.phi0 * 180 / Math.PI;
+      } else if (typeof data.phi0Deg === 'number') {
+        phi0Deg = data.phi0Deg;
+      } else {
+        phi0Deg = BOOK_PARAMS.phi0;
+      }
+      BOOK_PARAMS.phi0 = phi0Deg;
 
+      // Δείγματα t–x
       const samples =
         (Array.isArray(data.samples)      && data.samples)      ||
         (Array.isArray(data.bookSamples)  && data.bookSamples)  ||
@@ -735,12 +746,10 @@
       const omegaSafe = omega || (2*Math.PI/T);
       let tZero = 0;
       if(omegaSafe > 0 && T > 0){
-        const phi = phi0; // ήδη σε rad
-        // x(t) = A sin(ωt + φ0) ⇒ θέλουμε x=0 με θετική φορά (π/2, 5π/2 κλπ.)
-        // για απλότητα, παίρνουμε το πρώτο μη αρνητικό t όπου ωt+φ0 ≈ π/2
-        const target = Math.PI/2;
-        let dt = (target - phi)/omegaSafe;
-        while(dt < 0) dt += T;
+        // FIX: t0 = -φ0/ω (mod T), ώστε x(t0)=0 με υ>0
+        const phi = phi0;
+        let dt = (-phi / omegaSafe) % T;
+        if (dt < 0) dt += T;
         tZero = dt;
       }
 
