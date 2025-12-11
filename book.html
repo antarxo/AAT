@@ -4,326 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Βιβλίο Παράστασης — Απλή Αρμονική Ταλάντωση</title>
-  <style>
-    *{
-      box-sizing:border-box;
-      margin:0;
-      padding:0;
-    }
-    body{
-      font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-      background:#f5f7fb;
-      color:#111827;
-      line-height:1.5;
-    }
-    .page{
-      max-width:1120px;
-      margin:0 auto;
-      padding:24px 16px 40px;
-    }
-    header{
-      border-bottom:1px solid #e5e7eb;
-      padding-bottom:12px;
-      margin-bottom:20px;
-    }
-    header h1{
-      font-size:1.7rem;
-      font-weight:700;
-      margin-bottom:4px;
-    }
-    header .subtitle{
-      font-size:.9rem;
-      color:#4b5563;
-      max-width:720px;
-    }
-
-    section.section{
-      margin-bottom:28px;
-    }
-    .section-header{
-      display:flex;
-      align-items:baseline;
-      gap:10px;
-      margin-bottom:10px;
-    }
-    .section-label{
-      font-size:.75rem;
-      text-transform:uppercase;
-      letter-spacing:.08em;
-      color:#6b7280;
-      font-weight:600;
-    }
-    .section-header h2{
-      font-size:1.1rem;
-      font-weight:600;
-      color:#111827;
-    }
-
-    .card{
-      background:#ffffff;
-      border-radius:12px;
-      border:1px solid #e5e7eb;
-      padding:14px 16px;
-      box-shadow:0 6px 14px rgba(15,23,42,.08);
-      margin-bottom:10px;
-    }
-
-    .card-params{
-      margin-top:6px;
-    }
-
-    .params-grid{
-      display:grid;
-      grid-template-columns:repeat(3,minmax(0,1fr));
-      gap:10px;
-      margin:10px 0 6px;
-    }
-    @media (max-width: 768px){
-      .params-grid{
-        grid-template-columns:repeat(2,minmax(0,1fr));
-      }
-    }
-    @media (max-width: 520px){
-      .params-grid{
-        grid-template-columns:1fr;
-      }
-    }
-    .param-pill{
-      border-radius:10px;
-      background:linear-gradient(135deg,#eff6ff,#eef2ff);
-      padding:8px 10px;
-      border:1px solid #dbeafe;
-    }
-    .param-label{
-      font-size:.75rem;
-      color:#4b5563;
-      margin-bottom:2px;
-      font-weight:500;
-    }
-    .param-value{
-      font-size:.95rem;
-      font-weight:600;
-      color:#1d4ed8;
-    }
-    .param-note{
-      font-size:.75rem;
-      color:#6b7280;
-      margin-top:2px;
-    }
-
-    .small-note{
-      font-size:.8rem;
-      color:#6b7280;
-      margin-top:6px;
-    }
-    .muted{
-      color:#6b7280;
-      font-size:.9rem;
-    }
-
-    .act1-layout{
-      display:grid;
-      grid-template-columns:minmax(0,1.15fr) minmax(0,1.1fr);
-      gap:12px;
-      align-items:flex-start;
-      margin-bottom:12px;
-    }
-    @media (max-width: 840px){
-      .act1-layout{
-        grid-template-columns:1fr;
-      }
-    }
-
-    .card-intro h3{
-      font-size:1rem;
-      font-weight:600;
-      margin-bottom:6px;
-    }
-
-    .card-table{
-      padding:12px 14px;
-    }
-    .card-header-row{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      margin-bottom:6px;
-    }
-    .card-header-title{
-      font-size:.95rem;
-      font-weight:600;
-      color:#111827;
-    }
-    .card-header-tags{
-      display:flex;
-      gap:4px;
-      flex-wrap:wrap;
-    }
-    .tag-chip{
-      font-size:.7rem;
-      background:#eef2ff;
-      color:#4338ca;
-      padding:2px 6px;
-      border-radius:999px;
-      border:1px solid #e0e7ff;
-    }
-
-    #txTableWrapper{
-      border-radius:10px;
-      border:1px solid #e5e7eb;
-      overflow:hidden;
-      background:#ffffff;
-    }
-    #txTableContainer{
-      max-height:220px;
-      overflow:auto;
-    }
-    table.tx-table{
-      width:100%;
-      border-collapse:collapse;
-      font-size:.9rem;
-    }
-    .tx-table thead{
-      background:linear-gradient(90deg,#eff6ff,#e0f2fe);
-    }
-    .tx-table th,
-    .tx-table td{
-      padding:4px 8px;
-      border-bottom:1px solid #e5e7eb;
-      text-align:right;
-      white-space:nowrap;
-    }
-    .tx-table th{
-      font-weight:600;
-      font-size:.8rem;
-      color:#1f2937;
-      position:sticky;
-      top:0;
-      z-index:1;
-    }
-    .tx-table tbody tr:nth-child(odd){
-      background:#f9fafb;
-    }
-    .tx-table tbody tr:nth-child(even){
-      background:#ffffff;
-    }
-
-    .dialog-card{
-      margin-top:8px;
-    }
-    .dialog-card .card-body{
-      margin-top:4px;
-    }
-
-    .dialog-table{
-      border-radius:10px;
-      border:1px solid #e5e7eb;
-      overflow:hidden;
-      background:#ffffff;
-      margin-top:6px;
-    }
-    .dialog-row{
-      display:grid;
-      grid-template-columns:minmax(0,2.3fr) minmax(0,1.1fr);
-      border-top:1px solid #e5e7eb;
-    }
-    .dialog-row:first-child{
-      border-top:none;
-    }
-    .dialog-cell{
-      padding:8px 10px;
-      font-size:.95rem;
-      vertical-align:top;
-    }
-    .dialog-cell.left{
-      border-right:1px solid #e5e7eb;
-    }
-    .dialog-cell.right{
-      background:#f9fafb;
-    }
-
-    @media (max-width: 760px){
-      .dialog-row{
-        grid-template-columns:minmax(0,1.6fr) minmax(0,1.1fr);
-      }
-    }
-    @media (max-width: 580px){
-      .dialog-row{
-        grid-template-columns:1fr;
-      }
-      .dialog-cell.left{
-        border-right:none;
-        border-bottom:1px solid #e5e7eb;
-      }
-    }
-
-    .speaker{
-      margin-bottom:4px;
-    }
-    .speaker-badge{
-      display:inline-flex;
-      align-items:center;
-      gap:6px;
-      padding:2px 7px;
-      border-radius:999px;
-      background:#eff6ff;
-      border:1px solid #dbeafe;
-    }
-    .speaker-avatar{
-      width:20px;
-      height:20px;
-      border-radius:999px;
-      background:#6b7280;
-      color:#f9fafb;
-      font-size:.75rem;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      overflow:hidden;
-      background-position:center;
-      background-size:cover;
-    }
-    .speaker-name{
-      font-size:.8rem;
-      font-weight:600;
-      color:#1f2937;
-    }
-    .speech{
-      margin-top:4px;
-      font-size:.9rem;
-      color:#111827;
-    }
-
-    .diagram-inline{
-      margin-top:6px;
-      text-align:center;
-    }
-    .diagram-caption{
-      margin-top:4px;
-      font-size:.8rem;
-      color:#4b5563;
-    }
-    canvas{
-      image-rendering:crisp-edges;
-    }
-
-    .bullet-list{
-      margin:6px 0 4px 18px;
-      padding-left:0;
-      font-size:.9rem;
-    }
-    .bullet-list li{
-      margin-bottom:2px;
-    }
-
-    .footer-note{
-      margin-top:10px;
-      font-size:.8rem;
-      color:#6b7280;
-      border-top:1px dashed #e5e7eb;
-      padding-top:6px;
-    }
-  </style>
+  <link rel="stylesheet" href="book.css">
 </head>
 <body>
 <div class="page">
@@ -1177,7 +858,6 @@
     ctx.restore();
   }
 
-  // ✅ ΝΕΟ σωστό x–ημ(ωt): οριζόντια s = sin(ωt+φ₀), κάθετα x (m), ευθεία x = A·s
   function drawXSinChart(canvas){
     if(!canvas) return;
     const ctx = canvas.getContext('2d');
@@ -1206,13 +886,11 @@
 
     ctx.clearRect(0,0,w,h);
 
-    // grid
     ctx.save();
     ctx.strokeStyle='rgba(148,163,184,0.45)';
     ctx.lineWidth=1;
     ctx.setLineDash([3,3]);
 
-    // κάθετες s = -1, 0, 1
     [-1,0,1].forEach(s=>{
       const px = sToXpx(s);
       ctx.beginPath();
@@ -1221,7 +899,6 @@
       ctx.stroke();
     });
 
-    // οριζόντιες x = -A, 0, A
     [-A,0,A].forEach(x=>{
       const py = xToYpx(x);
       ctx.beginPath();
@@ -1232,7 +909,6 @@
 
     ctx.restore();
 
-    // άξονες
     ctx.save();
     ctx.strokeStyle='#0f172a';
     ctx.lineWidth=1.2;
@@ -1253,7 +929,6 @@
     ctx.rect(x0,yTop,x1-x0,yBot-yTop);
     ctx.stroke();
 
-    // x = A·s
     ctx.strokeStyle='#2563eb';
     ctx.lineWidth=2;
     ctx.beginPath();
@@ -1267,7 +942,6 @@
     }
     ctx.stroke();
 
-    // labels
     ctx.fillStyle='#0f172a';
     ctx.font='10px system-ui';
 
@@ -1652,5 +1326,6 @@
 
   loadDialogsAndBuild();
 </script>
+
 </body>
 </html>
