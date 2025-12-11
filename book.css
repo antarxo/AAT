@@ -17,9 +17,403 @@
   --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
-/* ... ΟΛΟ ΤΟ ΥΠΑΡΧΟΝ ΠΕΡΙΕΧΟΜΕΝΟ ΤΟΥ book.css ΣΟΥ ΩΣ ΕΧΕΙ ... */
+/* Βασική σελιδοποίηση για βιβλίο */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-sans);
+  background: radial-gradient(circle at top, #fdf2f2 0, #f5f5f7 45%, #e5e7eb 100%);
+  color: var(--ink);
+}
 
-/* === Inline styles moved from book.html === */
+.page {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 28px 16px 40px;
+}
+
+/* Τίτλοι κεφαλίδας */
+header.book-header {
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+header.book-header h1 {
+  font-size: 1.9rem;
+  letter-spacing: 0.02em;
+}
+
+header.book-header .subtitle {
+  margin-top: 4px;
+  font-size: 0.95rem;
+  color: var(--ink-soft);
+}
+
+/* Γενική δομή sections */
+.section {
+  margin-bottom: 26px;
+}
+
+.section-header {
+  margin-bottom: 8px;
+}
+
+.section-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--ink-muted);
+}
+
+.section-header h2 {
+  margin: 3px 0 0;
+  font-size: 1.35rem;
+}
+
+/* Κάρτες */
+.card {
+  background: var(--bg-paper);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-soft);
+  box-shadow: var(--shadow-soft);
+  padding: 12px 14px 14px;
+}
+
+/* Κάρτες με κεφαλίδα-γραμμή (διαλόγοι, πίνακες κ.λπ.) */
+.card-head-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 6px;
+  margin-bottom: 6px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+}
+
+.card-head-main {
+  font-weight: 600;
+  font-size: 0.96rem;
+}
+
+.card-head-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+/* Παράμετροι (A, T, ω...) */
+.card-params {
+  margin-top: 6px;
+}
+
+.param-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px 14px;
+  margin-top: 8px;
+}
+
+.param-pill {
+  padding: 8px 9px;
+  background: #fdfdfd;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+}
+
+.param-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.param-value {
+  margin-top: 2px;
+  font-size: 0.94rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.param-note {
+  margin-top: 2px;
+  font-size: 0.8rem;
+  color: var(--ink-muted);
+}
+
+/* Μικρά κείμενα */
+.small-note {
+  margin-top: 4px;
+  font-size: 0.82rem;
+  color: var(--ink-muted);
+}
+
+.muted {
+  font-size: 0.9rem;
+  color: var(--ink-muted);
+}
+
+/* Intro + πίνακας t–x σε δύο στήλες (Πράξη 1) */
+.act1-top-grid {
+  display: grid;
+  grid-template-columns: 1.05fr 1.15fr;
+  gap: 16px;
+  align-items: stretch;
+  margin-top: 10px;
+}
+
+.act1-intro-card,
+.act1-table-card {
+  border-radius: var(--radius-lg);
+}
+
+/* Πίνακας t–x */
+.table-wrapper {
+  margin-top: 4px;
+}
+
+.table-scroller {
+  border-radius: var(--radius-md);
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  max-height: 190px;
+  overflow-y: auto;
+  padding: 4px;
+}
+
+.tx-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.tx-table th,
+.tx-table td {
+  padding: 4px 6px;
+  text-align: right;
+  border-bottom: 1px dashed #e5e7eb;
+  font-variant-numeric: tabular-nums;
+}
+
+.tx-table thead th {
+  position: sticky;
+  top: 0;
+  background: #f9fafb;
+  z-index: 1;
+}
+
+.tx-table tbody tr:nth-child(even) {
+  background: #f9fafb;
+}
+
+.tx-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Κάρτες διαλόγων */
+.dialog-card {
+  margin-top: 14px;
+  padding: 0;
+}
+
+.dialog-card .card-inner {
+  padding: 0;
+}
+
+/* Ενιαίο “block” διαλόγου ανά event */
+.dialog-block {
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+/* Κάθε block: δύο στήλες (αριστερά θεατής, δεξιά νόμοι/γράφημα) */
+.dialog-row {
+  display: grid;
+  grid-template-columns: 1.05fr 1.15fr;
+  min-height: 56px;
+}
+
+.dialog-cell {
+  padding: 9px 10px;
+}
+
+.dialog-cell-left {
+  border-right: 1px solid #e5e7eb;
+}
+
+.dialog-cell-right {
+  background: #f9fafb;
+}
+
+.dialog-cell-right-empty {
+  background: #fdfdfd;
+}
+
+/* Ομιλητής */
+.speaker-line {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 3px;
+}
+
+.speaker-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 7px 2px 3px;
+  border-radius: 999px;
+  border: 1px solid #e5e7eb;
+  background: #f9fafb;
+}
+
+.speaker-avatar-circle {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #bfdbfe;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.speaker-avatar-img {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid rgba(15, 23, 42, 0.15);
+}
+
+.speaker-name {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+/* Κείμενο ατάκας */
+.speech {
+  font-size: 0.92rem;
+  color: #111827;
+}
+
+/* Νόμοι / τύποι δεξιά */
+.block-title {
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin-bottom: 4px;
+  color: #111827;
+}
+
+.law-text {
+  font-family: "SF Mono", "JetBrains Mono", "Fira Code", "Courier New", monospace;
+  font-size: 0.84rem;
+  background: var(--law-bg);
+  border-radius: 6px;
+  padding: 6px 8px;
+  white-space: pre-wrap;
+  margin-bottom: 6px;
+  border: 1px solid var(--law-border);
+}
+
+/* Μικρό tag δεξιά (π.χ. “μετατόπιση t₀”, “χρήση x–t”) */
+.inline-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 6px;
+  border-radius: 999px;
+  border: 1px solid #e5e7eb;
+  background: #f9fafb;
+  font-size: 0.7rem;
+  color: #374151;
+}
+
+.inline-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #10b981;
+}
+
+/* Διαγράμματα μέσα στο book (canvas + caption) */
+.diagram-inline {
+  margin-top: 4px;
+}
+
+.diagram-inline canvas {
+  display: block;
+  max-width: 100%;
+}
+
+.diagram-caption {
+  margin-top: 2px;
+  font-size: 0.78rem;
+  color: #6b7280;
+}
+
+/* Εικόνα (block-type:image) */
+.block-image {
+  max-width: 100%;
+  display: block;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+}
+
+/* Λίστα bullets στο κάτω μέρος */
+.bullet-list {
+  margin: 6px 0 4px 0;
+  padding-left: 20px;
+}
+
+.bullet-list li {
+  margin: 3px 0;
+  font-size: 0.93rem;
+}
+
+/* Υποσημείωση στο τέλος */
+.footer-note {
+  margin-top: 20px;
+  padding-top: 10px;
+  border-top: 1px dashed #d1d5db;
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+/* Responsiveness */
+@media (max-width: 840px) {
+  .act1-top-grid {
+    grid-template-columns: 1fr;
+  }
+  .dialog-row {
+    grid-template-columns: 1fr;
+  }
+  .dialog-cell-left {
+    border-right: none;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  .dialog-cell-right {
+    border-top: none;
+  }
+  .param-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 540px) {
+  .page {
+    padding: 18px 10px 34px;
+  }
+  header.book-header h1 {
+    font-size: 1.6rem;
+  }
+  .param-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Inline styles moved from book.html */
     *{
       box-sizing:border-box;
       margin:0;
@@ -82,11 +476,11 @@
 
     .card{
       background:#ffffff;
-      border-radius:12px;
+      border-radius:10px;
       border:1px solid #e5e7eb;
-      box-shadow:0 10px 24px rgba(15,23,42,.06);
-      padding:12px 14px 14px;
-      margin-top:8px;
+      padding:14px 16px;
+      box-shadow:0 8px 20px rgba(15,23,42,0.04);
+      margin-top:6px;
     }
 
     .card-header-row{
