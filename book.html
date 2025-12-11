@@ -49,7 +49,7 @@
         </div>
         <div class="param-pill">
           <div class="param-label">Φάση φ₀</div>
-          <div class="param-value"><span data-param="phi0">—</span>°</div>
+          <div class="param-value"><span data-param="phi0Deg">—</span>°</div>
           <div class="param-note">Φάση τη στιγμή t = 0</div>
         </div>
         <div class="param-pill">
@@ -131,10 +131,14 @@
     <div class="card dialog-card">
       <div class="card-header-row">
         <div class="card-header-title">Διάλογοι Πράξης 1</div>
-        <div class="card-header-tags" id="act1Tags"></div>
+        <div class="card-header-tags" id="act1Tags">
+          <!-- optional chips -->
+        </div>
       </div>
       <div class="card-body dialog-body">
-        <div id="act1Transcript"></div>
+        <div id="act1Transcript" class="dialog-block">
+          <!-- γεμίζει από JS -->
+        </div>
       </div>
     </div>
   </section>
@@ -149,10 +153,14 @@
     <div class="card dialog-card">
       <div class="card-header-row">
         <div class="card-header-title">Διάλογοι Πράξης 2</div>
-        <div class="card-header-tags" id="act2Tags"></div>
+        <div class="card-header-tags" id="act2Tags">
+          <!-- optional chips -->
+        </div>
       </div>
       <div class="card-body dialog-body">
-        <div id="act2Transcript"></div>
+        <div id="act2Transcript" class="dialog-block">
+          <!-- γεμίζει από JS -->
+        </div>
       </div>
     </div>
   </section>
@@ -167,10 +175,14 @@
     <div class="card dialog-card">
       <div class="card-header-row">
         <div class="card-header-title">Συζήτηση στο φουαγιέ</div>
-        <div class="card-header-tags" id="foyerTags"></div>
+        <div class="card-header-tags" id="foyerTags">
+          <!-- optional chips -->
+        </div>
       </div>
       <div class="card-body dialog-body">
-        <div id="foyerTranscript"></div>
+        <div id="foyerTranscript" class="dialog-block">
+          <!-- γεμίζει από JS -->
+        </div>
       </div>
     </div>
   </section>
@@ -198,7 +210,8 @@
           διάλογοι να είναι ίδιοι με της ζωντανής παράστασης.
         </li>
         <li>
-          Διαβάζει το <code>book.json</code> για πρόσθετα blocks
+          Διαβάζει το <code>book-gr.json</code> ή <code>book-en.json</code> (ή
+          <code>book.json</code>) για πρόσθετα blocks
           (<code>note</code>, <code>html</code>, <code>diagram</code>, <code>image</code>)
           που συμπληρώνουν το βιβλίο χωρίς να αλλάζουν τη ροή.
         </li>
@@ -206,20 +219,641 @@
       <p class="muted">
         Αν κάποιο από αυτά λείπει ή δεν είναι διαθέσιμο, η σελίδα συνεχίζει
         με ό,τι έχει: εμφανίζει τους διαλόγους σε πλήρη μορφή, χωρίς τα
-        πρόσθετα blocks από το book.json, και με τυπικές παραμέτρους A, T, ω.
+        πρόσθετα blocks από το book-*.json, και με τυπικές παραμέτρους A, T, ω.
       </p>
     </div>
 
     <div class="footer-note">
       Τεχνική σημείωση: η σελίδα διαβάζει το <code>aatBookData</code> από το
       <code>localStorage</code> (κουμπί «Βιβλίο Παράστασης» στη σκηνή), το
-      <code>dialogs-*.json</code> για το σενάριο και το <code>book.json</code> για
-      πρόσθετα blocks (note/html/diagram/image). Αν κάτι λείπει, γίνεται graceful fallback.
+      <code>dialogs-*.json</code> για το σενάριο και το <code>book-gr.json</code> /
+      <code>book-en.json</code> (ή <code>book.json</code>) για πρόσθετα blocks
+      (note/html/diagram/image). Αν κάτι λείπει, γίνεται graceful fallback.
     </div>
   </section>
 
 </div>
 
-<script src="book.js"></script>
+<script>
+  const BOOK_STORAGE_KEY = 'aatBookData';
+
+  let VIEWERS = [];
+  let ACT1 = [];
+  let ACT2 = [];
+  let FOYER = [];
+
+  // επιπλέον config από book-*.json (πρόσθετα)
+  let BOOK_CFG = null;
+
+  // παγκόσμιες παράμετροι για διαγράμματα / templates
+  let gA = 3.0;
+  let gT = 6.0;
+  let gOmega = 2*Math.PI/6.0;
+  let gX0 = 0.0;
+  let gPhi0Deg = 0.0;
+  let gPhi0Rad = 0.0;
+  let gV0 = 0.0;
+  let gVSignSymbol = 'υ=0';
+  let gVSignWord = 'μηδενική';
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const lang = (urlParams.get('lang') === 'en') ? 'en' : 'gr';
+  document.documentElement.lang = (lang === 'en') ? 'en' : 'el';
+
+  // λίστα διαγραμμάτων που θα σχεδιαστούν μετά το χτίσιμο του DOM
+  const diagramJobs = [];
+
+  function localizeTrig(text){
+    if(!text) return '';
+    let out = String(text);
+    if(lang === 'gr'){
+      out = out.replace(/sin/g,'ημ').replace(/cos/g,'συν');
+    }
+    return out;
+  }
+
+  function loadBookData(){
+    try{
+      const raw = localStorage.getItem(BOOK_STORAGE_KEY);
+      if(!raw) return null;
+      const data = JSON.parse(raw);
+      return data || null;
+    }catch(e){
+      console.error('loadBookData error', e);
+      return null;
+    }
+  }
+
+  function setParam(name, valueStr){
+    document.querySelectorAll('[data-param="'+name+'"]').forEach(el=>{
+      el.textContent = valueStr;
+    });
+  }
+
+  // expand {A},{T},{omega},{x0},{phi0},{vSignSymbol},{vSignWord}
+  function expandDynTemplate(tpl){
+    if(!tpl) return '';
+    const s = String(tpl);
+    return s
+      .replaceAll('{A}', String(gA.toFixed(2)))
+      .replaceAll('{T}', String(gT.toFixed(2)))
+      .replaceAll('{omega}', String(gOmega.toFixed(2)))
+      .replaceAll('{x0}', String(gX0.toFixed(2)))
+      .replaceAll('{phi0}', String(gPhi0Deg.toFixed(1)))
+      .replaceAll('{vSignSymbol}', gVSignSymbol)
+      .replaceAll('{vSignWord}', gVSignWord);
+  }
+
+  // Χτίσιμο πίνακα t–x από τα δείγματα
+  function buildTXTable(samples){
+    const tbody = document.getElementById('txTableBody');
+    if(!tbody) return;
+    tbody.innerHTML = '';
+
+    if(!Array.isArray(samples) || !samples.length){
+      const tr = document.createElement('tr');
+      const td = document.createElement('td');
+      td.colSpan = 2;
+      td.textContent = (lang === 'en')
+        ? 'No t–x samples available. Play the scene at least once with the Book button.'
+        : 'Δεν υπάρχουν δείγματα t–x. Παίξε τουλάχιστον μία φορά τη σκηνή με το κουμπί Βιβλίο.';
+      tr.appendChild(td);
+      tbody.appendChild(tr);
+      return;
+    }
+
+    samples.forEach(pair=>{
+      const tr = document.createElement('tr');
+      const tdT = document.createElement('td');
+      const tdX = document.createElement('td');
+
+      tdT.textContent = (pair.t != null) ? pair.t.toFixed(2) : '';
+      tdX.textContent = (pair.x != null) ? pair.x.toFixed(2) : '';
+
+      tr.appendChild(tdT);
+      tr.appendChild(tdX);
+      tbody.appendChild(tr);
+    });
+  }
+
+  // Δημιουργία badge ομιλητή
+  function viewerName(viewerIdx1){
+    const idx0 = (viewerIdx1 || 1) - 1;
+    if(idx0 < 0 || idx0 >= VIEWERS.length) return '';
+    const v = VIEWERS[idx0];
+    if(!v) return '';
+    if(lang === 'en'){
+      return v.name_en || v.name_gr || ('Viewer ' + viewerIdx1);
+    }else{
+      return v.name_gr || ('Θεατής ' + viewerIdx1);
+    }
+  }
+
+  function viewerInitial(viewerIdx1){
+    const name = viewerName(viewerIdx1);
+    return name ? (name.trim()[0] || '?') : '?';
+  }
+
+  function viewerColor(viewerIdx1){
+    const idx0 = (viewerIdx1 || 1) - 1;
+    const v = VIEWERS[idx0];
+    return (v && v.color) ? v.color : '#4b5563';
+  }
+
+  function viewerImg(viewerIdx1){
+    const idx0 = (viewerIdx1 || 1) - 1;
+    const v = VIEWERS[idx0];
+    return (v && v.img) ? v.img : null;
+  }
+
+  function createAvatarElement(viewerIdx1){
+    const imgUrl = viewerImg(viewerIdx1);
+    if(imgUrl){
+      const img = document.createElement('img');
+      img.className = 'speaker-avatar-img';
+      img.src = imgUrl;
+      img.alt = viewerName(viewerIdx1);
+      return img;
+    }
+    const span = document.createElement('span');
+    span.className = 'speaker-avatar-circle';
+    span.style.background = viewerColor(viewerIdx1);
+    span.textContent = viewerInitial(viewerIdx1);
+    return span;
+  }
+
+  // Χτίσιμο μίας γραμμής διαλόγου
+  function buildDialogRow(ev, contextLabel){
+    const row = document.createElement('div');
+    row.className = 'dialog-row';
+
+    const leftCell = document.createElement('div');
+    leftCell.className = 'dialog-cell dialog-cell-left';
+
+    const rightCell = document.createElement('div');
+    rightCell.className = 'dialog-cell dialog-cell-right';
+
+    // Αριστερά: θεατής + λόγια
+    if(ev.viewer && ev.textLeft){
+      const sp = document.createElement('div');
+      sp.className = 'speaker-line';
+
+      const badge = document.createElement('div');
+      badge.className = 'speaker-badge';
+
+      const avatar = createAvatarElement(ev.viewer);
+      const nameSpan = document.createElement('span');
+      nameSpan.className = 'speaker-name';
+
+      const nm = viewerName(ev.viewer);
+      if(nm){
+        nameSpan.textContent = nm;
+      }else{
+        nameSpan.textContent = (lang === 'en') ? 'Narration' : 'Αφήγηση';
+      }
+
+      badge.appendChild(avatar);
+      badge.appendChild(nameSpan);
+      sp.appendChild(badge);
+
+      const speech = document.createElement('div');
+      speech.className = 'speech';
+      speech.innerHTML = (ev.textLeft || '').replaceAll('\n','<br>');
+
+      leftCell.appendChild(sp);
+      leftCell.appendChild(speech);
+    }else if(ev.textLeft){
+      const p = document.createElement('div');
+      p.className = 'speech';
+      p.innerHTML = (ev.textLeft || '').replaceAll('\n','<br>');
+      leftCell.appendChild(p);
+    }
+
+    // Δεξιά: νόμοι / διαγράμματα / πρόσθετα
+    let anythingRight = false;
+
+    // περιγραφή / κείμενο δεξιά (textRight)
+    if(ev.textRight){
+      const p = document.createElement('div');
+      p.className = 'speech';
+      p.innerHTML = (ev.textRight || '').replaceAll('\n','<br>');
+      rightCell.appendChild(p);
+      anythingRight = true;
+    }
+
+    // νόμοι (laws array)
+    if(ev.laws && Array.isArray(ev.laws) && ev.laws.length){
+      const lawTitle = document.createElement('div');
+      lawTitle.className = 'block-title';
+      lawTitle.textContent = (lang === 'en')
+        ? 'Relations used at this step'
+        : 'Σχέσεις που χρησιμοποιούνται σε αυτό το βήμα';
+      rightCell.appendChild(lawTitle);
+
+      const pre = document.createElement('div');
+      pre.className = 'law-text';
+      pre.textContent = localizeTrig(ev.laws.join('\n'));
+      rightCell.appendChild(pre);
+      anythingRight = true;
+    }
+
+    // απλό label για κατάσταση
+    if(ev.tag){
+      const tag = document.createElement('span');
+      tag.className = 'inline-tag';
+      const dot = document.createElement('span');
+      dot.className = 'inline-dot';
+      const lbl = document.createElement('span');
+      lbl.textContent = ev.tag;
+      tag.appendChild(dot);
+      tag.appendChild(lbl);
+      rightCell.appendChild(tag);
+      anythingRight = true;
+    }
+
+    // διαγράμματα από πεδία ev.graph / ev.plot (όπως στη σκηνή)
+    function addDiagram(kind, caption, extraOpts){
+      const box = document.createElement('div');
+      box.className = 'diagram-inline';
+      const canv = document.createElement('canvas');
+      const id = `${contextLabel}-${kind}-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+      canv.id = id;
+      box.appendChild(canv);
+      if(caption){
+        const cap = document.createElement('div');
+        cap.className = 'diagram-caption';
+        cap.textContent = caption;
+        box.appendChild(cap);
+      }
+      rightCell.appendChild(box);
+      diagramJobs.push(Object.assign({ id, kind }, (extraOpts || {})));
+      anythingRight = true;
+    }
+
+    const hasXtMark = !!ev.xtZeroMark || !!ev.xtMarkTail;
+
+    // x–t: είτε graph:"xt" είτε xtZeroMark/xtMarkTail
+    if(ev.graph === 'xt' || hasXtMark){
+      addDiagram(
+        'xt',
+        (lang === 'en') ? 'x–t diagram' : 'Διάγραμμα x–t',
+        {
+          tZeroMark: ev.xtZeroMark,
+          tZeroHasTail: ev.xtMarkTail
+        }
+      );
+    }
+
+    // v–t
+    if(ev.graph === 'v'){
+      addDiagram(
+        'v',
+        (lang === 'en') ? 'v–t diagram' : 'Διάγραμμα υ–t'
+      );
+    }
+
+    // a–t
+    if(ev.graph === 'a'){
+      addDiagram(
+        'a',
+        (lang === 'en') ? 'a–t diagram' : 'Διάγραμμα α–t'
+      );
+    }
+
+    // a–x
+    if(ev.graph === 'ax'){
+      addDiagram(
+        'ax',
+        (lang === 'en') ? 'a–x diagram' : 'Διάγραμμα α–x'
+      );
+    }
+
+    if(!anythingRight){
+      rightCell.classList.add('dialog-cell-right-empty');
+    }
+
+    row.appendChild(leftCell);
+    row.appendChild(rightCell);
+    return row;
+  }
+
+  // Χτίσιμο plain πίνακα διαλόγων (fallback χωρίς book-*.json)
+  function buildDialogTable(events, contextLabel){
+    const container = document.createElement('div');
+    container.className = 'dialog-block';
+
+    if(!Array.isArray(events) || !events.length){
+      const p = document.createElement('p');
+      p.className = 'small-note';
+      p.textContent = (lang === 'en')
+        ? 'No dialogue available for this part.'
+        : 'Δεν υπάρχουν διάλογοι για αυτό το μέρος.';
+      container.appendChild(p);
+      return container;
+    }
+
+    events.forEach(ev=>{
+      const row = buildDialogRow(ev, contextLabel);
+      container.appendChild(row);
+    });
+
+    return container;
+  }
+
+  function applyColumnAlignment(div, column){
+    if(!div) return;
+    if(column === 'left'){
+      div.style.maxWidth = '60%';
+      div.style.marginRight = 'auto';
+    }else if(column === 'right'){
+      div.style.maxWidth = '60%';
+      div.style.marginLeft = 'auto';
+    }else if(column === 'full'){
+      div.style.maxWidth = '100%';
+      div.style.marginLeft = '0';
+      div.style.marginRight = '0';
+    }
+  }
+
+  // ===== ΝΕΟ: απόδοση blocks ανά διάλογο από book-*.json =====
+
+  function renderBlocksArray(blocks, container, contextLabel){
+    if(!Array.isArray(blocks) || !blocks.length) return;
+
+    blocks.forEach(block=>{
+      if(!block || !block.type) return;
+      const type = block.type;
+
+      // NOTE / HTML
+      if(type === 'note' || type === 'html'){
+        const card = document.createElement('div');
+        card.className = 'dialog-block';
+
+        const inner = document.createElement('div');
+        inner.className = 'dialog-cell dialog-cell-right';
+        applyColumnAlignment(inner, block.column);
+
+        const content = document.createElement('div');
+        content.className = 'speech';
+        content.innerHTML = expandDynTemplate(block.html || block.text || '');
+        inner.appendChild(content);
+
+        card.appendChild(inner);
+        container.appendChild(card);
+        return;
+      }
+
+      // DIAGRAM
+      if(type === 'diagram'){
+        const card = document.createElement('div');
+        card.className = 'dialog-block';
+
+        const inner = document.createElement('div');
+        inner.className = 'dialog-cell dialog-cell-right';
+        applyColumnAlignment(inner, block.column);
+
+        const diagWrap = document.createElement('div');
+        diagWrap.className = 'diagram-wrapper';
+
+        const labelText = block.label || block.title;
+        if(labelText){
+          const label = document.createElement('div');
+          label.className = 'diagram-label';
+          label.textContent = expandDynTemplate(labelText);
+          diagWrap.appendChild(label);
+        }
+
+        const cwrap = document.createElement('div');
+        cwrap.className = 'diagram-inline';
+        const canvas = document.createElement('canvas');
+        const id = block.id || `${contextLabel}-${block.kind || 'custom'}-${Math.random().toString(16).slice(2)}`;
+        canvas.id = id;
+        cwrap.appendChild(canvas);
+        diagWrap.appendChild(cwrap);
+
+        if(block.caption){
+          const cap = document.createElement('div');
+          cap.className = 'diagram-caption';
+          cap.textContent = expandDynTemplate(block.caption);
+          diagWrap.appendChild(cap);
+        }
+
+        inner.appendChild(diagWrap);
+        card.appendChild(inner);
+        container.appendChild(card);
+
+        diagramJobs.push({
+          id,
+          kind: block.kind || 'xt',
+          tZeroMark: block.xtZeroMark,
+          tZeroHasTail: block.xtMarkTail
+        });
+
+        return;
+      }
+
+      // IMAGE
+      if(type === 'image'){
+        const card = document.createElement('div');
+        card.className = 'dialog-block';
+
+        const inner = document.createElement('div');
+        inner.className = 'dialog-cell dialog-cell-right';
+        applyColumnAlignment(inner, block.column);
+
+        const img = document.createElement('img');
+        img.className = 'block-image';
+        img.src = block.src || '';
+        if(block.alt){
+          img.alt = block.alt;
+        }
+        inner.appendChild(img);
+
+        if(block.caption){
+          const cap = document.createElement('div');
+          cap.className = 'diagram-caption';
+          cap.textContent = block.caption;
+          inner.appendChild(cap);
+        }
+
+        card.appendChild(inner);
+        container.appendChild(card);
+        return;
+      }
+
+      // άγνωστος τύπος → αγνόησέ τον
+    });
+  }
+
+  // Απόδοση μιας πράξης με νέο schema book-*.json
+  function renderActWithBook(actId, events, container, contextLabel){
+    container.innerHTML = '';
+
+    const cfg = BOOK_CFG && BOOK_CFG[actId];
+    if(!cfg){
+      // Fallback: απλά όλοι οι διάλογοι σκέτοι
+      events.forEach(ev=>{
+        const row = buildDialogRow(ev, contextLabel);
+        container.appendChild(row);
+      });
+      return;
+    }
+
+    const rows      = Array.isArray(cfg.rows) ? cfg.rows : [];
+    const beforeAll = Array.isArray(cfg.beforeAll) ? cfg.beforeAll : [];
+    const afterAll  = Array.isArray(cfg.afterAll)  ? cfg.afterAll  : [];
+
+    // blocks πριν από όλους τους διαλόγους
+    renderBlocksArray(beforeAll, container, contextLabel);
+
+    // για κάθε διάλογο
+    events.forEach((ev, index)=>{
+      const rowCfg = rows[index] || {};
+      const before = Array.isArray(rowCfg.before) ? rowCfg.before : [];
+      const inline = Array.isArray(rowCfg.inline) ? rowCfg.inline : [];
+      const after  = Array.isArray(rowCfg.after)  ? rowCfg.after  : [];
+
+      // πριν τον διάλογο
+      renderBlocksArray(before, container, contextLabel);
+
+      // ο ίδιος ο διάλογος
+      const rowEl = buildDialogRow(ev, contextLabel);
+      container.appendChild(rowEl);
+
+      // “πάνω” στον διάλογο
+      renderBlocksArray(inline, container, contextLabel);
+
+      // μετά τον διάλογο
+      renderBlocksArray(after, container, contextLabel);
+    });
+
+    // blocks μετά από όλους
+    renderBlocksArray(afterAll, container, contextLabel);
+  }
+
+  // ----- Σχεδίαση διαγραμμάτων (χρησιμοποιούν gA, gT, gOmega, gPhi0Rad, gX0) -----
+  // ΕΔΩ κρατάς όλο τον υπόλοιπο κώδικά σου (drawXTChart, drawVChart, drawAChart, drawAXChart κτλ.)
+  // όπως είναι στο αρχικό, πλήρες book.html σου.
+
+  // ===== Loader για book-gr.json / book-en.json / book.json =====
+
+  async function loadBookConfigForLang(lang){
+    const candidates = (lang === 'en')
+      ? ['book-en.json', 'book.json']
+      : ['book-gr.json', 'book.json'];
+
+    for(const file of candidates){
+      try{
+        const resp = await fetch(file, {cache:'no-store'});
+        if(resp.ok){
+          console.log('Φόρτωσα book config από', file);
+          return await resp.json();
+        }
+      }catch(e){
+        console.warn('Αποτυχία φόρτωσης', file, e);
+      }
+    }
+    console.warn('Δεν βρέθηκε κανένα book-*.json');
+    return null;
+  }
+
+  // Κύρια ρουτίνα
+  async function loadDialogsAndBuild(){
+    const file = (lang === 'en') ? 'dialogs-en.json' : 'dialogs-gr.json';
+    diagramJobs.length = 0;
+
+    // 1. Φόρτωση δεδομένων ταλάντωσης από localStorage
+    const bookData = loadBookData();
+    const DEFAULT_A = 3.0;
+    const DEFAULT_T = 6.0;
+
+    gA = (bookData && typeof bookData.A === 'number') ? bookData.A : DEFAULT_A;
+    gT = (bookData && typeof bookData.T === 'number') ? bookData.T : DEFAULT_T;
+    gOmega = (bookData && typeof bookData.omega === 'number')
+      ? bookData.omega
+      : (2*Math.PI/gT);
+
+    gX0 = (bookData && typeof bookData.x0 === 'number') ? bookData.x0 : 1.80;
+    gPhi0Deg = (bookData && typeof bookData.phi0Deg === 'number') ? bookData.phi0Deg : 35.0;
+    gPhi0Rad = gPhi0Deg * Math.PI/180;
+
+    gV0 = gOmega * gA * Math.cos(gPhi0Rad);
+    const eps = 1e-6;
+    if(gV0 > eps){
+      gVSignSymbol = 'υ>0';
+      gVSignWord = (lang === 'en') ? 'positive' : 'θετική';
+    }else if(gV0 < -eps){
+      gVSignSymbol = 'υ<0';
+      gVSignWord = (lang === 'en') ? 'negative' : 'αρνητική';
+    }else{
+      gVSignSymbol = 'υ=0';
+      gVSignWord = (lang === 'en') ? 'zero' : 'μηδενική';
+    }
+
+    setParam('A', gA.toFixed(2));
+    setParam('T', gT.toFixed(2));
+    setParam('omega', gOmega.toFixed(2));
+    setParam('x0', gX0.toFixed(2));
+    setParam('phi0Deg', gPhi0Deg.toFixed(1));
+    setParam('v0', gV0.toFixed(2));
+    setParam('vSignSymbol', gVSignSymbol);
+    setParam('vSignWord', gVSignWord);
+
+    if(!bookData){
+      const note = document.getElementById('paramNote');
+      if(note){
+        note.textContent = (lang === 'en')
+          ? 'No stage data were found. Using indicative values (A=3.00 m, T=6.00 s, etc.).'
+          : 'Δεν βρέθηκαν δεδομένα από τη σκηνή. Χρησιμοποιούνται ενδεικτικές τιμές (A=3.00 m, T=6.00 s κ.λπ.).';
+      }
+    }
+
+    if(bookData && Array.isArray(bookData.samples)){
+      buildTXTable(bookData.samples);
+    }else{
+      buildTXTable([]);
+    }
+
+    // 2. Φόρτωση διαλόγων
+    try{
+      const resp = await fetch(file,{cache:'no-store'});
+      if(!resp.ok){
+        console.error('Δεν βρέθηκε', file);
+        return;
+      }
+      const data = await resp.json();
+      VIEWERS = data.viewers || [];
+      ACT1 = data.act1 || [];
+      ACT2 = data.act2 || [];
+      FOYER = data.foyer || [];
+
+      const act1Cont = document.getElementById('act1Transcript');
+      const act2Cont = document.getElementById('act2Transcript');
+      const foyerCont = document.getElementById('foyerTranscript');
+
+      act1Cont.innerHTML = '';
+      act2Cont.innerHTML = '';
+      foyerCont.innerHTML = '';
+
+      // 3. Φόρτωση book-*.json (πρόσθετα ανά διάλογο)
+      BOOK_CFG = await loadBookConfigForLang(lang);
+
+      // 4. Απόδοση acts με βάση το BOOK_CFG
+      renderActWithBook('act1', ACT1, act1Cont, 'act1');
+      renderActWithBook('act2', ACT2, act2Cont, 'act2');
+      renderActWithBook('foyer', FOYER, foyerCont, 'foyer');
+
+    }catch(err){
+      console.error(err);
+    }
+
+    // 5. Σχεδίαση διαγραμμάτων
+    // εδώ καλείς τις drawXTChart / drawVChart / drawAChart / drawAXChart
+    // για κάθε job στο diagramJobs, όπως ήδη έκανες στο αρχικό σου book.html
+  }
+
+  loadDialogsAndBuild();
+</script>
+
 </body>
 </html>
