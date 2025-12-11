@@ -477,11 +477,11 @@ function drawXTChart(){
   const h = uXT.height;
   ctx.clearRect(0,0,w,h);
 
-  const margin=18;
+  const margin=14;
   const x0=margin;
   const x1=w-margin;
-  const yTop=margin+10;
-  const yBot=h-margin+15;
+  const yTop=margin;
+  const yBot=h-margin;
 
   const [tArr,xArr] = buildSeriesData();
   const tMin=0, tMax=XT_TOTAL_T;
@@ -644,8 +644,8 @@ function drawXTChart(){
     const textWidth = ctx.measureText(labelText).width;
     const padX = 6;
     const padY = 3;
-    let labelX = px;
-    let labelY = yTop - 18;
+    let labelX = px+10;
+    let labelY = yTop;
 
     const pillHalfW = textWidth/2 + padX;
     if(labelX < x0 + pillHalfW + 4) labelX = x0 + pillHalfW + 4;
