@@ -1079,14 +1079,25 @@ async function loadDialogsAndBuild() {
     act2Cont.innerHTML = '';
     foyerCont.innerHTML = '';
 
+    // 🔴 ΕΔΩ γίνεται πλέον διγλωσσία για το book
     BOOK_CFG = null;
+    const bookFile = (lang === 'en') ? 'book-en.json' : 'book-gr.json';
+
     try {
-      const br = await fetch('book.json', { cache: 'no-store' });
+      let br = await fetch(bookFile, { cache: 'no-store' });
+      if (!br.ok) {
+        // fallback σε απλό book.json αν δεν υπάρχει γλωσσική εκδοχή
+        console.warn(bookFile + ' όχι διαθέσιμο, δοκιμή fallback σε book.json');
+        br = await fetch('book.json', { cache: 'no-store' });
+      }
       if (br.ok) {
         BOOK_CFG = await br.json();
+      } else {
+        console.warn('book config δεν βρέθηκε (ούτε ' + bookFile + ' ούτε book.json)');
+        BOOK_CFG = null;
       }
     } catch (e2) {
-      console.warn('book.json όχι διαθέσιμο ή μη έγκυρο', e2);
+      console.warn('Σφάλμα στη φόρτωση book config', e2);
       BOOK_CFG = null;
     }
 
