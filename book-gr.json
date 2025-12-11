@@ -1,131 +1,474 @@
 {
-  "sections": [
-    {
-      "id": "act1",
-      "layout": "two-columns",
-      "blocks": [
-        {
-          "type": "note",
-          "column": "full",
-          "html": "Στην Πράξη 1, ο στόχος είναι να <b>αναγνωριστεί</b> αν η κίνηση είναι Α.Α.Τ. μόνο από το διάγραμμα <b>x–t</b> και τις μετρήσεις του πίνακα t–x.",
-          "anchorIndex": 0
-        },
-        {
-          "type": "dialogs",
-          "source": "act1",
-          "from": 0,
-          "to": 3,
-          "anchorIndex": 0
-        },
-        {
-          "type": "html",
-          "column": "left",
-          "html": "<h3>Τι κοιτάμε πρώτα στο x–t;</h3><p>Σταθερό πλάτος, σταθερή περίοδος και «μαλακή» καμπύλη είναι τα πρώτα σημάδια ότι <b>κάτι ημιτονοειδές</b> κρύβεται από πίσω.</p>",
-          "anchorIndex": 0
-        },
-        {
-          "type": "diagram",
-          "column": "right",
-          "kind": "xsin",
-          "id": "x-vs-sin",
-          "title": "Διάγραμμα x–ημ(ωt)",
-          "caption": "Η γραφική παράσταση x–ημ(ωt) εμφανίζεται ως ευθεία, επιβεβαιώνοντας ότι η κίνηση είναι Α.Α.Τ.",
-          "options": {
-            "showRegressionLine": false
-          },
-          "anchorIndex": 0
-        },
-        {
-          "type": "dialogs",
-          "source": "act1",
-          "from": 4,
-          "to": -1,
-          "anchorIndex": 4
-        },
-        {
-          "type": "html",
-          "column": "full",
-          "anchorIndex": 4,
-          "html": "πρώτη υποψία για ΑΑΤ!"
-        }
-      ]
-    },
-    {
-      "id": "act2",
-      "layout": "two-columns",
-      "blocks": [
-        {
-          "type": "note",
-          "column": "full",
-          "html": "Στην Πράξη 2, οι θεατές περνούν από την καθαρά κινηματική περιγραφή στη <b>δυναμική</b>: δυνάμεις, επιτάχυνση και ο νόμος <b>a(x) = −ω²x</b>.",
-          "anchorIndex": 0
-        },
-        {
-          "type": "diagram",
-          "column": "right",
-          "kind": "v",
-          "id": "v-t",
-          "title": "Διάγραμμα υ–t",
-          "caption": "Η ταχύτητα είναι μέγιστη όταν x = 0 και μηδενική στα άκρα της ταλάντωσης.",
-          "anchorIndex": 0
-        },
-        {
-          "type": "diagram",
-          "column": "right",
-          "kind": "a",
-          "id": "a-t",
-          "title": "Διάγραμμα a–t",
-          "caption": "Η επιτάχυνση είναι «αντίθετη» από την απομάκρυνση και έχει ίδιο σχήμα καμπύλης.",
-          "anchorIndex": 0
-        },
-        {
-          "type": "diagram",
-          "column": "right",
-          "kind": "ax",
-          "id": "a-x",
-          "title": "Διάγραμμα a–x",
-          "caption": "Η γραφική παράσταση a–x είναι ευθεία με κλίση −ω².",
-          "anchorIndex": 0
-        },
-        {
-          "type": "html",
-          "column": "left",
-          "html": "<h3>Δυναμική ανάγνωση</h3><p>Η μορφή της καμπύλης a(t) και το διάγραμμα a–x είναι δύο ισχυρά «τεστ» ότι η κίνηση υπακούει σε a = −ω²x.</p>",
-          "anchorIndex": 0
-        },
-        {
-          "type": "dialogs",
-          "source": "act2",
-          "from": 0,
-          "to": -1,
-          "anchorIndex": 0
-        }
-      ]
-    },
-    {
-      "id": "foyer",
-      "layout": "two-columns",
-      "blocks": [
-        {
-          "type": "note",
-          "column": "full",
-          "html": "Στο φουαγιέ γίνεται ανακεφαλαίωση: πώς δένουν μεταξύ τους οι νόμοι (1)–(4) και πώς τα διαγράμματα «δείχνουν» την ίδια Α.Α.Τ.",
-          "anchorIndex": 0
-        },
-        {
-          "type": "html",
-          "column": "left",
-          "html": "<h3>Τι μένει στο τέλος;</h3><p>Μία ταλάντωση ορίζεται πλήρως από A, T (ή ω), x₀ και φ₀. Όλα τα υπόλοιπα διαγράμματα και σχέσεις είναι απλώς διαφορετικές όψεις της ίδιας κίνησης.</p>",
-          "anchorIndex": 0
-        },
-        {
-          "type": "dialogs",
-          "source": "foyer",
-          "from": 0,
-          "to": -1,
-          "anchorIndex": 0
-        }
-      ]
-    }
-  ]
+  "act1": {
+    "beforeAll": [
+      {
+        "type": "note",
+        "column": "full",
+        "html": "Στην Πράξη 1, ο στόχος είναι να <b>αναγνωριστεί...ο από το διάγραμμα <b>x–t</b> και τις μετρήσεις του πίνακα t–x."
+      },
+      {
+        "type": "html",
+        "column": "left",
+        "html": "<h3>Τι κοιτάμε πρώτα στο x–t;</h3><p>Σταθερό πλ...ώτα σημάδια ότι <b>κάτι ημιτονοειδές</b> κρύβεται από πίσω.</p>"
+      },
+      {
+        "type": "diagram",
+        "column": "right",
+        "kind": "xsin",
+        "id": "x-vs-sin",
+        "title": "Διάγραμμα x–ημ(ωt)",
+        "caption": "Η γραφική παράσταση x–ημ(ωt) εμφανίζεται ως ευθεία, επιβεβαιώνοντας ότι η κίνηση είναι Α.Α.Τ."
+      }
+    ],
+    "afterAll": [
+      {
+        "type": "html",
+        "column": "full",
+        "html": "Είναι ξεκάθαρο ότι Κινηματικά μελετήθηκε μια κίνηση με μόνο εργαλεία αυτά που χρειάζεται ένας παρατηρητής στη Μηχανική: <b><i>Προσανατολισμένο σύστημα αναφοράς και καταγραφή θέσεων και αντίστοιχων χρονικών στιγμών!</i></b>"
+      }
+    ],
+    "rows": [
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": [
+          {
+            "type": "html",
+            "column": "right",
+            "html": "Ο θεατής αντιλαμβάνεται ότι αυτό που παρατηρούν <b>καθορίστηκε χρονικά από τους θεατές!</b>"
+          }
+        ]
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      }
+    ]
+  },
+  "act2": {
+    "beforeAll": [
+      {
+        "type": "note",
+        "column": "full",
+        "html": "Στην Πράξη 2, οι θεατές περνούν από την καθαρά κινηματική περιγραφή στη <b>δυναμική</b>: δυνάμεις, επιτάχυνση και ο νόμος <b>a(x) = −ω²x</b>."
+      },
+      {
+        "type": "diagram",
+        "column": "right",
+        "kind": "v",
+        "id": "v-t",
+        "title": "Διάγραμμα υ–t",
+        "caption": "Η ταχύτητα είναι μέγιστη όταν x = 0 και μηδενική στα άκρα της ταλάντωσης."
+      },
+      {
+        "type": "diagram",
+        "column": "right",
+        "kind": "a",
+        "id": "a-t",
+        "title": "Διάγραμμα a–t",
+        "caption": "Η επιτάχυνση είναι «αντίθετη» από την απομάκρυνση και έχει ίδιο σχήμα καμπύλης."
+      },
+      {
+        "type": "diagram",
+        "column": "right",
+        "kind": "ax",
+        "id": "a-x",
+        "title": "Διάγραμμα a–x",
+        "caption": "Η γραφική παράσταση a–x είναι ευθεία με κλίση −ω²."
+      },
+      {
+        "type": "html",
+        "column": "left",
+        "html": "<h3>Δυναμική ανάγνωση</h3><p>Η μορφή της καμπύλης a(t...κι η εξάρτηση a(x) «φωτογραφίζουν» την ύπαρξη επαναφοράς τύπου −ω²x.</p>"
+      }
+    ],
+    "afterAll": [],
+    "rows": [
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      }
+    ]
+  },
+  "foyer": {
+    "beforeAll": [
+      {
+        "type": "note",
+        "column": "full",
+        "html": "Στο φουαγιέ γίνεται ανακεφαλαίωση: πώς δένουν μεταξύ τους οι νόμοι (1)–(4) και πώς τα διαγράμματα «δείχνουν» την ίδια Α.Α.Τ."
+      },
+      {
+        "type": "image",
+        "column": "right",
+        "src": "phase_diagram.png",
+        "alt": "Διάγραμμα φάσης x–υ για Α.Α.Τ.",
+        "caption": "Ένα ενδεικτικό διάγραμμα φάσης x–υ που μπορεί να συνοδεύει τη συζήτηση στο φουαγιέ."
+      },
+      {
+        "type": "html",
+        "column": "left",
+        "html": "<h3>Τι μένει στο τέλος;</h3><p>Μία ταλάντωση ορ...ι σχέσεις είναι απλώς διαφορετικές όψεις της ίδιας κίνησης.</p>"
+      }
+    ],
+    "afterAll": [],
+    "rows": [
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      }
+    ]
+  }
 }
