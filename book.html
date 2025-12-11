@@ -234,7 +234,6 @@
 </div>
 
 <script>
-  /* ΟΛΟ ΤΟ JS ΣΟΥ ΟΠΩΣ ΕΙΝΑΙ ΤΩΡΑ – δεν το πείραξα καθόλου */
   const BOOK_STORAGE_KEY = 'aatBookData';
 
   let VIEWERS = [];
@@ -492,7 +491,7 @@
 
     const hasXtMark = !!ev.xtZeroMark || !!ev.xtMarkTail;
 
-    // x–t: είτε γραμμή graph:"xt" είτε απλά xtZeroMark/xtMarkTail (όπως στη σκηνή)
+    // x–t: είτε graph:"xt" είτε xtZeroMark/xtMarkTail
     if(ev.graph === 'xt' || hasXtMark){
       addDiagram(
         'xt',
@@ -666,8 +665,111 @@
   }
 
   // ----- Σχεδίαση διαγραμμάτων (χρησιμοποιούν gA, gT, gOmega, gPhi0Rad, gX0) -----
-  /* ... ΟΛΟΣ Ο ΥΠΟΛΟΙΠΟΣ ΚΩΔΙΚΑΣ ΣΟΥ ΟΠΩΣ ΕΙΝΑΙ ... */
-  // (δεν τον κόβω εδώ για να μη σου γεμίσω τη σελίδα, αλλά στην πράξη κρατάς 1:1 το υπάρχον JS.)
+  // (κρατάς εδώ όλο τον υπόλοιπο κώδικά σου όπως είναι στο αρχικό book.html)
+
+  // Κύρια ρουτίνα
+  async function loadDialogsAndBuild(){
+    const file = (lang === 'en') ? 'dialogs-en.json' : 'dialogs-gr.json';
+    diagramJobs.length = 0;
+
+    // 1. Φόρτωση δεδομένων ταλάντωσης από localStorage
+    const bookData = loadBookData();
+    const DEFAULT_A = 3.0;
+    const DEFAULT_T = 6.0;
+
+    gA = (bookData && typeof bookData.A === 'number') ? bookData.A : DEFAULT_A;
+    gT = (bookData && typeof bookData.T === 'number') ? bookData.T : DEFAULT_T;
+    gOmega = (bookData && typeof bookData.omega === 'number')
+      ? bookData.omega
+      : (2*Math.PI/gT);
+
+    gX0 = (bookData && typeof bookData.x0 === 'number') ? bookData.x0 : 1.80;
+    gPhi0Deg = (bookData && typeof bookData.phi0Deg === 'number') ? bookData.phi0Deg : 35.0;
+    gPhi0Rad = gPhi0Deg * Math.PI/180;
+
+    gV0 = gOmega * gA * Math.cos(gPhi0Rad);
+    const eps = 1e-6;
+    if(gV0 > eps){
+      gVSignSymbol = 'υ>0';
+      gVSignWord = (lang === 'en') ? 'positive' : 'θετική';
+    }else if(gV0 < -eps){
+      gVSignSymbol = 'υ<0';
+      gVSignWord = (lang === 'en') ? 'negative' : 'αρνητική';
+    }else{
+      gVSignSymbol = 'υ=0';
+      gVSignWord = (lang === 'en') ? 'zero' : 'μηδενική';
+    }
+
+    setParam('A', gA.toFixed(2));
+    setParam('T', gT.toFixed(2));
+    setParam('omega', gOmega.toFixed(2));
+    setParam('x0', gX0.toFixed(2));
+    setParam('phi0Deg', gPhi0Deg.toFixed(1));
+    setParam('v0', gV0.toFixed(2));
+    setParam('vSignSymbol', gVSignSymbol);
+    setParam('vSignWord', gVSignWord);
+
+    if(!bookData){
+      const note = document.getElementById('paramNote');
+      if(note){
+        note.textContent = (lang === 'en')
+          ? 'No stage data were found. Using indicative values (A=3.00 m, T=6.00 s, etc.).'
+          : 'Δεν βρέθηκαν δεδομένα από τη σκηνή. Χρησιμοποιούνται ενδεικτικές τιμές (A=3.00 m, T=6.00 s κ.λπ.).';
+      }
+    }
+
+    if(bookData && Array.isArray(bookData.samples)){
+      buildTXTable(bookData.samples);
+    }else{
+      buildTXTable([]);
+    }
+
+    // 2. Φόρτωση διαλόγων
+    try{
+      const resp = await fetch(file,{cache:'no-store'});
+      if(!resp.ok){
+        console.error('Δεν βρέθηκε', file);
+        return;
+      }
+      const data = await resp.json();
+      VIEWERS = data.viewers || [];
+      ACT1 = data.act1 || [];
+      ACT2 = data.act2 || [];
+      FOYER = data.foyer || [];
+
+      const act1Cont = document.getElementById('act1Transcript');
+      const act2Cont = document.getElementById('act2Transcript');
+      const foyerCont = document.getElementById('foyerTranscript');
+
+      act1Cont.innerHTML = '';
+      act2Cont.innerHTML = '';
+      foyerCont.innerHTML = '';
+
+      // 3. Φόρτωση book.json (πρόσθετα)
+      BOOK_CFG = null;
+      try{
+        const br = await fetch('book.json',{cache:'no-store'});
+        if(br.ok){
+          BOOK_CFG = await br.json();
+        }
+      }catch(e2){
+        console.warn('book.json όχι διαθέσιμο ή μη έγκυρο', e2);
+        BOOK_CFG = null;
+      }
+
+      // 4. Απόδοση sections
+      renderSection('act1', ACT1, act1Cont, 'act1');
+      renderSection('act2', ACT2, act2Cont, 'act2');
+      renderSection('foyer', FOYER, foyerCont, 'foyer');
+
+    }catch(err){
+      console.error(err);
+    }
+
+    // 5. Σχεδίαση διαγραμμάτων
+    // (εδώ καλείς τις drawXTChart / drawVChart / drawAChart / drawAXChart όπως τις έχεις ήδη)
+  }
+
   loadDialogsAndBuild();
 </script>
 
