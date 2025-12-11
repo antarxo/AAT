@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Βιβλίο Παράστασης — Απλή Αρμονική Ταλάντωση</title>
   <link rel="stylesheet" href="book.css">
-
 </head>
 <body>
 <div class="page">
@@ -132,14 +131,10 @@
     <div class="card dialog-card">
       <div class="card-header-row">
         <div class="card-header-title">Διάλογοι Πράξης 1</div>
-        <div class="card-header-tags" id="act1Tags">
-          <!-- optional chips -->
-        </div>
+        <div class="card-header-tags" id="act1Tags"></div>
       </div>
       <div class="card-body dialog-body">
-        <div id="act1Transcript" class="dialog-block">
-          <!-- γεμίζει από JS -->
-        </div>
+        <div id="act1Transcript" class="dialog-block"></div>
       </div>
     </div>
   </section>
@@ -154,14 +149,10 @@
     <div class="card dialog-card">
       <div class="card-header-row">
         <div class="card-header-title">Διάλογοι Πράξης 2</div>
-        <div class="card-header-tags" id="act2Tags">
-          <!-- optional chips -->
-        </div>
+        <div class="card-header-tags" id="act2Tags"></div>
       </div>
       <div class="card-body dialog-body">
-        <div id="act2Transcript" class="dialog-block">
-          <!-- γεμίζει από JS -->
-        </div>
+        <div id="act2Transcript" class="dialog-block"></div>
       </div>
     </div>
   </section>
@@ -176,14 +167,10 @@
     <div class="card dialog-card">
       <div class="card-header-row">
         <div class="card-header-title">Συζήτηση στο φουαγιέ</div>
-        <div class="card-header-tags" id="foyerTags">
-          <!-- optional chips -->
-        </div>
+        <div class="card-header-tags" id="foyerTags"></div>
       </div>
       <div class="card-body dialog-body">
-        <div id="foyerTranscript" class="dialog-block">
-          <!-- γεμίζει από JS -->
-        </div>
+        <div id="foyerTranscript" class="dialog-block"></div>
       </div>
     </div>
   </section>
@@ -392,8 +379,25 @@
     const rightCell = document.createElement('div');
     rightCell.className = 'dialog-cell dialog-cell-right';
 
+    // Πάρε κείμενο αριστερά / δεξιά από διάφορα πιθανά κλειδιά (όπως στη σκηνή)
+    const textLeft =
+      ev.textLeft ||
+      (lang === 'en'
+        ? (ev.left_en || ev.leftEN)
+        : (ev.left_gr || ev.leftGR)) ||
+      ev.left ||
+      '';
+
+    const textRight =
+      ev.textRight ||
+      (lang === 'en'
+        ? (ev.right_en || ev.rightEN)
+        : (ev.right_gr || ev.rightGR)) ||
+      ev.right ||
+      '';
+
     // Αριστερά: θεατής + λόγια
-    if(ev.viewer && ev.textLeft){
+    if(ev.viewer && textLeft){
       const sp = document.createElement('div');
       sp.className = 'speaker-line';
 
@@ -417,25 +421,25 @@
 
       const speech = document.createElement('div');
       speech.className = 'speech';
-      speech.innerHTML = (ev.textLeft || '').replaceAll('\n','<br>');
+      speech.innerHTML = textLeft.replaceAll('\n','<br>');
 
       leftCell.appendChild(sp);
       leftCell.appendChild(speech);
-    }else if(ev.textLeft){
+    }else if(textLeft){
       const p = document.createElement('div');
       p.className = 'speech';
-      p.innerHTML = (ev.textLeft || '').replaceAll('\n','<br>');
+      p.innerHTML = textLeft.replaceAll('\n','<br>');
       leftCell.appendChild(p);
     }
 
     // Δεξιά: νόμοι / διαγράμματα / πρόσθετα
     let anythingRight = false;
 
-    // περιγραφή / κείμενο δεξιά (textRight)
-    if(ev.textRight){
+    // περιγραφή / κείμενο δεξιά
+    if(textRight){
       const p = document.createElement('div');
       p.className = 'speech';
-      p.innerHTML = (ev.textRight || '').replaceAll('\n','<br>');
+      p.innerHTML = textRight.replaceAll('\n','<br>');
       rightCell.appendChild(p);
       anythingRight = true;
     }
@@ -470,7 +474,10 @@
       anythingRight = true;
     }
 
-    // διαγράμματα από πεδία ev.graph / ev.plot (όπως στη σκηνή)
+    // Πιθανό κλειδί γραφήματος (όπως στη σκηνή)
+    const graphKind = ev.graph || ev.plot || ev.diagram;
+    const hasXtMark = !!ev.xtZeroMark || !!ev.xtMarkTail;
+
     function addDiagram(kind, caption, extraOpts){
       const box = document.createElement('div');
       box.className = 'diagram-inline';
@@ -489,10 +496,8 @@
       anythingRight = true;
     }
 
-    const hasXtMark = !!ev.xtZeroMark || !!ev.xtMarkTail;
-
-    // x–t: είτε graph:"xt" είτε xtZeroMark/xtMarkTail
-    if(ev.graph === 'xt' || hasXtMark){
+    // x–t
+    if(graphKind === 'xt' || hasXtMark){
       addDiagram(
         'xt',
         (lang === 'en') ? 'x–t diagram' : 'Διάγραμμα x–t',
@@ -504,7 +509,7 @@
     }
 
     // v–t
-    if(ev.graph === 'v'){
+    if(graphKind === 'v'){
       addDiagram(
         'v',
         (lang === 'en') ? 'v–t diagram' : 'Διάγραμμα υ–t'
@@ -512,7 +517,7 @@
     }
 
     // a–t
-    if(ev.graph === 'a'){
+    if(graphKind === 'a'){
       addDiagram(
         'a',
         (lang === 'en') ? 'a–t diagram' : 'Διάγραμμα α–t'
@@ -520,7 +525,7 @@
     }
 
     // a–x
-    if(ev.graph === 'ax'){
+    if(graphKind === 'ax'){
       addDiagram(
         'ax',
         (lang === 'en') ? 'a–x diagram' : 'Διάγραμμα α–x'
@@ -616,7 +621,7 @@
 
         const label = document.createElement('div');
         label.className = 'diagram-label';
-        label.textContent = expandDynTemplate(block.label || '');
+        label.textContent = expandDynTemplate(block.label || block.title || '');
         diagWrap.appendChild(label);
 
         const cwrap = document.createElement('div');
@@ -626,6 +631,13 @@
         canvas.id = id;
         cwrap.appendChild(canvas);
         diagWrap.appendChild(cwrap);
+
+        if(block.caption){
+          const cap = document.createElement('div');
+          cap.className = 'diagram-caption';
+          cap.textContent = expandDynTemplate(block.caption);
+          diagWrap.appendChild(cap);
+        }
 
         diagramJobs.push({
           id,
@@ -665,7 +677,7 @@
   }
 
   // ----- Σχεδίαση διαγραμμάτων (χρησιμοποιούν gA, gT, gOmega, gPhi0Rad, gX0) -----
-  // Εδώ παραμένει ο δικός σου κώδικας drawXTChart / drawVChart / drawAChart / drawAXChart / renderDiagramJobs
+  // Εδώ μπαίνουν οι drawXTChart / drawVChart / drawAChart / drawAXChart / renderDiagramJobs αν τα χρησιμοποιείς.
 
   // Κύρια ρουτίνα
   async function loadDialogsAndBuild(){
@@ -725,7 +737,6 @@
     }
 
     // 2. Φόρτωση διαλόγων
-    let dialogsOk = false;
     try{
       const resp = await fetch(file,{cache:'no-store'});
       console.log('Ζητάω', file, '-> status', resp.status);
@@ -736,7 +747,12 @@
         ACT1    = data.act1    || [];
         ACT2    = data.act2    || [];
         FOYER   = data.foyer   || [];
-        dialogsOk = true;
+        console.log('Dialogs loaded lengths:', {
+          viewers: VIEWERS.length,
+          act1: ACT1.length,
+          act2: ACT2.length,
+          foyer: FOYER.length
+        });
       }else{
         console.error('Δεν βρέθηκε', file);
       }
