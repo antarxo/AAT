@@ -665,7 +665,7 @@
   }
 
   // ----- Σχεδίαση διαγραμμάτων (χρησιμοποιούν gA, gT, gOmega, gPhi0Rad, gX0) -----
-  // (κρατάς εδώ όλο τον υπόλοιπο κώδικά σου όπως είναι στο αρχικό book.html)
+  // Εδώ παραμένει ο δικός σου κώδικας drawXTChart / drawVChart / drawAChart / drawAXChart / renderDiagramJobs
 
   // Κύρια ρουτίνα
   async function loadDialogsAndBuild(){
@@ -725,49 +725,55 @@
     }
 
     // 2. Φόρτωση διαλόγων
+    let dialogsOk = false;
     try{
       const resp = await fetch(file,{cache:'no-store'});
-      if(!resp.ok){
+      console.log('Ζητάω', file, '-> status', resp.status);
+
+      if(resp.ok){
+        const data = await resp.json();
+        VIEWERS = data.viewers || [];
+        ACT1    = data.act1    || [];
+        ACT2    = data.act2    || [];
+        FOYER   = data.foyer   || [];
+        dialogsOk = true;
+      }else{
         console.error('Δεν βρέθηκε', file);
-        return;
       }
-      const data = await resp.json();
-      VIEWERS = data.viewers || [];
-      ACT1 = data.act1 || [];
-      ACT2 = data.act2 || [];
-      FOYER = data.foyer || [];
-
-      const act1Cont = document.getElementById('act1Transcript');
-      const act2Cont = document.getElementById('act2Transcript');
-      const foyerCont = document.getElementById('foyerTranscript');
-
-      act1Cont.innerHTML = '';
-      act2Cont.innerHTML = '';
-      foyerCont.innerHTML = '';
-
-      // 3. Φόρτωση book.json (πρόσθετα)
-      BOOK_CFG = null;
-      try{
-        const br = await fetch('book.json',{cache:'no-store'});
-        if(br.ok){
-          BOOK_CFG = await br.json();
-        }
-      }catch(e2){
-        console.warn('book.json όχι διαθέσιμο ή μη έγκυρο', e2);
-        BOOK_CFG = null;
-      }
-
-      // 4. Απόδοση sections
-      renderSection('act1', ACT1, act1Cont, 'act1');
-      renderSection('act2', ACT2, act2Cont, 'act2');
-      renderSection('foyer', FOYER, foyerCont, 'foyer');
-
     }catch(err){
-      console.error(err);
+      console.error('Σφάλμα κατά το fetch των διαλόγων', err);
     }
 
-    // 5. Σχεδίαση διαγραμμάτων
-    // (εδώ καλείς τις drawXTChart / drawVChart / drawAChart / drawAXChart όπως τις έχεις ήδη)
+    // 3. Προετοιμασία containers
+    const act1Cont  = document.getElementById('act1Transcript');
+    const act2Cont  = document.getElementById('act2Transcript');
+    const foyerCont = document.getElementById('foyerTranscript');
+
+    act1Cont.innerHTML  = '';
+    act2Cont.innerHTML  = '';
+    foyerCont.innerHTML = '';
+
+    // 4. Φόρτωση book.json (πρόσθετα)
+    BOOK_CFG = null;
+    try{
+      const br = await fetch('book.json',{cache:'no-store'});
+      if(br.ok){
+        BOOK_CFG = await br.json();
+      }
+    }catch(e2){
+      console.warn('book.json όχι διαθέσιμο ή μη έγκυρο', e2);
+      BOOK_CFG = null;
+    }
+
+    // 5. Απόδοση sections (ή fallback αν δεν έχουμε διαλόγους/book.json)
+    renderSection('act1',  ACT1,  act1Cont,  'act1');
+    renderSection('act2',  ACT2,  act2Cont,  'act2');
+    renderSection('foyer', FOYER, foyerCont, 'foyer');
+
+    // 6. Σχεδίαση διαγραμμάτων αν έχεις ορίσει renderDiagramJobs()
+    if(typeof renderDiagramJobs === 'function'){
+      renderDiagramJobs();
+    }
   }
 
   loadDialogsAndBuild();
