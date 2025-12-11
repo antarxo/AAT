@@ -696,11 +696,17 @@
       leftCell.className  = 'dialog-cell left';
       rightCell.className = 'dialog-cell right';
 
-      const hasLeftRaw  = ev.left  && String(ev.left).trim()  !== '';
-      const hasRightRaw = ev.right && String(ev.right).trim() !== '';
+      const leftRaw =
+        (lang === 'en'
+          ? (ev.left_en || ev.leftEN || ev.left)
+          : (ev.left_gr || ev.leftGR || ev.left)) || '';
+      const rightRaw =
+        (lang === 'en'
+          ? (ev.right_en || ev.rightEN || ev.right)
+          : (ev.right_gr || ev.rightGR || ev.right)) || '';
 
-      const leftText  = hasLeftRaw  ? expandDynTemplate(ev.left)  : '';
-      const rightText = hasRightRaw ? expandDynTemplate(ev.right) : '';
+      const leftText  = expandDynTemplate(leftRaw);
+      const rightText = expandDynTemplate(rightRaw);
 
       const hasLeft  = leftText.trim()  !== '';
       const hasRight = rightText.trim() !== '';
@@ -1171,6 +1177,7 @@
     ctx.restore();
   }
 
+  // ✅ ΝΕΟ σωστό x–ημ(ωt): οριζόντια s = sin(ωt+φ₀), κάθετα x (m), ευθεία x = A·s
   function drawXSinChart(canvas){
     if(!canvas) return;
     const ctx = canvas.getContext('2d');
@@ -1183,77 +1190,99 @@
     const yTop = margin;
     const yBot = h - margin;
 
-    const tMin = 0;
-    const tMax = 2*gT;
+    const sMin = -1;
+    const sMax =  1;
+    const A = gA || 1;
+    const xMaxAbs = Math.max(1, Math.abs(A)) * 1.1;
 
-    function tToX(t){
-      return x0 + (t - tMin)/(tMax - tMin) * (x1 - x0);
+    const midY = (yTop + yBot)/2;
+    const halfH = (yBot - yTop)/2;
+    function sToXpx(s){
+      return x0 + (s - sMin)/(sMax - sMin) * (x1 - x0);
     }
-    function xToY(x){
-      const mid = (yTop + yBot)/2;
-      const amp = (yBot - yTop)/2;
-      const xMaxAbs = 1.1;
-      return mid - (x/xMaxAbs)*amp;
+    function xToYpx(x){
+      return midY - (x/xMaxAbs)*halfH;
     }
 
     ctx.clearRect(0,0,w,h);
 
+    // grid
     ctx.save();
     ctx.strokeStyle='rgba(148,163,184,0.45)';
     ctx.lineWidth=1;
     ctx.setLineDash([3,3]);
 
-    const tTicks=[0,gT,2*gT];
-    tTicks.forEach(t=>{
-      const xf=tToX(t);
+    // κάθετες s = -1, 0, 1
+    [-1,0,1].forEach(s=>{
+      const px = sToXpx(s);
       ctx.beginPath();
-      ctx.moveTo(xf,yTop);
-      ctx.lineTo(xf,yBot);
+      ctx.moveTo(px,yTop);
+      ctx.lineTo(px,yBot);
+      ctx.stroke();
+    });
+
+    // οριζόντιες x = -A, 0, A
+    [-A,0,A].forEach(x=>{
+      const py = xToYpx(x);
+      ctx.beginPath();
+      ctx.moveTo(x0,py);
+      ctx.lineTo(x1,py);
       ctx.stroke();
     });
 
     ctx.restore();
 
+    // άξονες
     ctx.save();
     ctx.strokeStyle='#0f172a';
     ctx.lineWidth=1.2;
 
-    const y0line = xToY(0);
+    const px0 = sToXpx(0);
     ctx.beginPath();
-    ctx.moveTo(x0,y0line);
-    ctx.lineTo(x1,y0line);
+    ctx.moveTo(px0,yTop);
+    ctx.lineTo(px0,yBot);
+    ctx.stroke();
+
+    const py0 = xToYpx(0);
+    ctx.beginPath();
+    ctx.moveTo(x0,py0);
+    ctx.lineTo(x1,py0);
     ctx.stroke();
 
     ctx.beginPath();
     ctx.rect(x0,yTop,x1-x0,yBot-yTop);
     ctx.stroke();
 
-    ctx.strokeStyle='#10b981';
+    // x = A·s
+    ctx.strokeStyle='#2563eb';
     ctx.lineWidth=2;
-    const N=240;
     ctx.beginPath();
+    const N = 40;
     for(let i=0;i<=N;i++){
-      const t=tMin+(tMax-tMin)*(i/N);
-      const x=Math.sin(gOmega*t);
-      const px=tToX(t);
-      const py=xToY(x);
+      const s = sMin + (sMax - sMin)*(i/N);
+      const x = A * s;
+      const px = sToXpx(s);
+      const py = xToYpx(x);
       if(i===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
     }
     ctx.stroke();
 
-    ctx.save();
+    // labels
     ctx.fillStyle='#0f172a';
     ctx.font='10px system-ui';
-    ctx.textAlign='left';
-    ctx.fillText('ημ(ωt)', x0+4, yTop+10);
-    ctx.fillText('x / A',  x0+4, yTop-6);
-    ctx.textAlign='right';
-    ctx.fillText('t (s)',  x1,   yBot+12);
 
     ctx.textAlign='center';
-    ctx.fillText('0', tToX(0),   yBot+12);
-    ctx.fillText(gT.toFixed(1), tToX(gT),   yBot+12);
-    ctx.fillText((2*gT).toFixed(1), tToX(2*gT), yBot+12);
+    ctx.fillText('-1', sToXpx(-1), yBot+12);
+    ctx.fillText('0',  sToXpx(0),  yBot+12);
+    ctx.fillText('+1', sToXpx(+1), yBot+12);
+    ctx.fillText('ημ(ωt+φ₀)', (x0+x1)/2, yBot+24);
+
+    ctx.textAlign='left';
+    ctx.fillText('-A', x0+4, xToYpx(-A)+4);
+    ctx.fillText('0',  x0+4, xToYpx(0)+4);
+    ctx.fillText('+A', x0+4, xToYpx(+A)+4);
+    ctx.fillText('x (m)', x0+4, yTop-6);
+
     ctx.restore();
   }
 
