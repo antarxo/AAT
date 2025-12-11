@@ -228,7 +228,6 @@
   let ACT2 = [];
   let FOYER = [];
 
-  // επιπλέον config από book.json (πρόσθετα)
   let BOOK_CFG = null;
 
   // παγκόσμιες παράμετροι για διαγράμματα / templates
@@ -676,124 +675,7 @@
     });
   }
 
-  // Κύρια ρουτίνα
-  async function loadDialogsAndBuild(){
-    const file = (lang === 'en') ? 'dialogs-en.json' : 'dialogs-gr.json';
-    diagramJobs.length = 0;
-
-    // 1. Φόρτωση δεδομένων ταλάντωσης από localStorage
-    const bookData = loadBookData();
-    const DEFAULT_A = 3.0;
-    const DEFAULT_T = 6.0;
-
-    gA = (bookData && typeof bookData.A === 'number') ? bookData.A : DEFAULT_A;
-    gT = (bookData && typeof bookData.T === 'number') ? bookData.T : DEFAULT_T;
-    gOmega = (bookData && typeof bookData.omega === 'number')
-      ? bookData.omega
-      : (2*Math.PI/gT);
-
-    gX0 = (bookData && typeof bookData.x0 === 'number') ? bookData.x0 : 1.80;
-    gPhi0Deg = (bookData && typeof bookData.phi0Deg === 'number') ? bookData.phi0Deg : 35.0;
-    gPhi0Rad = gPhi0Deg * Math.PI/180;
-
-    gV0 = gOmega * gA * Math.cos(gPhi0Rad);
-    const eps = 1e-6;
-    if(gV0 > eps){
-      gVSignSymbol = 'υ>0';
-      gVSignWord = (lang === 'en') ? 'positive' : 'θετική';
-    }else if(gV0 < -eps){
-      gVSignSymbol = 'υ<0';
-      gVSignWord = (lang === 'en') ? 'negative' : 'αρνητική';
-    }else{
-      gVSignSymbol = 'υ=0';
-      gVSignWord = (lang === 'en') ? 'zero' : 'μηδενική';
-    }
-
-    setParam('A', gA.toFixed(2));
-    setParam('T', gT.toFixed(2));
-    setParam('omega', gOmega.toFixed(2));
-    setParam('x0', gX0.toFixed(2));
-    setParam('phi0Deg', gPhi0Deg.toFixed(1));
-    setParam('v0', gV0.toFixed(2));
-    setParam('vSignSymbol', gVSignSymbol);
-    setParam('vSignWord', gVSignWord);
-
-    if(!bookData){
-      const note = document.getElementById('paramNote');
-      if(note){
-        note.textContent = (lang === 'en')
-          ? 'No stage data were found. Using indicative values (A=3.00 m, T=6.00 s, etc.).'
-          : 'Δεν βρέθηκαν δεδομένα από τη σκηνή. Χρησιμοποιούνται ενδεικτικές τιμές (A=3.00 m, T=6.00 s κ.λπ.).';
-      }
-    }
-
-    if(bookData && Array.isArray(bookData.samples)){
-      buildTXTable(bookData.samples);
-    }else{
-      buildTXTable([]);
-    }
-
-    // 2. Φόρτωση διαλόγων
-    try{
-      const resp = await fetch(file,{cache:'no-store'});
-      console.log('Ζητάω', file, '-> status', resp.status);
-
-      if(resp.ok){
-        const data = await resp.json();
-        VIEWERS = data.viewers || [];
-        ACT1    = data.act1    || [];
-        ACT2    = data.act2    || [];
-        FOYER   = data.foyer   || [];
-        console.log('Dialogs loaded lengths:', {
-          viewers: VIEWERS.length,
-          act1: ACT1.length,
-          act2: ACT2.length,
-          foyer: FOYER.length
-        });
-      }else{
-        console.error('Δεν βρέθηκε', file);
-      }
-    }catch(err){
-      console.error('Σφάλμα κατά το fetch των διαλόγων', err);
-    }
-
-    // 3. Προετοιμασία containers
-    const act1Cont  = document.getElementById('act1Transcript');
-    const act2Cont  = document.getElementById('act2Transcript');
-    const foyerCont = document.getElementById('foyerTranscript');
-
-    act1Cont.innerHTML  = '';
-    act2Cont.innerHTML  = '';
-    foyerCont.innerHTML = '';
-
-    // 4. Φόρτωση book.json (πρόσθετα)
-    BOOK_CFG = null;
-    try{
-      const br = await fetch('book.json',{cache:'no-store'});
-      if(br.ok){
-        BOOK_CFG = await br.json();
-      }
-    }catch(e2){
-      console.warn('book.json όχι διαθέσιμο ή μη έγκυρο', e2);
-      BOOK_CFG = null;
-    }
-
-    // 5. Απόδοση sections (ή fallback αν δεν έχουμε διαλόγους/book.json)
-    renderSection('act1',  ACT1,  act1Cont,  'act1');
-    renderSection('act2',  ACT2,  act2Cont,  'act2');
-    renderSection('foyer', FOYER, foyerCont, 'foyer');
-
-    // 6. Σχεδίαση διαγραμμάτων
-    if(typeof renderDiagramJobs === 'function'){
-      renderDiagramJobs();
-    }
-  }
-
-  loadDialogsAndBuild();
-</script>
-
-<script>
-  // Σχεδίαση διαγραμμάτων βιβλίου (x–t, v–t, a–t, a–x, x–sin)
+  // --- Διαγράμματα ---
 
   function drawXTChart(canvas, opts){
     if(!canvas) return;
@@ -902,7 +784,6 @@
       ctx.lineTo(pxZ, yBot);
       ctx.stroke();
 
-      // βελάκι στην προέκταση αν έχει tail
       if(opts.tZeroHasTail){
         const arrowY = yBot + 4;
         const arrowEndX = pxZ;
@@ -1269,6 +1150,118 @@
       }
     });
   }
+
+  // Κύρια ρουτίνα
+  async function loadDialogsAndBuild(){
+    const file = (lang === 'en') ? 'dialogs-en.json' : 'dialogs-gr.json';
+    diagramJobs.length = 0;
+
+    // 1. Φόρτωση δεδομένων ταλάντωσης από localStorage
+    const bookData = loadBookData();
+    const DEFAULT_A = 3.0;
+    const DEFAULT_T = 6.0;
+
+    gA = (bookData && typeof bookData.A === 'number') ? bookData.A : DEFAULT_A;
+    gT = (bookData && typeof bookData.T === 'number') ? bookData.T : DEFAULT_T;
+    gOmega = (bookData && typeof bookData.omega === 'number')
+      ? bookData.omega
+      : (2*Math.PI/gT);
+
+    gX0 = (bookData && typeof bookData.x0 === 'number') ? bookData.x0 : 1.80;
+    gPhi0Deg = (bookData && typeof bookData.phi0Deg === 'number') ? bookData.phi0Deg : 35.0;
+    gPhi0Rad = gPhi0Deg * Math.PI/180;
+
+    gV0 = gOmega * gA * Math.cos(gPhi0Rad);
+    const eps = 1e-6;
+    if(gV0 > eps){
+      gVSignSymbol = 'υ>0';
+      gVSignWord = (lang === 'en') ? 'positive' : 'θετική';
+    }else if(gV0 < -eps){
+      gVSignSymbol = 'υ<0';
+      gVSignWord = (lang === 'en') ? 'negative' : 'αρνητική';
+    }else{
+      gVSignSymbol = 'υ=0';
+      gVSignWord = (lang === 'en') ? 'zero' : 'μηδενική';
+    }
+
+    setParam('A', gA.toFixed(2));
+    setParam('T', gT.toFixed(2));
+    setParam('omega', gOmega.toFixed(2));
+    setParam('x0', gX0.toFixed(2));
+    setParam('phi0Deg', gPhi0Deg.toFixed(1));
+    setParam('v0', gV0.toFixed(2));
+    setParam('vSignSymbol', gVSignSymbol);
+    setParam('vSignWord', gVSignWord);
+
+    if(!bookData){
+      const note = document.getElementById('paramNote');
+      if(note){
+        note.textContent = (lang === 'en')
+          ? 'No stage data were found. Using indicative values (A=3.00 m, T=6.00 s, etc.).'
+          : 'Δεν βρέθηκαν δεδομένα από τη σκηνή. Χρησιμοποιούνται ενδεικτικές τιμές (A=3.00 m, T=6.00 s κ.λπ.).';
+      }
+    }
+
+    if(bookData && Array.isArray(bookData.samples)){
+      buildTXTable(bookData.samples);
+    }else{
+      buildTXTable([]);
+    }
+
+    // 2. Φόρτωση διαλόγων
+    try{
+      const resp = await fetch(file,{cache:'no-store'});
+      console.log('Ζητάω', file, '-> status', resp.status);
+
+      if(resp.ok){
+        const data = await resp.json();
+        VIEWERS = data.viewers || [];
+        ACT1    = data.act1    || [];
+        ACT2    = data.act2    || [];
+        FOYER   = data.foyer   || [];
+        console.log('Dialogs loaded lengths:', {
+          viewers: VIEWERS.length,
+          act1: ACT1.length,
+          act2: ACT2.length,
+          foyer: FOYER.length
+        });
+      }else{
+        console.error('Δεν βρέθηκε', file);
+      }
+    }catch(err){
+      console.error('Σφάλμα κατά το fetch των διαλόγων', err);
+    }
+
+    const act1Cont  = document.getElementById('act1Transcript');
+    const act2Cont  = document.getElementById('act2Transcript');
+    const foyerCont = document.getElementById('foyerTranscript');
+
+    act1Cont.innerHTML  = '';
+    act2Cont.innerHTML  = '';
+    foyerCont.innerHTML = '';
+
+    // 4. Φόρτωση book.json (πρόσθετα)
+    BOOK_CFG = null;
+    try{
+      const br = await fetch('book.json',{cache:'no-store'});
+      if(br.ok){
+        BOOK_CFG = await br.json();
+      }
+    }catch(e2){
+      console.warn('book.json όχι διαθέσιμο ή μη έγκυρο', e2);
+      BOOK_CFG = null;
+    }
+
+    // 5. Απόδοση sections
+    renderSection('act1',  ACT1,  act1Cont,  'act1');
+    renderSection('act2',  ACT2,  act2Cont,  'act2');
+    renderSection('foyer', FOYER, foyerCont, 'foyer');
+
+    // 6. ΤΩΡΑ σχεδιάζουμε τα διαγράμματα με τα gA,gT,... που μόλις φορτώθηκαν
+    renderDiagramJobs();
+  }
+
+  loadDialogsAndBuild();
 </script>
 
 </body>
