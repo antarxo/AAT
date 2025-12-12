@@ -17,17 +17,15 @@
       -webkit-font-smoothing:antialiased;
     }
     .page{
-      max-width:1120px;
+      max-width:1080px;
       margin:0 auto;
-      padding:18px 14px 40px;
+      padding:24px 16px 40px;
     }
     header{
-      margin-bottom:18px;
-      padding-bottom:10px;
-      border-bottom:1px solid #e5e7eb;
+      margin-bottom:20px;
     }
     header h1{
-      font-size:1.6rem;
+      font-size:1.7rem;
       font-weight:700;
       letter-spacing:-0.03em;
       color:#111827;
@@ -36,112 +34,114 @@
     header .subtitle{
       font-size:.95rem;
       color:#4b5563;
-      max-width:800px;
+      max-width:720px;
+      line-height:1.5;
     }
-    section.section{
-      margin-bottom:18px;
+    section{
+      margin-bottom:20px;
     }
-    .section-header{
-      margin-bottom:8px;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:8px;
+    h2{
+      font-size:1.1rem;
+      font-weight:600;
+      margin:4px 0 10px;
+      color:#111827;
+    }
+    p{
+      margin:6px 0;
+      font-size:.95rem;
+    }
+    .muted{
+      color:#6b7280;
+      font-size:.9rem;
     }
     .section-label{
       font-size:.78rem;
       text-transform:uppercase;
-      letter-spacing:.16em;
+      letter-spacing:.08em;
       color:#6b7280;
-      font-weight:600;
-    }
-    .section-header h2{
-      font-size:1.1rem;
-      font-weight:600;
-      color:#111827;
+      margin-bottom:2px;
     }
     .card{
       background:#ffffff;
       border-radius:10px;
       border:1px solid #e5e7eb;
-      padding:14px 16px;
-      box-shadow:0 8px 20px rgba(15,23,42,0.04);
+      padding:12px 14px;
+      box-shadow:0 10px 30px rgba(15,23,42,0.06);
       margin-top:6px;
     }
-
-    .params-list{
+    .params-grid{
       display:grid;
-      grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
-      gap:6px 18px;
-      font-size:.95rem;
-    }
-    .params-list div span.val{
-      font-weight:600;
-      color:#111827;
-    }
-    .pill-row{
-      display:flex;
-      flex-wrap:wrap;
-      gap:4px;
+      grid-template-columns:repeat(auto-fit, minmax(180px,1fr));
+      gap:8px 16px;
       margin-top:8px;
     }
-    .pill{
-      font-size:.78rem;
-      padding:4px 8px;
-      border-radius:999px;
-      background:#eff6ff;
-      color:#1d4ed8;
-      border:1px solid #bfdbfe;
+    .param-pill{
+      background:#f9fafb;
+      border-radius:10px;
+      border:1px solid #e5e7eb;
+      padding:8px 10px;
+      font-size:.9rem;
     }
-    .muted{
-      font-size:.88rem;
+    .param-label{
+      font-size:.78rem;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      color:#6b7280;
+      margin-bottom:2px;
+    }
+    .param-value{
+      font-weight:600;
+      color:#111827;
+      margin-bottom:2px;
+    }
+    .param-note{
+      font-size:.8rem;
       color:#6b7280;
     }
     .small-note{
-      font-size:.82rem;
+      font-size:.8rem;
       color:#6b7280;
       margin-top:6px;
     }
-    .act1-layout{
+
+    .layout-act1{
       display:grid;
-      grid-template-columns:minmax(0,1.1fr) minmax(0,1.1fr);
-      gap:12px;
+      grid-template-columns: minmax(0,1.1fr) minmax(0,1.1fr);
+      gap:16px;
+      align-items:flex-start;
     }
-    .card-header-row{
+
+    .tx-card{
+      background:#ffffff;
+      border-radius:10px;
+      border:1px solid #e5e7eb;
+      padding:10px 12px;
+      box-shadow:0 10px 30px rgba(15,23,42,0.06);
+    }
+
+    .tx-header{
       display:flex;
       align-items:center;
       justify-content:space-between;
       margin-bottom:6px;
     }
-    .card-header-title{
+    .tx-title{
       font-size:.98rem;
       font-weight:600;
       color:#111827;
     }
-    .card-header-tags{
-      display:flex;
-      flex-wrap:wrap;
-      gap:6px;
-      justify-content:flex-end;
+    .tx-sub{
+      font-size:.8rem;
+      color:#6b7280;
     }
-    .chip{
-      font-size:.75rem;
-      padding:2px 6px;
-      border-radius:999px;
-      border:1px solid #e5e7eb;
-      color:#4b5563;
-      background:#f9fafb;
-    }
-    #txTableWrapper{
+
+    .tx-scroll{
+      max-height:220px;
+      overflow:auto;
+      margin-top:6px;
       border-radius:8px;
       border:1px solid #e5e7eb;
       background:#f9fafb;
-      padding:6px;
-      max-height:220px;
-      overflow:auto;
-    }
-    #txTableContainer{
-      min-width:100%;
     }
     table.tx-table{
       width:100%;
@@ -168,15 +168,37 @@
     }
 
     .dialog-card{
-      margin-top:10px;
+      margin-top:12px;
       padding:0;
       overflow:hidden;
     }
-    .dialog-card .card-header-row{
-      padding:10px 12px 8px;
+    .dialog-header{
+      padding:10px 12px;
       border-bottom:1px solid #e5e7eb;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
     }
-    .dialog-card .card-body{
+    .dialog-title{
+      font-size:.98rem;
+      font-weight:600;
+      color:#111827;
+    }
+    .dialog-tags{
+      display:flex;
+      flex-wrap:wrap;
+      gap:6px;
+      justify-content:flex-end;
+    }
+    .tag-pill{
+      font-size:.75rem;
+      padding:2px 8px;
+      border-radius:999px;
+      border:1px solid #e5e7eb;
+      color:#4b5563;
+      background:#f9fafb;
+    }
+    .dialog-body{
       padding:0;
     }
 
@@ -186,7 +208,6 @@
       border-collapse:collapse;
       overflow:hidden;
       background:#ffffff;
-      margin-top:0;
     }
     .dialog-row{
       display:grid;
@@ -198,15 +219,16 @@
     }
     .dialog-cell{
       padding:8px 10px;
-      font-size:.95rem;
-      vertical-align:top;
+      font-size:.94rem;
     }
     .dialog-cell.left{
       border-right:1px solid #e5e7eb;
+      background:#ffffff;
     }
     .dialog-cell.right{
       background:#f9fafb;
     }
+
     .speaker{
       margin-bottom:4px;
     }
@@ -224,26 +246,23 @@
       width:22px;
       height:22px;
       border-radius:999px;
+      background-size:cover;
+      background-position:center;
+      background-repeat:no-repeat;
+      flex-shrink:0;
       display:flex;
       align-items:center;
       justify-content:center;
       font-size:.8rem;
       font-weight:600;
-      color:#ffffff;
-      background:#6b7280;
-      background-size:cover;
-      background-position:center;
+      color:#f9fafb;
     }
     .speaker-name{
       font-weight:500;
     }
     .speech{
-      font-size:.95rem;
+      font-size:.94rem;
       line-height:1.5;
-      color:#111827;
-    }
-    .speech p{
-      margin-bottom:4px;
     }
 
     .diagram-inline{
@@ -257,6 +276,9 @@
       height:auto;
       display:block;
       margin:4px 0;
+      background:#ffffff;
+      border-radius:6px;
+      border:1px solid #e5e7eb;
     }
     .diagram-caption{
       font-size:.8rem;
@@ -274,25 +296,78 @@
       color:#111827;
     }
 
-    ul.bullet-list{
-      margin:6px 0 0 18px;
-      font-size:.92rem;
-      color:#374151;
-    }
-    ul.bullet-list li{
-      margin-bottom:3px;
+    .footer-note{
+      font-size:.8rem;
+      color:#6b7280;
+      margin-top:12px;
+      padding-top:8px;
+      border-top:1px dashed #d1d5db;
     }
 
-    .footer-note{
-      font-size:.82rem;
+    .inline-tag{
+      display:inline-flex;
+      align-items:center;
+      gap:4px;
+      font-size:.75rem;
+      padding:2px 6px;
+      border-radius:999px;
+      background:#eef2ff;
+      color:#4338ca;
+      border:1px solid #c7d2fe;
+      margin-top:4px;
+    }
+    .inline-tag-dot{
+      width:6px;
+      height:6px;
+      border-radius:999px;
+      background:#4f46e5;
+    }
+
+    .note-box{
+      background:#ecfdf3;
+      border:1px solid #bbf7d0;
+      border-radius:10px;
+      padding:8px 10px;
+      font-size:.9rem;
+      margin-top:6px;
+      color:#14532d;
+    }
+
+    .warning-box{
+      background:#fff7ed;
+      border:1px solid #fed7aa;
+      border-radius:10px;
+      padding:8px 10px;
+      font-size:.9rem;
+      margin-top:6px;
+      color:#7c2d12;
+    }
+
+    /* ----- Πίνακας t–x ----- */
+    #txTableWrapper{
+      margin-top:8px;
+    }
+    #txTableContainer{
+      margin-top:4px;
+      background:#ffffff;
+      border-radius:8px;
+      border:1px solid #e5e7eb;
+      padding:4px;
+    }
+
+    #txTableBodyEmpty{
+      text-align:left;
+      font-size:.9rem;
       color:#6b7280;
-      margin-top:10px;
-      border-top:1px dashed #e5e7eb;
-      padding-top:6px;
+      padding:6px;
+    }
+
+    .dialog-block{
+      padding:10px 12px;
     }
 
     @media (max-width:900px){
-      .act1-layout{
+      .layout-act1{
         grid-template-columns:1fr;
       }
       .dialog-row{
@@ -314,16 +389,16 @@
   <header>
     <h1>Βιβλίο Παράστασης — Απλή Αρμονική Ταλάντωση</h1>
     <div class="subtitle">
-      Η ίδια παράσταση, σε ρυθμό ανάγνωσης. Πίνακας t–x πάνω δεξιά, και από κάτω διάλογοι / νόμοι / γραφήματα στη ροή τους.
+      Η ίδια παράσταση, αλλά σε «λειτουργία βιβλίου». Σταθερές παράμετροι της
+      ταλάντωσης, πίνακας t–x, διαγράμματα και διάλογοι, σε μια σελίδα που
+      μπορείς να διαβάσεις με τον ρυθμό σου.
     </div>
   </header>
 
   <!-- ΜΕΡΟΣ Α: Σταθερά στοιχεία ταλάντωσης -->
-  <section class="section">
-    <div class="section-header">
-      <div class="section-label">Δεδομένα κίνησης</div>
-      <h2>Παράμετροι της Α.Α.Τ. στην παράσταση</h2>
-    </div>
+  <section>
+    <div class="section-label">Δεδομένα κίνησης</div>
+    <h2>Παράμετροι της Α.Α.Τ. στην παράσταση</h2>
 
     <div class="card">
       <p>
@@ -333,34 +408,41 @@
         εικόνα ανάγνωσης.
       </p>
 
-      <div class="params-list" style="margin-top:8px">
-        <div>
-          Πλάτος A:
-          <span class="val" data-param="A">—</span> m
+      <div class="params-grid">
+        <div class="param-pill">
+          <div class="param-label">Πλάτος A</div>
+          <div class="param-value"><span data-param="A">—</span> m</div>
+          <div class="param-note">Μέγιστη απομάκρυνση από τη Θ.Ι.</div>
         </div>
-        <div>
-          Περίοδος T:
-          <span class="val" data-param="T">—</span> s
+        <div class="param-pill">
+          <div class="param-label">Περίοδος T</div>
+          <div class="param-value"><span data-param="T">—</span> s</div>
+          <div class="param-note">Χρόνος για μία πλήρη ταλάντωση</div>
         </div>
-        <div>
-          Γωνιακή συχνότητα ω:
-          <span class="val" data-param="omega">—</span> rad/s
+        <div class="param-pill">
+          <div class="param-label">Γωνιακή συχνότητα ω</div>
+          <div class="param-value"><span data-param="omega">—</span> rad/s</div>
+          <div class="param-note">ω = 2π/T</div>
         </div>
-        <div>
-          Φάση φ₀:
-          <span class="val" data-param="phi0Deg">—</span>°
+        <div class="param-pill">
+          <div class="param-label">Φάση φ₀</div>
+          <div class="param-value"><span data-param="phi0Deg">—</span>°</div>
+          <div class="param-note">Φάση τη στιγμή t = 0</div>
         </div>
-        <div>
-          Αρχική απομάκρυνση x₀:
-          <span class="val" data-param="x0">—</span> m
+        <div class="param-pill">
+          <div class="param-label">Αρχική απομάκρυνση x₀</div>
+          <div class="param-value"><span data-param="x0">—</span> m</div>
+          <div class="param-note">x₀ = A·ημ(φ₀)</div>
         </div>
-        <div>
-          Αρχική ταχύτητα υ₀:
-          <span class="val" data-param="v0">—</span> m/s
-          <span style="margin-left:4px;font-size:.85rem;color:#4b5563;">
-            (<span data-param="vSignSymbol">υ=0</span>,
-            <span data-param="vSignWord">μηδενική</span>)
-          </span>
+        <div class="param-pill">
+          <div class="param-label">Αρχική ταχύτητα υ₀</div>
+          <div class="param-value">
+            <span data-param="v0">—</span> m/s
+          </div>
+          <div class="param-note">
+            Σημάδι: <span data-param="vSignSymbol">υ=0</span>
+            (<span data-param="vSignWord">μηδενική</span>)
+          </div>
         </div>
       </div>
 
@@ -372,24 +454,21 @@
     </div>
   </section>
 
-  <!-- ΜΕΡΟΣ Β: Πράξη 1 με πίνακα t–x και διαλόγους -->
-  <section class="section">
-    <div class="section-header">
-      <div class="section-label">Πράξη 1</div>
-      <h2>Από τις μετρήσεις t–x στους νόμους της κίνησης</h2>
-    </div>
+  <!-- ΜΕΡΟΣ Β: Πράξη 1 -->
+  <section>
+    <div class="section-label">Πράξη 1</div>
+    <h2>Από τις μετρήσεις t–x στους νόμους της κίνησης</h2>
 
-    <div class="act1-layout">
-      <div class="act1-left">
+    <div class="layout-act1">
+      <div>
         <div class="card">
-          <h3 style="margin-bottom:4px;font-size:1rem;">Τι βλέπεις στη σκηνή;</h3>
           <p>
             Στην Πράξη 1, οι θεατές προσπαθούν να «διαβάσουν» την κίνηση
             από τις μετρήσεις t–x και από το διάγραμμα x–t. Η σκηνή
             προχωράει διαδοχικά, αλλά εδώ η ροή είναι πιο ήρεμη:
             μπορείς να σταθείς σε κάθε βήμα.
           </p>
-          <p class="muted" style="margin-top:4px;">
+          <p class="muted">
             Ο πίνακας στα δεξιά περιέχει τα ζεύγη (t, x) από τη ζωντανή παράσταση.
             Κάτω από αυτόν ξεκινούν οι διάλογοι: αριστερά οι θεατές, δεξιά οι νόμοι
             και τα γραφήματα στη στιγμή που εμφανίζονται στο σενάριο.
@@ -397,15 +476,17 @@
         </div>
       </div>
 
-      <div class="act1-right">
-        <div class="card">
-          <div class="card-header-row">
-            <div class="card-header-title">Πίνακας μετρήσεων t–x</div>
+      <div>
+        <div class="tx-card">
+          <div class="tx-header">
+            <div>
+              <div class="tx-title">Πίνακας μετρήσεων t–x</div>
+              <div class="tx-sub">
+                Η πρώτη γραμμή αντιστοιχεί στο t = 0 με x = x₀. Εμφανίζονται
+                μέχρι περίπου δύο περίοδοι· ο πίνακας είναι scrollable.
+              </div>
+            </div>
           </div>
-          <p class="muted" style="margin-bottom:6px;">
-            Η πρώτη γραμμή αντιστοιχεί στο t = 0 με x = x₀. Εμφανίζονται μέχρι περίπου
-            δύο περίοδοι· ο πίνακας είναι scrollable.
-          </p>
           <div id="txTableWrapper">
             <div id="txTableContainer">
               <table class="tx-table">
@@ -415,9 +496,7 @@
                     <th>x (m)</th>
                   </tr>
                 </thead>
-                <tbody id="txTableBody">
-                  <!-- γεμίζει δυναμικά -->
-                </tbody>
+                <tbody id="txTableBody"></tbody>
               </table>
             </div>
           </div>
@@ -426,95 +505,52 @@
     </div>
 
     <div class="card dialog-card">
-      <div class="card-header-row">
-        <div class="card-header-title">Διάλογοι Πράξης 1</div>
-        <div class="card-header-tags" id="act1Tags"></div>
+      <div class="dialog-header">
+        <div class="dialog-title">Διάλογοι Πράξης 1</div>
+        <div class="dialog-tags" id="act1Tags"></div>
       </div>
-      <div class="card-body">
-        <div id="act1Transcript"></div>
+      <div class="dialog-body">
+        <div id="act1Transcript" class="dialog-block"></div>
       </div>
     </div>
   </section>
 
   <!-- ΜΕΡΟΣ Γ: Πράξη 2 -->
-  <section class="section">
-    <div class="section-header">
-      <div class="section-label">Πράξη 2</div>
-      <h2>Από τους νόμους στην πρόβλεψη της κίνησης</h2>
-    </div>
+  <section>
+    <div class="section-label">Πράξη 2</div>
+    <h2>Από τους νόμους στην πρόβλεψη της κίνησης</h2>
 
     <div class="card dialog-card">
-      <div class="card-header-row">
-        <div class="card-header-title">Διάλογοι Πράξης 2</div>
-        <div class="card-header-tags" id="act2Tags"></div>
+      <div class="dialog-header">
+        <div class="dialog-title">Διάλογοι Πράξης 2</div>
+        <div class="dialog-tags" id="act2Tags"></div>
       </div>
-      <div class="card-body">
-        <div id="act2Transcript"></div>
+      <div class="dialog-body">
+        <div id="act2Transcript" class="dialog-block"></div>
       </div>
     </div>
   </section>
 
   <!-- ΜΕΡΟΣ Δ: Φουαγιέ -->
-  <section class="section">
-    <div class="section-header">
-      <div class="section-label">Φουαγιέ</div>
-      <h2>Συζητώντας «απ' έξω» για την παράσταση</h2>
-    </div>
-
-    <div class="card dialog-card">
-      <div class="card-header-row">
-        <div class="card-header-title">Συζήτηση στο φουαγιέ</div>
-        <div class="card-header-tags" id="foyerTags"></div>
-      </div>
-      <div class="card-body">
-        <div id="foyerTranscript"></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ΜΕΡΟΣ Ε: Υποσημείωση για τα δεδομένα -->
-  <section class="section">
-    <div class="section-header">
-      <div class="section-label">Τεχνική σημείωση</div>
-      <h2>Από πού έρχονται τα δεδομένα;</h2>
-    </div>
+  <section>
+    <div class="section-label">Φουαγιέ</div>
+    <h2>Συζήτηση μετά την παράσταση</h2>
 
     <div class="card">
-      <p>
-        Η σελίδα αυτή δεν «ξαναπαίζει» την παράσταση· διαβάζει ό,τι έχει ήδη
-        συμβεί στη σκηνή και το οργανώνει για ανάγνωση. Συγκεκριμένα:
-      </p>
-      <ul class="bullet-list">
-        <li>
-          Παίρνει το <code>aatBookData</code> από το <code>localStorage</code>
-          (κουμπί «Βιβλίο Παράστασης» στη σκηνή) για τις παραμέτρους A, T, ω,
-          x₀, φ₀ και τα δείγματα του πίνακα t–x.
-        </li>
-        <li>
-          Φορτώνει το σενάριο από τα <code>dialogs-*.json</code>, ώστε οι
-          διάλογοι να είναι ίδιοι με της ζωντανής παράστασης.
-        </li>
-        <li>
-          Διαβάζει το <code>book-*.json</code> (ή <code>book.json</code>) για
-          πρόσθετα blocks (<code>note</code>, <code>html</code>, <code>diagram</code>, <code>image</code>)
-          που συμπληρώνουν το βιβλίο χωρίς να αλλάζουν τη ροή.
-        </li>
-      </ul>
       <p class="muted">
-        Αν κάποιο από αυτά λείπει ή δεν είναι διαθέσιμο, η σελίδα συνεχίζει
-        με ό,τι έχει: εμφανίζει τους διαλόγους σε πλήρη μορφή, χωρίς τα
-        πρόσθετα blocks από το book*.json, και με τυπικές παραμέτρους A, T, ω.
+        Το φουαγιέ μεταφέρεται επίσης σε δίστηλη μορφή: σκέψεις θεατών αριστερά,
+        συνοδευτικά σχόλια / τύποι στη δεξιά στήλη.
       </p>
-    </div>
-
-    <div class="footer-note">
-      Τεχνική σημείωση: η σελίδα διαβάζει το <code>aatBookData</code> από το
-      <code>localStorage</code> (κουμπί «Βιβλίο Παράστασης» στη σκηνή), το
-      <code>dialogs-*.json</code> για το σενάριο και το <code>book-*.json</code> για
-      πρόσθετα blocks (note/html/diagram/image). Αν κάτι λείπει, γίνεται graceful fallback.
+      <div id="foyerTranscript" class="dialog-block"></div>
     </div>
   </section>
 
+  <div class="footer-note">
+    Τεχνική σημείωση: η σελίδα διαβάζει το <code>aatBookData</code> από το
+    <code>localStorage</code> (κουμπί «Βιβλίο Παράστασης» στη σκηνή), το
+    <code>dialogs-*.json</code> για το σενάριο και το <code>book.json</code> για
+    πρόσθετα blocks (note/html/diagram/image). Αν κάτι λείπει, γίνεται graceful fallback.
+  </div>
 </div>
 
 <script>
@@ -525,10 +561,8 @@
   let ACT2 = [];
   let FOYER = [];
 
-  // επιπλέον config από book*.json (πρόσθετα)
   let BOOK_CFG = null;
 
-  // παγκόσμιες παράμετροι για διαγράμματα / templates
   let gA = 3.0;
   let gT = 6.0;
   let gOmega = 2*Math.PI/6.0;
@@ -543,7 +577,6 @@
   const lang = (urlParams.get('lang') === 'en') ? 'en' : 'gr';
   document.documentElement.lang = (lang === 'en') ? 'en' : 'el';
 
-  // λίστα διαγραμμάτων που θα σχεδιαστούν μετά το χτίσιμο του DOM
   const diagramJobs = [];
 
   function localizeTrig(text){
@@ -573,27 +606,24 @@
     });
   }
 
-  // expand {A},{T},{omega},{x0},{phi0},{vSignSymbol},{vSignWord}
   function expandDynTemplate(tpl){
     if(!tpl) return '';
     const s = String(tpl);
     return s
-      .replaceAll('{A}', String(gA.toFixed(2)))
-      .replaceAll('{T}', String(gT.toFixed(2)))
-      .replaceAll('{omega}', String(gOmega.toFixed(2)))
-      .replaceAll('{x0}', String(gX0.toFixed(2)))
-      .replaceAll('{phi0}', String(gPhi0Deg.toFixed(1)))
+      .replaceAll('{A}', gA.toFixed(2))
+      .replaceAll('{T}', gT.toFixed(2))
+      .replaceAll('{omega}', gOmega.toFixed(3))
+      .replaceAll('{x0}', gX0.toFixed(2))
+      .replaceAll('{phi0}', gPhi0Deg.toFixed(1))
       .replaceAll('{vSignSymbol}', gVSignSymbol)
       .replaceAll('{vSignWord}', gVSignWord);
   }
 
-  // Χτίσιμο πίνακα t–x από τα δείγματα
-  function buildTXTable(samples){
+  function renderTxTable(samples){
     const tbody = document.getElementById('txTableBody');
-    if(!tbody) return;
     tbody.innerHTML = '';
 
-    if(!Array.isArray(samples) || !samples.length){
+    if(!samples || !samples.length){
       const tr = document.createElement('tr');
       const td = document.createElement('td');
       td.colSpan = 2;
@@ -619,7 +649,6 @@
     });
   }
 
-  // Δημιουργία badge ομιλητή
   function viewerName(viewerIdx1){
     const idx0 = (viewerIdx1 || 1) - 1;
     if(idx0 < 0 || idx0 >= VIEWERS.length) return '';
@@ -649,7 +678,6 @@
     return (v && v.img) ? v.img : null;
   }
 
-  // --- build dialog table με inline διαγράμματα στη δεξιά στήλη ---
   function buildDialogTable(events, contextLabel){
     const wrapper = document.createElement('div');
     wrapper.className = 'dialog-table';
@@ -690,7 +718,6 @@
       const hasLeft  = leftText.trim()  !== '';
       const hasRight = rightText.trim() !== '';
 
-      // --- αριστερή στήλη: θεατής / αφήγηση ---
       if(hasLeft){
         const sp = document.createElement('div');
         sp.className = 'speaker';
@@ -737,7 +764,6 @@
         leftCell.innerHTML = '&nbsp;';
       }
 
-      // --- δεξιά στήλη: νόμοι + διαγράμματα στη στιγμή τους ---
       let anythingRight = false;
 
       if(hasRight){
@@ -748,7 +774,6 @@
         anythingRight = true;
       }
 
-      // διαγράμματα από πεδία ev.graph / ev.plot (όπως στη σκηνή)
       function addDiagram(kind, caption, extraOpts){
         const box = document.createElement('div');
         box.className = 'diagram-inline';
@@ -769,7 +794,6 @@
 
       const hasXtMark = !!ev.xtZeroMark || !!ev.xtMarkTail;
 
-      // x–t: είτε γραμμή graph:"xt" είτε απλά xtZeroMark/xtMarkTail (όπως στη σκηνή)
       if(ev.graph === 'xt' || hasXtMark){
         addDiagram(
           'xt',
@@ -795,7 +819,7 @@
       }
 
       if(!anythingRight){
-        rightCell.style.background = '#f9fafb';
+        rightCell.innerHTML = '&nbsp;';
       }
 
       row.appendChild(leftCell);
@@ -806,7 +830,6 @@
     return wrapper;
   }
 
-  // ----- βοηθητικό για στοίχιση blocks από book.json -----
   function applyColumnAlignment(div, column){
     if(column === 'left'){
       div.style.maxWidth = '60%';
@@ -816,7 +839,6 @@
     }
   }
 
-  // Απόδοση section με βάση book*.json (αν υπάρχει), αλλιώς full διάλογος
   function renderSection(sectionId, events, container, contextLabel){
     const cfg = BOOK_CFG;
     const sec = cfg && Array.isArray(cfg.sections)
@@ -843,7 +865,7 @@
         const div = document.createElement('div');
         div.className = 'card';
         applyColumnAlignment(div, block.column);
-        div.innerHTML = expandDynTemplate(block.html || '');
+        div.innerHTML = block.html || '';
         container.appendChild(div);
         return;
       }
@@ -879,7 +901,7 @@
 
         if(block.title){
           const h3 = document.createElement('h3');
-          h3.textContent = expandDynTemplate(block.title || '');
+          h3.textContent = block.title;
           wrapper.appendChild(h3);
         }
 
@@ -893,25 +915,21 @@
         if(block.caption){
           const cap = document.createElement('div');
           cap.className = 'diagram-caption';
-          cap.textContent = expandDynTemplate(block.caption || '');
+          cap.textContent = block.caption;
           canvBox.appendChild(cap);
         }
 
         wrapper.appendChild(canvBox);
         container.appendChild(wrapper);
 
-        diagramJobs.push(Object.assign({
+        diagramJobs.push({
           id,
           kind: block.kind || 'xt'
-        }, (block.options || {})));
+        });
         return;
       }
-
-      // unsupported: quietly ignore
     });
   }
-
-  // ----- Σχεδίαση διαγραμμάτων (χρησιμοποιούν gA, gT, gOmega, gPhi0Rad, gX0) -----
 
   function drawXTChart(canvas, opts){
     if(!canvas) return;
@@ -948,7 +966,6 @@
     ctx.lineWidth = 1;
     ctx.setLineDash([3,3]);
 
-    // κατακόρυφες γραμμές t
     const steps = 8;
     for(let i=0;i<=steps;i++){
       const tt = tMin + (tMax - tMin)*i/steps;
@@ -960,7 +977,6 @@
     }
     ctx.setLineDash([]);
 
-    // άξονες
     ctx.strokeStyle = 'rgba(31,41,55,1)';
     ctx.lineWidth = 1.2;
     ctx.beginPath();
@@ -974,7 +990,6 @@
     ctx.lineTo(x1,yMid);
     ctx.stroke();
 
-    // κύρια καμπύλη x(t)
     ctx.strokeStyle = 'rgba(37,99,235,0.9)';
     ctx.lineWidth = 1.4;
     ctx.beginPath();
@@ -989,7 +1004,6 @@
     }
     ctx.stroke();
 
-    // γραμμή x0
     const x0val = gX0;
     const yx0 = xToY(x0val);
     ctx.strokeStyle = 'rgba(37,99,235,0.8)';
@@ -1003,44 +1017,56 @@
     ctx.font = '10px system-ui';
     ctx.fillText('x₀ ≈ '+x0val.toFixed(2)+' m', x0+4, yx0-4);
 
-    // ----- Κόκκινη καμπύλη + χάπι νέου t=0, αν ζητηθεί από το JSON -----
     const showMark = opts && opts.xtZeroMark;
     const showTail = opts && opts.xtMarkTail;
 
     if(showMark){
-      // t_zero όπως στη σκηνή: off = (phi0/ω) mod T, tZero = T - off
       let off = (gPhi0Rad / gOmega) % gT;
       if(off < 0) off += gT;
       let tZero = (Math.abs(off) < 1e-9) ? 0 : (gT - off);
 
-      // περιορίζουμε σε [0, 2T]
       if(tZero < tMin) tZero = tMin;
       if(tZero > tMax) tZero = tZero % gT;
 
       const px0 = tToX(tZero);
       const py0 = xToY(0);
 
-      // κόκκινος δείκτης
-      ctx.strokeStyle = 'rgba(220,38,38,0.9)';
-      ctx.fillStyle   = 'rgba(248,113,113,1)';
-      ctx.lineWidth   = 1.4;
-
+      const tEnd = Math.min(tZero + gT, tMax);
+      ctx.save();
+      ctx.strokeStyle = 'rgba(220,38,38,0.95)';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([]);
+      const N2 = 200;
       ctx.beginPath();
-      ctx.moveTo(px0, yTop-3);
-      ctx.lineTo(px0, yBot+3);
+      for(let i=0;i<=N2;i++){
+        const t = tZero + (tEnd - tZero)*(i/N2);
+        const x = A*Math.sin(omega*(t - tZero));
+        const X = tToX(t);
+        const Y = xToY(x);
+        if(i===0) ctx.moveTo(X,Y);
+        else ctx.lineTo(X,Y);
+      }
       ctx.stroke();
 
       if(showTail){
-        ctx.setLineDash([5,3]);
+        ctx.strokeStyle = 'rgba(220,38,38,0.8)';
+        ctx.setLineDash([4,2]);
         ctx.beginPath();
         ctx.moveTo(x0,py0);
         ctx.lineTo(px0,py0);
         ctx.stroke();
-        ctx.setLineDash([]);
+        ctx.restore();
       }
 
-      // χάπι με "νέο t=0"
-      const labelText = (lang === 'en') ? 'We RESET t=0 here' : 'Εδώ θέτουμε νέο t=0';
+      ctx.save();
+      ctx.fillStyle='rgba(220,38,38,0.95)';
+      ctx.beginPath();
+      ctx.arc(px0,py0,3,0,Math.PI*2);
+      ctx.fill();
+      ctx.restore();
+
+      const labelText = (lang === 'en') ? 'new t = 0' : 'νέο t = 0';
+      ctx.save();
       ctx.font = '10px system-ui';
       const textWidth = ctx.measureText(labelText).width;
       const padX = 6;
@@ -1077,11 +1103,41 @@
       ctx.fill();
       ctx.stroke();
 
-      ctx.fillStyle='#fee2e2';
-      ctx.fillText(labelText, labelX - textWidth/2, labelY+1);
-    }
+      ctx.fillStyle='rgba(254,242,242,0.98)';
+      ctx.textAlign='center';
+      ctx.textBaseline='middle';
+      ctx.fillText(labelText,labelX,labelY);
 
-    ctx.restore();
+      const arrowStartX = labelX;
+      const arrowStartY = pillTop + pillH;
+      const arrowEndX   = px0;
+      const arrowEndY   = py0 - 5;
+
+      ctx.beginPath();
+      ctx.moveTo(arrowStartX,arrowStartY);
+      ctx.lineTo(arrowEndX,arrowEndY);
+      ctx.strokeStyle='rgba(248,113,113,0.95)';
+      ctx.lineWidth=1;
+      ctx.stroke();
+
+      const angle = Math.atan2(arrowEndY-arrowStartY, arrowEndX-arrowStartX);
+      const headLen = 6;
+      ctx.beginPath();
+      ctx.moveTo(arrowEndX,arrowEndY);
+      ctx.lineTo(
+        arrowEndX - headLen*Math.cos(angle-Math.PI/6),
+        arrowEndY - headLen*Math.sin(angle-Math.PI/6)
+      );
+      ctx.lineTo(
+        arrowEndX - headLen*Math.cos(angle+Math.PI/6),
+        arrowEndY - headLen*Math.sin(angle+Math.PI/6)
+      );
+      ctx.closePath();
+      ctx.fillStyle='rgba(248,113,113,0.95)';
+      ctx.fill();
+
+      ctx.restore();
+    }
   }
 
   function drawXSinChart(canvas){
@@ -1097,9 +1153,9 @@
     const yBot = h - margin;
 
     const Smin = -1.1;
-    const Smax = 1.1;
+    const Smax =  1.1;
     const xmin = -gA*1.1;
-    const xmax = +gA*1.1;
+    const xmax =  gA*1.1;
 
     function SToX(S){
       return x0 + (S - Smin)/(Smax - Smin)*(x1-x0);
@@ -1416,7 +1472,6 @@
     gPhi0Deg = (bookData && typeof bookData.phi0Deg === 'number') ? bookData.phi0Deg : 35.0;
     gPhi0Rad = gPhi0Deg * Math.PI / 180;
 
-    // v0 και σημάδι
     gV0 = gOmega * gA * Math.cos(gPhi0Rad);
     const eps = 1e-6;
     if(gV0 > eps){
@@ -1449,9 +1504,9 @@
     }
 
     if(bookData && Array.isArray(bookData.samples)){
-      buildTXTable(bookData.samples);
+      renderTxTable(bookData.samples);
     }else{
-      buildTXTable([]);
+      renderTxTable([]);
     }
 
     try{
@@ -1462,35 +1517,29 @@
       }
       const data = await resp.json();
       VIEWERS = data.viewers || [];
-      ACT1 = data.act1 || [];
-      ACT2 = data.act2 || [];
-      FOYER = data.foyer || [];
+      ACT1    = data.act1    || [];
+      ACT2    = data.act2    || [];
+      FOYER   = data.foyer   || [];
 
-      const act1Cont = document.getElementById('act1Transcript');
-      const act2Cont = document.getElementById('act2Transcript');
+      const act1Cont  = document.getElementById('act1Transcript');
+      const act2Cont  = document.getElementById('act2Transcript');
       const foyerCont = document.getElementById('foyerTranscript');
 
       act1Cont.innerHTML  = '';
       act2Cont.innerHTML  = '';
       foyerCont.innerHTML = '';
 
-      // book.json / book-*.json (πρόσθετα, ανά γλώσσα)
       BOOK_CFG = null;
       try{
-        const bookFile = (lang === 'en') ? 'book-en.json' : 'book-gr.json';
-        let br = await fetch(bookFile,{cache:'no-store'});
-        if(!br.ok){
-          br = await fetch('book.json',{cache:'no-store'});
-        }
+        const br = await fetch('book.json',{cache:'no-store'});
         if(br.ok){
           BOOK_CFG = await br.json();
         }
       }catch(e2){
-        console.warn('book*.json όχι διαθέσιμο ή μη έγκυρο', e2);
+        console.warn('book.json όχι διαθέσιμο ή μη έγκυρο', e2);
         BOOK_CFG = null;
       }
 
-      // Απόδοση sections με βάση book.json αν υπάρχει, αλλιώς full διάλογος
       renderSection('act1',  ACT1,  act1Cont,  'act1');
       renderSection('act2',  ACT2,  act2Cont,  'act2');
       renderSection('foyer', FOYER, foyerCont, 'foyer');
@@ -1499,7 +1548,6 @@
       console.error(err);
     }
 
-    // τελευταία φάση: σχεδιάζουμε όλα τα canvases που ζητήθηκαν
     renderDiagramJobs();
   }
 
