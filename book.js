@@ -23,6 +23,8 @@ document.documentElement.lang = (lang === 'en') ? 'en' : 'el';
 
 const diagramJobs = [];
 
+// --- helpers ---
+
 function localizeTrig(text){
   if(!text) return '';
   let out = String(text);
@@ -50,6 +52,7 @@ function setParam(name, valueStr){
   });
 }
 
+// δυναμικά placeholders
 function expandDynTemplate(tpl){
   if(!tpl) return '';
   const s = String(tpl);
@@ -63,6 +66,41 @@ function expandDynTemplate(tpl){
     .replaceAll('{vSignSymbol}', gVSignSymbol)
     .replaceAll('{vSignWord}', gVSignWord);
 }
+
+// meta από book-*.json
+function applyMetaFromBookCfg(){
+  if(!BOOK_CFG || !BOOK_CFG.meta) return;
+  const m = BOOK_CFG.meta;
+
+  if(m.title){
+    const h1 = document.querySelector('header h1');
+    if(h1) h1.innerHTML = m.title;
+  }
+  if(m.subtitle){
+    const sub = document.querySelector('header .subtitle');
+    if(sub) sub.innerHTML = m.subtitle;
+  }
+  if(m.sections){
+    if(m.sections.paramsIntro){
+      const el = document.getElementById('paramsIntro');
+      if(el) el.innerHTML = m.sections.paramsIntro;
+    }
+    if(m.sections.act1Intro){
+      const el = document.getElementById('act1Intro');
+      if(el) el.innerHTML = m.sections.act1Intro;
+    }
+    if(m.sections.foyerIntro){
+      const el = document.getElementById('foyerIntro');
+      if(el) el.innerHTML = m.sections.foyerIntro;
+    }
+    if(m.sections.footerNote){
+      const el = document.getElementById('footerNote');
+      if(el) el.innerHTML = m.sections.footerNote;
+    }
+  }
+}
+
+// --- πίνακας t–x ---
 
 function renderTxTable(samples){
   const tbody = document.getElementById('txTableBody');
@@ -95,6 +133,8 @@ function renderTxTable(samples){
   });
 }
 
+// --- viewers ---
+
 function viewerName(viewerIdx1){
   const idx0 = (viewerIdx1 || 1) - 1;
   if(idx0 < 0 || idx0 >= VIEWERS.length) return '';
@@ -124,7 +164,8 @@ function viewerImg(viewerIdx1){
   return (v && v.img) ? v.img : null;
 }
 
-// ----- ΔΙΑΛΟΓΟΙ: ένα row από ACT1/ACT2/FOYER -----
+// --- dialog rows (από dialogs-*.json) ---
+
 function buildDialogRow(ev, contextLabel, idx){
   const row = document.createElement('div');
   row.className = 'dialog-row';
@@ -222,7 +263,7 @@ function buildDialogRow(ev, contextLabel, idx){
   if(ev.graph === 'xt' || hasXtMark){
     addDiagram(
       'xt',
-      'Διάγραμμα x–t',
+      (lang === 'en') ? 'x–t diagram' : 'Διάγραμμα x–t',
       {
         xtZeroMark: !!ev.xtZeroMark,
         xtMarkTail: !!ev.xtMarkTail
@@ -231,16 +272,16 @@ function buildDialogRow(ev, contextLabel, idx){
   }
 
   if(ev.plot === 'xsin'){
-    addDiagram('xsin', 'Διάγραμμα x–ημ(ωt)');
+    addDiagram('xsin', (lang === 'en') ? 'x–sin(ωt) diagram' : 'Διάγραμμα x–ημ(ωt)');
   }
   if(ev.plot === 'v'){
-    addDiagram('v', 'Διάγραμμα υ–t');
+    addDiagram('v', (lang === 'en') ? 'v–t diagram' : 'Διάγραμμα υ–t');
   }
   if(ev.plot === 'a'){
-    addDiagram('a', 'Διάγραμμα a–t');
+    addDiagram('a', (lang === 'en') ? 'a–t diagram' : 'Διάγραμμα a–t');
   }
   if(ev.plot === 'ax'){
-    addDiagram('ax', 'Διάγραμμα a–x');
+    addDiagram('ax', (lang === 'en') ? 'a–x diagram' : 'Διάγραμμα a–x');
   }
 
   if(!anythingRight){
@@ -252,7 +293,8 @@ function buildDialogRow(ev, contextLabel, idx){
   return row;
 }
 
-// ----- ΠΡΟΣΘΕΤΑ book-*.json: ένα row για κάθε block -----
+// --- blocks από book-*.json ---
+
 function buildBookBlockRow(block, contextLabel){
   if(!block || typeof block !== 'object') return null;
 
@@ -350,7 +392,8 @@ function buildBookBlockRow(block, contextLabel){
   return null;
 }
 
-// ----- Render Πράξης με το ΜΟΝΤΕΡΝΟ book-gr schema -----
+// --- render πράξης με schema act1/act2/foyer ---
+
 function renderAct(actKey, events, container, contextLabel){
   const actCfg = BOOK_CFG && BOOK_CFG[actKey];
 
@@ -413,7 +456,8 @@ function renderAct(actKey, events, container, contextLabel){
   container.appendChild(table);
 }
 
-// ----- Διαγράμματα -----
+// --- διαγράμματα ---
+
 function drawXTChart(canvas, opts){
   if(!canvas) return;
   const ctx = canvas.getContext('2d');
@@ -938,6 +982,8 @@ function renderDiagramJobs(){
   });
 }
 
+// --- main ---
+
 async function loadDialogsAndBuild(){
   const file = (lang === 'en') ? 'dialogs-en.json' : 'dialogs-gr.json';
   diagramJobs.length = 0;
@@ -1010,6 +1056,7 @@ async function loadDialogsAndBuild(){
     act2Cont.innerHTML  = '';
     foyerCont.innerHTML = '';
 
+    // book-*.json (πρόσθετα + meta)
     BOOK_CFG = null;
     const bookFile = (lang === 'en') ? 'book-en.json' : 'book-gr.json';
     try{
@@ -1025,6 +1072,10 @@ async function loadDialogsAndBuild(){
       BOOK_CFG = null;
     }
 
+    // meta (τίτλοι, εισαγωγές, footer)
+    applyMetaFromBookCfg();
+
+    // περιεχόμενο acts
     renderAct('act1',  ACT1,  act1Cont,  'act1');
     renderAct('act2',  ACT2,  act2Cont,  'act2');
     renderAct('foyer', FOYER, foyerCont, 'foyer');
