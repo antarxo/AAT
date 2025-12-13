@@ -329,7 +329,7 @@
       border-radius:10px;
       padding:8px 10px;
       font-size:.9rem;
-      margin-top:6px;
+      margin-top:4px;
       color:#14532d;
     }
 
@@ -339,7 +339,7 @@
       border-radius:10px;
       padding:8px 10px;
       font-size:.9rem;
-      margin-top:6px;
+      margin-top:4px;
       color:#7c2d12;
     }
 
@@ -353,15 +353,8 @@
       border-radius:8px;
       border:1px solid #e5e7eb;
       padding:4px;
-      max-height:260px;        /* ~10 γραμμές */
-      overflow-y:auto;         /* scroll κάθετα */
-    }
-
-    #txTableBodyEmpty{
-      text-align:left;
-      font-size:.9rem;
-      color:#6b7280;
-      padding:6px;
+      max-height:260px;
+      overflow-y:auto;
     }
 
     .dialog-block{
@@ -550,8 +543,8 @@
   <div class="footer-note">
     Τεχνική σημείωση: η σελίδα διαβάζει το <code>aatBookData</code> από το
     <code>localStorage</code> (κουμπί «Βιβλίο Παράστασης» στη σκηνή), το
-    <code>dialogs-*.json</code> για το σενάριο και το <code>book-*.json</code> για
-    πρόσθετα blocks (note/html/diagram/image). Αν κάτι λείπει, γίνεται graceful fallback.
+    <code>dialogs-*.json</code> για το σενάριο και το <code>book-*.json</code> με
+    δομή <code>act1/act2/foyer</code> (beforeAll/rows/afterAll) για τα πρόσθετα.
   </div>
 </div>
 
@@ -617,6 +610,7 @@
       .replaceAll('{omega}', gOmega.toFixed(3))
       .replaceAll('{x0}', gX0.toFixed(2))
       .replaceAll('{phi0}', gPhi0Deg.toFixed(1))
+      .replaceAll('{phi0Deg}', gPhi0Deg.toFixed(1))
       .replaceAll('{vSignSymbol}', gVSignSymbol)
       .replaceAll('{vSignWord}', gVSignWord);
   }
@@ -680,260 +674,304 @@
     return (v && v.img) ? v.img : null;
   }
 
-  function buildDialogTable(events, contextLabel){
-    const wrapper = document.createElement('div');
-    wrapper.className = 'dialog-table';
+  // ----- ΔΙΑΛΟΓΟΙ: ένα row από ACT1/ACT2/FOYER -----
+  function buildDialogRow(ev, contextLabel, idx){
+    const row = document.createElement('div');
+    row.className = 'dialog-row';
 
-    if(!events || !events.length){
-      const emptyRow = document.createElement('div');
-      emptyRow.className = 'dialog-row';
-      const c1 = document.createElement('div');
-      const c2 = document.createElement('div');
-      c1.className = 'dialog-cell left';
-      c2.className = 'dialog-cell right';
-      c1.textContent = (lang === 'en')
-        ? 'No content found in JSON.'
-        : 'Δεν βρέθηκε περιεχόμενο στο JSON.';
-      emptyRow.appendChild(c1);
-      emptyRow.appendChild(c2);
-      wrapper.appendChild(emptyRow);
-      return wrapper;
-    }
+    const leftCell  = document.createElement('div');
+    const rightCell = document.createElement('div');
+    leftCell.className  = 'dialog-cell left';
+    rightCell.className = 'dialog-cell right';
 
-    events.forEach((ev, idx)=>{
-      if(ev.close) return;
+    const hasLeftRaw  = ev.left  && String(ev.left).trim()  !== '';
+    const hasRightRaw = ev.right && String(ev.right).trim() !== '';
 
-      const row = document.createElement('div');
-      row.className = 'dialog-row';
+    const leftText  = hasLeftRaw  ? expandDynTemplate(ev.left)  : '';
+    const rightText = hasRightRaw ? expandDynTemplate(ev.right) : '';
 
-      const leftCell  = document.createElement('div');
-      const rightCell = document.createElement('div');
-      leftCell.className  = 'dialog-cell left';
-      rightCell.className = 'dialog-cell right';
+    const hasLeft  = leftText.trim()  !== '';
+    const hasRight = rightText.trim() !== '';
 
-      const hasLeftRaw  = ev.left  && String(ev.left).trim()  !== '';
-      const hasRightRaw = ev.right && String(ev.right).trim() !== '';
+    if(hasLeft){
+      const sp = document.createElement('div');
+      sp.className = 'speaker';
 
-      const leftText  = hasLeftRaw  ? expandDynTemplate(ev.left)  : '';
-      const rightText = hasRightRaw ? expandDynTemplate(ev.right) : '';
+      const badge = document.createElement('div');
+      badge.className = 'speaker-badge';
 
-      const hasLeft  = leftText.trim()  !== '';
-      const hasRight = rightText.trim() !== '';
+      const avatar = document.createElement('div');
+      avatar.className = 'speaker-avatar';
 
-      if(hasLeft){
-        const sp = document.createElement('div');
-        sp.className = 'speaker';
-
-        const badge = document.createElement('div');
-        badge.className = 'speaker-badge';
-
-        const avatar = document.createElement('div');
-        avatar.className = 'speaker-avatar';
-
-        if(ev.viewer != null){
-          const vColor = viewerColor(ev.viewer);
-          const vImg   = viewerImg(ev.viewer);
-          avatar.style.backgroundColor = vColor;
-          if(vImg){
-            avatar.style.backgroundImage = 'url("'+vImg+'")';
-          }else{
-            avatar.textContent = viewerInitial(ev.viewer);
-          }
+      if(ev.viewer != null){
+        const vColor = viewerColor(ev.viewer);
+        const vImg   = viewerImg(ev.viewer);
+        avatar.style.backgroundColor = vColor;
+        if(vImg){
+          avatar.style.backgroundImage = 'url("'+vImg+'")';
         }else{
-          avatar.style.backgroundColor = '#6b7280';
-          avatar.textContent = (lang === 'en') ? 'N' : 'Α';
+          avatar.textContent = viewerInitial(ev.viewer);
         }
-
-        const nameSpan = document.createElement('span');
-        nameSpan.className = 'speaker-name';
-        if(ev.viewer != null){
-          nameSpan.textContent = viewerName(ev.viewer);
-        }else{
-          nameSpan.textContent = (lang === 'en') ? 'Narration' : 'Αφήγηση';
-        }
-
-        badge.appendChild(avatar);
-        badge.appendChild(nameSpan);
-        sp.appendChild(badge);
-
-        const speech = document.createElement('div');
-        speech.className = 'speech';
-        speech.innerHTML = leftText.replaceAll('\n','<br>');
-
-        leftCell.appendChild(sp);
-        leftCell.appendChild(speech);
       }else{
-        leftCell.innerHTML = '&nbsp;';
+        avatar.style.backgroundColor = '#6b7280';
+        avatar.textContent = (lang === 'en') ? 'N' : 'Α';
       }
 
-      let anythingRight = false;
-
-      if(hasRight){
-        const txt = localizeTrig(rightText).replaceAll('\n','<br>');
-        const lawDiv = document.createElement('div');
-        lawDiv.innerHTML = txt;
-        rightCell.appendChild(lawDiv);
-        anythingRight = true;
+      const nameSpan = document.createElement('span');
+      nameSpan.className = 'speaker-name';
+      if(ev.viewer != null){
+        nameSpan.textContent = viewerName(ev.viewer);
+      }else{
+        nameSpan.textContent = (lang === 'en') ? 'Narration' : 'Αφήγηση';
       }
 
-      function addDiagram(kind, caption, extraOpts){
-        const box = document.createElement('div');
-        box.className = 'diagram-inline';
-        const canv = document.createElement('canvas');
-        const id = `${contextLabel}-${kind}-${idx}`;
-        canv.id = id;
-        box.appendChild(canv);
-        if(caption){
-          const cap = document.createElement('div');
-          cap.className = 'diagram-caption';
-          cap.textContent = caption;
-          box.appendChild(cap);
-        }
-        rightCell.appendChild(box);
-        diagramJobs.push(Object.assign({ id, kind }, (extraOpts || {})));
-        anythingRight = true;
-      }
+      badge.appendChild(avatar);
+      badge.appendChild(nameSpan);
+      sp.appendChild(badge);
 
-      const hasXtMark = !!ev.xtZeroMark || !!ev.xtMarkTail;
+      const speech = document.createElement('div');
+      speech.className = 'speech';
+      speech.innerHTML = leftText.replaceAll('\n','<br>');
 
-      if(ev.graph === 'xt' || hasXtMark){
-        addDiagram(
-          'xt',
-          'Διάγραμμα x–t',
-          {
-            xtZeroMark: !!ev.xtZeroMark,
-            xtMarkTail: !!ev.xtMarkTail
-          }
-        );
-      }
-
-      if(ev.plot === 'xsin'){
-        addDiagram('xsin', 'Διάγραμμα x–ημ(ωt)');
-      }
-      if(ev.plot === 'v'){
-        addDiagram('v', 'Διάγραμμα υ–t');
-      }
-      if(ev.plot === 'a'){
-        addDiagram('a', 'Διάγραμμα a–t');
-      }
-      if(ev.plot === 'ax'){
-        addDiagram('ax', 'Διάγραμμα a–x');
-      }
-
-      if(!anythingRight){
-        rightCell.innerHTML = '&nbsp;';
-      }
-
-      row.appendChild(leftCell);
-      row.appendChild(rightCell);
-      wrapper.appendChild(row);
-    });
-
-    return wrapper;
-  }
-
-  function applyColumnAlignment(div, column){
-    if(column === 'left'){
-      div.style.maxWidth = '60%';
-    }else if(column === 'right'){
-      div.style.maxWidth = '40%';
-      div.style.marginLeft = 'auto';
+      leftCell.appendChild(sp);
+      leftCell.appendChild(speech);
+    }else{
+      leftCell.innerHTML = '&nbsp;';
     }
+
+    let anythingRight = false;
+
+    if(hasRight){
+      const txt = localizeTrig(rightText).replaceAll('\n','<br>');
+      const lawDiv = document.createElement('div');
+      lawDiv.innerHTML = txt;
+      rightCell.appendChild(lawDiv);
+      anythingRight = true;
+    }
+
+    // helper για διαγράμματα δεξιά, σύμφωνα με τα πεδία του event
+    function addDiagram(kind, caption, extraOpts){
+      const box = document.createElement('div');
+      box.className = 'diagram-inline';
+      const canv = document.createElement('canvas');
+      const id = `${contextLabel}-${kind}-${idx}`;
+      canv.id = id;
+      box.appendChild(canv);
+      if(caption){
+        const cap = document.createElement('div');
+        cap.className = 'diagram-caption';
+        cap.textContent = caption;
+        box.appendChild(cap);
+      }
+      rightCell.appendChild(box);
+      diagramJobs.push(Object.assign({ id, kind }, (extraOpts || {})));
+      anythingRight = true;
+    }
+
+    const hasXtMark = !!ev.xtZeroMark || !!ev.xtMarkTail;
+
+    if(ev.graph === 'xt' || hasXtMark){
+      addDiagram(
+        'xt',
+        'Διάγραμμα x–t',
+        {
+          xtZeroMark: !!ev.xtZeroMark,
+          xtMarkTail: !!ev.xtMarkTail
+        }
+      );
+    }
+
+    if(ev.plot === 'xsin'){
+      addDiagram('xsin', 'Διάγραμμα x–ημ(ωt)');
+    }
+    if(ev.plot === 'v'){
+      addDiagram('v', 'Διάγραμμα υ–t');
+    }
+    if(ev.plot === 'a'){
+      addDiagram('a', 'Διάγραμμα a–t');
+    }
+    if(ev.plot === 'ax'){
+      addDiagram('ax', 'Διάγραμμα a–x');
+    }
+
+    if(!anythingRight){
+      rightCell.innerHTML = '&nbsp;';
+    }
+
+    row.appendChild(leftCell);
+    row.appendChild(rightCell);
+    return row;
   }
 
-  function renderSection(sectionId, events, container, contextLabel){
-    const cfg = BOOK_CFG;
-    const sec = cfg && Array.isArray(cfg.sections)
-      ? cfg.sections.find(s => s.id === sectionId)
-      : null;
+  // ----- ΠΡΟΣΘΕΤΑ book-*.json: ένα row για κάθε block -----
+  function buildBookBlockRow(block, contextLabel){
+    if(!block || typeof block !== 'object') return null;
 
-    if(!sec || !Array.isArray(sec.blocks) || !sec.blocks.length){
-      container.appendChild( buildDialogTable(events, contextLabel) );
+    const type = block.type;
+    const col  = block.column || 'full';
+
+    const row = document.createElement('div');
+    row.className = 'dialog-row';
+
+    const leftCell  = document.createElement('div');
+    const rightCell = document.createElement('div');
+    leftCell.className  = 'dialog-cell left';
+    rightCell.className = 'dialog-cell right';
+
+    function placeContent(node){
+      if(col === 'left'){
+        leftCell.appendChild(node);
+        rightCell.innerHTML = '&nbsp;';
+        row.appendChild(leftCell);
+        row.appendChild(rightCell);
+      }else if(col === 'right'){
+        leftCell.innerHTML = '&nbsp;';
+        rightCell.appendChild(node);
+        row.appendChild(leftCell);
+        row.appendChild(rightCell);
+      }else{ // full
+        leftCell.appendChild(node);
+        leftCell.style.gridColumn = '1 / span 2';
+        row.appendChild(leftCell);
+      }
+    }
+
+    if(type === 'note' || type === 'html'){
+      const html = expandDynTemplate(block.html || block.text || '');
+      const box = document.createElement('div');
+      box.className = (type === 'note') ? 'note-box' : 'speech';
+      box.innerHTML = html;
+      placeContent(box);
+      return row;
+    }
+
+    if(type === 'image'){
+      const wrapper = document.createElement('div');
+      const img = document.createElement('img');
+      img.src = block.src || '';
+      img.alt = block.alt || '';
+      img.style.maxWidth = '100%';
+      img.style.display = 'block';
+      img.style.borderRadius = '6px';
+      img.style.border = '1px solid #e5e7eb';
+      wrapper.appendChild(img);
+      if(block.caption){
+        const cap = document.createElement('div');
+        cap.className = 'diagram-caption';
+        cap.textContent = block.caption;
+        wrapper.appendChild(cap);
+      }
+      placeContent(wrapper);
+      return row;
+    }
+
+    if(type === 'diagram'){
+      const wrapper = document.createElement('div');
+      wrapper.className = 'diagram-inline';
+
+      if(block.title){
+        const t = document.createElement('div');
+        t.style.fontWeight = '600';
+        t.style.marginBottom = '2px';
+        t.textContent = block.title;
+        wrapper.appendChild(t);
+      }
+
+      const canvas = document.createElement('canvas');
+      const id = block.id || `${contextLabel}-extra-${(block.kind || 'd')}-${Math.random().toString(16).slice(2)}`;
+      canvas.id = id;
+      wrapper.appendChild(canvas);
+
+      if(block.caption){
+        const cap = document.createElement('div');
+        cap.className = 'diagram-caption';
+        cap.textContent = block.caption;
+        wrapper.appendChild(cap);
+      }
+
+      diagramJobs.push({
+        id,
+        kind: block.kind || 'xt'
+      });
+
+      placeContent(wrapper);
+      return row;
+    }
+
+    // Άγνωστος τύπος -> μην κρεμάσουμε τίποτα
+    return null;
+  }
+
+  // ----- Render Πράξης με το ΜΟΝΤΕΡΝΟ book-gr schema -----
+  function renderAct(actKey, events, container, contextLabel){
+    const actCfg = BOOK_CFG && BOOK_CFG[actKey];
+
+    const table = document.createElement('div');
+    table.className = 'dialog-table';
+
+    if(!actCfg){
+      // fallback: χωρίς πρόσθετα, μόνο διαλόγους
+      if(Array.isArray(events) && events.length){
+        events.forEach((ev, idx)=>{
+          const r = buildDialogRow(ev, contextLabel, idx);
+          table.appendChild(r);
+        });
+      }
+      container.appendChild(table);
       return;
     }
 
-    sec.blocks.forEach(block=>{
-      if(block.type === 'dialogs'){
-        const from = (typeof block.from === 'number' && block.from >= 0) ? block.from : 0;
-        const to   = (typeof block.to   === 'number' && block.to   >= 0) ? block.to   : (events.length-1);
-        const slice = events.slice(from, to+1);
-        if(slice.length){
-          container.appendChild( buildDialogTable(slice, contextLabel) );
-        }
-        return;
-      }
+    const beforeAll = Array.isArray(actCfg.beforeAll) ? actCfg.beforeAll : [];
+    const rows = Array.isArray(actCfg.rows) ? actCfg.rows : [];
+    const afterAll = Array.isArray(actCfg.afterAll) ? actCfg.afterAll : [];
 
-      if(block.type === 'note' || block.type === 'html'){
-        const div = document.createElement('div');
-        div.className = 'card';
-        applyColumnAlignment(div, block.column);
-        const html = expandDynTemplate(block.html || block.text || '');
-        div.innerHTML = html;
-        container.appendChild(div);
-        return;
-      }
-
-      if(block.type === 'image'){
-        const wrapper = document.createElement('div');
-        wrapper.className = 'card';
-        applyColumnAlignment(wrapper, block.column);
-
-        const img = document.createElement('img');
-        img.src = block.src || '';
-        img.alt = block.alt || '';
-        img.style.maxWidth = '100%';
-        img.style.display = 'block';
-        img.style.borderRadius = '6px';
-        wrapper.appendChild(img);
-
-        if(block.caption){
-          const cap = document.createElement('div');
-          cap.className = 'diagram-caption';
-          cap.textContent = block.caption;
-          wrapper.appendChild(cap);
-        }
-
-        container.appendChild(wrapper);
-        return;
-      }
-
-      if(block.type === 'diagram'){
-        const wrapper = document.createElement('div');
-        wrapper.className = 'card';
-        applyColumnAlignment(wrapper, block.column);
-
-        if(block.title){
-          const h3 = document.createElement('h3');
-          h3.textContent = block.title;
-          wrapper.appendChild(h3);
-        }
-
-        const canvBox = document.createElement('div');
-        canvBox.className = 'diagram-inline';
-        const canv = document.createElement('canvas');
-        const id = `${sectionId}-extra-${block.id || (block.kind || 'd')}`;
-        canv.id = id;
-        canvBox.appendChild(canv);
-
-        if(block.caption){
-          const cap = document.createElement('div');
-          cap.className = 'diagram-caption';
-          cap.textContent = block.caption;
-          canvBox.appendChild(cap);
-        }
-
-        wrapper.appendChild(canvBox);
-        container.appendChild(wrapper);
-
-        diagramJobs.push({
-          id,
-          kind: block.kind || 'xt'
-        });
-        return;
-      }
+    // beforeAll blocks
+    beforeAll.forEach(b=>{
+      const row = buildBookBlockRow(b, contextLabel);
+      if(row) table.appendChild(row);
     });
+
+    const maxLen = Math.max(rows.length, events.length);
+
+    for(let i=0; i<maxLen; i++){
+      const rowCfg = rows[i] || {};
+      const beforeArr = Array.isArray(rowCfg.before) ? rowCfg.before : [];
+      const inlineArr = Array.isArray(rowCfg.inline) ? rowCfg.inline : [];
+      const afterArr  = Array.isArray(rowCfg.after)  ? rowCfg.after  : [];
+
+      // before blocks
+      beforeArr.forEach(b=>{
+        const row = buildBookBlockRow(b, contextLabel);
+        if(row) table.appendChild(row);
+      });
+
+      // ίδιος ο διάλογος
+      if(events[i]){
+        const dlgRow = buildDialogRow(events[i], contextLabel, i);
+        table.appendChild(dlgRow);
+      }
+
+      // inline + after blocks
+      inlineArr.forEach(b=>{
+        const row = buildBookBlockRow(b, contextLabel);
+        if(row) table.appendChild(row);
+      });
+      afterArr.forEach(b=>{
+        const row = buildBookBlockRow(b, contextLabel);
+        if(row) table.appendChild(row);
+      });
+    }
+
+    // afterAll blocks
+    afterAll.forEach(b=>{
+      const row = buildBookBlockRow(b, contextLabel);
+      if(row) table.appendChild(row);
+    });
+
+    container.appendChild(table);
   }
 
+  // ----- Διαγράμματα -----
   function drawXTChart(canvas, opts){
     if(!canvas) return;
     const ctx = canvas.getContext('2d');
@@ -1547,9 +1585,9 @@
         BOOK_CFG = null;
       }
 
-      renderSection('act1',  ACT1,  act1Cont,  'act1');
-      renderSection('act2',  ACT2,  act2Cont,  'act2');
-      renderSection('foyer', FOYER, foyerCont, 'foyer');
+      renderAct('act1',  ACT1,  act1Cont,  'act1');
+      renderAct('act2',  ACT2,  act2Cont,  'act2');
+      renderAct('foyer', FOYER, foyerCont, 'foyer');
 
     }catch(err){
       console.error(err);
