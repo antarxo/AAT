@@ -1540,7 +1540,21 @@
           br = await fetch('book.json',{cache:'no-store'});
         }
         if(br.ok){
-          BOOK_CFG = await br.json();
+          const text = await br.text();
+          try{
+            BOOK_CFG = JSON.parse(text);
+          }catch(parseErr){
+            console.warn('book*.json: πρόβλημα σύνταξης JSON, δοκιμή με truncation στο τελευταίο "}"', parseErr);
+            const lastBrace = text.lastIndexOf('}');
+            if(lastBrace !== -1){
+              try{
+                BOOK_CFG = JSON.parse(text.slice(0,lastBrace+1));
+              }catch(e3){
+                console.warn('book*.json: αποτυχία και μετά το truncation', e3);
+                BOOK_CFG = null;
+              }
+            }
+          }
         }
       }catch(e2){
         console.warn('book*.json όχι διαθέσιμο ή μη έγκυρο', e2);
