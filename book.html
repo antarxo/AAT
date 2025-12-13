@@ -353,6 +353,8 @@
       border-radius:8px;
       border:1px solid #e5e7eb;
       padding:4px;
+      max-height:260px;        /* ~10 γραμμές */
+      overflow-y:auto;         /* scroll κάθετα */
     }
 
     #txTableBodyEmpty{
@@ -425,11 +427,6 @@
           <div class="param-note">ω = 2π/T</div>
         </div>
         <div class="param-pill">
-          <div class="param-label">Φάση φ₀</div>
-          <div class="param-value"><span data-param="phi0Deg">—</span>°</div>
-          <div class="param-note">Φάση τη στιγμή t = 0</div>
-        </div>
-        <div class="param-pill">
           <div class="param-label">Αρχική απομάκρυνση x₀</div>
           <div class="param-value"><span data-param="x0">—</span> m</div>
           <div class="param-note">x₀ = A·ημ(φ₀)</div>
@@ -443,6 +440,11 @@
             Σημάδι: <span data-param="vSignSymbol">υ=0</span>
             (<span data-param="vSignWord">μηδενική</span>)
           </div>
+        </div>
+        <div class="param-pill">
+          <div class="param-label">Φάση φ₀</div>
+          <div class="param-value"><span data-param="phi0Deg">—</span>°</div>
+          <div class="param-note">Φάση τη στιγμή t = 0</div>
         </div>
       </div>
 
@@ -865,7 +867,8 @@
         const div = document.createElement('div');
         div.className = 'card';
         applyColumnAlignment(div, block.column);
-        div.innerHTML = block.html || '';
+        const html = expandDynTemplate(block.html || block.text || '');
+        div.innerHTML = html;
         container.appendChild(div);
         return;
       }
@@ -1529,13 +1532,11 @@
       act2Cont.innerHTML  = '';
       foyerCont.innerHTML = '';
 
-      // ---- ΕΔΩ η αλλαγή για book-gr / book-en ----
       BOOK_CFG = null;
       const bookFile = (lang === 'en') ? 'book-en.json' : 'book-gr.json';
       try{
         let br = await fetch(bookFile,{cache:'no-store'});
         if(!br.ok){
-          // fallback σε παλιό book.json αν λείπει το book-*.json
           br = await fetch('book.json',{cache:'no-store'});
         }
         if(br.ok){
