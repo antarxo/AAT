@@ -353,8 +353,8 @@
       border-radius:8px;
       border:1px solid #e5e7eb;
       padding:4px;
-      max-height:260px;        /* ~10 γραμμές */
-      overflow-y:auto;         /* scroll κάθετα */
+      max-height:260px;
+      overflow-y:auto;
     }
 
     #txTableBodyEmpty{
@@ -389,8 +389,8 @@
 <div class="page">
 
   <header>
-    <h1>Βιβλίο Παράστασης — Απλή Αρμονική Ταλάντωση</h1>
-    <div class="subtitle">
+    <h1 id="bookTitle">Βιβλίο Παράστασης — Απλή Αρμονική Ταλάντωση</h1>
+    <div class="subtitle" id="bookSubtitle">
       Η ίδια παράσταση, αλλά σε «λειτουργία βιβλίου». Σταθερές παράμετροι της
       ταλάντωσης, πίνακας t–x, διαγράμματα και διάλογοι, σε μια σελίδα που
       μπορείς να διαβάσεις με τον ρυθμό σου.
@@ -399,16 +399,11 @@
 
   <!-- ΜΕΡΟΣ Α: Σταθερά στοιχεία ταλάντωσης -->
   <section>
-    <div class="section-label">Δεδομένα κίνησης</div>
-    <h2>Παράμετροι της Α.Α.Τ. στην παράσταση</h2>
+    <div class="section-label" id="labelParams">Δεδομένα κίνησης</div>
+    <h2 id="titleParams">Παράμετροι της Α.Α.Τ. στην παράσταση</h2>
 
     <div class="card">
-      <p>
-        Η κίνηση είναι Απλή Αρμονική Ταλάντωση (Α.Α.Τ.) με γνωστές παραμέτρους.
-        Η σκηνή ρυθμίστηκε κάποια στιγμή με ένα συγκεκριμένο πλάτος, περίοδο και
-        φάση. Αυτά τα δεδομένα «τα παίρνει» το βιβλίο για να έχεις μία συνεπή
-        εικόνα ανάγνωσης.
-      </p>
+      <p id="paramsIntro"></p>
 
       <div class="params-grid">
         <div class="param-pill">
@@ -458,23 +453,13 @@
 
   <!-- ΜΕΡΟΣ Β: Πράξη 1 -->
   <section>
-    <div class="section-label">Πράξη 1</div>
-    <h2>Από τις μετρήσεις t–x στους νόμους της κίνησης</h2>
+    <div class="section-label" id="labelAct1">Πράξη 1</div>
+    <h2 id="titleAct1">Από τις μετρήσεις t–x στους νόμους της κίνησης</h2>
 
     <div class="layout-act1">
       <div>
-        <div class="card">
-          <p>
-            Στην Πράξη 1, οι θεατές προσπαθούν να «διαβάσουν» την κίνηση
-            από τις μετρήσεις t–x και από το διάγραμμα x–t. Η σκηνή
-            προχωράει διαδοχικά, αλλά εδώ η ροή είναι πιο ήρεμη:
-            μπορείς να σταθείς σε κάθε βήμα.
-          </p>
-          <p class="muted">
-            Ο πίνακας στα δεξιά περιέχει τα ζεύγη (t, x) από τη ζωντανή παράσταση.
-            Κάτω από αυτόν ξεκινούν οι διάλογοι: αριστερά οι θεατές, δεξιά οι νόμοι
-            και τα γραφήματα στη στιγμή που εμφανίζονται στο σενάριο.
-          </p>
+        <div class="card" id="act1Intro">
+          <!-- γεμίζει από book-*.json (meta.sections.act1Intro) -->
         </div>
       </div>
 
@@ -519,8 +504,8 @@
 
   <!-- ΜΕΡΟΣ Γ: Πράξη 2 -->
   <section>
-    <div class="section-label">Πράξη 2</div>
-    <h2>Από τους νόμους στην πρόβλεψη της κίνησης</h2>
+    <div class="section-label" id="labelAct2">Πράξη 2</div>
+    <h2 id="titleAct2">Από τους νόμους στην πρόβλεψη της κίνησης</h2>
 
     <div class="card dialog-card">
       <div class="dialog-header">
@@ -535,19 +520,16 @@
 
   <!-- ΜΕΡΟΣ Δ: Φουαγιέ -->
   <section>
-    <div class="section-label">Φουαγιέ</div>
-    <h2>Συζήτηση μετά την παράσταση</h2>
+    <div class="section-label" id="labelFoyer">Φουαγιέ</div>
+    <h2 id="titleFoyer">Συζήτηση μετά την παράσταση</h2>
 
     <div class="card">
-      <p class="muted">
-        Το φουαγιέ μεταφέρεται επίσης σε δίστηλη μορφή: σκέψεις θεατών αριστερά,
-        συνοδευτικά σχόλια / τύποι στη δεξιά στήλη.
-      </p>
+      <div id="foyerIntro" class="muted"></div>
       <div id="foyerTranscript" class="dialog-block"></div>
     </div>
   </section>
 
-  <div class="footer-note">
+  <div class="footer-note" id="footerNote">
     Τεχνική σημείωση: η σελίδα διαβάζει το <code>aatBookData</code> από το
     <code>localStorage</code> (κουμπί «Βιβλίο Παράστασης» στη σκηνή), το
     <code>dialogs-*.json</code> για το σενάριο και το <code>book-*.json</code> για
@@ -841,10 +823,34 @@
     }
   }
 
-  // helper για blocks του book*.json (note/html/image/diagram)
-  function renderBookBlock(block, container, sectionId, contextLabel, rowIndex){
-    if(!block || !block.type) return;
+  function renderSection(sectionId, events, container, contextLabel){
+    const cfg = BOOK_CFG;
+    const sec = cfg && cfg[sectionId] ? cfg[sectionId] : null;
 
+    if(!sec){
+      container.appendChild( buildDialogTable(events, contextLabel) );
+      return;
+    }
+
+    // beforeAll
+    if(Array.isArray(sec.beforeAll)){
+      sec.beforeAll.forEach(block=>{
+        renderBlock(block, container, sectionId);
+      });
+    }
+
+    // rows: προς το παρόν απλώς ρίχνουμε όλο τον διάλογο μία φορά
+    container.appendChild( buildDialogTable(events, contextLabel) );
+
+    // afterAll
+    if(Array.isArray(sec.afterAll)){
+      sec.afterAll.forEach(block=>{
+        renderBlock(block, container, sectionId);
+      });
+    }
+  }
+
+  function renderBlock(block, container, sectionId){
     if(block.type === 'note' || block.type === 'html'){
       const div = document.createElement('div');
       div.className = 'card';
@@ -886,22 +892,21 @@
 
       if(block.title){
         const h3 = document.createElement('h3');
-        h3.textContent = expandDynTemplate(block.title);
+        h3.textContent = block.title;
         wrapper.appendChild(h3);
       }
 
       const canvBox = document.createElement('div');
       canvBox.className = 'diagram-inline';
       const canv = document.createElement('canvas');
-      const baseId = block.id || (block.kind || 'd');
-      const id = `${sectionId}-extra-${rowIndex != null ? rowIndex : 'x'}-${baseId}`;
+      const id = `${sectionId}-extra-${block.id || (block.kind || 'd')}`;
       canv.id = id;
       canvBox.appendChild(canv);
 
       if(block.caption){
         const cap = document.createElement('div');
         cap.className = 'diagram-caption';
-        cap.textContent = expandDynTemplate(block.caption);
+        cap.textContent = block.caption;
         canvBox.appendChild(cap);
       }
 
@@ -913,64 +918,6 @@
         kind: block.kind || 'xt'
       });
       return;
-    }
-    // άγνωστο type: αγνόησέ το ή log αν θες
-  }
-
-  // render section με beforeAll / rows[*] / afterAll από book*.json
-  function renderSection(sectionId, events, container, contextLabel){
-    const cfg = BOOK_CFG;
-    const sec = cfg && Array.isArray(cfg.sections)
-      ? cfg.sections.find(s => s.id === sectionId)
-      : null;
-
-    // αν δεν υπάρχει καθόλου config για αυτό το section -> full διάλογος
-    if(!sec){
-      container.appendChild( buildDialogTable(events, contextLabel) );
-      return;
-    }
-
-    const rowsDef = Array.isArray(sec.rows) ? sec.rows : [];
-
-    // 1. beforeAll
-    if(Array.isArray(sec.beforeAll)){
-      sec.beforeAll.forEach(block => {
-        renderBookBlock(block, container, sectionId, contextLabel, null);
-      });
-    }
-
-    // 2. κάθε γραμμή διαλόγου με πριν/inline/μετά
-    events.forEach((ev, idx) => {
-      const rowCfg = rowsDef[idx] || {};
-      const beforeList = Array.isArray(rowCfg.before) ? rowCfg.before : [];
-      const inlineList = Array.isArray(rowCfg.inline) ? rowCfg.inline : [];
-      const afterList  = Array.isArray(rowCfg.after)  ? rowCfg.after  : [];
-
-      // before
-      beforeList.forEach(block => {
-        renderBookBlock(block, container, sectionId, contextLabel, idx);
-      });
-
-      // η ίδια η γραμμή διαλόγου
-      const rowTable = buildDialogTable([ev], contextLabel);
-      container.appendChild(rowTable);
-
-      // inline (θεωρούμε "κολλητά" μετά τη γραμμή)
-      inlineList.forEach(block => {
-        renderBookBlock(block, container, sectionId, contextLabel, idx);
-      });
-
-      // after (μετά την inline)
-      afterList.forEach(block => {
-        renderBookBlock(block, container, sectionId, contextLabel, idx);
-      });
-    });
-
-    // 3. afterAll
-    if(Array.isArray(sec.afterAll)){
-      sec.afterAll.forEach(block => {
-        renderBookBlock(block, container, sectionId, contextLabel, null);
-      });
     }
   }
 
@@ -1197,8 +1144,6 @@
 
     const Smin = -1.1;
     const Smax =  1.1;
-    const xmin = -gA*1.1;
-    const xmax =  gA*1.1;
 
     function SToX(S){
       return x0 + (S - Smin)/(Smax - Smin)*(x1-x0);
@@ -1500,6 +1445,58 @@
     });
   }
 
+  function applyMetaFromBookCfg(){
+    if(!BOOK_CFG || !BOOK_CFG.meta) return;
+    const meta = BOOK_CFG.meta;
+
+    const titleEl = document.getElementById('bookTitle');
+    if(titleEl && meta.title){
+      titleEl.textContent = meta.title;
+    }
+
+    const subtitleEl = document.getElementById('bookSubtitle');
+    if(subtitleEl && meta.subtitle){
+      subtitleEl.innerHTML = meta.subtitle;
+    }
+
+    const sectionsMeta = meta.sections || {};
+
+    const paramsIntroEl = document.getElementById('paramsIntro');
+    if(paramsIntroEl && sectionsMeta.paramsIntro){
+      paramsIntroEl.innerHTML = sectionsMeta.paramsIntro;
+    }
+
+    const act1IntroEl = document.getElementById('act1Intro');
+    if(act1IntroEl && sectionsMeta.act1Intro){
+      act1IntroEl.innerHTML = sectionsMeta.act1Intro;
+    }
+
+    const foyerIntroEl = document.getElementById('foyerIntro');
+    if(foyerIntroEl && sectionsMeta.foyerIntro){
+      foyerIntroEl.innerHTML = sectionsMeta.foyerIntro;
+    }
+
+    const footerNoteEl = document.getElementById('footerNote');
+    if(footerNoteEl && sectionsMeta.footerNote){
+      footerNoteEl.innerHTML = sectionsMeta.footerNote;
+    }
+
+    const titles = meta.sectionTitles || {};
+    function setText(id, val){
+      const el = document.getElementById(id);
+      if(el && val) el.textContent = val;
+    }
+
+    setText('labelParams', titles.paramsLabel);
+    setText('titleParams', titles.paramsTitle);
+    setText('labelAct1',   titles.act1Label);
+    setText('titleAct1',   titles.act1Title);
+    setText('labelAct2',   titles.act2Label);
+    setText('titleAct2',   titles.act2Title);
+    setText('labelFoyer',  titles.foyerLabel);
+    setText('titleFoyer',  titles.foyerTitle);
+  }
+
   async function loadDialogsAndBuild(){
     const file = (lang === 'en') ? 'dialogs-en.json' : 'dialogs-gr.json';
     diagramJobs.length = 0;
@@ -1581,6 +1578,7 @@
         }
         if(br.ok){
           BOOK_CFG = await br.json();
+          applyMetaFromBookCfg();
         }
       }catch(e2){
         console.warn('book*.json όχι διαθέσιμο ή μη έγκυρο', e2);
