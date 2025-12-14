@@ -841,97 +841,137 @@
     }
   }
 
+  // helper για blocks του book*.json (note/html/image/diagram)
+  function renderBookBlock(block, container, sectionId, contextLabel, rowIndex){
+    if(!block || !block.type) return;
+
+    if(block.type === 'note' || block.type === 'html'){
+      const div = document.createElement('div');
+      div.className = 'card';
+      applyColumnAlignment(div, block.column);
+      const html = expandDynTemplate(block.html || block.text || '');
+      div.innerHTML = html;
+      container.appendChild(div);
+      return;
+    }
+
+    if(block.type === 'image'){
+      const wrapper = document.createElement('div');
+      wrapper.className = 'card';
+      applyColumnAlignment(wrapper, block.column);
+
+      const img = document.createElement('img');
+      img.src = block.src || '';
+      img.alt = block.alt || '';
+      img.style.maxWidth = '100%';
+      img.style.display = 'block';
+      img.style.borderRadius = '6px';
+      wrapper.appendChild(img);
+
+      if(block.caption){
+        const cap = document.createElement('div');
+        cap.className = 'diagram-caption';
+        cap.textContent = block.caption;
+        wrapper.appendChild(cap);
+      }
+
+      container.appendChild(wrapper);
+      return;
+    }
+
+    if(block.type === 'diagram'){
+      const wrapper = document.createElement('div');
+      wrapper.className = 'card';
+      applyColumnAlignment(wrapper, block.column);
+
+      if(block.title){
+        const h3 = document.createElement('h3');
+        h3.textContent = expandDynTemplate(block.title);
+        wrapper.appendChild(h3);
+      }
+
+      const canvBox = document.createElement('div');
+      canvBox.className = 'diagram-inline';
+      const canv = document.createElement('canvas');
+      const baseId = block.id || (block.kind || 'd');
+      const id = `${sectionId}-extra-${rowIndex != null ? rowIndex : 'x'}-${baseId}`;
+      canv.id = id;
+      canvBox.appendChild(canv);
+
+      if(block.caption){
+        const cap = document.createElement('div');
+        cap.className = 'diagram-caption';
+        cap.textContent = expandDynTemplate(block.caption);
+        canvBox.appendChild(cap);
+      }
+
+      wrapper.appendChild(canvBox);
+      container.appendChild(wrapper);
+
+      diagramJobs.push({
+        id,
+        kind: block.kind || 'xt'
+      });
+      return;
+    }
+    // άγνωστο type: αγνόησέ το ή log αν θες
+  }
+
+  // render section με beforeAll / rows[*] / afterAll από book*.json
   function renderSection(sectionId, events, container, contextLabel){
     const cfg = BOOK_CFG;
     const sec = cfg && Array.isArray(cfg.sections)
       ? cfg.sections.find(s => s.id === sectionId)
       : null;
 
-    if(!sec || !Array.isArray(sec.blocks) || !sec.blocks.length){
+    // αν δεν υπάρχει καθόλου config για αυτό το section -> full διάλογος
+    if(!sec){
       container.appendChild( buildDialogTable(events, contextLabel) );
       return;
     }
 
-    sec.blocks.forEach(block=>{
-      if(block.type === 'dialogs'){
-        const from = (typeof block.from === 'number' && block.from >= 0) ? block.from : 0;
-        const to   = (typeof block.to   === 'number' && block.to   >= 0) ? block.to   : (events.length-1);
-        const slice = events.slice(from, to+1);
-        if(slice.length){
-          container.appendChild( buildDialogTable(slice, contextLabel) );
-        }
-        return;
-      }
+    const rowsDef = Array.isArray(sec.rows) ? sec.rows : [];
 
-      if(block.type === 'note' || block.type === 'html'){
-        const div = document.createElement('div');
-        div.className = 'card';
-        applyColumnAlignment(div, block.column);
-        const html = expandDynTemplate(block.html || block.text || '');
-        div.innerHTML = html;
-        container.appendChild(div);
-        return;
-      }
+    // 1. beforeAll
+    if(Array.isArray(sec.beforeAll)){
+      sec.beforeAll.forEach(block => {
+        renderBookBlock(block, container, sectionId, contextLabel, null);
+      });
+    }
 
-      if(block.type === 'image'){
-        const wrapper = document.createElement('div');
-        wrapper.className = 'card';
-        applyColumnAlignment(wrapper, block.column);
+    // 2. κάθε γραμμή διαλόγου με πριν/inline/μετά
+    events.forEach((ev, idx) => {
+      const rowCfg = rowsDef[idx] || {};
+      const beforeList = Array.isArray(rowCfg.before) ? rowCfg.before : [];
+      const inlineList = Array.isArray(rowCfg.inline) ? rowCfg.inline : [];
+      const afterList  = Array.isArray(rowCfg.after)  ? rowCfg.after  : [];
 
-        const img = document.createElement('img');
-        img.src = block.src || '';
-        img.alt = block.alt || '';
-        img.style.maxWidth = '100%';
-        img.style.display = 'block';
-        img.style.borderRadius = '6px';
-        wrapper.appendChild(img);
+      // before
+      beforeList.forEach(block => {
+        renderBookBlock(block, container, sectionId, contextLabel, idx);
+      });
 
-        if(block.caption){
-          const cap = document.createElement('div');
-          cap.className = 'diagram-caption';
-          cap.textContent = block.caption;
-          wrapper.appendChild(cap);
-        }
+      // η ίδια η γραμμή διαλόγου
+      const rowTable = buildDialogTable([ev], contextLabel);
+      container.appendChild(rowTable);
 
-        container.appendChild(wrapper);
-        return;
-      }
+      // inline (θεωρούμε "κολλητά" μετά τη γραμμή)
+      inlineList.forEach(block => {
+        renderBookBlock(block, container, sectionId, contextLabel, idx);
+      });
 
-      if(block.type === 'diagram'){
-        const wrapper = document.createElement('div');
-        wrapper.className = 'card';
-        applyColumnAlignment(wrapper, block.column);
-
-        if(block.title){
-          const h3 = document.createElement('h3');
-          h3.textContent = block.title;
-          wrapper.appendChild(h3);
-        }
-
-        const canvBox = document.createElement('div');
-        canvBox.className = 'diagram-inline';
-        const canv = document.createElement('canvas');
-        const id = `${sectionId}-extra-${block.id || (block.kind || 'd')}`;
-        canv.id = id;
-        canvBox.appendChild(canv);
-
-        if(block.caption){
-          const cap = document.createElement('div');
-          cap.className = 'diagram-caption';
-          cap.textContent = block.caption;
-          canvBox.appendChild(cap);
-        }
-
-        wrapper.appendChild(canvBox);
-        container.appendChild(wrapper);
-
-        diagramJobs.push({
-          id,
-          kind: block.kind || 'xt'
-        });
-        return;
-      }
+      // after (μετά την inline)
+      afterList.forEach(block => {
+        renderBookBlock(block, container, sectionId, contextLabel, idx);
+      });
     });
+
+    // 3. afterAll
+    if(Array.isArray(sec.afterAll)){
+      sec.afterAll.forEach(block => {
+        renderBookBlock(block, container, sectionId, contextLabel, null);
+      });
+    }
   }
 
   function drawXTChart(canvas, opts){
@@ -1540,21 +1580,7 @@
           br = await fetch('book.json',{cache:'no-store'});
         }
         if(br.ok){
-          const text = await br.text();
-          try{
-            BOOK_CFG = JSON.parse(text);
-          }catch(parseErr){
-            console.warn('book*.json: πρόβλημα σύνταξης JSON, δοκιμή με truncation στο τελευταίο "}"', parseErr);
-            const lastBrace = text.lastIndexOf('}');
-            if(lastBrace !== -1){
-              try{
-                BOOK_CFG = JSON.parse(text.slice(0,lastBrace+1));
-              }catch(e3){
-                console.warn('book*.json: αποτυχία και μετά το truncation', e3);
-                BOOK_CFG = null;
-              }
-            }
-          }
+          BOOK_CFG = await br.json();
         }
       }catch(e2){
         console.warn('book*.json όχι διαθέσιμο ή μη έγκυρο', e2);
