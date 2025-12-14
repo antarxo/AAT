@@ -662,9 +662,21 @@
     return (v && v.img) ? v.img : null;
   }
 
-  function buildDialogTable(events, contextLabel){
+  function buildDialogTable(events, contextLabel, rowsCfg){
     const wrapper = document.createElement('div');
     wrapper.className = 'dialog-table';
+
+    function renderInlineBlock(block, cell){
+      const div = document.createElement('div');
+      if(block.type === 'note'){
+        div.className = 'note-box';
+      }else{
+        div.className = 'small-note';
+      }
+      const html = expandDynTemplate(block.html || block.text || '');
+      div.innerHTML = html;
+      cell.appendChild(div);
+    }
 
     if(!events || !events.length){
       const emptyRow = document.createElement('div');
@@ -700,7 +712,7 @@
       const rightText = hasRightRaw ? expandDynTemplate(ev.right) : '';
 
       const hasLeft  = leftText.trim()  !== '';
-      const hasRight = rightText.trim() !== '';
+      let   hasRight = rightText.trim() !== '';
 
       if(hasLeft){
         const sp = document.createElement('div');
@@ -802,6 +814,20 @@
         addDiagram('ax', 'Διάγραμμα a–x');
       }
 
+      const rowCfg = (rowsCfg && rowsCfg[idx]) ? rowsCfg[idx] : null;
+      if(rowCfg){
+        ['before','inline','after'].forEach(group=>{
+          const list = rowCfg[group];
+          if(Array.isArray(list)){
+            list.forEach(block=>{
+              const targetCell = (block.column === 'left') ? leftCell : rightCell;
+              renderInlineBlock(block, targetCell);
+              if(targetCell === rightCell) anythingRight = true;
+            });
+          }
+        });
+      }
+
       if(!anythingRight){
         rightCell.innerHTML = '&nbsp;';
       }
@@ -820,33 +846,6 @@
     }else if(column === 'right'){
       div.style.maxWidth = '40%';
       div.style.marginLeft = 'auto';
-    }
-  }
-
-  function renderSection(sectionId, events, container, contextLabel){
-    const cfg = BOOK_CFG;
-    const sec = cfg && cfg[sectionId] ? cfg[sectionId] : null;
-
-    if(!sec){
-      container.appendChild( buildDialogTable(events, contextLabel) );
-      return;
-    }
-
-    // beforeAll
-    if(Array.isArray(sec.beforeAll)){
-      sec.beforeAll.forEach(block=>{
-        renderBlock(block, container, sectionId);
-      });
-    }
-
-    // rows: προς το παρόν απλώς ρίχνουμε όλο τον διάλογο μία φορά
-    container.appendChild( buildDialogTable(events, contextLabel) );
-
-    // afterAll
-    if(Array.isArray(sec.afterAll)){
-      sec.afterAll.forEach(block=>{
-        renderBlock(block, container, sectionId);
-      });
     }
   }
 
@@ -918,6 +917,31 @@
         kind: block.kind || 'xt'
       });
       return;
+    }
+  }
+
+  function renderSection(sectionId, events, container, contextLabel){
+    const cfg = BOOK_CFG;
+    const sec = cfg && cfg[sectionId] ? cfg[sectionId] : null;
+
+    if(!sec){
+      container.appendChild( buildDialogTable(events, contextLabel, null) );
+      return;
+    }
+
+    if(Array.isArray(sec.beforeAll)){
+      sec.beforeAll.forEach(block=>{
+        renderBlock(block, container, sectionId);
+      });
+    }
+
+    const rowsCfg = Array.isArray(sec.rows) ? sec.rows : null;
+    container.appendChild( buildDialogTable(events, contextLabel, rowsCfg) );
+
+    if(Array.isArray(sec.afterAll)){
+      sec.afterAll.forEach(block=>{
+        renderBlock(block, container, sectionId);
+      });
     }
   }
 
