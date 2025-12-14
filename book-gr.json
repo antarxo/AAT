@@ -320,4 +320,156 @@
         "column": "right",
         "src": "phase_diagram.png",
         "alt": "Διάγραμμα φάσης x–υ για Α.Α.Τ.",
-        "caption": "Ένα ενδεικτικό διάγραμμα φάσης x–υ που μπορεί να συνοδεύει τη συζήτηση στο φουαγ
+        "caption": "Ένα ενδεικτικό διάγραμμα φάσης x–υ που μπορεί να συνοδεύει τη συζήτηση στο φουαγιέ."
+      },
+      {
+        "type": "html",
+        "column": "left",
+        "html": "<h3>Τι μένει στο τέλος;</h3><p>Μία ταλάντωση ορ...ι σχέσεις είναι απλώς διαφορετικές όψεις της ίδιας κίνησης.</p>"
+      }
+    ],
+    "afterAll": [],
+    "rows": [
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      }
+    ]
+  }
+}
