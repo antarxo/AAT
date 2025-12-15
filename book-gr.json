@@ -31,15 +31,7 @@
     "rows": [
       {
         "before": [],
-        "inline": [
-          {
-            "type": "image",
-            "column": "right",
-            "html": "",
-            "alt": "m1",
-            "src": "assets/skaterAct1.png"
-          }
-        ],
+        "inline": [],
         "after": []
       },
       {
@@ -49,6 +41,13 @@
             "type": "note",
             "column": "left",
             "html": "Ο θεατής αντιλαμβάνεται και καταγράφει ότι αυτό που παρατηρούν όλοι,<b>καθορίστηκε χρονικά από τους ίδιους τους θεατές!</b>με το πάτημα του κουμπιού <b>\"Έναρξη\"</b>."
+          },
+          {
+            "type": "image",
+            "column": "right",
+            "html": "",
+            "src": "assets/skaterAct1.png",
+            "alt": "m1"
           }
         ],
         "after": []
