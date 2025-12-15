@@ -667,7 +667,6 @@
     const type = block.type || 'note';
     const col  = block.column || '';
 
-    // Αν έχει explicit left/right → 2-στήλη γραμμή (dialog-row)
     if(col === 'left' || col === 'right'){
       const row = document.createElement('div');
       row.className = 'dialog-row';
@@ -699,7 +698,6 @@
       return;
     }
 
-    // full-width (ή χωρίς column)
     if(type === 'note' || type === 'html'){
       const div = document.createElement('div');
       div.className = (type === 'note') ? 'note-box' : 'card';
@@ -1337,8 +1335,9 @@
 
     const Smin = -1.1;
     const Smax =  1.1;
-    const xmin = -gA*1.1;
-    const xmax =  gA*1.1;
+
+    const A = gA;
+    const xMaxAbs = A*1.1;
 
     function SToX(S){
       return x0 + (S - Smin)/(Smax - Smin)*(x1-x0);
@@ -1346,44 +1345,83 @@
     function xToY(x){
       const mid = (yTop+yBot)/2;
       const amp = (yBot-yTop)/2;
-      return mid - (x/(gA*1.1))*amp;
+      return mid - (x/xMaxAbs)*amp;
     }
 
     ctx.clearRect(0,0,w,h);
-
     ctx.save();
+
+    // Grid για sin(ωt) = -1,0,1
     ctx.strokeStyle='rgba(148,163,184,0.45)';
     ctx.lineWidth=1;
     ctx.setLineDash([3,3]);
-    for(let k=-1;k<=1;k++){
-      const xx = SToX(k);
+    [-1,0,1].forEach(S=>{
+      const xx = SToX(S);
       ctx.beginPath();
       ctx.moveTo(xx,yTop);
       ctx.lineTo(xx,yBot);
       ctx.stroke();
-    }
+    });
     ctx.setLineDash([]);
 
+    // Άξονες
     ctx.strokeStyle='rgba(31,41,55,1)';
     ctx.lineWidth=1.2;
+
+    // Οριζόντιος άξονας (ημ(ωt))
     ctx.beginPath();
     ctx.moveTo(x0,yBot);
     ctx.lineTo(x1,yBot);
     ctx.stroke();
 
     const yMid = (yTop+yBot)/2;
+
+    // Γραμμή x = 0
     ctx.beginPath();
     ctx.moveTo(x0,yMid);
     ctx.lineTo(x1,yMid);
     ctx.stroke();
 
+    // Κατακόρυφος άξονας στο sin(ωt)=0
+    const s0x = SToX(0);
+    ctx.beginPath();
+    ctx.moveTo(s0x,yTop);
+    ctx.lineTo(s0x,yBot);
+    ctx.stroke();
+
     ctx.fillStyle='#111827';
     ctx.font='10px system-ui';
+
+    // Ticks & τιμές στον οριζόντιο άξονα: sin(ωt) = -1,0,1
     ctx.textAlign='center';
+    ctx.textBaseline='top';
+    [-1,0,1].forEach(S=>{
+      const X = SToX(S);
+      ctx.beginPath();
+      ctx.moveTo(X,yBot);
+      ctx.lineTo(X,yBot+3);
+      ctx.stroke();
+      ctx.fillText(S.toFixed(0), X, yBot+5);
+    });
+
+    // Ετικέτα οριζόντιου άξονα
     ctx.textBaseline='bottom';
     const labelSin = (lang === 'en') ? 'sin(ωt)' : 'ημ(ωt)';
     ctx.fillText(labelSin, x0 + (x1-x0)/2, h-2);
 
+    // Ticks & τιμές στον κατακόρυφο άξονα: x = -A,0,A
+    ctx.textAlign='right';
+    ctx.textBaseline='middle';
+    [-A,0,A].forEach(val=>{
+      const Y = xToY(val);
+      ctx.beginPath();
+      ctx.moveTo(s0x-4,Y);
+      ctx.lineTo(s0x,Y);
+      ctx.stroke();
+      ctx.fillText(val.toFixed(2), s0x-6, Y);
+    });
+
+    // Ετικέτα κατακόρυφου άξονα
     ctx.save();
     ctx.translate(10, (yTop+yBot)/2);
     ctx.rotate(-Math.PI/2);
@@ -1392,6 +1430,7 @@
     ctx.fillText('x (m)', 0, 0);
     ctx.restore();
 
+    // Κύρια ευθεία x = A·sin(ωt) → εδώ x vs sin(ωt)
     ctx.strokeStyle='rgba(37,99,235,0.9)';
     ctx.lineWidth=1.4;
     ctx.beginPath();
@@ -1399,13 +1438,26 @@
     const N=120;
     for(let i=0;i<=N;i++){
       const S = Smin + (Smax-Smin)*i/N;
-      const x = gA*S;
+      const x = A*S;
       const X = SToX(S);
       const Y = xToY(x);
       if(i===0) ctx.moveTo(X,Y);
       else ctx.lineTo(X,Y);
     }
     ctx.stroke();
+
+    // Σχολιασμός κλίσης: κλίση = A
+    const Slabel = 0.6;
+    const xlabel = A*Slabel;
+    const Xl = SToX(Slabel);
+    const Yl = xToY(xlabel);
+
+    const slopeText = (lang === 'en') ? 'slope = A' : 'κλίση = A';
+    ctx.font='10px system-ui';
+    ctx.fillStyle='#111827';
+    ctx.textAlign='left';
+    ctx.textBaseline='bottom';
+    ctx.fillText(slopeText, Xl+6, Yl-2);
 
     ctx.restore();
   }
