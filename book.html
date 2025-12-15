@@ -323,7 +323,7 @@
       border-radius:8px;
       border:1px solid #e5e7eb;
       padding:4px;
-      max-height:260px;        /* ~10 γραμμές */
+      max-height:260px;
       overflow-y:auto;
     }
 
@@ -1333,8 +1333,8 @@
     const yTop = margin;
     const yBot = h - margin;
 
-    const Smin = -1.1;
-    const Smax =  1.1;
+    const Smin = -1;
+    const Smax =  1;
 
     const A = gA;
     const xMaxAbs = A*1.1;
@@ -1351,7 +1351,7 @@
     ctx.clearRect(0,0,w,h);
     ctx.save();
 
-    // Grid για sin(ωt) = -1,0,1
+    // Grid για sin(ωt) = -1, 0, 1
     ctx.strokeStyle='rgba(148,163,184,0.45)';
     ctx.lineWidth=1;
     ctx.setLineDash([3,3]);
@@ -1382,7 +1382,7 @@
     ctx.lineTo(x1,yMid);
     ctx.stroke();
 
-    // Κατακόρυφος άξονας στο sin(ωt)=0
+    // Κατακόρυφος άξονας στο sin(ωt) = 0
     const s0x = SToX(0);
     ctx.beginPath();
     ctx.moveTo(s0x,yTop);
@@ -1392,7 +1392,7 @@
     ctx.fillStyle='#111827';
     ctx.font='10px system-ui';
 
-    // Ticks & τιμές στον οριζόντιο άξονα: sin(ωt) = -1,0,1
+    // Ticks στον οριζόντιο άξονα: sin(ωt) = -1, 0, 1
     ctx.textAlign='center';
     ctx.textBaseline='top';
     [-1,0,1].forEach(S=>{
@@ -1409,7 +1409,7 @@
     const labelSin = (lang === 'en') ? 'sin(ωt)' : 'ημ(ωt)';
     ctx.fillText(labelSin, x0 + (x1-x0)/2, h-2);
 
-    // Ticks & τιμές στον κατακόρυφο άξονα: x = -A,0,A
+    // Ticks στον κατακόρυφο άξονα: x = -A, 0, A
     ctx.textAlign='right';
     ctx.textBaseline='middle';
     [-A,0,A].forEach(val=>{
@@ -1430,7 +1430,7 @@
     ctx.fillText('x (m)', 0, 0);
     ctx.restore();
 
-    // Κύρια ευθεία x = A·sin(ωt) → εδώ x vs sin(ωt)
+    // Ευθεία x = A·sin(ωt) (x vs sin(ωt))
     ctx.strokeStyle='rgba(37,99,235,0.9)';
     ctx.lineWidth=1.4;
     ctx.beginPath();
@@ -1445,6 +1445,23 @@
       else ctx.lineTo(X,Y);
     }
     ctx.stroke();
+
+    // Σημείο (0,0) = νέο t=0
+    const originX = s0x;
+    const originY = xToY(0);
+    ctx.save();
+    ctx.fillStyle='rgba(220,38,38,0.95)';
+    ctx.beginPath();
+    ctx.arc(originX, originY, 3, 0, Math.PI*2);
+    ctx.fill();
+    ctx.restore();
+
+    const zeroLabel = (lang === 'en') ? 'new t = 0' : 'νέο t = 0';
+    ctx.fillStyle='rgba(127,29,29,1)';
+    ctx.font='10px system-ui';
+    ctx.textAlign='left';
+    ctx.textBaseline='bottom';
+    ctx.fillText(zeroLabel, originX + 6, originY - 4);
 
     // Σχολιασμός κλίσης: κλίση = A
     const Slabel = 0.6;
