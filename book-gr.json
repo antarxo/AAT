@@ -1,525 +1,1888 @@
-{
-  "meta": {
-    "title": "Βιβλίο Παράστασης — Απλή Αρμονική Ταλάντωση",
-    "subtitle": "Η παράσταση, σε ρυθμό ανάγνωσης. Μπορείτε να μελετήσετε την ΑΑΤ μέσω των διαλόγων και των ενδιάμεσω σχολίων σε ρυθμό που εσείς επιλέγετε!",
-    "sections": {
-      "paramsIntro": "Όλα  τα δεδομένα που αναφέρονται στο Βιβλίο Παράστασης προέρχονται από την παράσταση που μόλις παρακολουθήσατε για να έχετε μία συνεπή εικόνα ανάγνωσης.",
-      "act1Intro": "<p>Στην Πράξη 1, οι θεατές προσπαθούν να μελετήσουν και να συνάγουν  την κίνηση από τις μετρήσεις t–x που είναι και οι μόνες που διατίθενται.</p><p class=\"muted\">Ο πίνακας στα δεξιά περιέχει ακριβώς τα ζεύγη (t, x) όπως καταγράφηκαν κατά τη διάρκεια της ζωντανής παράστασης. Κάτω από αυτόν ξεκινούν οι διάλογοι των θεατών στα αριστερά, ενώ δεξιά παρουσιάζονται οι νόμοι και τα γραφήματα με τη σειρά που εμφανίζονται στην παράσταση. Προστίθενται σχόλια και παρατηρήσεις ως βοηθητικά στοιχεία κατανόησης του σκεπτικού που ανέπτυξαν οι θεατές κατά τη διάρκεια της παράστασης αλλά και για την καλύτερη κατανόηση της κίνησης του m,D</p>",
-      "foyerIntro": "Το φουαγιέ μεταφέρεται επίσης σε δίστηλη μορφή: σκέψεις θεατών αριστερά, συνοδευτικά σχόλια / τύποι στη δεξιά στήλη.",
-      "footerNote": "Τεχνική σημείωση: η σελίδα διαβάζει το <code>aatBookData</code> από το <code>localStorage</code> (κουμπί «Βιβλίο Παράστασης» στη σκηνή), το <code>dialogs-*.json</code> για το σενάριο και το <code>book-*.json</code> για πρόσθετα blocks (note/html/diagram/image). Αν κάτι λείπει, γίνεται graceful fallback."
-    },
-    "sectionTitles": {
-      "paramsLabel": "Δεδομένα κίνησης",
-      "paramsTitle": "Παράμετροι της Α.Α.Τ. στην παράσταση",
-      "act1Label": "Πράξη 1",
-      "act1Title": "Από τις μετρήσεις t–x στους νόμους της κίνησης",
-      "act2Label": "Πράξη 2",
-      "act2Title": "Από τους νόμους στην πρόβλεψη της κίνησης",
-      "foyerLabel": "Φουαγιέ",
-      "foyerTitle": "Συζήτηση μετά την παράσταση"
+<!DOCTYPE html>
+<html lang="el">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Βιβλίο Παράστασης — Απλή Αρμονική Ταλάντωση</title>
+  <style>
+    *{
+      box-sizing:border-box;
+      margin:0;
+      padding:0;
     }
-  },
-  "act1": {
-    "beforeAll": [
-      {
-        "type": "note",
-        "column": "full",
-        "html": "Στην Πράξη 1, ο στόχος είναι να <b>αναγνωριστεί το είδος της κίνησης αποκλειστικά από τις μετρήσεις θέσεων-χρόνου. Άλλωστε αυτές μπορεί ένας παρατηρητής να καταγράψει στις κινήσεις!\nΈτσι γίνεται ξεκάθαρο ότι Κινηματικά μελετάμε μια κίνηση με μόνα εργαλεία αυτά που χρειάζεται ένας παρατηρητής στη Μηχανική: <b><i>Προσανατολισμένο σύστημα αναφοράς και καταγραφή θέσεων και αντίστοιχων χρονικών στιγμών!</i></b>"
+    body{
+      font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      background:#f5f7fb;
+      color:#111827;
+      -webkit-font-smoothing:antialiased;
+    }
+    .page{
+      max-width:1080px;
+      margin:0 auto;
+      padding:24px 16px 40px;
+    }
+    header{
+      margin-bottom:20px;
+    }
+    header h1{
+      font-size:1.7rem;
+      font-weight:700;
+      letter-spacing:-0.03em;
+      color:#111827;
+      margin-bottom:6px;
+    }
+    header .subtitle{
+      font-size:.95rem;
+      color:#4b5563;
+      max-width:720px;
+      line-height:1.5;
+    }
+    section{
+      margin-bottom:20px;
+    }
+    h2{
+      font-size:1.1rem;
+      font-weight:600;
+      margin:4px 0 10px;
+      color:#111827;
+    }
+    p{
+      margin:6px 0;
+      font-size:.95rem;
+    }
+    .muted{
+      color:#6b7280;
+      font-size:.9rem;
+    }
+    .section-label{
+      font-size:.78rem;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+      color:#6b7280;
+      margin-bottom:2px;
+    }
+    .card{
+      background:#ffffff;
+      border-radius:10px;
+      border:1px solid #e5e7eb;
+      padding:12px 14px;
+      box-shadow:0 10px 30px rgba(15,23,42,0.06);
+      margin-top:6px;
+    }
+    .params-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit, minmax(180px,1fr));
+      gap:8px 16px;
+      margin-top:8px;
+    }
+    .param-pill{
+      background:#f9fafb;
+      border-radius:10px;
+      border:1px solid #e5e7eb;
+      padding:8px 10px;
+      font-size:.9rem;
+    }
+    .param-label{
+      font-size:.78rem;
+      text-transform:none;
+      letter-spacing:.08em;
+      color:#6b7280;
+      margin-bottom:2px;
+    }
+    .param-value{
+      font-weight:600;
+      color:#111827;
+      margin-bottom:2px;
+    }
+    .param-note{
+      font-size:.8rem;
+      color:#6b7280;
+    }
+    .small-note{
+      font-size:.8rem;
+      color:#6b7280;
+      margin-top:6px;
+    }
+
+    .layout-act1{
+      display:grid;
+      grid-template-columns: minmax(0,1.1fr) minmax(0,1.1fr);
+      gap:16px;
+      align-items:flex-start;
+    }
+
+    .tx-card{
+      background:#ffffff;
+      border-radius:10px;
+      border:1px solid #e5e7eb;
+      padding:10px 12px;
+      box-shadow:0 10px 30px rgba(15,23,42,0.06);
+    }
+
+    .tx-header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      margin-bottom:6px;
+    }
+    .tx-title{
+      font-size:.98rem;
+      font-weight:600;
+      color:#111827;
+    }
+    .tx-sub{
+      font-size:.8rem;
+      color:#6b7280;
+    }
+
+    .tx-scroll{
+      max-height:220px;
+      overflow:auto;
+      margin-top:6px;
+      border-radius:8px;
+      border:1px solid #e5e7eb;
+      background:#f9fafb;
+    }
+    table.tx-table{
+      width:100%;
+      border-collapse:collapse;
+      font-size:.9rem;
+    }
+    .tx-table th,
+    .tx-table td{
+      padding:4px 6px;
+      text-align:right;
+      border-bottom:1px solid #e5e7eb;
+      white-space:nowrap;
+    }
+    .tx-table th{
+      font-weight:600;
+      color:#374151;
+      background:#f3f4f6;
+      position:sticky;
+      top:0;
+      z-index:1;
+    }
+    .tx-table tr:nth-child(even) td{
+      background:#f9fafb;
+    }
+
+    .dialog-card{
+      margin-top:12px;
+      padding:0;
+      overflow:hidden;
+    }
+    .dialog-header{
+      padding:10px 12px;
+      border-bottom:1px solid #e5e7eb;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+    }
+    .dialog-title{
+      font-size:.98rem;
+      font-weight:600;
+      color:#111827;
+    }
+    .dialog-tags{
+      display:flex;
+      flex-wrap:wrap;
+      gap:6px;
+      justify-content:flex-end;
+    }
+    .tag-pill{
+      font-size:.75rem;
+      padding:2px 8px;
+      border-radius:999px;
+      border:1px solid #e5e7eb;
+      color:#4b5563;
+      background:#f9fafb;
+    }
+    .dialog-body{
+      padding:0;
+    }
+
+    .dialog-table{
+      display:block;
+      width:100%;
+      border-collapse:collapse;
+      overflow:hidden;
+      background:#ffffff;
+    }
+    .dialog-row{
+      display:grid;
+      grid-template-columns:minmax(0,2.3fr) minmax(0,1.1fr);
+      border-top:1px solid #e5e7eb;
+    }
+    .dialog-row:first-child{
+      border-top:none;
+    }
+    .dialog-cell{
+      padding:8px 10px;
+      font-size:.94rem;
+    }
+    .dialog-cell.left{
+      border-right:1px solid #e5e7eb;
+      background:#ffffff;
+    }
+    .dialog-cell.right{
+      background:#f9fafb;
+    }
+
+    .speaker{
+      margin-bottom:4px;
+    }
+    .speaker-badge{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:2px 8px;
+      border-radius:999px;
+      background:#e5e7eb;
+      font-size:.82rem;
+      color:#111827;
+    }
+    .speaker-avatar{
+      width:22px;
+      height:22px;
+      border-radius:999px;
+      background-size:cover;
+      background-position:center;
+      background-repeat:no-repeat;
+      flex-shrink:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:.8rem;
+      font-weight:600;
+      color:#f9fafb;
+    }
+    .speaker-name{
+      font-weight:500;
+    }
+    .speech{
+      font-size:.94rem;
+      line-height:1.5;
+    }
+
+    .diagram-inline{
+      margin-top:8px;
+      padding-top:4px;
+      border-top:1px dashed #d1d5db;
+    }
+    .diagram-inline canvas{
+      width:100%;
+      max-width:260px;
+      height:auto;
+      display:block;
+      margin:4px 0;
+      background:#ffffff;
+      border-radius:6px;
+      border:1px solid #e5e7eb;
+    }
+    .diagram-caption{
+      font-size:.8rem;
+      color:#6b7280;
+    }
+
+    .footer-note{
+      font-size:.8rem;
+      color:#6b7280;
+      margin-top:12px;
+      padding-top:8px;
+      border-top:1px dashed #d1d5db;
+    }
+
+    .note-box{
+      background:#ecfdf3;
+      border:1px solid #bbf7d0;
+      border-radius:10px;
+      padding:8px 10px;
+      font-size:.9rem;
+      margin-top:6px;
+      color:#14532d;
+    }
+
+    .warning-box{
+      background:#fff7ed;
+      border:1px solid #fed7aa;
+      border-radius:10px;
+      padding:8px 10px;
+      font-size:.9rem;
+      margin-top:6px;
+      color:#7c2d12;
+    }
+
+    /* ----- Πίνακας t–x ----- */
+    #txTableWrapper{
+      margin-top:8px;
+    }
+    #txTableContainer{
+      margin-top:4px;
+      background:#ffffff;
+      border-radius:8px;
+      border:1px solid #e5e7eb;
+      padding:4px;
+      max-height:150px;        /* ~5 γραμμές */
+      overflow-y:auto;
+    }
+
+    #txTableBodyEmpty{
+      text-align:left;
+      font-size:.9rem;
+      color:#6b7280;
+      padding:6px;
+    }
+
+    .dialog-block{
+      padding:10px 12px;
+    }
+
+    @media (max-width:900px){
+      .layout-act1{
+        grid-template-columns:1fr;
       }
-    ],
-    "afterAll": [],
-    "rows": [
-      {
-        "before": [],
-        "inline": [],
-        "after": []
-      },
-      {
-        "before": [],
-        "inline": [
-          {
-            "type": "note",
-            "column": "left",
-            "html": "Ο θεατής αντιλαμβάνεται και καταγράφει ότι αυτό που παρατηρούν όλοι,<b>καθορίστηκε χρονικά από τους ίδιους τους θεατές!</b>με το πάτημα του κουμπιού <b>\"Έναρξη\"</b>."
-          },
-          {
-            "type": "image",
-            "column": "right",
-            "html": "",
-            "src": "assets/skaterAct1.png",
-            "alt": "m1"
-          }
-        ],
-        "after": []
-      },
-      {
-        "before": [],
-        "inline": [],
-        "after": []
-      },
-      {
-        "before": [],
-        "inline": [],
-        "after": []
-      },
-      {
-        "before": [],
-        "inline": [],
-        "after": []
-      },
-      {
-        "before": [],
-        "inline": [
-          {
-            "type": "note",
-            "column": "left",
-            "html": "Δεν μπορεί να επαληθευτεί όμως η σχέση x=Αημ(ωt+φ₀) αφού οι θεατές δεν διαθέτουν μέχρι στιγμής τα <b>Α, ω, φ₀ !</b>"
-          }
-        ],
-        "after": []
-      },
-      {
-        "before": [],
-        "inline": [],
-        "after": []
-      },
-      {
-        "before": [],
-        "inline": [
-          {
-            "type": "note",
-            "column": "left",
-            "html": "Τα διαγράμματα να θυμίσουμε, πέρα από τις <i>άμεσες πληροφορίες</i>, παρέχουν και μια σειρά από <i>έμμεσες πληροφορίες</i>  με τη βοήθεια της κλίσης (ρυθμό μεταβολής) και του εμβαδού!"
-          }
-        ],
-        "after": []
-      },
-      {
-        "before": [],
-        "inline": [],
-        "after": []
-      },
-      {
-        "before": [],
-        "inline": [
-          {
-            "type": "note",
-            "column": "left",
-            "html": "Μέχρι εδώ και με τη υπόθεση ότι η κίνηση είναι μάλλον ΑΑΤ, διαπιστώνουν πραγματική μετρήσιμη, περιοδικότητα Τ και μέγιστη τιμή της θέσης, δηλαδή πλάτος επίσης σταθερό Α. "
-          }
-        ],
-        "after": []
-      },
-      {
-        "before": [],
-        "inline": [
-          {
-            "type": "note",
-            "column": "left",
-            "html": "Σαν σκέψη σωστή αλλά σκοντάφτει πάνω στην άγνωστη μέχρι στιγμής φ₀!Λείπει δηλαδή η φ₀ για να μπορέσουν να πάνε σε πίνακα τιμών x και ημ(ωt+φ₀) και γραφική παράσταση της  x-ημ(ωt+φ₀) για να διαπιστώσουν γραμμικότητα, απόδειξη ότι η κίνηση είναι ΑΑΤ!"
-          }
-        ],
-        "after": []
-      },
-      {
-        "before": [],
-        "inline": [],
-        "after": []
-      },
-      {
-        "before": [],
-        "inline": [],
-        "after": []
-      },
-      {
-        "before": [],
-        "inline": [
-          {
-            "type": "note",
-            "column": "left",
-            "html": "Πολύ ενδιαφέρουσα σκέψη-πρόταση που αν είναι εφικτή λύνει το πρόβλημα της φ₀!"
-          }
-        ],
-        "after": []
-      },
-      {
-        "before": [],
-        "inline": [
-          {
-            "type": "note",
-            "column": "left",
-            "html": "... που φαίνεται πως λύνει το πρόβλημα αν οι δύο καμπύλες x-t η πειραματική, συμπέσει με τη επίσης πειραματική x=Αημωt. Η σύγκριση όμως αυτή γίνεται με το ...μάτι και δεν είναι σίγουρη. <b>Σιγουρευόμαστε όμως απόλυτα αν η γραφική παράσταση  x-ημω προκύψει ευθεία με κλίση Α</b>!"
-          }
-        ],
-        "after": []
-      },
-      {
-        "before": [],
-        "inline": [],
-        "after": []
-      },
-      {
-        "before": [],
-        "inline": [
-          {
-            "type": "note",
-            "column": "left",
-            "html": "Τώρα που σιγουρέψαμε ότι η κίνηση είναι ΑΑΤ δηλαδή ισχύει η x=Aημ(ωt+φ₀) και με γνωστά τα x₀, t₀=0, και πρόσημο της υ₀ υπολογίζουμε και την φ₀! /nΜε γνωστό το Νόμο της θέσης σε σχέση με το χρόνο x=Aημ(ωt+φ₀) ανοίγει ο δρόμος για τους Νόμους ταχύτητας και επιτάχυνσης σε σχέση με το χρόνο!"
-          }
-        ],
-        "after": []
-      },
-      {
-        "before": [],
-        "inline": [],
-        "after": []
-      },
-      {
-        "before": [],
-        "inline": [
-          {
-            "type": "note",
-            "column": "right",
-            "html": "... και συγκεκριμένα: υ="
-          }
-        ],
-        "after": []
-      },
-      {
-        "before": [],
-        "inline": [],
-        "after": []
-      },
-      {
-        "before": [],
-        "inline": [
-          {
-            "type": "note",
-            "column": "left",
-            "html": "εδώ προέκυψε σημαντικός νόμος της επιτάχυνσης σε σχέση με τη θέση!"
-          }
-        ],
-        "after": []
-      },
-      {
-        "before": [],
-        "inline": [],
-        "after": []
-      },
-      {
-        "before": [],
-        "inline": [],
-        "after": []
-      },
-      {
-        "before": [],
-        "inline": [],
-        "after": []
+      .dialog-row{
+        grid-template-columns:1fr;
       }
-    ]
-  },
-  "act2": {
-    "beforeAll": [
-      {
-        "type": "note",
-        "column": "full",
-        "html": "Στην Πράξη 2, οι θεατές έχοντας πλήρως περιγράψει κινηματικά την ΑΑΤ του m,D, περνούν από την καθαρά κινηματική περιγραφή στη <b>δυναμική περιγραφή</b> της κίνησης.."
+      .dialog-cell.left{
+        border-right:none;
+        border-bottom:1px solid #e5e7eb;
       }
-    ],
-    "afterAll": [],
-    "rows": [
-      {
-        "before": [],
-        "inline": [
-          {
-            "type": "note",
-            "column": "right",
-            "html": "Διαπίστωση ότι υπάρχει συνοδευτικό \"εργαλείο\"  πίσω από την κίνηση του m,D."
-          }
-        ],
-        "after": []
-      },
-      {
-        "before": [],
-        "inline": [
-          {
-            "type": "note",
-            "column": "right",
-            "html": "Σε κάποιους θεατές ο m1,D1 είναι παλιός γνώριμος από άλλη θεατρική παραγωγή"
-          }
-        ],
-        "after": []
-      },
-      {
-        "before": [],
-        "inline": [
-          {
-            "type": "note",
-            "column": "right",
-            "html": "Θυμούνται την εμμονή του να διατηρεί την ίδια περίοδο με αυτή που κινείται σήμερα αν και στην άλλη παράστασή του κινήθηκε με μεγαλύτερες απομακρύνσεις από το κέντρο, με μεγαλύτερο πλάτος."
-          }
-        ],
-        "after": []
-      },
-      {
-        "before": [],
-        "inline": [],
-        "after": []
-      },
-      {
-        "before": [],
-        "inline": [],
-        "after": []
-      },
-      {
-        "before": [],
-        "inline": [],
-        "after": []
-      },
-      {
-        "before": [],
-        "inline": [],
-        "after": []
-      },
-      {
-        "before": [],
-        "inline": [],
-        "after": []
-      },
-      {
-        "before": [],
-        "inline": [],
-        "after": []
-      },
-      {
-        "before": [],
-        "inline": [],
-        "after": []
-      },
-      {
-        "before": [],
-        "inline": [],
-        "after": []
-      },
-      {
-        "before": [],
-        "inline": [],
-        "after": []
-      },
-      {
-        "before": [],
-        "inline": [],
-        "after": []
-      },
-      {
-        "before": [],
-        "inline": [],
-        "after": []
-      },
-      {
-        "before": [],
-        "inline": [],
-        "after": []
-      },
-      {
-        "before": [],
-        "inline": [],
-        "after": []
-      },
-      {
-        "before": [],
-        "inline": [],
-        "after": []
-      },
-      {
-        "before": [],
-        "inline": [],
-        "after": []
-      },
-      {
-        "before": [],
-        "inline": [],
-        "after": []
-      },
-      {
-        "before": [],
-        "inline": [],
-        "after": []
-      },
-      {
-        "before": [],
-        "inline": [],
-        "after": []
-      },
-      {
-        "before": [],
-        "inline": [],
-        "after": []
+      .dialog-cell.right{
+        border-top:none;
       }
-    ]
-  },
-  "foyer": {
-    "beforeAll": [
-      {
-        "type": "note",
-        "column": "full",
-        "html": "Στο φουαγιέ γίνεται ανακεφαλαίωση: πώς δένουν μεταξύ τους οι νόμοι (1)–(4) και πώς τα διαγράμματα «δείχνουν» την ίδια Α.Α.Τ."
-      },
-      {
-        "type": "image",
-        "column": "right",
-        "src": "phase_diagram.png",
-        "alt": "Διάγραμμα φάσης x–υ για Α.Α.Τ.",
-        "caption": "Ένα ενδεικτικό διάγραμμα φάσης x–υ που μπορεί να συνοδεύει τη συζήτηση στο φουαγιέ."
-      },
-      {
-        "type": "html",
-        "column": "left",
-        "html": "<h3>Τι μένει στο τέλος;</h3><p>Μία ταλάντωση ορ...ι σχέσεις είναι απλώς διαφορετικές όψεις της ίδιας κίνησης.</p>"
-      }
-    ],
-    "afterAll": [],
-    "rows": [
-      {
-        "before": [],
-        "inline": [],
-        "after": []
-      },
-      {
-        "before": [],
-        "inline": [],
-        "after": []
-      },
-      {
-        "before": [],
-        "inline": [],
-        "after": []
-      },
-      {
-        "before": [],
-        "inline": [],
-        "after": []
-      },
-      {
-        "before": [],
-        "inline": [],
-        "after": []
-      },
-      {
-        "before": [],
-        "inline": [],
-        "after": []
-      },
-      {
-        "before": [],
-        "inline": [],
-        "after": []
-      },
-      {
-        "before": [],
-        "inline": [],
-        "after": []
-      },
-      {
-        "before": [],
-        "inline": [],
-        "after": []
-      },
-      {
-        "before": [],
-        "inline": [],
-        "after": []
-      },
-      {
-        "before": [],
-        "inline": [],
-        "after": []
-      },
-      {
-        "before": [],
-        "inline": [],
-        "after": []
-      },
-      {
-        "before": [],
-        "inline": [],
-        "after": []
-      },
-      {
-        "before": [],
-        "inline": [],
-        "after": []
-      },
-      {
-        "before": [],
-        "inline": [],
-        "after": []
-      },
-      {
-        "before": [],
-        "inline": [],
-        "after": []
-      },
-      {
-        "before": [],
-        "inline": [],
-        "after": []
-      },
-      {
-        "before": [],
-        "inline": [],
-        "after": []
-      },
-      {
-        "before": [],
-        "inline": [],
-        "after": []
-      },
-      {
-        "before": [],
-        "inline": [],
-        "after": []
-      },
-      {
-        "before": [],
-        "inline": [],
-        "after": []
-      },
-      {
-        "before": [],
-        "inline": [],
-        "after": []
-      },
-      {
-        "before": [],
-        "inline": [],
-        "after": []
-      },
-      {
-        "before": [],
-        "inline": [],
-        "after": []
-      },
-      {
-        "before": [],
-        "inline": [],
-        "after": []
-      },
-      {
-        "before": [],
-        "inline": [],
-        "after": []
-      },
-      {
-        "before": [],
-        "inline": [],
-        "after": []
-      },
-      {
-        "before": [],
-        "inline": [],
-        "after": []
-      }
-    ]
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <h1>Βιβλίο Παράστασης — Απλή Αρμονική Ταλάντωση</h1>
+    <div class="subtitle">
+      Η ίδια παράσταση, αλλά σε «λειτουργία βιβλίου». Ο πίνακας t–x, τα διαγράμματα και οι διάλογοι, σε μια σελίδα που
+      μπορείς να διαβάσεις με το δικό σου ρυθμό.
+    </div>
+  </header>
+
+  <!-- ΜΕΡΟΣ Β: Πράξη 1 -->
+  <section>
+    <div class="section-label">Πράξη 1</div>
+    <h2>Η Κνηματική στα ...Αλγεβρικά! </h2>
+
+    <div class="layout-act1">
+      <div>
+        <div class="card">
+          <p>
+            Στην Πράξη 1, οι θεατές προσπαθούν να μελετήσουν την κίνηση
+            από τις μετρήσεις t–x. Σκέφτονται, προτείνουν τρόπους ώστε να αποδείξουν τους νόμους της ΑΑΤ! 
+            Παρεμβάλλονται σχόλια, επεξηγήσεις που βοηθούν τον αναγνώστη στην καλύτερη κατανόηση αυτής της διαδικασίας, 
+            που είναι σε τελευταία ανάλυση καθαρά πειραματική!
+          </p>
+          <p class="muted">
+            Ο πίνακας στα δεξιά περιέχει τα ζεύγη (t, x) από τη παράσταση που πριν παρακολουθήσατε.
+            Κάτω από αυτόν ξεκινούν οι διάλογοι της παράστασης: αριστερά τα όσα σκέφτηκαν κατά τη διάρκειά της οι θεατές, δεξιά οι νόμοι
+            και τα γραφήματα όπως εμφανίστηκαν σ αυτήν.
+          </p>
+        </div>
+      </div>
+
+      <div>
+        <div class="tx-card">
+          <div class="tx-header">
+            <div>
+              <div class="tx-title">Πίνακας μετρήσεων t–x</div>
+              <div class="tx-sub">
+                Απόσπασμα του πίνακα μετρήσεων της παράστασης.
+              </div>
+            </div>
+          </div>
+          <div id="txTableWrapper">
+            <div id="txTableContainer">
+              <table class="tx-table">
+                <thead>
+                  <tr>
+                    <th>t (s)</th>
+                    <th>x (m)</th>
+                  </tr>
+                </thead>
+                <tbody id="txTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card dialog-card">
+      <div class="dialog-header">
+        <div class="dialog-title">Διάλογοι Πράξης 1</div>
+        <div class="dialog-tags" id="act1Tags"></div>
+      </div>
+      <div class="dialog-body">
+        <div id="act1Transcript" class="dialog-block"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ΠΑΡΑΜΕΤΡΟΙ Α.Α.Τ. ΜΕΤΑΞΥ ΠΡΑΞΗΣ 1 & 2 -->
+  <section>
+    <div class="section-label">Τα μέχρι τώρα ποσοτικά συμπεράσματα</div>
+    
+
+    <div class="card">
+      <div class="params-grid">
+        <div class="param-pill">
+          <div class="param-label">Πλάτος A</div>
+          <div class="param-value"><span data-param="A">—</span> m</div>
+          <div class="param-note">Μέγιστη απομάκρυνση από τη Θ.Ι.</div>
+        </div>
+        <div class="param-pill">
+          <div class="param-label">Περίοδος T</div>
+          <div class="param-value"><span data-param="T">—</span> s</div>
+          <div class="param-note">Χρόνος για μία πλήρη ταλάντωση</div>
+        </div>
+        <div class="param-pill">
+          <div class="param-label">Γωνιακή συχνότητα ω</div>
+          <div class="param-value"><span data-param="omega">—</span> rad/s</div>
+          <div class="param-note">ω = 2π/T</div>
+        </div>
+        <div class="param-pill">
+          <div class="param-label">Αρχική θέση x₀</div>
+          <div class="param-value"><span data-param="x0">—</span> m</div>
+          <div class="param-note">x₀ = A·ημ(φ₀)</div>
+        </div>
+        <div class="param-pill">
+          <div class="param-label">Αρχική ταχύτητα υ₀</div>
+          <div class="param-value">
+            <span data-param="v0">—</span> m/s
+          </div>
+          <div class="param-note">
+            Σημάδι: <span data-param="vSignSymbol">υ=0</span>
+            (<span data-param="vSignWord">μηδενική</span>)
+          </div>
+        </div>
+        <div class="param-pill">
+          <div class="param-label">Αρχική φάση φ₀</div>
+          <div class="param-value"><span data-param="phi0Deg">—</span>°</div>
+          <div class="param-note">Φάση τη στιγμή t = 0</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ΜΕΡΟΣ Γ: Πράξη 2 -->
+  <section>
+    <div class="section-label">Πράξη 2</div>
+    <h2>Η δυναμική στα ... Αλγεβρικά!</h2>
+
+    <div class="card dialog-card">
+      <div class="dialog-header">
+        <div class="dialog-title">Διάλογοι Πράξης 2</div>
+        <div class="dialog-tags" id="act2Tags"></div>
+      </div>
+      <div class="dialog-body">
+        <div id="act2Transcript" class="dialog-block"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ΜΕΡΟΣ Δ: Φουαγιέ -->
+  <section>
+    <div class="section-label">Φουαγιέ</div>
+    <h2>Συζήτηση στο φουαγιέ στο διάλλειμα ανάμεσα σε Δεύτερη και Τρίτη Πράξη</h2>
+
+    <div class="card">
+      <p class="muted">
+        Και εδώ, σκέψεις θεατών αριστερά,
+        συνοδευτικά σχόλια / τύποι στη δεξιά στήλη.
+      </p>
+      <div id="foyerTranscript" class="dialog-block"></div>
+    </div>
+  </section>
+
+
+</div>
+
+<script>
+  const BOOK_STORAGE_KEY = 'aatBookData';
+
+  let VIEWERS = [];
+  let ACT1 = [];
+  let ACT2 = [];
+  let FOYER = [];
+
+  let BOOK_CFG = null;
+
+  let gA = 3.0;
+  let gT = 6.0;
+  let gOmega = 2*Math.PI/6.0;
+  let gX0 = 0.0;
+  let gPhi0Deg = 0.0;
+  let gPhi0Rad = 0.0;
+  let gV0 = 0.0;
+  let gVSignSymbol = 'υ=0';
+  let gVSignWord = 'μηδενική';
+  let gSamples = [];
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const lang = (urlParams.get('lang') === 'en') ? 'en' : 'gr';
+  document.documentElement.lang = (lang === 'en') ? 'en' : 'el';
+
+  const diagramJobs = [];
+
+  function localizeTrig(text){
+    if(!text) return '';
+    let out = String(text);
+    if(lang === 'gr'){
+      out = out.replace(/sin/g,'ημ').replace(/cos/g,'συν');
+    }
+    return out;
   }
-}
+
+  function loadBookData(){
+    try{
+      const raw = localStorage.getItem(BOOK_STORAGE_KEY);
+      if(!raw) return null;
+      const data = JSON.parse(raw);
+      return data || null;
+    }catch(e){
+      console.error('loadBookData error', e);
+      return null;
+    }
+  }
+
+  function setParam(name, valueStr){
+    document.querySelectorAll('[data-param="'+name+'"]').forEach(el=>{
+      el.textContent = valueStr;
+    });
+  }
+
+  function expandDynTemplate(tpl){
+    if(!tpl) return '';
+    const s = String(tpl);
+    return s
+      .replaceAll('{A}', gA.toFixed(2))
+      .replaceAll('{T}', gT.toFixed(2))
+      .replaceAll('{omega}', gOmega.toFixed(3))
+      .replaceAll('{x0}', gX0.toFixed(2))
+      .replaceAll('{phi0}', gPhi0Deg.toFixed(1))
+      .replaceAll('{vSignSymbol}', gVSignSymbol)
+      .replaceAll('{vSignWord}', gVSignWord);
+  }
+
+  function renderTxTable(samples){
+    const tbody = document.getElementById('txTableBody');
+    tbody.innerHTML = '';
+
+    if(!samples || !samples.length){
+      const tr = document.createElement('tr');
+      const td = document.createElement('td');
+      td.colSpan = 2;
+      td.textContent = (lang === 'en')
+        ? 'No t–x samples available. Play the scene at least once with the Book button.'
+        : 'Δεν υπάρχουν δείγματα t–x. Παίξε τουλάχιστον μία φορά τη σκηνή με το κουμπί Βιβλίο.';
+      tr.appendChild(td);
+      tbody.appendChild(tr);
+      return;
+    }
+
+    samples.forEach(pair=>{
+      const tr = document.createElement('tr');
+      const tdT = document.createElement('td');
+      const tdX = document.createElement('td');
+
+      tdT.textContent = (pair.t != null) ? pair.t.toFixed(2) : '';
+      tdX.textContent = (pair.x != null) ? pair.x.toFixed(2) : '';
+
+      tr.appendChild(tdT);
+      tr.appendChild(tdX);
+      tbody.appendChild(tr);
+    });
+  }
+
+  function viewerName(viewerIdx1){
+    const idx0 = (viewerIdx1 || 1) - 1;
+    if(idx0 < 0 || idx0 >= VIEWERS.length) return '';
+    const v = VIEWERS[idx0];
+    if(!v) return '';
+    if(lang === 'en'){
+      return v.name_en || v.name_gr || ('Viewer ' + viewerIdx1);
+    }else{
+      return v.name_gr || ('Θεατής ' + viewerIdx1);
+    }
+  }
+
+  function viewerInitial(viewerIdx1){
+    const name = viewerName(viewerIdx1);
+    return name ? (name.trim()[0] || '?') : '?';
+  }
+
+  function viewerColor(viewerIdx1){
+    const idx0 = (viewerIdx1 || 1) - 1;
+    const v = VIEWERS[idx0];
+    return (v && v.color) ? v.color : '#4b5563';
+  }
+
+  function viewerImg(viewerIdx1){
+    const idx0 = (viewerIdx1 || 1) - 1;
+    const v = VIEWERS[idx0];
+    return (v && v.img) ? v.img : null;
+  }
+
+  function applyColumnAlignment(div, column){
+    if(column === 'left'){
+      div.style.maxWidth = '60%';
+    }else if(column === 'right'){
+      div.style.maxWidth = '40%';
+      div.style.marginLeft = 'auto';
+    }else if(column === 'full'){
+      div.style.maxWidth = '100%';
+    }
+  }
+
+  function renderBlockStandalone(block, container, actId, dialogIndex, zone){
+    if(!block || typeof block !== 'object') return;
+    const type = block.type || 'note';
+    const col  = block.column || '';
+
+    if(col === 'left' || col === 'right'){
+      const row = document.createElement('div');
+      row.className = 'dialog-row';
+
+      const leftCell  = document.createElement('div');
+      const rightCell = document.createElement('div');
+      leftCell.className  = 'dialog-cell left';
+      rightCell.className = 'dialog-cell right';
+
+      const placedRight = renderBlockInline(
+        block,
+        leftCell,
+        rightCell,
+        actId,
+        dialogIndex,
+        zone || 'standalone'
+      );
+
+      if(col === 'left' && !rightCell.innerHTML.trim()){
+        rightCell.innerHTML = '&nbsp;';
+      }
+      if(col === 'right' && !leftCell.innerHTML.trim()){
+        leftCell.innerHTML = '&nbsp;';
+      }
+
+      row.appendChild(leftCell);
+      row.appendChild(rightCell);
+      container.appendChild(row);
+      return;
+    }
+
+    if(type === 'note' || type === 'html'){
+      const div = document.createElement('div');
+      div.className = (type === 'note') ? 'note-box' : 'card';
+      const html = expandDynTemplate(block.html || block.text || '');
+      div.innerHTML = html;
+      applyColumnAlignment(div, col || 'full');
+      container.appendChild(div);
+      return;
+    }
+
+    if(type === 'image'){
+      const wrapper = document.createElement('div');
+      wrapper.className = 'card';
+      applyColumnAlignment(wrapper, col || 'full');
+
+      const img = document.createElement('img');
+      img.src = block.src || '';
+      img.alt = block.alt || '';
+      img.style.maxWidth = '100%';
+      img.style.display = 'block';
+      img.style.borderRadius = '6px';
+      wrapper.appendChild(img);
+
+      if(block.caption){
+        const cap = document.createElement('div');
+        cap.className = 'diagram-caption';
+        cap.textContent = block.caption;
+        wrapper.appendChild(cap);
+      }
+
+      container.appendChild(wrapper);
+      return;
+    }
+
+    if(type === 'diagram'){
+      const wrapper = document.createElement('div');
+      wrapper.className = 'card';
+      applyColumnAlignment(wrapper, col || 'full');
+
+      if(block.title){
+        const h3 = document.createElement('h3');
+        h3.textContent = block.title;
+        wrapper.appendChild(h3);
+      }
+
+      const canvBox = document.createElement('div');
+      canvBox.className = 'diagram-inline';
+      const canv = document.createElement('canvas');
+      const id = `${actId}-${zone || 'extra'}-${dialogIndex != null ? dialogIndex : 'all'}-${block.id || block.kind || 'd'}-${diagramJobs.length}`;
+      canv.id = id;
+      canvBox.appendChild(canv);
+
+      if(block.caption){
+        const cap = document.createElement('div');
+        cap.className = 'diagram-caption';
+        cap.textContent = block.caption;
+        canvBox.appendChild(cap);
+      }
+
+      wrapper.appendChild(canvBox);
+      container.appendChild(wrapper);
+
+      diagramJobs.push({
+        id,
+        kind: block.kind || 'xt',
+        xtZeroMark: !!block.xtZeroMark,
+        xtMarkTail: !!block.xtMarkTail
+      });
+      return;
+    }
+  }
+
+  function renderBlockInline(block, leftCell, rightCell, actId, dialogIndex, zone){
+    if(!block || typeof block !== 'object') return false;
+
+    let parent = rightCell;
+    if(block.column === 'left' && leftCell){
+      parent = leftCell;
+    }
+    const goesRight = (parent === rightCell);
+
+    const type = block.type || 'note';
+
+    if(type === 'note' || type === 'html'){
+      const box = document.createElement('div');
+      box.className = 'note-box';
+      box.style.marginTop = '6px';
+      const html = expandDynTemplate(block.html || block.text || '');
+      box.innerHTML = html;
+      parent.appendChild(box);
+      return goesRight;
+    }
+
+    if(type === 'image'){
+      const wrap = document.createElement('div');
+      wrap.className = 'diagram-inline';
+      const img = document.createElement('img');
+      img.src = block.src || '';
+      img.alt = block.alt || '';
+      img.style.maxWidth = '100%';
+      img.style.display = 'block';
+      img.style.borderRadius = '6px';
+      wrap.appendChild(img);
+      if(block.caption){
+        const cap = document.createElement('div');
+        cap.className = 'diagram-caption';
+        cap.textContent = block.caption;
+        wrap.appendChild(cap);
+      }
+      parent.appendChild(wrap);
+      return goesRight;
+    }
+
+    if(type === 'diagram'){
+      const box = document.createElement('div');
+      box.className = 'diagram-inline';
+      const canv = document.createElement('canvas');
+      const id = `${actId}-inline-${zone || 'in'}-${dialogIndex != null ? dialogIndex : 'x'}-${block.id || block.kind || 'd'}-${diagramJobs.length}`;
+      canv.id = id;
+      box.appendChild(canv);
+      if(block.caption){
+        const cap = document.createElement('div');
+        cap.className = 'diagram-caption';
+        cap.textContent = block.caption;
+        box.appendChild(cap);
+      }
+      parent.appendChild(box);
+      diagramJobs.push({
+        id,
+        kind: block.kind || 'xt',
+        xtZeroMark: !!block.xtZeroMark,
+        xtMarkTail: !!block.xtMarkTail
+      });
+      return goesRight;
+    }
+
+    return goesRight;
+  }
+
+  function buildDialogRow(ev, idx, contextLabel, inlineBlocks){
+    const row = document.createElement('div');
+    row.className = 'dialog-row';
+
+    const leftCell  = document.createElement('div');
+    const rightCell = document.createElement('div');
+    leftCell.className  = 'dialog-cell left';
+    rightCell.className = 'dialog-cell right';
+
+    const hasLeftRaw  = ev.left  && String(ev.left).trim()  !== '';
+    const hasRightRaw = ev.right && String(ev.right).trim() !== '';
+
+    const leftText  = hasLeftRaw  ? expandDynTemplate(ev.left)  : '';
+    const rightText = hasRightRaw ? expandDynTemplate(ev.right) : '';
+
+    const hasLeft  = leftText.trim()  !== '';
+    const hasRight = rightText.trim() !== '';
+
+    if(hasLeft){
+      const sp = document.createElement('div');
+      sp.className = 'speaker';
+
+      const badge = document.createElement('div');
+      badge.className = 'speaker-badge';
+
+      const avatar = document.createElement('div');
+      avatar.className = 'speaker-avatar';
+
+      if(ev.viewer != null){
+        const vColor = viewerColor(ev.viewer);
+        const vImg   = viewerImg(ev.viewer);
+        avatar.style.backgroundColor = vColor;
+        if(vImg){
+          avatar.style.backgroundImage = 'url("'+vImg+'")';
+        }else{
+          avatar.textContent = viewerInitial(ev.viewer);
+        }
+      }else{
+        avatar.style.backgroundColor = '#6b7280';
+        avatar.textContent = (lang === 'en') ? 'N' : 'Α';
+      }
+
+      const nameSpan = document.createElement('span');
+      nameSpan.className = 'speaker-name';
+      if(ev.viewer != null){
+        nameSpan.textContent = viewerName(ev.viewer);
+      }else{
+        nameSpan.textContent = (lang === 'en') ? 'Narration' : 'Αφήγηση';
+      }
+
+      badge.appendChild(avatar);
+      badge.appendChild(nameSpan);
+      sp.appendChild(badge);
+
+      const speech = document.createElement('div');
+      speech.className = 'speech';
+      speech.innerHTML = leftText.replaceAll('\n','<br>');
+
+      leftCell.appendChild(sp);
+      leftCell.appendChild(speech);
+    }else{
+      leftCell.innerHTML = '&nbsp;';
+    }
+
+    let anythingRight = false;
+
+    if(hasRight){
+      const txt = localizeTrig(rightText).replaceAll('\n','<br>');
+      const lawDiv = document.createElement('div');
+      lawDiv.innerHTML = txt;
+      rightCell.appendChild(lawDiv);
+      anythingRight = true;
+    }
+
+    function addDiagram(kind, caption, extraOpts){
+      const box = document.createElement('div');
+      box.className = 'diagram-inline';
+      const canv = document.createElement('canvas');
+      const id = `${contextLabel}-${kind}-${idx}-${diagramJobs.length}`;
+      canv.id = id;
+      box.appendChild(canv);
+      if(caption){
+        const cap = document.createElement('div');
+        cap.className = 'diagram-caption';
+        cap.textContent = caption;
+        box.appendChild(cap);
+      }
+      rightCell.appendChild(box);
+      diagramJobs.push(Object.assign({ id, kind }, (extraOpts || {})));
+      anythingRight = true;
+    }
+
+    const hasXtMark = !!ev.xtZeroMark || !!ev.xtMarkTail;
+
+    if(ev.graph === 'xt' || hasXtMark){
+      addDiagram(
+        'xt',
+        'Διάγραμμα x–t',
+        {
+          xtZeroMark: !!ev.xtZeroMark,
+          xtMarkTail: !!ev.xtMarkTail
+        }
+      );
+    }
+
+    if(ev.plot === 'xsin'){
+      addDiagram('xsin', 'Διάγραμμα x–ημ(ωt)');
+    }
+    if(ev.plot === 'v'){
+      addDiagram('v', 'Διάγραμμα υ–t');
+    }
+    if(ev.plot === 'a'){
+      addDiagram('a', 'Διάγραμμα a–t');
+    }
+    if(ev.plot === 'ax'){
+      addDiagram('ax', 'Διάγραμμα a–x');
+    }
+
+    if(inlineBlocks && inlineBlocks.length){
+      inlineBlocks.forEach(block => {
+        const placedRight = renderBlockInline(
+          block,
+          leftCell,
+          rightCell,
+          contextLabel,
+          idx,
+          'inline'
+        );
+        if(placedRight) anythingRight = true;
+      });
+    }
+
+    if(!anythingRight){
+      rightCell.innerHTML = '&nbsp;';
+    }
+
+    row.appendChild(leftCell);
+    row.appendChild(rightCell);
+    return row;
+  }
+
+  function buildPlainDialogTable(events, contextLabel){
+    const wrapper = document.createElement('div');
+    wrapper.className = 'dialog-table';
+
+    if(!events || !events.length){
+      const emptyRow = document.createElement('div');
+      emptyRow.className = 'dialog-row';
+      const c1 = document.createElement('div');
+      const c2 = document.createElement('div');
+      c1.className = 'dialog-cell left';
+      c2.className = 'dialog-cell right';
+      c1.textContent = (lang === 'en')
+        ? 'No content found in JSON.'
+        : 'Δεν βρέθηκε περιεχόμενο στο JSON.';
+      emptyRow.appendChild(c1);
+      emptyRow.appendChild(c2);
+      wrapper.appendChild(emptyRow);
+      return wrapper;
+    }
+
+    events.forEach((ev, idx)=>{
+      if(ev.close) return;
+      const rowEl = buildDialogRow(ev, idx, contextLabel, []);
+      wrapper.appendChild(rowEl);
+    });
+
+    return wrapper;
+  }
+
+  function renderSection(actId, events, container, contextLabel){
+    container.innerHTML = '';
+
+    const actCfg = BOOK_CFG && BOOK_CFG[actId];
+    if(!actCfg){
+      container.appendChild(buildPlainDialogTable(events, contextLabel));
+      return;
+    }
+
+    function addBlocks(list, zone, dialogIndex){
+      if(!Array.isArray(list)) return;
+      list.forEach(block => {
+        renderBlockStandalone(block, container, actId, dialogIndex, zone);
+      });
+    }
+
+    addBlocks(actCfg.beforeAll, 'beforeAll', null);
+
+    const rowsCfg = Array.isArray(actCfg.rows) ? actCfg.rows : [];
+
+    for(let i=0; i<events.length; i++){
+      const ev = events[i];
+      if(!ev || ev.close) continue;
+
+      const rowCfg = rowsCfg[i] || {};
+      const before = Array.isArray(rowCfg.before) ? rowCfg.before : [];
+      const inline = Array.isArray(rowCfg.inline) ? rowCfg.inline : [];
+      const after  = Array.isArray(rowCfg.after)  ? rowCfg.after  : [];
+
+      addBlocks(before, 'before', i);
+
+      const rowEl = buildDialogRow(ev, i, contextLabel, inline);
+      container.appendChild(rowEl);
+
+      addBlocks(after, 'after', i);
+    }
+
+    addBlocks(actCfg.afterAll, 'afterAll', null);
+  }
+
+  function drawXTChart(canvas, opts){
+    if(!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width  = 260;
+    const h = canvas.height = 150;
+
+    const margin = 26;
+    const x0 = margin;
+    const x1 = w - margin;
+    const yTop = margin;
+    const yBot = h - margin;
+
+    const tMin = 0;
+    const tMax = 2*gT;
+    const A = gA;
+    const omega = gOmega;
+    const phi0 = gPhi0Rad;
+
+    function tToX(t){
+      return x0 + (t - tMin)/(tMax - tMin) * (x1 - x0);
+    }
+    function xToY(x){
+      const mid = (yTop + yBot)/2;
+      const amp = (yBot - yTop)/2;
+      const xMaxAbs = A*1.1;
+      return mid - (x/xMaxAbs)*amp;
+    }
+
+    ctx.clearRect(0,0,w,h);
+
+    ctx.save();
+    ctx.strokeStyle = 'rgba(148,163,184,0.45)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([3,3]);
+
+    const steps = 8;
+    for(let i=0;i<=steps;i++){
+      const tt = tMin + (tMax - tMin)*i/steps;
+      const xx = tToX(tt);
+      ctx.beginPath();
+      ctx.moveTo(xx,yTop);
+      ctx.lineTo(xx,yBot);
+      ctx.stroke();
+    }
+    ctx.setLineDash([]);
+
+    ctx.strokeStyle = 'rgba(31,41,55,1)';
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.moveTo(x0,yBot);
+    ctx.lineTo(x1,yBot);
+    ctx.stroke();
+
+    const yMid = (yTop+yBot)/2;
+    ctx.beginPath();
+    ctx.moveTo(x0,yMid);
+    ctx.lineTo(x1,yMid);
+    ctx.stroke();
+
+    ctx.fillStyle = '#111827';
+    ctx.font = '10px system-ui';
+
+    const tickStep = gT/2;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    for(let tt=tMin; tt<=tMax+1e-9; tt += tickStep){
+      const X = tToX(tt);
+      ctx.strokeStyle='rgba(31,41,55,0.9)';
+      ctx.lineWidth=1;
+      ctx.beginPath();
+      ctx.moveTo(X,yBot);
+      ctx.lineTo(X,yBot+4);
+      ctx.stroke();
+      ctx.fillText(tt.toFixed(1), X, yBot+6);
+    }
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'bottom';
+    ctx.fillText('t (s)', x0 + (x1-x0)/2, h-2);
+
+    const yTicks = [-A,0,A];
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'middle';
+    yTicks.forEach(val=>{
+      const Y = xToY(val);
+      ctx.strokeStyle='rgba(31,41,55,0.9)';
+      ctx.beginPath();
+      ctx.moveTo(x0-4, Y);
+      ctx.lineTo(x0, Y);
+      ctx.stroke();
+      ctx.fillText(val.toFixed(2), x0-6, Y);
+    });
+
+    ctx.save();
+    ctx.translate(10, (yTop + yBot)/2);
+    ctx.rotate(-Math.PI/2);
+    ctx.textAlign='center';
+    ctx.textBaseline='top';
+    ctx.fillText('x (m)', 0, 0);
+    ctx.restore();
+
+    ctx.strokeStyle = 'rgba(37,99,235,0.9)';
+    ctx.lineWidth = 1.4;
+    ctx.beginPath();
+    const N = 240;
+    for(let i=0;i<=N;i++){
+      const t = tMin + (tMax - tMin)*i/N;
+      const x = A*Math.sin(omega*t + phi0);
+      const X = tToX(t);
+      const Y = xToY(x);
+      if(i===0) ctx.moveTo(X,Y);
+      else ctx.lineTo(X,Y);
+    }
+    ctx.stroke();
+
+    const x0val = gX0;
+    const yx0 = xToY(x0val);
+    ctx.strokeStyle = 'rgba(37,99,235,0.8)';
+    ctx.setLineDash([4,2]);
+    ctx.beginPath();
+    ctx.moveTo(x0,yx0);
+    ctx.lineTo(x1,yx0);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = 'rgba(30,64,175,1)';
+    ctx.font = '10px system-ui';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'bottom';
+    ctx.fillText('x₀ ≈ '+x0val.toFixed(2)+' m', x0+4, yx0-4);
+
+    if(gSamples && gSamples.length){
+      ctx.save();
+      ctx.fillStyle = 'rgba(15,23,42,0.95)';
+      ctx.strokeStyle = 'rgba(249,250,251,0.9)';
+      ctx.lineWidth = 1;
+      gSamples.forEach(pair=>{
+        if(!pair || typeof pair.t !== 'number' || typeof pair.x !== 'number') return;
+        const t = pair.t;
+        if(t < tMin || t > tMax) return;
+        const x = pair.x;
+        const X = tToX(t);
+        const Y = xToY(x);
+        ctx.beginPath();
+        ctx.arc(X, Y, 2.5, 0, Math.PI*2);
+        ctx.fill();
+        ctx.stroke();
+      });
+      ctx.restore();
+    }
+
+    const showMark = opts && opts.xtZeroMark;
+    const showTail = opts && opts.xtMarkTail;
+
+    if(showMark){
+      let off = (gPhi0Rad / gOmega) % gT;
+      if(off < 0) off += gT;
+      let tZero = (Math.abs(off) < 1e-9) ? 0 : (gT - off);
+      if(tZero < tMin) tZero = tMin;
+      if(tZero > tMax) tZero = tZero % gT;
+
+      const px0 = tToX(tZero);
+      const py0 = xToY(0);
+
+      const tEnd = Math.min(tZero + gT, tMax);
+      ctx.save();
+      ctx.strokeStyle = 'rgba(220,38,38,0.95)';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([]);
+      const N2 = 200;
+      ctx.beginPath();
+      for(let i=0;i<=N2;i++){
+        const t = tZero + (tEnd - tZero)*(i/N2);
+        const x = A*Math.sin(omega*(t - tZero));
+        const X = tToX(t);
+        const Y = xToY(x);
+        if(i===0) ctx.moveTo(X,Y);
+        else ctx.lineTo(X,Y);
+      }
+      ctx.stroke();
+
+      if(showTail){
+        ctx.strokeStyle = 'rgba(220,38,38,0.8)';
+        ctx.setLineDash([4,2]);
+        ctx.beginPath();
+        ctx.moveTo(x0,py0);
+        ctx.lineTo(px0,py0);
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      ctx.save();
+      ctx.fillStyle='rgba(220,38,38,0.95)';
+      ctx.beginPath();
+      ctx.arc(px0,py0,3,0,Math.PI*2);
+      ctx.fill();
+      ctx.restore();
+
+      const labelText = (lang === 'en') ? 'new t = 0' : 'νέο t = 0';
+      ctx.save();
+      ctx.font = '10px system-ui';
+      const textWidth = ctx.measureText(labelText).width;
+      const padX = 6;
+      const padY = 3;
+      let labelX = px0;
+      let labelY = yTop + 10;
+
+      const pillHalfW = textWidth/2 + padX;
+      if(labelX < x0 + pillHalfW + 4) labelX = x0 + pillHalfW + 4;
+      if(labelX > x1 - pillHalfW - 4) labelX = x1 - pillHalfW - 4;
+
+      const pillLeft = labelX - pillHalfW;
+      const pillTop  = labelY - (8 + padY);
+      const pillW    = pillHalfW*2;
+      const pillH    = 16 + 2*padY;
+      const r=8;
+
+      ctx.beginPath();
+      let X=pillLeft, Y=pillTop, W2=pillW, H2=pillH;
+      ctx.moveTo(X+r,Y);
+      ctx.lineTo(X+W2-r,Y);
+      ctx.quadraticCurveTo(X+W2,Y,X+W2,Y+r);
+      ctx.lineTo(X+W2,Y+H2-r);
+      ctx.quadraticCurveTo(X+W2,Y+H2,X+W2-r,Y+H2);
+      ctx.lineTo(X+r,Y+H2);
+      ctx.quadraticCurveTo(X,Y+H2,X,Y+H2-r);
+      ctx.lineTo(X,Y+r);
+      ctx.quadraticCurveTo(X,Y,X+r,Y);
+      ctx.closePath();
+      ctx.fillStyle='rgba(127,29,29,0.9)';
+      ctx.strokeStyle='rgba(248,113,113,0.95)';
+      ctx.lineWidth=1.2;
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle='rgba(254,242,242,0.98)';
+      ctx.textAlign='center';
+      ctx.textBaseline='middle';
+      ctx.fillText(labelText,labelX,labelY);
+
+      const arrowStartX = labelX;
+      const arrowStartY = pillTop + pillH;
+      const arrowEndX   = px0;
+      const arrowEndY   = py0 - 5;
+
+      ctx.beginPath();
+      ctx.moveTo(arrowStartX,arrowStartY);
+      ctx.lineTo(arrowEndX,arrowEndY);
+      ctx.strokeStyle='rgba(248,113,113,0.95)';
+      ctx.lineWidth=1;
+      ctx.stroke();
+
+      const angle = Math.atan2(arrowEndY-arrowStartY, arrowEndX-arrowStartX);
+      const headLen = 6;
+      ctx.beginPath();
+      ctx.moveTo(arrowEndX,arrowEndY);
+      ctx.lineTo(
+        arrowEndX - headLen*Math.cos(angle-Math.PI/6),
+        arrowEndY - headLen*Math.sin(angle-Math.PI/6)
+      );
+      ctx.lineTo(
+        arrowEndX - headLen*Math.cos(angle+Math.PI/6),
+        arrowEndY - headLen*Math.sin(angle+Math.PI/6)
+      );
+      ctx.closePath();
+      ctx.fillStyle='rgba(248,113,113,0.95)';
+      ctx.fill();
+
+      ctx.restore();
+    }
+  }
+
+  /* ***** ΔΙΟΡΘΩΜΕΝΟ: x–ημ(ωt) με πλήρη ντύσιμο ***** */
+  function drawXSinChart(canvas){
+    if(!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width  = 260;
+    const h = canvas.height = 150;
+
+    const margin = 26;
+    const x0 = margin;
+    const x1 = w - margin;
+    const yTop = margin;
+    const yBot = h - margin;
+
+    const Smin = -1.1;
+    const Smax =  1.1;
+    const xMaxAbs = gA * 1.1;
+
+    function SToX(S){
+      return x0 + (S - Smin)/(Smax - Smin)*(x1-x0);
+    }
+    function xToY(x){
+      const mid = (yTop+yBot)/2;
+      const amp = (yBot-yTop)/2;
+      return mid - (x/xMaxAbs)*amp;
+    }
+
+    ctx.clearRect(0,0,w,h);
+    ctx.save();
+
+    /* Grid στις βασικές τιμές του ημ(ωt): -1, 0, 1 */
+    ctx.strokeStyle='rgba(148,163,184,0.45)';
+    ctx.lineWidth=1;
+    ctx.setLineDash([3,3]);
+    [-1,0,1].forEach(S=>{
+      const xx = SToX(S);
+      ctx.beginPath();
+      ctx.moveTo(xx,yTop);
+      ctx.lineTo(xx,yBot);
+      ctx.stroke();
+    });
+    ctx.setLineDash([]);
+
+    /* Άξονες */
+    ctx.strokeStyle='rgba(31,41,55,1)';
+    ctx.lineWidth=1.2;
+
+    // κάτω οριζόντιος άξονας (ημ(ωt))
+    ctx.beginPath();
+    ctx.moveTo(x0,yBot);
+    ctx.lineTo(x1,yBot);
+    ctx.stroke();
+
+    // μεσαία οριζόντια γραμμή (x = 0)
+    const yMid = (yTop+yBot)/2;
+    ctx.beginPath();
+    ctx.moveTo(x0,yMid);
+    ctx.lineTo(x1,yMid);
+    ctx.stroke();
+
+    ctx.fillStyle='#111827';
+    ctx.font='10px system-ui';
+
+    /* Τicks & ετικέτες στον άξονα ημ(ωt): -1, 0, 1 */
+    ctx.textAlign='center';
+    ctx.textBaseline='top';
+    [-1,0,1].forEach(S=>{
+      const X = SToX(S);
+      ctx.strokeStyle='rgba(31,41,55,0.9)';
+      ctx.beginPath();
+      ctx.moveTo(X,yBot);
+      ctx.lineTo(X,yBot+4);
+      ctx.stroke();
+      ctx.fillText(S.toString(), X, yBot+6);
+    });
+
+    /* Τίτλος άξονα ημ(ωt) */
+    ctx.textAlign='center';
+    ctx.textBaseline='bottom';
+    const labelSin = (lang === 'en') ? 'sin(ωt)' : 'ημ(ωt)';
+    ctx.fillText(labelSin, x0 + (x1-x0)/2, h-2);
+
+    /* Τίτλος κατακόρυφου άξονα x (m) */
+    ctx.save();
+    ctx.translate(10, (yTop+yBot)/2);
+    ctx.rotate(-Math.PI/2);
+    ctx.textAlign='center';
+    ctx.textBaseline='top';
+    ctx.fillText('x (m)', 0, 0);
+    ctx.restore();
+
+    /* Τicks & ετικέτες στον άξονα x: -A, 0, A */
+    const xTicks = [-gA, 0, gA];
+    ctx.textAlign='right';
+    ctx.textBaseline='middle';
+    xTicks.forEach(val=>{
+      const Y = xToY(val);
+      ctx.strokeStyle='rgba(31,41,55,0.9)';
+      ctx.beginPath();
+      ctx.moveTo(x0-4,Y);
+      ctx.lineTo(x0,Y);
+      ctx.stroke();
+      ctx.fillText(val.toFixed(2), x0-6, Y);
+    });
+
+    /* Ευθεία x = A·ημ(ωt) */
+    ctx.strokeStyle='rgba(37,99,235,0.9)';
+    ctx.lineWidth=1.4;
+    ctx.beginPath();
+    const N = 120;
+    for(let i=0;i<=N;i++){
+      const S = Smin + (Smax-Smin)*i/N;
+      const x = gA * S;
+      const X = SToX(S);
+      const Y = xToY(x);
+      if(i===0) ctx.moveTo(X,Y);
+      else ctx.lineTo(X,Y);
+    }
+    ctx.stroke();
+
+    ctx.restore();
+  }
+
+  function drawVChart(canvas){
+    if(!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width  = 260;
+    const h = canvas.height = 150;
+
+    const margin=26;
+    const x0=margin;
+    const x1=w-margin;
+    const yTop=margin;
+    const yBot=h-margin;
+
+    const tMin=0;
+    const tMax=2*gT;
+    const A=gA;
+    const omega=gOmega;
+    const phi0=gPhi0Rad;
+
+    const vAmp = A*omega;
+    const vMaxAbs = vAmp*1.1;
+
+    function tToX(t){
+      return x0 + (t-tMin)/(tMax-tMin)*(x1-x0);
+    }
+    function vToY(v){
+      const mid = (yTop+yBot)/2;
+      const amp = (yBot-yTop)/2;
+      return mid - (v/vMaxAbs)*amp;
+    }
+
+    ctx.clearRect(0,0,w,h);
+    ctx.save();
+
+    ctx.strokeStyle='rgba(148,163,184,0.45)';
+    ctx.lineWidth=1;
+    ctx.setLineDash([3,3]);
+    const steps=8;
+    for(let i=0;i<=steps;i++){
+      const tt=tMin+(tMax-tMin)*i/steps;
+      const xx=tToX(tt);
+      ctx.beginPath();
+      ctx.moveTo(xx,yTop);
+      ctx.lineTo(xx,yBot);
+      ctx.stroke();
+    }
+    ctx.setLineDash([]);
+
+    ctx.strokeStyle='rgba(31,41,55,1)';
+    ctx.lineWidth=1.2;
+    ctx.beginPath();
+    ctx.moveTo(x0,yBot);
+    ctx.lineTo(x1,yBot);
+    ctx.stroke();
+
+    const yMid=(yTop+yBot)/2;
+    ctx.beginPath();
+    ctx.moveTo(x0,yMid);
+    ctx.lineTo(x1,yMid);
+    ctx.stroke();
+
+    ctx.fillStyle='#111827';
+    ctx.font='10px system-ui';
+
+    const tickStep = gT/2;
+    ctx.textAlign='center';
+    ctx.textBaseline='top';
+    for(let tt=tMin; tt<=tMax+1e-9; tt+=tickStep){
+      const X=tToX(tt);
+      ctx.strokeStyle='rgba(31,41,55,0.9)';
+      ctx.beginPath();
+      ctx.moveTo(X,yBot);
+      ctx.lineTo(X,yBot+4);
+      ctx.stroke();
+      ctx.fillText(tt.toFixed(1), X, yBot+6);
+    }
+    ctx.textAlign='center';
+    ctx.textBaseline='bottom';
+    ctx.fillText('t (s)', x0 + (x1-x0)/2, h-2);
+
+    const vTicks = [-vAmp,0,vAmp];
+    ctx.textAlign='right';
+    ctx.textBaseline='middle';
+    vTicks.forEach(val=>{
+      const Y=vToY(val);
+      ctx.strokeStyle='rgba(31,41,55,0.9)';
+      ctx.beginPath();
+      ctx.moveTo(x0-4,Y);
+      ctx.lineTo(x0,Y);
+      ctx.stroke();
+      ctx.fillText(val.toFixed(2), x0-6, Y);
+    });
+
+    ctx.save();
+    ctx.translate(10,(yTop+yBot)/2);
+    ctx.rotate(-Math.PI/2);
+    ctx.textAlign='center';
+    ctx.textBaseline='top';
+    ctx.fillText('v (m/s)',0,0);
+    ctx.restore();
+
+    ctx.strokeStyle='rgba(22,163,74,0.9)';
+    ctx.lineWidth=1.4;
+    ctx.beginPath();
+    const N=240;
+    for(let i=0;i<=N;i++){
+      const t=tMin+(tMax-tMin)*i/N;
+      const v=A*omega*Math.cos(omega*t+phi0);
+      const X=tToX(t);
+      const Y=vToY(v);
+      if(i===0) ctx.moveTo(X,Y);
+      else ctx.lineTo(X,Y);
+    }
+    ctx.stroke();
+
+    ctx.restore();
+  }
+
+  function drawAChart(canvas){
+    if(!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width  = 260;
+    const h = canvas.height = 150;
+
+    const margin=26;
+    const x0=margin;
+    const x1=w-margin;
+    const yTop=margin;
+    const yBot=h-margin;
+
+    const tMin=0;
+    const tMax=2*gT;
+    const A=gA;
+    const omega=gOmega;
+    const phi0=gPhi0Rad;
+
+    const aAmp = A*omega*omega;
+    const aMaxAbs = aAmp*1.1;
+
+    function tToX(t){
+      return x0 + (t-tMin)/(tMax-tMin)*(x1-x0);
+    }
+    function aToY(a){
+      const mid=(yTop+yBot)/2;
+      const amp=(yBot-yTop)/2;
+      return mid - (a/aMaxAbs)*amp;
+    }
+
+    ctx.clearRect(0,0,w,h);
+    ctx.save();
+
+    ctx.strokeStyle='rgba(148,163,184,0.45)';
+    ctx.lineWidth=1;
+    ctx.setLineDash([3,3]);
+    const steps=8;
+    for(let i=0;i<=steps;i++){
+      const tt=tMin+(tMax-tMin)*i/steps;
+      const xx=tToX(tt);
+      ctx.beginPath();
+      ctx.moveTo(xx,yTop);
+      ctx.lineTo(xx,yBot);
+      ctx.stroke();
+    }
+    ctx.setLineDash([]);
+
+    ctx.strokeStyle='rgba(31,41,55,1)';
+    ctx.lineWidth=1.2;
+    ctx.beginPath();
+    ctx.moveTo(x0,yBot);
+    ctx.lineTo(x1,yBot);
+    ctx.stroke();
+
+    const yMid=(yTop+yBot)/2;
+    ctx.beginPath();
+    ctx.moveTo(x0,yMid);
+    ctx.lineTo(x1,yMid);
+    ctx.stroke();
+
+    ctx.fillStyle='#111827';
+    ctx.font='10px system-ui';
+
+    const tickStep = gT/2;
+    ctx.textAlign='center';
+    ctx.textBaseline='top';
+    for(let tt=tMin; tt<=tMax+1e-9; tt+=tickStep){
+      const X=tToX(tt);
+      ctx.strokeStyle='rgba(31,41,55,0.9)';
+      ctx.beginPath();
+      ctx.moveTo(X,yBot);
+      ctx.lineTo(X,yBot+4);
+      ctx.stroke();
+      ctx.fillText(tt.toFixed(1), X, yBot+6);
+    }
+    ctx.textAlign='center';
+    ctx.textBaseline='bottom';
+    ctx.fillText('t (s)', x0+(x1-x0)/2, h-2);
+
+    const aTicks = [-aAmp,0,aAmp];
+    ctx.textAlign='right';
+    ctx.textBaseline='middle';
+    aTicks.forEach(val=>{
+      const Y=aToY(val);
+      ctx.strokeStyle='rgba(31,41,55,0.9)';
+      ctx.beginPath();
+      ctx.moveTo(x0-4,Y);
+      ctx.lineTo(x0,Y);
+      ctx.stroke();
+      ctx.fillText(val.toFixed(2), x0-6, Y);
+    });
+
+    ctx.save();
+    ctx.translate(10,(yTop+yBot)/2);
+    ctx.rotate(-Math.PI/2);
+    ctx.textAlign='center';
+    ctx.textBaseline='top';
+    ctx.fillText('a (m/s²)',0,0);
+    ctx.restore();
+
+    ctx.strokeStyle='rgba(220,38,38,0.9)';
+    ctx.lineWidth=1.4;
+    ctx.beginPath();
+    const N=240;
+    for(let i=0;i<=N;i++){
+      const t=tMin+(tMax-tMin)*i/N;
+      const a=-A*omega*omega*Math.sin(omega*t+phi0);
+      const X=tToX(t);
+      const Y=aToY(a);
+      if(i===0) ctx.moveTo(X,Y);
+      else ctx.lineTo(X,Y);
+    }
+    ctx.stroke();
+
+    ctx.restore();
+  }
+
+  function drawAXChart(canvas){
+    if(!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const w = canvas.width  = 260;
+    const h = canvas.height = 150;
+
+    const margin = 26;
+    const x0 = margin;
+    const x1 = w - margin;
+    const yTop = margin;
+    const yBot = h - margin;
+
+    const A = gA;
+    const omega = gOmega;
+
+    const xmin = -A*1.1;
+    const xmax = +A*1.1;
+    const aAmp = A*omega*omega;
+    const aMaxAbs = aAmp*1.1;
+
+    function xToXcoord(x){
+      return x0 + (x - xmin)/(xmax - xmin)*(x1-x0);
+    }
+    function aToY(a){
+      const mid=(yTop+yBot)/2;
+      const amp=(yBot-yTop)/2;
+      return mid - (a/aMaxAbs)*amp;
+    }
+
+    ctx.clearRect(0,0,w,h);
+    ctx.save();
+
+    ctx.strokeStyle='rgba(148,163,184,0.45)';
+    ctx.lineWidth=1;
+    ctx.setLineDash([3,3]);
+    const steps=4;
+    for(let i=0;i<=steps;i++){
+      const xx=xmin+(xmax-xmin)*i/steps;
+      const X=xToXcoord(xx);
+      ctx.beginPath();
+      ctx.moveTo(X,yTop);
+      ctx.lineTo(X,yBot);
+      ctx.stroke();
+    }
+    ctx.setLineDash([]);
+
+    ctx.strokeStyle='rgba(31,41,55,1)';
+    ctx.lineWidth=1.2;
+    const xZero = xToXcoord(0);
+    ctx.beginPath();
+    ctx.moveTo(xZero,yTop);
+    ctx.lineTo(xZero,yBot);
+    ctx.stroke();
+
+    const yMid=(yTop+yBot)/2;
+    ctx.beginPath();
+    ctx.moveTo(x0,yMid);
+    ctx.lineTo(x1,yMid);
+    ctx.stroke();
+
+    ctx.fillStyle='#111827';
+    ctx.font='10px system-ui';
+
+    const xTicks = [-A,0,A];
+    ctx.textAlign='center';
+    ctx.textBaseline='top';
+    xTicks.forEach(val=>{
+      const X=xToXcoord(val);
+      ctx.strokeStyle='rgba(31,41,55,0.9)';
+      ctx.beginPath();
+      ctx.moveTo(X,yMid);
+      ctx.lineTo(X,yMid+4);
+      ctx.stroke();
+      ctx.fillText(val.toFixed(2), X, yMid+6);
+    });
+    ctx.textAlign='center';
+    ctx.textBaseline='bottom';
+    ctx.fillText('x (m)', x0+(x1-x0)/2, h-2);
+
+    const aTicks = [-aAmp,0,aAmp];
+    ctx.textAlign='right';
+    ctx.textBaseline='middle';
+    aTicks.forEach(val=>{
+      const Y=aToY(val);
+      ctx.strokeStyle='rgba(31,41,55,0.9)';
+      ctx.beginPath();
+      ctx.moveTo(x0-4,Y);
+      ctx.lineTo(x0,Y);
+      ctx.stroke();
+      ctx.fillText(val.toFixed(2), x0-6, Y);
+    });
+
+    ctx.save();
+    ctx.translate(10,(yTop+yBot)/2);
+    ctx.rotate(-Math.PI/2);
+    ctx.textAlign='center';
+    ctx.textBaseline='top';
+    ctx.fillText('a (m/s²)',0,0);
+    ctx.restore();
+
+    ctx.strokeStyle='rgba(220,38,38,0.9)';
+    ctx.lineWidth=1.4;
+    ctx.beginPath();
+    const Xmin = xToXcoord(xmin);
+    const Xmax = xToXcoord(xmax);
+    const Amin = aToY(+aMaxAbs);
+    const Amax = aToY(-aMaxAbs);
+    ctx.moveTo(Xmin, Amin);
+    ctx.lineTo(Xmax, Amax);
+    ctx.stroke();
+
+    ctx.restore();
+  }
+
+  function renderDiagramJobs(){
+    diagramJobs.forEach(job=>{
+      const canvas = document.getElementById(job.id);
+      if(!canvas) return;
+      switch(job.kind){
+        case 'xt':   drawXTChart(canvas, job);   break;
+        case 'xsin': drawXSinChart(canvas);      break;
+        case 'v':    drawVChart(canvas);         break;
+        case 'a':    drawAChart(canvas);         break;
+        case 'ax':   drawAXChart(canvas);        break;
+      }
+    });
+  }
+
+  async function loadDialogsAndBuild(){
+    const file = (lang === 'en') ? 'dialogs-en.json' : 'dialogs-gr.json';
+    diagramJobs.length = 0;
+
+    const bookData = loadBookData();
+    const DEFAULT_A = 3.0;
+    const DEFAULT_T = 6.0;
+
+    gA = (bookData && typeof bookData.A === 'number') ? bookData.A : DEFAULT_A;
+    gT = (bookData && typeof bookData.T === 'number') ? bookData.T : DEFAULT_T;
+    gOmega = (bookData && typeof bookData.omega === 'number') ? bookData.omega : (2*Math.PI/gT);
+    gX0 = (bookData && typeof bookData.x0 === 'number') ? bookData.x0 : 1.80;
+    gPhi0Deg = (bookData && typeof bookData.phi0Deg === 'number') ? bookData.phi0Deg : 35.0;
+    gPhi0Rad = gPhi0Deg * Math.PI / 180;
+
+    gV0 = gOmega * gA * Math.cos(gPhi0Rad);
+    const eps = 1e-6;
+    if(gV0 > eps){
+      gVSignSymbol = 'υ>0';
+      gVSignWord = (lang === 'en') ? 'positive' : 'θετική';
+    }else if(gV0 < -eps){
+      gVSignSymbol = 'υ<0';
+      gVSignWord = (lang === 'en') ? 'negative' : 'αρνητική';
+    }else{
+      gVSignSymbol = 'υ=0';
+      gVSignWord = (lang === 'en') ? 'zero' : 'μηδενική';
+    }
+
+    setParam('A', gA.toFixed(2));
+    setParam('T', gT.toFixed(2));
+    setParam('omega', gOmega.toFixed(2));
+    setParam('x0', gX0.toFixed(2));
+    setParam('phi0Deg', gPhi0Deg.toFixed(1));
+    setParam('v0', gV0.toFixed(2));
+    setParam('vSignSymbol', gVSignSymbol);
+    setParam('vSignWord', gVSignWord);
+
+    if(!bookData){
+      const note = document.getElementById('paramNote');
+      if(note){
+        note.textContent = (lang === 'en')
+          ? 'No stage data were found. Using indicative values (A=3.00 m, T=6.00 s, etc.).'
+          : 'Δεν βρέθηκαν δεδομένα από τη σκηνή. Χρησιμοποιούνται ενδεικτικές τιμές (A=3.00 m, T=6.00 s κ.λπ.).';
+      }
+    }
+
+    if(bookData && Array.isArray(bookData.samples)){
+      gSamples = bookData.samples.slice();
+      renderTxTable(bookData.samples);
+    }else{
+      gSamples = [];
+      renderTxTable([]);
+    }
+
+    try{
+      const resp = await fetch(file,{cache:'no-store'});
+      if(!resp.ok){
+        console.error('Δεν βρέθηκε', file);
+        return;
+      }
+      const data = await resp.json();
+      VIEWERS = data.viewers || [];
+      ACT1    = data.act1    || [];
+      ACT2    = data.act2    || [];
+      FOYER   = data.foyer   || [];
+
+      const act1Cont  = document.getElementById('act1Transcript');
+      const act2Cont  = document.getElementById('act2Transcript');
+      const foyerCont = document.getElementById('foyerTranscript');
+
+      act1Cont.innerHTML  = '';
+      act2Cont.innerHTML  = '';
+      foyerCont.innerHTML = '';
+
+      BOOK_CFG = null;
+      const bookFile = (lang === 'en') ? 'book-en.json' : 'book-gr.json';
+      try{
+        let br = await fetch(bookFile,{cache:'no-store'});
+        if(!br.ok){
+          br = await fetch('book.json',{cache:'no-store'});
+        }
+        if(br.ok){
+          BOOK_CFG = await br.json();
+        }
+      }catch(e2){
+        console.warn('book*.json όχι διαθέσιμο ή μη έγκυρο', e2);
+        BOOK_CFG = null;
+      }
+
+      renderSection('act1',  ACT1,  act1Cont,  'act1');
+      renderSection('act2',  ACT2,  act2Cont,  'act2');
+      renderSection('foyer', FOYER, foyerCont, 'foyer');
+
+    }catch(err){
+      console.error(err);
+    }
+
+    renderDiagramJobs();
+  }
+
+  loadDialogsAndBuild();
+</script>
+
+</body>
+</html>
