@@ -84,7 +84,8 @@
     }
     .param-label{
       font-size:.78rem;
-      text-transform:uppercase;
+      /* Να μην γίνονται αυτόματα κεφαλαία */
+      text-transform:none;
       letter-spacing:.08em;
       color:#6b7280;
       margin-bottom:2px;
@@ -464,7 +465,7 @@
           </div>
         </div>
         <div class="param-pill">
-          <div class="param-label">Αρχική Φάση φ₀</div>
+          <div class="param-label">Αρχική φάση φ₀</div>
           <div class="param-value"><span data-param="phi0Deg">—</span>°</div>
           <div class="param-note">Φάση τη στιγμή t = 0</div>
         </div>
@@ -1311,8 +1312,6 @@
 
     const Smin = -1.1;
     const Smax =  1.1;
-    const xmin = -gA*1.1;
-    const xmax =  gA*1.1;
 
     function SToX(S){
       return x0 + (S - Smin)/(Smax - Smin)*(x1-x0);
@@ -1851,5 +1850,3 @@
 
 </body>
 </html>
-
-
