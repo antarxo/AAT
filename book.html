@@ -84,7 +84,6 @@
     }
     .param-label{
       font-size:.78rem;
-      /* Να μην γίνονται αυτόματα κεφαλαία */
       text-transform:none;
       letter-spacing:.08em;
       color:#6b7280;
@@ -1298,6 +1297,7 @@
     }
   }
 
+  /* ***** ΔΙΟΡΘΩΜΕΝΟ: x–ημ(ωt) με πλήρη ντύσιμο ***** */
   function drawXSinChart(canvas){
     if(!canvas) return;
     const ctx = canvas.getContext('2d');
@@ -1312,6 +1312,7 @@
 
     const Smin = -1.1;
     const Smax =  1.1;
+    const xMaxAbs = gA * 1.1;
 
     function SToX(S){
       return x0 + (S - Smin)/(Smax - Smin)*(x1-x0);
@@ -1319,31 +1320,36 @@
     function xToY(x){
       const mid = (yTop+yBot)/2;
       const amp = (yBot-yTop)/2;
-      return mid - (x/(gA*1.1))*amp;
+      return mid - (x/xMaxAbs)*amp;
     }
 
     ctx.clearRect(0,0,w,h);
-
     ctx.save();
+
+    /* Grid στις βασικές τιμές του ημ(ωt): -1, 0, 1 */
     ctx.strokeStyle='rgba(148,163,184,0.45)';
     ctx.lineWidth=1;
     ctx.setLineDash([3,3]);
-    for(let k=-1;k<=1;k++){
-      const xx = SToX(k);
+    [-1,0,1].forEach(S=>{
+      const xx = SToX(S);
       ctx.beginPath();
       ctx.moveTo(xx,yTop);
       ctx.lineTo(xx,yBot);
       ctx.stroke();
-    }
+    });
     ctx.setLineDash([]);
 
+    /* Άξονες */
     ctx.strokeStyle='rgba(31,41,55,1)';
     ctx.lineWidth=1.2;
+
+    // κάτω οριζόντιος άξονας (ημ(ωt))
     ctx.beginPath();
     ctx.moveTo(x0,yBot);
     ctx.lineTo(x1,yBot);
     ctx.stroke();
 
+    // μεσαία οριζόντια γραμμή (x = 0)
     const yMid = (yTop+yBot)/2;
     ctx.beginPath();
     ctx.moveTo(x0,yMid);
@@ -1352,11 +1358,27 @@
 
     ctx.fillStyle='#111827';
     ctx.font='10px system-ui';
+
+    /* Τicks & ετικέτες στον άξονα ημ(ωt): -1, 0, 1 */
+    ctx.textAlign='center';
+    ctx.textBaseline='top';
+    [-1,0,1].forEach(S=>{
+      const X = SToX(S);
+      ctx.strokeStyle='rgba(31,41,55,0.9)';
+      ctx.beginPath();
+      ctx.moveTo(X,yBot);
+      ctx.lineTo(X,yBot+4);
+      ctx.stroke();
+      ctx.fillText(S.toString(), X, yBot+6);
+    });
+
+    /* Τίτλος άξονα ημ(ωt) */
     ctx.textAlign='center';
     ctx.textBaseline='bottom';
     const labelSin = (lang === 'en') ? 'sin(ωt)' : 'ημ(ωt)';
     ctx.fillText(labelSin, x0 + (x1-x0)/2, h-2);
 
+    /* Τίτλος κατακόρυφου άξονα x (m) */
     ctx.save();
     ctx.translate(10, (yTop+yBot)/2);
     ctx.rotate(-Math.PI/2);
@@ -1365,14 +1387,28 @@
     ctx.fillText('x (m)', 0, 0);
     ctx.restore();
 
+    /* Τicks & ετικέτες στον άξονα x: -A, 0, A */
+    const xTicks = [-gA, 0, gA];
+    ctx.textAlign='right';
+    ctx.textBaseline='middle';
+    xTicks.forEach(val=>{
+      const Y = xToY(val);
+      ctx.strokeStyle='rgba(31,41,55,0.9)';
+      ctx.beginPath();
+      ctx.moveTo(x0-4,Y);
+      ctx.lineTo(x0,Y);
+      ctx.stroke();
+      ctx.fillText(val.toFixed(2), x0-6, Y);
+    });
+
+    /* Ευθεία x = A·ημ(ωt) */
     ctx.strokeStyle='rgba(37,99,235,0.9)';
     ctx.lineWidth=1.4;
     ctx.beginPath();
-
-    const N=120;
+    const N = 120;
     for(let i=0;i<=N;i++){
       const S = Smin + (Smax-Smin)*i/N;
-      const x = gA*S;
+      const x = gA * S;
       const X = SToX(S);
       const Y = xToY(x);
       if(i===0) ctx.moveTo(X,Y);
