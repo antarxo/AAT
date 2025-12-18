@@ -279,12 +279,29 @@ let xtMarkState = {
   showTail: false
 };
 
-// Βρίσκουμε τη στιγμή t_zero στο [0,T] όπου x περνάει πρώτη φορά από 0 με φορά προς τα δεξιά
+function computePhaseZeroT(phi0Rad, omegaVal){
+  const twoPi = 2*Math.PI;
+  if(!isFinite(phi0Rad) || !isFinite(omegaVal) || omegaVal === 0) return 0;
+
+  let p = phi0Rad % twoPi;
+  if(p < 0) p += twoPi;
+
+  const tZero = (twoPi - p) / omegaVal;
+  const TT = twoPi / omegaVal;
+  if(Math.abs(tZero - TT) < 1e-9) return 0;
+  return tZero;
+}
+
+// φ0 (σε rad) για τη στιγμή t_obs=0, δηλαδή φ0 = ω * obsStartPlaybackOffset
+function getPhi0Rad(){
+  return omega * obsStartPlaybackOffset;
+}
+
+// Βρίσκουμε τη στιγμή t_zero στο [0,T] όπου η φάση μηδενίζεται πρώτη φορά (mod 2π)
+// και άρα x=0 με θετική φορά (για την κόκκινη πρόβλεψη).
 function xtZeroCrossingTime(){
-  let off = obsStartPlaybackOffset % T;
-  if(off < 0) off += T;
-  if(off === 0) return 0;
-  return T - off;
+  const phi0Rad = getPhi0Rad();
+  return computePhaseZeroT(phi0Rad, omega);
 }
 
 function triggerXtZeroMark(ev){
@@ -1841,6 +1858,8 @@ function exportBookDataToStorage(){
   try{
     const x0 = x0Val();
     const phi0deg = getPhi0Deg();
+    const tZero = xtZeroCrossingTime(); // ✅ ΤΩΡΑ ΥΠΑΡΧΕΙ ΠΡΑΓΜΑΤΙΚΑ
+
     const payload = {
       A: A_m,
       T: T,
