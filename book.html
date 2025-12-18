@@ -376,8 +376,8 @@
         <div class="card">
           <p>
             Στην Πράξη 1, οι θεατές προσπαθούν να μελετήσουν την κίνηση
-            από τις μετρήσεις t–x. Σκέφτονται, προτείνουν τρόπους ώστε να αποδείξουν τους νόμους της ΑΑΤ! 
-            Παρεμβάλλονται σχόλια, επεξηγήσεις που βοηθούν τον αναγνώστη στην καλύτερη κατανόηση αυτής της διαδικασίας, 
+            από τις μετρήσεις t–x. Σκέφτονται, προτείνουν τρόπους ώστε να αποδείξουν τους νόμους της ΑΑΤ!
+            Παρεμβάλλονται σχόλια, επεξηγήσεις που βοηθούν τον αναγνώστη στην καλύτερη κατανόηση αυτής της διαδικασίας,
             που είναι σε τελευταία ανάλυση καθαρά πειραματική!
           </p>
           <p class="muted">
@@ -504,7 +504,6 @@
       <div id="foyerTranscript" class="dialog-block"></div>
     </div>
   </section>
-
 
 </div>
 
@@ -647,9 +646,31 @@
     }
   }
 
+  function pickBlockClass(block, fallback){
+    if(!block || typeof block !== 'object') return fallback || '';
+    const explicit = block.className || block.class;
+    if(explicit != null && String(explicit).trim() !== '') return String(explicit).trim();
+
+    const t = (block.type || '').toLowerCase();
+    if(t === 'warning') return 'warning-box';
+    if(t === 'note')    return 'note-box';
+    if(t === 'card')    return 'card';
+    if(t === 'html')    return 'card';
+    if(t === 'plain')   return '';
+    return fallback || '';
+  }
+
+  function applyInlineStyle(el, styleText){
+    if(!el) return;
+    const s = (styleText == null) ? '' : String(styleText).trim();
+    if(!s) return;
+    const prev = el.getAttribute('style') || '';
+    el.setAttribute('style', prev ? (prev + '; ' + s) : s);
+  }
+
   function renderBlockStandalone(block, container, actId, dialogIndex, zone){
     if(!block || typeof block !== 'object') return;
-    const type = block.type || 'note';
+    const type = (block.type || 'note').toLowerCase();
     const col  = block.column || '';
 
     if(col === 'left' || col === 'right'){
@@ -683,20 +704,29 @@
       return;
     }
 
-    if(type === 'note' || type === 'html'){
+    if(type === 'note' || type === 'html' || type === 'warning' || type === 'card' || type === 'plain'){
       const div = document.createElement('div');
-      div.className = (type === 'note') ? 'note-box' : 'card';
+      const fallback = (type === 'warning') ? 'warning-box'
+                    : (type === 'note')    ? 'note-box'
+                    : (type === 'plain')   ? ''
+                    : 'card';
+      div.className = pickBlockClass(block, fallback);
+
       const html = expandDynTemplate(block.html || block.text || '');
       div.innerHTML = html;
+
       applyColumnAlignment(div, col || 'full');
+      applyInlineStyle(div, block.style);
+
       container.appendChild(div);
       return;
     }
 
     if(type === 'image'){
       const wrapper = document.createElement('div');
-      wrapper.className = 'card';
+      wrapper.className = pickBlockClass(block, 'card');
       applyColumnAlignment(wrapper, col || 'full');
+      applyInlineStyle(wrapper, block.style);
 
       const img = document.createElement('img');
       img.src = block.src || '';
@@ -719,8 +749,9 @@
 
     if(type === 'diagram'){
       const wrapper = document.createElement('div');
-      wrapper.className = 'card';
+      wrapper.className = pickBlockClass(block, 'card');
       applyColumnAlignment(wrapper, col || 'full');
+      applyInlineStyle(wrapper, block.style);
 
       if(block.title){
         const h3 = document.createElement('h3');
@@ -764,14 +795,22 @@
     }
     const goesRight = (parent === rightCell);
 
-    const type = block.type || 'note';
+    const type = (block.type || 'note').toLowerCase();
 
-    if(type === 'note' || type === 'html'){
+    if(type === 'note' || type === 'html' || type === 'warning' || type === 'card' || type === 'plain'){
       const box = document.createElement('div');
-      box.className = 'note-box';
+      const fallback = (type === 'warning') ? 'warning-box'
+                    : (type === 'note')    ? 'note-box'
+                    : (type === 'plain')   ? ''
+                    : 'card';
+      box.className = pickBlockClass(block, fallback);
       box.style.marginTop = '6px';
+
       const html = expandDynTemplate(block.html || block.text || '');
       box.innerHTML = html;
+
+      applyInlineStyle(box, block.style);
+
       parent.appendChild(box);
       return goesRight;
     }
@@ -779,6 +818,8 @@
     if(type === 'image'){
       const wrap = document.createElement('div');
       wrap.className = 'diagram-inline';
+      applyInlineStyle(wrap, block.style);
+
       const img = document.createElement('img');
       img.src = block.src || '';
       img.alt = block.alt || '';
@@ -786,12 +827,14 @@
       img.style.display = 'block';
       img.style.borderRadius = '6px';
       wrap.appendChild(img);
+
       if(block.caption){
         const cap = document.createElement('div');
         cap.className = 'diagram-caption';
         cap.textContent = block.caption;
         wrap.appendChild(cap);
       }
+
       parent.appendChild(wrap);
       return goesRight;
     }
@@ -799,16 +842,20 @@
     if(type === 'diagram'){
       const box = document.createElement('div');
       box.className = 'diagram-inline';
+      applyInlineStyle(box, block.style);
+
       const canv = document.createElement('canvas');
       const id = `${actId}-inline-${zone || 'in'}-${dialogIndex != null ? dialogIndex : 'x'}-${block.id || block.kind || 'd'}-${diagramJobs.length}`;
       canv.id = id;
       box.appendChild(canv);
+
       if(block.caption){
         const cap = document.createElement('div');
         cap.className = 'diagram-caption';
         cap.textContent = block.caption;
         box.appendChild(cap);
       }
+
       parent.appendChild(box);
       diagramJobs.push({
         id,
@@ -820,6 +867,18 @@
     }
 
     return goesRight;
+  }
+
+  function getEventInlineBlocks(ev){
+    if(!ev || typeof ev !== 'object') return [];
+    const a = [];
+
+    if(Array.isArray(ev.inline)) a.push(...ev.inline);
+    if(Array.isArray(ev.inlineBlocks)) a.push(...ev.inlineBlocks);
+    if(Array.isArray(ev.inlineAdd)) a.push(...ev.inlineAdd);
+    if(Array.isArray(ev.addonsInline)) a.push(...ev.addonsInline);
+
+    return a;
   }
 
   function buildDialogRow(ev, idx, contextLabel, inlineBlocks){
@@ -940,8 +999,14 @@
       addDiagram('ax', 'Διάγραμμα a–x');
     }
 
-    if(inlineBlocks && inlineBlocks.length){
-      inlineBlocks.forEach(block => {
+    // ✅ Inline πρόσθετα: και από book-*.json (inlineBlocks) ΚΑΙ απευθείας από dialogs JSON (ev.inline)
+    const mergedInline = [];
+    if(inlineBlocks && inlineBlocks.length) mergedInline.push(...inlineBlocks);
+    const evInline = getEventInlineBlocks(ev);
+    if(evInline.length) mergedInline.push(...evInline);
+
+    if(mergedInline.length){
+      mergedInline.forEach(block => {
         const placedRight = renderBlockInline(
           block,
           leftCell,
@@ -1789,7 +1854,6 @@
     gPhi0Deg = (bookData && typeof bookData.phi0Deg === 'number') ? bookData.phi0Deg : 35.0;
     gPhi0Rad = gPhi0Deg * Math.PI / 180;
 
-    // tZero ΠΑΝΤΑ από index (localStorage). Αν δεν δόθηκε, 0.
     if(bookData && typeof bookData.tZero === 'number'){
       gPhaseZeroT = bookData.tZero;
     }else{
@@ -1818,15 +1882,6 @@
     setParam('vSignSymbol', gVSignSymbol);
     setParam('vSignWord', gVSignWord);
     setParam('tZero', gPhaseZeroT.toFixed(2));
-
-    if(!bookData){
-      const note = document.getElementById('paramNote');
-      if(note){
-        note.textContent = (lang === 'en')
-          ? 'No stage data were found. Using indicative values (A=3.00 m, T=6.00 s, etc.).'
-          : 'Δεν βρέθηκαν δεδομένα από τη σκηνή. Χρησιμοποιούνται ενδεικτικές τιμές (A=3.00 m, T=6.00 s κ.λπ.).';
-      }
-    }
 
     if(bookData && Array.isArray(bookData.samples)){
       gSamples = bookData.samples.slice();
