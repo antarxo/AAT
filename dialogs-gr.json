@@ -19,7 +19,7 @@
     "btnFoyerGo": "Μετάβαση στο Φουαγιέ",
     "btnEndShow": "Τέλος Παράστασης",
     "btnFoyer": "Φουαγιέ",
-    "startBtn": "Ενας θεατής κλικ για Έναρξη",
+    "startBtn": "Ενας θεατής ας κάνει κλικ στην Έναρξη",
     "btnPauseTitle": "παύση",
     "btnPlayTitle": "κανονικά",
     "btnResetTitle": "reset",
@@ -828,6 +828,7 @@
     }
   ]
 }
+
 
 
 
