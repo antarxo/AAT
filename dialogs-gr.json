@@ -257,7 +257,7 @@
       "alsoParams": true
     },
     {
-      "viewer": 1,
+      "viewer": null,
       "xShift": 0,
       "yOffset": 0,
       "typeMs": 2500,
@@ -828,6 +828,7 @@
     }
   ]
 }
+
 
 
 
