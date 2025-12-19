@@ -1,55 +1,88 @@
-// intro_boot.js — force intro overlay early (fallback if intro.js delays)
-(function(){
-  function showFallbackIntro(){
-    var root = document.getElementById('intro-root');
-    if(!root){
-      root = document.createElement('div'); root.id='intro-root';
-      Object.assign(root.style,{position:'fixed',inset:'0',zIndex:'9999',display:'grid',gridTemplateRows:'1fr auto',gap:'12px',padding:'16px',background:'rgba(0,0,0,.92)',color:'#fff'});
-      document.body.appendChild(root);
-      var wrap = document.createElement('div'); Object.assign(wrap.style,{display:'grid',placeItems:'center'}); root.appendChild(wrap);
-      var frame = document.createElement('iframe'); frame.src='intro.html'; frame.title='Intro'; frame.loading='eager';
-      Object.assign(frame.style,{width:'min(1024px,92vw)',height:'min(720px,80vh)',border:'0',borderRadius:'12px',boxShadow:'0 12px 50px rgba(0,0,0,.55)'});
-      wrap.appendChild(frame);
-      var ctrls = document.createElement('div'); Object.assign(ctrls.style,{display:'flex',justifyContent:'space-between',gap:'8px'}); root.appendChild(ctrls);
-      var left=document.createElement('div'), right=document.createElement('div'); ctrls.appendChild(left); ctrls.appendChild(right);
-      var btnBypass = document.createElement('button'); btnBypass.textContent='Παράβλεψη';
-      Object.assign(btnBypass.style,{padding:'8px 12px',borderRadius:'10px',border:'1px solid #888',background:'#111',color:'#fff',cursor:'pointer'});
-      btnBypass.onclick=function(){ root.style.display='none'; revealTitle(); };
-      left.appendChild(btnBypass);
-      var btnDisable=document.createElement('button'); btnDisable.textContent='Μην το ξαναδείξεις';
-      Object.assign(btnDisable.style,{padding:'8px 12px',borderRadius:'10px',border:'1px solid #555',background:'#222',color:'#fff',cursor:'pointer',marginRight:'6px'});
-      btnDisable.onclick=function(){ localStorage.setItem('intro:disable','1'); root.style.display='none'; revealTitle(); };
-      var btnContinue=document.createElement('button'); btnContinue.textContent='Συνέχεια';
-      Object.assign(btnContinue.style,{padding:'10px 14px',borderRadius:'10px',border:'1px solid #7a0',background:'#171',color:'#fff',cursor:'pointer'});
-      btnContinue.onclick=function(){ root.style.display='none'; revealTitle(); };
-      right.appendChild(btnDisable); right.appendChild(btnContinue);
-    } else {
-      root.style.display='grid';
-    }
+// intro_boot.js — εμφάνισε το intro πέπλο όσο πιο νωρίς γίνεται (fallback)
+(function () {
+  function ensureFallback() {
+    if (document.getElementById('intro-root')) return;
+
+    var root = document.createElement('div');
+    root.id = 'intro-root';
+    Object.assign(root.style, {
+      position: 'fixed',
+      inset: '0',
+      zIndex: '5000',
+      display: 'grid',
+      placeItems: 'center',
+      background: 'rgba(0,0,0,.90)',
+      backdropFilter: 'blur(1.5px)',
+      WebkitBackdropFilter: 'blur(1.5px)',
+      padding: '16px',
+      boxSizing: 'border-box'
+    });
+
+    var box = document.createElement('div');
+    Object.assign(box.style, {
+      width: 'min(1040px, 94vw)',
+      height: 'min(92vh, 860px)',
+      borderRadius: '14px',
+      overflow: 'hidden',
+      boxShadow: '0 18px 70px rgba(0,0,0,.55)',
+      border: '1px solid rgba(255,255,255,.16)',
+      display: 'grid',
+      gridTemplateRows: '1fr auto'
+    });
+    root.appendChild(box);
+
+    var frame = document.createElement('iframe');
+    frame.title = 'Πρόγραμμα παράστασης';
+    frame.loading = 'eager';
+    frame.referrerPolicy = 'no-referrer';
+    frame.src = 'intro.html';
+    Object.assign(frame.style, { width: '100%', height: '100%', border: '0', background: 'transparent' });
+    box.appendChild(frame);
+
+    var footer = document.createElement('div');
+    Object.assign(footer.style, {
+      display: 'flex',
+      justifyContent: 'center',
+      padding: '12px',
+      background: 'rgba(0,0,0,.35)',
+      borderTop: '1px solid rgba(255,255,255,.14)'
+    });
+
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.textContent = 'Συνέχεια';
+    Object.assign(btn.style, {
+      padding: '10px 16px',
+      borderRadius: '12px',
+      border: '1px solid rgba(255,255,255,.22)',
+      background: 'rgba(255,255,255,.10)',
+      color: '#fff',
+      cursor: 'pointer',
+      fontWeight: '700',
+      letterSpacing: '.2px'
+    });
+
+    btn.addEventListener('click', function () {
+      root.style.transition = 'opacity 180ms ease';
+      root.style.opacity = '0';
+      setTimeout(function () { root.remove(); }, 190);
+    });
+
+    footer.appendChild(btn);
+    box.appendChild(footer);
+
+    document.body.appendChild(root);
   }
-  function revealTitle(){
-    var sb=document.querySelector('.signboard'); if(sb) sb.style.opacity='1';
-    var start=document.getElementById('startBtn'); if(start){ try{ start.scrollIntoView({behavior:'smooth',block:'center'}); }catch(e){} }
+
+  function maybeShow() {
+    // Αν το intro.js τρέξει κανονικά, θα αντικαταστήσει/χρησιμοποιήσει το ίδιο #intro-root.
+    // Εδώ βάζουμε fallback μόνο αν δεν εμφανίστηκε τίποτα μέχρι τώρα.
+    ensureFallback();
   }
-  function maybeShowIntro(){
-    if(/[?&]nointro=1(&|$)/.test(location.search)) return;
-    // if intro.js handled it already, do nothing
-    if(document.getElementById('intro-root') && document.getElementById('intro-root').style.display!=='none') return;
-    // fetch config quickly; if fails, show fallback
-    fetch('intro.json',{cache:'no-cache'}).then(function(r){
-      if(!r.ok) throw new Error('no cfg');
-      return r.json();
-    }).then(function(cfg){
-      var disabledLS = (localStorage.getItem('intro:disable') === '1');
-      var respectDisable = !!(cfg && cfg.respectDisable);
-      if(cfg.enabled === false) return;
-      if(respectDisable && disabledLS) return;
-      showFallbackIntro();
-    }).catch(function(){ showFallbackIntro(); });
-  }
-  if(document.readyState === 'loading'){
-    document.addEventListener('DOMContentLoaded', maybeShowIntro);
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', maybeShow, { once: true });
   } else {
-    setTimeout(maybeShowIntro, 0);
+    setTimeout(maybeShow, 0);
   }
 })();
