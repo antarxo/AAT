@@ -729,11 +729,46 @@ body{
   overflow:hidden;
   border:1px solid rgba(255,255,255,.25);
 }
+
+.foyer{
+  /* ύψος/χώρος για 2 γραμμές τίτλου στο πάνω μέρος του φουαγιέ */
+  --foyer-titlebar-h: 56px;
+}
+
+.foyer-titlebar{
+  position:absolute;
+  top:0;
+  left:0;
+  right:0;
+  height:var(--foyer-titlebar-h);
+  padding:8px 10px 6px;
+  background:rgba(0,0,0,.22);
+  border-bottom:1px solid rgba(255,255,255,.25);
+  z-index:2;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  gap:2px;
+  pointer-events:none;
+}
+
+.foyer-titlebar .ft-line1{
+  font-size:16px;
+  font-weight:700;
+  letter-spacing:.2px;
+  line-height:1.1;
+}
+
+.foyer-titlebar .ft-line2{
+  font-size:13px;
+  opacity:.92;
+  line-height:1.15;
+}
 .board-left,
 .board-right{
   background:#0d2a1e;
   color:#fff;
-  padding:8px 10px;
+  padding:calc(var(--foyer-titlebar-h) + 10px) 10px 8px;
   overflow:auto;
   scroll-behavior:smooth;
   font-size:14px;
