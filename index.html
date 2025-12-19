@@ -164,6 +164,7 @@ let foyerTBody = null;
 
 /* UI κείμενα από JSON.ui */
 let UI = {};
+let UI_TITLES = null;
 
 let currentLang = 'gr';  // 'gr' ή 'en'
 let btnLangGR = null;
@@ -329,12 +330,15 @@ function applyUITextFromUI(){
   const foyerBreakTitle = document.getElementById('foyerBreakTitle');
   const foyerBreakMsg   = document.getElementById('foyerBreakMsg');
 
-  if(signTitle   && ui.signTitle   != null) signTitle.textContent   = ui.signTitle;
-  if(signLineA   && ui.signLineA   != null) signLineA.textContent   = ui.signLineA;
-  if(signLineB   && ui.signLineB   != null) signLineB.innerHTML     = ui.signLineB;
-  if(signLineC   && ui.signLineC   != null) signLineC.textContent   = ui.signLineC;
-  if(signLineD   && ui.signLineD   != null) signLineD.textContent   = ui.signLineD;
+  const hasTitles = UI_TITLES && (UI_TITLES.act1 || UI_TITLES.act2 || UI_TITLES.foyer);
+  if(!hasTitles){
+    if(signTitle   && ui.signTitle   != null) signTitle.textContent   = ui.signTitle;
+    if(signLineA   && ui.signLineA   != null) signLineA.textContent   = ui.signLineA;
+    if(signLineB   && ui.signLineB   != null) signLineB.innerHTML     = ui.signLineB;
+    if(signLineC   && ui.signLineC   != null) signLineC.textContent   = ui.signLineC;
+    if(signLineD   && ui.signLineD   != null) signLineD.textContent   = ui.signLineD;
 
+  }
   if(lawsTitle   && ui.lawsTitle   != null) lawsTitle.textContent   = ui.lawsTitle;
   if(measureTitle&& ui.measureTitle!= null) measureTitle.textContent= ui.measureTitle;
   if(measureColIdx&&ui.measureColIdx!=null) measureColIdx.textContent= ui.measureColIdx;
@@ -362,6 +366,40 @@ function applyUITextFromUI(){
   if(btnLangGR && btnLangEN){
     btnLangGR.classList.toggle('active', currentLang === 'gr');
     btnLangEN.classList.toggle('active', currentLang === 'en');
+  }
+}
+
+
+function getTitleKeyForPhase(p){
+  if(p==='act2' || p==='between2andFoyer') return 'act2';
+  if(p==='foyer') return 'foyer';
+  return 'act1';
+}
+
+function applySignPatch(patch){
+  if(!patch) return;
+
+  const signTitle = document.getElementById('signTitle');
+  const signLineA = document.getElementById('signLineA');
+  const signLineB = document.getElementById('signLineB');
+  const signLineC = document.getElementById('signLineC');
+  const signLineD = document.getElementById('signLineD');
+
+  if(signTitle && patch.signTitle != null) signTitle.textContent = expandDynTemplate(patch.signTitle);
+  if(signLineA && patch.signLineA != null) signLineA.textContent = expandDynTemplate(patch.signLineA);
+  if(signLineB && patch.signLineB != null) signLineB.innerHTML   = expandDynTemplate(patch.signLineB);
+  if(signLineC && patch.signLineC != null) signLineC.textContent = expandDynTemplate(patch.signLineC);
+  if(signLineD && patch.signLineD != null) signLineD.textContent = expandDynTemplate(patch.signLineD);
+}
+
+function applySignboardForPhase(p=phase){
+  const key=getTitleKeyForPhase(p);
+  const hasTitles = UI_TITLES && (UI_TITLES.act1 || UI_TITLES.act2 || UI_TITLES.foyer);
+  if(hasTitles && UI_TITLES[key]){
+    applySignPatch(UI_TITLES[key]);
+  }else{
+    // fallback: παλιό μοντέλο (UI.signTitle κλπ)
+    applySignPatch(UI || {});
   }
 }
 
@@ -743,7 +781,7 @@ function localizeTrig(txt){
 }
 
 function addLaw(txt){
-  const t=localizeTrig(txt);
+  const t=localizeTrig(expandDynTemplate(txt));
   if(!firstLawShown){
     firstLawShown=true;
     lawsPane.style.display='block';
@@ -1331,7 +1369,8 @@ function typeWriterHTML(el,html,totalMs,done){
 function showBubbleForEvent(ev){
   return new Promise(resolve=>{
     const viewer=ev.viewer || 1;
-    const html=(ev.left||'').replaceAll('\n','<br>');
+    const base=expandDynTemplate(ev.left||'');
+    const html=String(base).replaceAll('\n','<br>');
 
     if(!html){
       hideSpeakerChip();
@@ -1377,6 +1416,9 @@ function expandDynTemplate(tpl){
   const v0 = getV0();
   const vSym = getVSignSymbol(v0);
   const vWord = getVSignWord(v0);
+  const m1 = m;
+  const D1 = m1*omega*omega;
+  const Emech = 0.5*D1*(A_m*A_m);
   return String(tpl)
     .replaceAll('{A}',A_m.toFixed(2))
     .replaceAll('{T}',T.toFixed(2))
@@ -1384,7 +1426,11 @@ function expandDynTemplate(tpl){
     .replaceAll('{x0}',x0)
     .replaceAll('{phi0}',phi0deg.toFixed(1))
     .replaceAll('{vSignSymbol}', vSym)
-    .replaceAll('{vSignWord}', vWord);
+    .replaceAll('{vSignWord}', vWord)
+    .replaceAll('{m1}', String(Math.round(m1)))
+    .replaceAll('{D1}', D1.toFixed(2))
+    .replaceAll('{Emech}', Emech.toFixed(2))
+    .replaceAll('{Eμηχ}', Emech.toFixed(2));
 }
 
 function showDynBubble(ev){
@@ -1425,7 +1471,10 @@ function showDynBubble(ev){
 
 async function runAct1(){
   phase='act1';
+  applySignboardForPhase('act1');
   for(const ev of ACT1){
+    if(ev.uiPatch)   applySignPatch(ev.uiPatch);
+    if(ev.signPatch) applySignPatch(ev.signPatch);
     if(ev.close){
       await closeCurtainToAct2();
       return;
@@ -1575,12 +1624,15 @@ async function runAct2(){
   stage.classList.add('open');
   setAudienceLights(false);
   phase='act2';
+  applySignboardForPhase('act2');
 
   springEl.style.display='block';
   markerEl.style.opacity='1';
   markerGhostEl.style.opacity='0';
 
   for(const ev of ACT2){
+    if(ev.uiPatch)   applySignPatch(ev.uiPatch);
+    if(ev.signPatch) applySignPatch(ev.signPatch);
     if(ev.gStart) ghostActive=true;
     if(ev.gStop)  ghostActive=false;
 
@@ -1739,6 +1791,7 @@ function addFoyerRow(item){
 
 async function runFoyer(){
   phase='foyer';
+  applySignboardForPhase('foyer');
   setAudienceLights(true);
   foyerEl.style.display='block';
   startBtn.style.display='none';
@@ -1842,6 +1895,7 @@ function resetShow(){
   ghostVisibility=0;
 
   setAudienceLights(true);
+  applySignboardForPhase('idle');
 }
 
 btnReset.addEventListener('click',resetShow);
@@ -2118,8 +2172,10 @@ async function loadDialogs(){
       ACTS_AVATAR_OFFSET=-60;
     }
 
-    UI=data.ui || {};
+    if(data.ui) UI=data.ui;
+    if(data.uiTitles) UI_TITLES=data.uiTitles;
     applyUITextFromUI();
+    applySignboardForPhase();
 
     initViewersAvatars();
   }catch(e){
