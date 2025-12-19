@@ -542,6 +542,7 @@
       "right": "D = mω² (6')",
       "gStart": false,
       "gStop": false
+       "uiPatch": { "signLineC": "m₁={m1}Kg · D₁={D1}N/m" }
     },
     {
       "viewer": 3,
@@ -844,4 +845,5 @@
     }
   }
 }
+
 
