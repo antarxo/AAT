@@ -720,55 +720,58 @@ body{
   z-index:500;
   display:none;
 }
+
 .foyer .wrap{
   position:absolute;
   inset:0;
   display:grid;
   grid-template-columns:1fr 1fr;
+  grid-template-rows:auto 1fr;
   border-radius:10px;
   overflow:hidden;
   border:1px solid rgba(255,255,255,.25);
+  background:#0d2a1e;
 }
 
-.foyer{
-  /* ύψος/χώρος για 2 γραμμές τίτλου στο πάνω μέρος του φουαγιέ */
-  --foyer-titlebar-h: 56px;
-}
-
+/* Τίτλοι φουαγιέ: ίδιο look με την ταμπέλα των πράξεων (ίδια γραμματοσειρά/μεγέθη/κεντράρισμα) */
 .foyer-titlebar{
-  position:absolute;
-  top:0;
-  left:0;
-  right:0;
-  height:var(--foyer-titlebar-h);
-  padding:8px 10px 6px;
-  background:rgba(0,0,0,.22);
-  border-bottom:1px solid rgba(255,255,255,.25);
+  grid-column:1 / span 2;
+  grid-row:1;
+  justify-self:center;
+  align-self:start;
+  margin:10px 10px 6px;
+  background:rgba(0,0,0,.4);
+  border-radius:10px;
+  padding:12px 18px;
+  color:#ddd;
+  font-family:'Georgia',serif;
+  text-align:center;
   z-index:2;
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-  gap:2px;
+  line-height:1.25;
   pointer-events:none;
+  max-width:calc(100% - 20px);
 }
 
 .foyer-titlebar .ft-line1{
-  font-size:16px;
+  font-size:28px;
+  margin:0;
+  color:#fff;
   font-weight:700;
-  letter-spacing:.2px;
-  line-height:1.1;
 }
 
 .foyer-titlebar .ft-line2{
-  font-size:13px;
-  opacity:.92;
-  line-height:1.15;
+  font-size:16px;
+  font-style:italic;
+  margin-top:2px;
+  color:#ddd;
 }
+
 .board-left,
 .board-right{
-  background:#0d2a1e;
+  grid-row:2;
+  background:transparent;
   color:#fff;
-  padding:calc(var(--foyer-titlebar-h) + 10px) 10px 8px;
+  padding:10px 10px 8px;
   overflow:auto;
   scroll-behavior:smooth;
   font-size:14px;
@@ -782,6 +785,7 @@ body{
   border-bottom:1px dashed rgba(255,255,255,.18);
   white-space:pre-wrap;
 }
+
 
 /* ---------- Μεταφορά πρώην inline styles ---------- */
 
