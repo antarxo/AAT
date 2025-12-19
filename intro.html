@@ -3,125 +3,243 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>ΘΕΑΤΡΟΝ · Πρόγραμμα Παράστασης</title>
+  <title>Πρόγραμμα Παράστασης · Α.Α.Τ.</title>
   <style>
-    :root {
+    :root{
       color-scheme: dark;
-      --card-bg: rgba(15,15,15,.68);
-      --card-brd: rgba(255,255,255,.18);
-      --txt: rgba(255,255,255,.92);
-      --muted: rgba(255,255,255,.72);
+      --paper: rgba(248,247,242,.96);
+      --paper-brd: rgba(0,0,0,.18);
+      --ink: rgba(18,18,18,.95);
+      --muted: rgba(18,18,18,.70);
+      --shadow: 0 18px 70px rgba(0,0,0,.55);
     }
-    html, body { height:100%; }
-    body {
+    html,body{height:100%;}
+    body{
       margin:0;
+      background: transparent;
+      display:grid;
+      place-items:center;
       font: 16px/1.55 system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-      color: var(--txt);
-      background: transparent; /* η διαφάνεια γίνεται από το overlay του intro.js */
     }
-    .wrap {
-      height: 100%;
-      display: grid;
+    .wrap{
+      width:min(1040px, 94vw);
+      height:min(92vh, 860px);
+      display:grid;
       grid-template-rows: auto 1fr;
       gap: 14px;
       padding: 16px;
-      box-sizing: border-box;
+      box-sizing:border-box;
     }
-    .banner {
-      display: grid;
-      place-items: center;
+    .banner{
+      display:grid;
+      place-items:center;
     }
-    .banner img {
-      width: min(1000px, 92vw);
-      max-width: 100%;
-      height: auto;
+    .banner img{
+      width:min(1000px, 92vw);
+      max-width:100%;
+      height:auto;
       border-radius: 12px;
-      box-shadow: 0 10px 40px rgba(0,0,0,.55);
+      box-shadow: 0 10px 40px rgba(0,0,0,.45);
       background: rgba(255,255,255,.04);
     }
-    .leaflet {
-      width: min(1000px, 92vw);
-      margin: 0 auto;
-      background: var(--card-bg);
-      border: 1px solid var(--card-brd);
+    .leaflet{
+      width:min(1000px, 92vw);
+      margin:0 auto;
+      background: var(--paper);
+      border: 1px solid var(--paper-brd);
       border-radius: 12px;
-      padding: 14px 16px;
-      box-shadow: 0 12px 50px rgba(0,0,0,.35);
-      overflow: auto;
+      box-shadow: 0 12px 50px rgba(0,0,0,.25);
+      overflow:auto;
+      padding: 16px 18px 18px;
+      box-sizing:border-box;
+      color: var(--ink);
     }
-    .leaflet pre {
-      margin: 0;
-      white-space: pre-wrap;
-      word-break: break-word;
-      font: 15px/1.55 ui-serif, Georgia, "Times New Roman", serif;
-      color: var(--txt);
+    .leaflet .meta{
+      font: 13px/1.35 system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      color: var(--muted);
+      margin: 0 0 10px;
     }
-    .leaflet pre .muted { color: var(--muted); }
+    .leaflet .content{
+      font: 15.5px/1.7 ui-serif, Georgia, "Times New Roman", serif;
+      text-align: justify;
+      hyphens: auto;
+      -webkit-hyphens: auto;
+      white-space: normal;
+    }
+    .leaflet p{
+      margin: 0 0 10px;
+    }
+    .leaflet hr{
+      border: 0;
+      border-top: 1px dashed rgba(0,0,0,.25);
+      margin: 14px 0;
+    }
+    .leaflet ul{
+      margin: 6px 0 10px 22px;
+      padding: 0;
+    }
+    .leaflet li{
+      margin: 2px 0;
+    }
+    .leaflet .mono{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      font-size: 13px;
+      color: var(--muted);
+    }
   </style>
 </head>
 <body>
-  <div class="wrap">
+  <div class="wrap" role="document" aria-label="Πρόγραμμα παράστασης Α.Α.Τ.">
     <div class="banner">
-      <!-- Βάλε εδώ την τελική εικόνα του “φυλλαδίου” (κρατάω συμβατικό όνομα). -->
-      <img src="intro-poster.jpg" alt="Πρόγραμμα παράστασης Α.Α.Τ." />
+      <img id="poster" src="intro-poster.jpg" alt="Πρόγραμμα παράστασης Α.Α.Τ." />
     </div>
 
-    <div class="leaflet" role="document" aria-label="Κείμενο προγράμματος παράστασης">
-      <pre>Παρακολουθώντας μια παράσταση «Α.Α.Τ.»
-ΘΕΑΤΡΟΝ: Μηχανική
-Αλληλεπιδραστική παράσταση Α.Α.Τ σε τρεις πράξεις
-Πρωταγωνιστεί ο ταλαντωτής (m1, D1) και οι θεαποιοί(*)
-στον μονόλογο «ατέλειωτο πήγαινε έλα»… επί σκηνής! 
-Παραγωγή-Σκηνοθεσία:  ΕΜ. Ενεργειούλης
-
-Λίγα λόγια για τη σημερινή παράσταση
-(*) Θεαποιοί: Θεατές-ηθοποιοί. Κατά τη διάρκεια της παράστασης οι θεαποιοί μπορούν να κρατούν σημειώσεις, να μετρήσουν, 
-να υπολογίσουν και να διαπιστώσουν ότι, όσα η παράσταση υπόσχεται, αυτά και μόνο αυτά διαδραματίζονται επί σκηνής. Για όσους 
-ενδιαφέρονται τους πληροφορούμε ότι ο σκηνοθέτης «τα μετράει όλα» σε σχέση με το κέντρο της σκηνής και θεωρεί θετικά δεξιά της 
-σκηνής όπως βλέπουν οι θεαποιοί (και ο νοών νοείτο!)
- 
-Πράξεις: 3!
-o 
-η Κινηματική στα … Αλγεβρικά 
-o 
-η  Δυναμική στα …Αλγεβρικά 
-o 
-η  Ενέργεια στα …Αλγεβρικά 
- 
-Γλώσσα: Άλγεβρα (δεν διατίθεται μεταφραστής) 
- 
-Το μέγεθος της σκηνής καθορίζεται αποκλειστικά από τον παραγωγό-σκηνοθέτη ΕΜ. Ενεργειούλη 
- 
-Το άνοιγμα της αυλαίας, η έναρξη του θεάματος καθορίζεται από εσάς (τους θεαποιούς μας)!
-Τι θα δείτε; «Αρμονικά πράγματα», ίσως μονότονα, αλλά απολύτως καθορισμένα αφού πρόκειται για τον 
-(m1, D1) τον αποψινό μας πρωταγωνιστή, με την απόλυτη ακρίβεια και το μοναδικό ταμπεραμέντο στις 
-παραστάσεις του, στη σκηνή που κάθε φορά τον φιλοξενεί! Με μοναδικότητα (αποτελούν την ταυτότητά του) 
-στα m=m1 , ω=ω1 και  D=D1 όλα τα υπόλοιπα μεγέθη και των τριών πράξεων του έργου x, υ, α, φ0, Α, ΣF, Κ, U 
-συγκαθορίζονται από αυτόν, από τη σκηνή που του παραχωρείται (x, υ, α, Α, ΣF, Κ, U), αλλά και από εσάς που 
-καθορίζετε την έναρξη, δηλαδή το σημείο που τον βλέπετε για πρώτη φορά στη σκηνή (φ0), στην οποία ήδη θα 
-πηγαινοέρχεται!
-Αν αναρωτιέστε τι σημαίνει «μοναδικό ταμπεραμέντο» για ένα πρωταγωνιστή, σας πληροφορούμε τα εξής: 
-Ο κάθε διαφορετικός πρωταγωνιστής (m1, D1), (m2, D2) ,…., (mi, Di) με το δικό του «σωματότυπο» (μάζα m κ.λ.π.), 
-κάνει αποκλειστικά και μόνο «τα δικά του» πήγαινε-έλα σε σχέση με τη σκηνή που του παραχωρείται.
-Δηλαδή: Για να πάει από τη μια μεριά της σκηνής μέχρι την άλλη και να γυρίσει, του παίρνει πάντα τον ίδιο 
-χαρακτηριστικό-προσωπικό χρόνο (είναι το ρεκόρ του!) Τi δηλαδή πηγαινοέρχεται με συχνότητα fi =1/Ti  ή αν 
-θέλετε να το θέσουμε kai αλλιώς (μιλώντας με ένα πολλαπλάσιο της συχνότητας κατά 6,28 φορές μεγαλύτερο, 
-για την ακρίβεια 2π φορές μεγαλύτερο) με την χαρακτηριστική-προσωπική κυκλική του συχνότητα ωi=2πfi 
-(λόγω του 2π!–καταλαβαίνετε… 360ο=2π rad=ένας ολόκληρος κύκλος!-κυκλική(2π) συχνότητα(f) σαν 
-λογοπαίγνιο!).
-Το «μοναδικό του ταμπεραμέντο» επομένως εδράζεται στον «σωματότυπό του» (τη μάζα του mi ) και την 
-εμμονή του, όταν τον αφήνεις μόνο του να πηγαινοέρχεται στη σκηνή να το κάνει με τη «δική» αποκλειστική 
-περίοδο Τi, συχνότητα fi και κυκλική συχνότητα ωi (τις ονομάζει ο ίδιος και ιδιοπερίοδο, ιδιοσυχνότητα, 
-ιδιοκυκλική συχνότητα)
-Πάντως αν στον (mi, Di) διατεθεί άλλη π.χ. μεγαλύτερη σκηνή, θα κάνει ακριβώς το ίδιο πήγαινε έλα απ’ 
-άκρη σ’ άκρη αξιοποιώντας πάντα όλο το μήκος της νέας σκηνής, εμμένοντας να διατηρεί («ταμπεραμέντο» γαρ) 
-τόσο την ίδιοπερίοδό του Τi  και την ιδιοσυχνότητά του fi =1/Ti  όσο και την ίδιοκυκλική του συχνότητα ωi=2πfi!
-Αυτές και μόνο είναι οι δεξιότητες-δυνατότητες του κάθε πρωταγωνιστή- εμείς τον λέμε γενικά ταλαντωτή 
-(m,D), ενώ το μέγεθος της παραγωγής και φυσικά το μέγεθος της σκηνής είναι στην αποκλειστική ευθύνη του 
-παραγωγού- σκηνοθέτη μας.
-Καλή απόλαυση 
-(*) πορτοκαλάδες, λεμονάδες, τσιπς στο BAR του φουαγιέ</pre>
+    <div class="leaflet">
+      <div class="meta">Πρόγραμμα παράστασης</div>
+      <div class="content" id="leafletContent" aria-label="Κείμενο προγράμματος"></div>
     </div>
   </div>
+
+<script>
+(function(){
+  function esc(s){ return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+  function buildHtmlFromText(raw){
+    // Στόχος: καλύτερη τυπογραφία χωρίς να "πειράξουμε" το κείμενο.
+    // Μετατρέπουμε κενές γραμμές -> παραγράφους.
+    // Ειδικές γραμμές-δείκτες bullets (•//o) -> λίστες.
+    const lines = raw.split(/\r?\n/);
+    const out = [];
+    let p = [];
+    let ul = null;
+    let ul2 = null;
+    let lastLiOpen = false;
+    let expectBullet = 0; // 0 none, 1 top, 2 sub
+
+    function flushParagraph(){
+      if (!p.length) return;
+      const txt = p.join(' ').replace(/\s+/g,' ').trim();
+      if (txt) out.push('<p>' + esc(txt) + '</p>');
+      p = [];
+    }
+    function closeLists(){
+      if (ul2){ out.push('</ul>'); ul2=null; }
+      if (ul){ out.push('</ul>'); ul=null; }
+      lastLiOpen = false;
+      expectBullet = 0;
+    }
+    function ensureUl(){
+      if (!ul){ flushParagraph(); ul=true; out.push('<ul>'); }
+    }
+    function ensureUl2(){
+      if (!ul2){
+        // υπολίστα μέσα στο τελευταίο li
+        if (!lastLiOpen){
+          ensureUl();
+          out.push('<li>' + esc('') );
+          lastLiOpen = true;
+        }
+        out.push('<ul>');
+        ul2 = true;
+      }
+    }
+    function closeLiIfOpen(){
+      if (lastLiOpen){
+        out.push('</li>');
+        lastLiOpen = false;
+      }
+    }
+
+    const BUL1 = new Set(['•','','\uf0b7']);
+    const BUL2 = new Set(['o','ο']); // σε περίπτωση που βγει ελληνικό ο
+
+    for (let i=0;i<lines.length;i++){
+      const rawLine = lines[i];
+      const line = rawLine.trim();
+
+      if (!line){
+        // κενή γραμμή: κλείνουμε paragraph ή λίστα-γραμμή, αφήνουμε ανάσα
+        flushParagraph();
+        // δεν κλείνουμε οπωσδήποτε λίστες, γιατί στο raw μπορεί να έχει κενές ανάμεσα σε bullets
+        continue;
+      }
+
+      if (BUL1.has(line)){
+        // νέο top-level bullet ξεκινά
+        flushParagraph();
+        ensureUl();
+        // κλείσε τυχόν υπολίστα και li
+        if (ul2){ out.push('</ul>'); ul2=null; }
+        closeLiIfOpen();
+        expectBullet = 1;
+        continue;
+      }
+
+      if (BUL2.has(line)){
+        flushParagraph();
+        ensureUl();
+        // sub bullet
+        ensureUl2();
+        closeLiIfOpen();
+        expectBullet = 2;
+        continue;
+      }
+
+      // Κανονικό κείμενο
+      if (expectBullet === 1){
+        ensureUl();
+        out.push('<li>' + esc(rawLine.trim()));
+        lastLiOpen = true;
+        expectBullet = 0;
+        continue;
+      }
+      if (expectBullet === 2){
+        ensureUl2();
+        out.push('<li>' + esc(rawLine.trim()) + '</li>');
+        expectBullet = 0;
+        continue;
+      }
+
+      // Αν είμαστε μέσα σε li (top-level) και έρχεται συνέχεια γραμμής, την κάνουμε νέο line μέσα στο ίδιο li
+      if (lastLiOpen && ul && !ul2){
+        out[out.length-1] += '<br>' + esc(rawLine.trim());
+      } else {
+        // κανονική παράγραφος
+        p.push(rawLine.trim());
+      }
+    }
+
+    flushParagraph();
+    // κλείσιμο ανοιχτών li/lists
+    if (ul2){ out.push('</ul>'); ul2=null; }
+    closeLiIfOpen();
+    if (ul){ out.push('</ul>'); ul=null; }
+
+    return out.join('\n');
+  }
+
+  async function init(){
+    try{
+      const r = await fetch('intro.json', { cache: 'no-cache' });
+      const cfg = r.ok ? await r.json() : null;
+      if (!cfg) return;
+
+      const img = document.getElementById('poster');
+      if (cfg.posterSrc) img.src = cfg.posterSrc;
+      if (cfg.posterAlt) img.alt = cfg.posterAlt;
+
+      const cont = document.getElementById('leafletContent');
+      const txt = cfg.leafletText || '';
+      cont.innerHTML = buildHtmlFromText(txt);
+    }catch(e){
+      // αν κάτι πάει στραβά, μένουμε απλά με την εικόνα
+      const cont = document.getElementById('leafletContent');
+      cont.innerHTML = '<p class="mono">Αποτυχία φόρτωσης intro.json</p>';
+    }
+  }
+
+  init();
+})();
+</script>
 </body>
 </html>
