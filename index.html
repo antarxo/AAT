@@ -1419,6 +1419,7 @@ function expandDynTemplate(tpl){
   const m1 = m;
   const D1 = m1*omega*omega;
   const Emech = 0.5*D1*(A_m*A_m);
+  const tZero = xtZeroCrossingTime();
   return String(tpl)
     .replaceAll('{A}',A_m.toFixed(2))
     .replaceAll('{T}',T.toFixed(2))
@@ -1427,6 +1428,7 @@ function expandDynTemplate(tpl){
     .replaceAll('{phi0}',phi0deg.toFixed(1))
     .replaceAll('{vSignSymbol}', vSym)
     .replaceAll('{vSignWord}', vWord)
+    .replaceAll('{tZero}', tZero.toFixed(2))
     .replaceAll('{m1}', String(Math.round(m1)))
     .replaceAll('{D1}', D1.toFixed(2))
     .replaceAll('{Emech}', Emech.toFixed(2))
