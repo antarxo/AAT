@@ -1,6 +1,22 @@
-// intro_boot.js — εμφάνισε το intro πέπλο όσο πιο νωρίς γίνεται (fallback)
+// intro_boot.js — Intro πέπλο πάνω από τη σκηνή (εμφάνιση ΠΡΙΝ φανεί οτιδήποτε από το stage)
 (function () {
-  function ensureFallback() {
+  // 1) Κλείδωσε αμέσως το stage (για να μη φαίνεται loading πριν ανέβει το πέπλο)
+  try { document.documentElement.setAttribute('data-intro-active', '1'); } catch(e){}
+
+  // 2) Μικρό global CSS (μπαίνει στο <head> όσο νωρίς γίνεται)
+  (function injectEarlyStyle(){
+    var st = document.getElementById('intro-early-style');
+    if (st) return;
+    st = document.createElement('style');
+    st.id = 'intro-early-style';
+    st.textContent =
+      'html{background:#000;}\n' +
+      'html[data-intro-active="1"] body{overflow:hidden;}\n' +
+      'html[data-intro-active="1"] #stage{visibility:hidden;}\n';
+    (document.head || document.documentElement).appendChild(st);
+  })();
+
+  function createOverlayIfMissing() {
     if (document.getElementById('intro-root')) return;
 
     var root = document.createElement('div');
@@ -11,7 +27,7 @@
       zIndex: '5000',
       display: 'grid',
       placeItems: 'center',
-      background: 'rgba(0,0,0,.90)',
+      background: 'rgba(0,0,0,.90)',      // πέπλο με μικρή διαφάνεια
       backdropFilter: 'blur(1.5px)',
       WebkitBackdropFilter: 'blur(1.5px)',
       padding: '16px',
@@ -63,6 +79,8 @@
     });
 
     btn.addEventListener('click', function () {
+      // ξεκλείδωμα stage + fade out
+      try { document.documentElement.removeAttribute('data-intro-active'); } catch(e){}
       root.style.transition = 'opacity 180ms ease';
       root.style.opacity = '0';
       setTimeout(function () { root.remove(); }, 190);
@@ -71,18 +89,38 @@
     footer.appendChild(btn);
     box.appendChild(footer);
 
-    document.body.appendChild(root);
+    // append ASAP (ακόμα κι αν δεν υπάρχει body)
+    (document.body || document.documentElement).appendChild(root);
   }
 
-  function maybeShow() {
-    // Αν το intro.js τρέξει κανονικά, θα αντικαταστήσει/χρησιμοποιήσει το ίδιο #intro-root.
-    // Εδώ βάζουμε fallback μόνο αν δεν εμφανίστηκε τίποτα μέχρι τώρα.
-    ensureFallback();
+  async function applyCfg() {
+    try {
+      var r = await fetch('intro.json', { cache: 'no-cache' });
+      if (!r.ok) return;
+      var cfg = await r.json();
+      if (cfg && cfg.enabled === false) {
+        // Αν είναι disabled, καθάρισε και ξεκλείδωσε
+        try { document.documentElement.removeAttribute('data-intro-active'); } catch(e){}
+        var root = document.getElementById('intro-root');
+        if (root) root.remove();
+        return;
+      }
+      // ενημέρωσε κουμπί (αν υπάρχει)
+      var root2 = document.getElementById('intro-root');
+      if (root2 && cfg && cfg.buttonLabel) {
+        var b = root2.querySelector('button');
+        if (b) b.textContent = String(cfg.buttonLabel);
+      }
+    } catch (e) { /* ignore */ }
   }
 
+  // Δημιούργησε αμέσως
+  createOverlayIfMissing();
+
+  // Όταν υπάρχει DOM/δίκτυο, φέρε ρυθμίσεις (δεν επηρεάζει το "πρώτο render")
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', maybeShow, { once: true });
+    document.addEventListener('DOMContentLoaded', applyCfg, { once: true });
   } else {
-    setTimeout(maybeShow, 0);
+    applyCfg();
   }
 })();
