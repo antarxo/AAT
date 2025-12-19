@@ -1,73 +1,118 @@
-// intro.js — iframe intro (banner + 'Λίγα λόγια...'), bypassable/disable-able
+// intro.js — Intro πέπλο πάνω από τη σκηνή (μόνο κουμπί «Συνέχεια»)
 (() => {
-  const qsNoIntro = /(^|[?&])nointro=1(&|$)/.test(location.search);
-  async function loadCfg(){
-    try{ const r=await fetch('intro.json',{cache:'no-cache'}); if(!r.ok) return null; return await r.json(); }
-    catch{ return null; }
+  async function loadCfg() {
+    try {
+      const r = await fetch('intro.json', { cache: 'no-cache' });
+      if (!r.ok) return { enabled: true, src: 'intro.html' };
+      const cfg = await r.json();
+      return cfg || { enabled: true, src: 'intro.html' };
+    } catch {
+      return { enabled: true, src: 'intro.html' };
+    }
   }
-  function rootEl(){
-    let r=document.getElementById('intro-root');
-    if(r) return r;
-    r=document.createElement('div'); r.id='intro-root';
-    Object.assign(r.style,{position:'fixed',inset:'0',zIndex:'5000',display:'none',background:'rgba(0,0,0,.92)'});
-    document.body.appendChild(r); return r;
-  }
-  function el(t,c,h){ const e=document.createElement(t); if(c) e.className=c; if(h!=null) e.innerHTML=h; return e; }
-  function css(e,o){ Object.assign(e.style,o); }
-  function show(){ root.style.display='grid'; }
-  function hide(){ root.style.display='none'; }
 
-  let root;
-  async function init(){
+  function ensureRoot() {
+    let root = document.getElementById('intro-root');
+    if (root) return root;
+
+    root = document.createElement('div');
+    root.id = 'intro-root';
+    Object.assign(root.style, {
+      position: 'fixed',
+      inset: '0',
+      zIndex: '5000',
+      display: 'grid',
+      placeItems: 'center',
+      background: 'rgba(0,0,0,.90)',   // «πολύ μικρή διαφάνεια»
+      backdropFilter: 'blur(1.5px)',
+      WebkitBackdropFilter: 'blur(1.5px)',
+      padding: '16px',
+      boxSizing: 'border-box'
+    });
+
+    // Container
+    const box = document.createElement('div');
+    Object.assign(box.style, {
+      width: 'min(1040px, 94vw)',
+      height: 'min(92vh, 860px)',
+      borderRadius: '14px',
+      overflow: 'hidden',
+      boxShadow: '0 18px 70px rgba(0,0,0,.55)',
+      border: '1px solid rgba(255,255,255,.16)',
+      display: 'grid',
+      gridTemplateRows: '1fr auto'
+    });
+    root.appendChild(box);
+
+    // Iframe (intro content)
+    const frame = document.createElement('iframe');
+    frame.title = 'Πρόγραμμα παράστασης';
+    frame.loading = 'eager';
+    frame.referrerPolicy = 'no-referrer';
+    Object.assign(frame.style, {
+      width: '100%',
+      height: '100%',
+      border: '0',
+      background: 'transparent'
+    });
+    box.appendChild(frame);
+
+    // Footer (μόνο κουμπί)
+    const footer = document.createElement('div');
+    Object.assign(footer.style, {
+      display: 'flex',
+      justifyContent: 'center',
+      padding: '12px',
+      background: 'rgba(0,0,0,.35)',
+      borderTop: '1px solid rgba(255,255,255,.14)'
+    });
+
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.textContent = 'Συνέχεια';
+    Object.assign(btn.style, {
+      padding: '10px 16px',
+      borderRadius: '12px',
+      border: '1px solid rgba(255,255,255,.22)',
+      background: 'rgba(255,255,255,.10)',
+      color: '#fff',
+      cursor: 'pointer',
+      fontWeight: '700',
+      letterSpacing: '.2px'
+    });
+
+    btn.addEventListener('click', () => {
+      // fade out
+      root.style.transition = 'opacity 180ms ease';
+      root.style.opacity = '0';
+      setTimeout(() => root.remove(), 190);
+    });
+
+    footer.appendChild(btn);
+    box.appendChild(footer);
+
+    document.body.appendChild(root);
+    return root;
+  }
+
+  async function showIntro() {
     const cfg = await loadCfg();
-    const disabledLS = localStorage.getItem('intro:disable') === '1';
-    const respectDisable = !!(cfg && cfg.respectDisable);
-    if(qsNoIntro || !cfg || cfg.enabled === false || (respectDisable && disabledLS)) return;
+    if (cfg && cfg.enabled === false) return;
 
-    root = rootEl();
-    root.innerHTML='';
-    css(root,{display:'grid',gridTemplateRows:'1fr auto',gap:'12px',padding:'16px',color:'#fff'});
+    const root = ensureRoot();
+    const frame = root.querySelector('iframe');
+    const src = (cfg && cfg.src) ? cfg.src : 'intro.html';
+    if (frame && frame.getAttribute('src') !== src) frame.setAttribute('src', src);
 
-    const wrap = el('div','wrap');
-    css(wrap,{display:'grid',placeItems:'center'});
-    const iframe = el('iframe');
-    iframe.src = (cfg.src || 'intro.html');
-    iframe.setAttribute('title','Intro');
-    iframe.setAttribute('loading','eager');
-    css(iframe,{width:'min(1024px,92vw)',height:'min(720px,80vh)',border:'0',borderRadius:'12px',boxShadow:'0 12px 50px rgba(0,0,0,.55)'});
-    wrap.append(iframe);
-    root.append(wrap);
-
-    const ctrls = el('div','ctrls');
-    css(ctrls,{display:'flex',justifyContent:'space-between',gap:'8px'});
-    const left = el('div');
-    const btnBypass = el('button',null,'Παράβλεψη');
-    Object.assign(btnBypass.style,{padding:'8px 12px',borderRadius:'10px',border:'1px solid #888',background:'#111',color:'#fff',cursor:'pointer'});
-    btnBypass.onclick = ()=>{ hide(); revealTitle(); };
-    left.append(btnBypass);
-
-    const right = el('div');
-    const btnDisable = el('button',null,'Μην το ξαναδείξεις'); 
-    Object.assign(btnDisable.style,{padding:'8px 12px',borderRadius:'10px',border:'1px solid #555',background:'#222',color:'#fff',cursor:'pointer',marginRight:'6px'});
-    btnDisable.onclick=()=>{ localStorage.setItem('intro:disable','1'); hide(); revealTitle(); };
-    const btnContinue = el('button',null,'Συνέχεια'); 
-    Object.assign(btnContinue.style,{padding:'10px 14px',borderRadius:'10px',border:'1px solid #7a0',background:'#171',color:'#fff',cursor:'pointer'});
-    btnContinue.onclick=()=>{ hide(); revealTitle(); };
-    if(cfg.allowBypass === false){ btnBypass.disabled=true; btnDisable.disabled=true; }
-
-    right.append(btnDisable, btnContinue);
-    ctrls.append(left,right);
-    root.append(ctrls);
-
-    show();
+    // αν κάτι έμεινε hidden από fallback
+    root.style.display = 'grid';
+    root.style.opacity = '1';
   }
 
-  function revealTitle(){
-    const sb=document.querySelector('.signboard');
-    if(sb){ sb.style.opacity='1'; }
-    const start=document.getElementById('startBtn');
-    if(start){ try{ start.scrollIntoView({behavior:'smooth',block:'center'}); }catch{} }
+  // Show ASAP (μόλις έχουμε body)
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', showIntro, { once: true });
+  } else {
+    showIntro();
   }
-
-  document.addEventListener('DOMContentLoaded', init);
 })();
