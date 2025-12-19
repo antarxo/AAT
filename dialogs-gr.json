@@ -1,11 +1,6 @@
 {
   "actsAvatarOffset": -55,
   "ui": {
-    "signTitle": "Πράξη 1η: Η Κινηματική στα ... Αλγεβρικά",
-    "signLineA": "Πρωταγωνιστεί ο ταλαντωτής (m₁, D₁) και οι θεαποιοί(*)",
-    "signLineB": "στον μονόλογο <span class=\"hl\">«ατέλειωτο πήγαινε έλα»</span>... επί σκηνής!",
-    "signLineC": "Παραγωγή-Σκηνοθεσία: Εμηχ. Ενεργειούλης",
-    "signLineD": "(*) ... εσείς",
     "lawsTitle": "Νόμοι Α.Α.Τ.",
     "measureTitle": "Μετρήσεις",
     "measureColIdx": "α/α",
@@ -19,7 +14,7 @@
     "btnFoyerGo": "Μετάβαση στο Φουαγιέ",
     "btnEndShow": "Τέλος Παράστασης",
     "btnFoyer": "Φουαγιέ",
-    "startBtn": "Έναρξη",
+    "startBtn": "Ενας θεατής ας κάνει κλικ στην Έναρξη",
     "btnPauseTitle": "παύση",
     "btnPlayTitle": "κανονικά",
     "btnResetTitle": "reset",
@@ -853,8 +848,8 @@
       "signLineD": ""
     },
     "foyer": {
-      "signTitle": "",
-      "signLineA": "",
+      "signTitle": "Φουαγιέ!",
+      "signLineA": "Ελεύθερη συζήτηση!",
       "signLineB": "",
       "signLineC": "",
       "signLineD": ""
