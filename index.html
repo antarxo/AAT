@@ -140,6 +140,10 @@
 
   <div class="foyer" id="foyer">
     <div class="wrap">
+      <div class="foyer-titlebar" id="foyerTitlebar">
+        <div class="ft-line1" id="foyerTitle1"></div>
+        <div class="ft-line2" id="foyerTitle2"></div>
+      </div>
       <div class="board-left"  id="boardLeft"></div>
       <div class="board-right" id="boardRight"></div>
     </div>
@@ -223,6 +227,8 @@ const btnFoyerGo = document.getElementById('btnFoyerGo');
 const foyerEl     = document.getElementById('foyer');
 const boardLeft   = document.getElementById('boardLeft');
 const boardRight  = document.getElementById('boardRight');
+const foyerTitle1 = document.getElementById('foyerTitle1');
+const foyerTitle2 = document.getElementById('foyerTitle2');
 const foyerBubble = document.getElementById('foyerBubble');
 
 const viewersStrip = document.getElementById('viewersStrip');
@@ -402,6 +408,20 @@ function applySignboardForPhase(p=phase){
     applySignPatch(UI || {});
   }
 }
+function setFoyerTitles(){
+  if(!foyerTitle1 || !foyerTitle2) return;
+
+  // Παίρνουμε 2 γραμμές από τους τίτλους Φουαγιέ (προτεραιότητα uiTitles.foyer)
+  const hasTitles = UI_TITLES && UI_TITLES.foyer;
+  const t = hasTitles ? UI_TITLES.foyer : (UI || {});
+
+  const line1 = (t.signTitle != null ? t.signTitle : '');
+  const line2 = (t.signLineA  != null ? t.signLineA  : '');
+
+  foyerTitle1.textContent = expandDynTemplate(String(line1));
+  foyerTitle2.innerHTML   = expandDynTemplate(String(line2));
+}
+
 
 /* ---------- Βοηθητικά για σκηνή ---------- */
 
@@ -1796,6 +1816,7 @@ async function runFoyer(){
   applySignboardForPhase('foyer');
   setAudienceLights(true);
   foyerEl.style.display='block';
+  setFoyerTitles();
   startBtn.style.display='none';
   boardLeft.innerHTML='';
   boardRight.innerHTML='';
@@ -1861,6 +1882,8 @@ function resetShow(){
   actBreak.style.display='none';
   foyerBreak.style.display='none';
   foyerEl.style.display='none';
+  if(foyerTitle1) foyerTitle1.textContent='';
+  if(foyerTitle2) foyerTitle2.innerHTML='';
   foyerBubble.style.display='none';
   boardLeft.innerHTML='';
   boardRight.innerHTML='';
