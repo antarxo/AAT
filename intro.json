@@ -1,6 +1,4 @@
 {
   "enabled": true,
-  "src": "intro.html",
-  "allowBypass": true,
-  "respectDisable": false
+  "src": "intro.html"
 }
