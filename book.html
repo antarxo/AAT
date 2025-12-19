@@ -526,6 +526,10 @@
   let gV0 = 0.0;
   let gVSignSymbol = 'υ=0';
   let gVSignWord = 'μηδενική';
+  let gM1 = 70.0;
+  let gD1 = NaN;
+  let gEmech = NaN; // Eμηχ
+
   let gSamples = [];
   let gPhaseZeroT = 0.0; // θα έρχεται από index μέσω localStorage
 
@@ -573,6 +577,10 @@
       .replaceAll('{phi0}', gPhi0Deg.toFixed(1))
       .replaceAll('{vSignSymbol}', gVSignSymbol)
       .replaceAll('{vSignWord}', gVSignWord)
+      .replaceAll('{m1}', (isFinite(gM1) ? String(gM1.toFixed(2)) : ''))
+      .replaceAll('{D1}', (isFinite(gD1) ? String(gD1.toFixed(2)) : ''))
+      .replaceAll('{Emech}', (isFinite(gEmech) ? String(gEmech.toFixed(2)) : ''))
+      .replaceAll('{Eμηχ}', (isFinite(gEmech) ? String(gEmech.toFixed(2)) : ''))
       .replaceAll('{tZero}', gPhaseZeroT.toFixed(2));
   }
 
@@ -1860,6 +1868,27 @@
       gPhaseZeroT = 0.0;
     }
 
+
+    /* m1, D1, Eμηχ: έρχονται από aatBookData ή υπολογίζονται */
+    const DEFAULT_M1 = 70.0;
+    gM1 = (bookData && typeof bookData.m1 === 'number') ? bookData.m1 : DEFAULT_M1;
+
+    if(bookData && typeof bookData.D1 === 'number'){
+      gD1 = bookData.D1;
+    }else if(isFinite(gM1) && isFinite(gOmega)){
+      gD1 = gM1 * gOmega * gOmega;
+    }else{
+      gD1 = NaN;
+    }
+
+    if(bookData && typeof bookData.Emech === 'number'){
+      gEmech = bookData.Emech;
+    }else if(isFinite(gD1) && isFinite(gA)){
+      gEmech = 0.5 * gD1 * gA * gA;
+    }else{
+      gEmech = NaN;
+    }
+
     gV0 = gOmega * gA * Math.cos(gPhi0Rad);
     const eps = 1e-6;
     if(gV0 > eps){
@@ -1882,6 +1911,10 @@
     setParam('vSignSymbol', gVSignSymbol);
     setParam('vSignWord', gVSignWord);
     setParam('tZero', gPhaseZeroT.toFixed(2));
+    setParam('m1', isFinite(gM1) ? gM1.toFixed(2) : '');
+    setParam('D1', isFinite(gD1) ? gD1.toFixed(2) : '');
+    setParam('Emech', isFinite(gEmech) ? gEmech.toFixed(2) : '');
+    setParam('Eμηχ', isFinite(gEmech) ? gEmech.toFixed(2) : '');
 
     if(bookData && Array.isArray(bookData.samples)){
       gSamples = bookData.samples.slice();
