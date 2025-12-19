@@ -18,6 +18,11 @@ const BOOK_STORAGE_KEY = 'aatBookData';
   let gV0 = 0.0;
   let gVSignSymbol = 'υ=0';
   let gVSignWord = 'μηδενική';
+  let gPhaseZeroT = 0.0; // tZero
+  let gM1 = 70.0;
+  let gD1 = NaN;
+  let gEmech = NaN; // Eμηχ
+
 
   const urlParams = new URLSearchParams(window.location.search);
   const lang = (urlParams.get('lang') === 'en') ? 'en' : 'gr';
@@ -64,7 +69,12 @@ const BOOK_STORAGE_KEY = 'aatBookData';
       .replaceAll('{x0}', String(gX0.toFixed(2)))
       .replaceAll('{phi0}', String(gPhi0Deg.toFixed(1)))
       .replaceAll('{vSignSymbol}', gVSignSymbol)
-      .replaceAll('{vSignWord}', gVSignWord);
+      .replaceAll('{vSignWord}', gVSignWord)
+      .replaceAll('{tZero}', (isFinite(gPhaseZeroT) ? String(gPhaseZeroT.toFixed(2)) : ''))
+      .replaceAll('{m1}', (isFinite(gM1) ? String(gM1.toFixed(2)) : ''))
+      .replaceAll('{D1}', (isFinite(gD1) ? String(gD1.toFixed(2)) : ''))
+      .replaceAll('{Emech}', (isFinite(gEmech) ? String(gEmech.toFixed(2)) : ''))
+      .replaceAll('{Eμηχ}', (isFinite(gEmech) ? String(gEmech.toFixed(2)) : ''));
   }
 
   // Χτίσιμο πίνακα t–x από τα δείγματα
@@ -856,6 +866,31 @@ const BOOK_STORAGE_KEY = 'aatBookData';
     gPhi0Deg = (bookData && typeof bookData.phi0Deg === 'number') ? bookData.phi0Deg : 35.0;
     gPhi0Rad = gPhi0Deg * Math.PI/180;
 
+    if(bookData && typeof bookData.tZero === 'number'){
+      gPhaseZeroT = bookData.tZero;
+    }else{
+      gPhaseZeroT = 0.0;
+    }
+
+    const DEFAULT_M1 = 70.0;
+    gM1 = (bookData && typeof bookData.m1 === 'number') ? bookData.m1 : DEFAULT_M1;
+
+    if(bookData && typeof bookData.D1 === 'number'){
+      gD1 = bookData.D1;
+    }else if(isFinite(gM1) && isFinite(gOmega)){
+      gD1 = gM1 * gOmega * gOmega;
+    }else{
+      gD1 = NaN;
+    }
+
+    if(bookData && typeof bookData.Emech === 'number'){
+      gEmech = bookData.Emech;
+    }else if(isFinite(gD1) && isFinite(gA)){
+      gEmech = 0.5 * gD1 * gA * gA;
+    }else{
+      gEmech = NaN;
+    }
+
     gV0 = gOmega * gA * Math.cos(gPhi0Rad);
     const eps = 1e-6;
     if(gV0 > eps){
@@ -877,6 +912,11 @@ const BOOK_STORAGE_KEY = 'aatBookData';
     setParam('v0', gV0.toFixed(2));
     setParam('vSignSymbol', gVSignSymbol);
     setParam('vSignWord', gVSignWord);
+    setParam('tZero', isFinite(gPhaseZeroT) ? gPhaseZeroT.toFixed(2) : '');
+    setParam('m1', isFinite(gM1) ? gM1.toFixed(2) : '');
+    setParam('D1', isFinite(gD1) ? gD1.toFixed(2) : '');
+    setParam('Emech', isFinite(gEmech) ? gEmech.toFixed(2) : '');
+    setParam('Eμηχ', isFinite(gEmech) ? gEmech.toFixed(2) : '');
 
     if(!bookData){
       const note = document.getElementById('paramNote');
