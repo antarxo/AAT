@@ -11,7 +11,86 @@
 
   <!-- CSS σκηνής -->
   <link rel="stylesheet" href="aat-stage.css">
-  <script src="intro_boot.js"></script>
+
+  <!-- Intro veil (ενσωματωμένο στο index) -->
+  <style>
+    body.intro-open { overflow: hidden; }
+
+    #introOverlay.intro-veil{
+      position: fixed;
+      inset: 0;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+      background: rgba(0,0,0,.18); /* ελαφρύ πέπλο */
+      backdrop-filter: blur(2px);
+      -webkit-backdrop-filter: blur(2px);
+    }
+    #introOverlay.hidden{ display:none; }
+
+    #introOverlay .intro-card{
+      width: min(980px, 100%);
+      max-height: min(92vh, 980px);
+      overflow: auto;
+      border-radius: 18px;
+      padding: 18px 18px 16px;
+      box-shadow: 0 18px 60px rgba(0,0,0,.38);
+      border: 1px solid rgba(255,255,255,.22);
+      background: rgba(222, 238, 222, .96); /* πρασινωπό “χαρτί” */
+    }
+
+    #introOverlay .intro-poster{
+      width: 100%;
+      height: auto;
+      display: block;
+      border-radius: 12px;
+      margin: 0 0 14px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.18);
+    }
+
+    #introOverlay .intro-leaflet{
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 16.5px;
+      line-height: 1.45;
+      color: #142015;
+    }
+
+    #introOverlay .intro-leaflet p{
+      margin: 0 0 10px;
+      text-align: justify;
+      text-justify: inter-word;
+    }
+
+    #introOverlay .intro-leaflet .leaflet-ul{
+      margin: 6px 0 10px 22px;
+      padding: 0;
+    }
+    #introOverlay .intro-leaflet .leaflet-ul > li{
+      margin: 6px 0;
+    }
+    #introOverlay .intro-leaflet .leaflet-sub{
+      margin: 6px 0 0 18px;
+      padding: 0;
+      list-style-type: circle;
+    }
+
+    #introOverlay .intro-continue{
+      margin: 14px auto 0;
+      display: block;
+      padding: 10px 16px;
+      border-radius: 12px;
+      border: 0;
+      cursor: pointer;
+      font-weight: 700;
+      background: #2f7a45;
+      color: #fff;
+      box-shadow: 0 10px 22px rgba(0,0,0,.22);
+    }
+    #introOverlay .intro-continue:hover{ filter: brightness(1.05); }
+  </style>
+
 </head>
 <body>
 <div class="stage" id="stage">
@@ -153,6 +232,16 @@
   <div class="foyer-bubble" id="foyerBubble">ΘΕΑΤΗΣ</div>
 </div>
 
+
+<!-- Intro (πέπλο πάνω από τη σκηνή) -->
+<div id="introOverlay" class="intro-veil" aria-hidden="false">
+  <div class="intro-card" role="dialog" aria-modal="true" aria-label="Πρόγραμμα παράστασης">
+    <img id="introPoster" class="intro-poster" src="" alt="">
+    <div id="introLeaflet" class="intro-leaflet"></div>
+    <button id="introContinue" class="intro-continue">Συνέχεια</button>
+  </div>
+</div>
+
 <script>
 /* ---------- ΔΕΔΟΜΕΝΑ ΑΠΟ dialogs-*.json ---------- */
 
@@ -173,6 +262,155 @@ let btnLangEN = null;
 
 /* Κατάσταση παράστασης για locks κουμπιών */
 let phase = 'idle'; // idle, countdown, act1, act2, between2andFoyer, foyer
+
+/* ---------- INTRO (ενσωματωμένο) ---------- */
+
+let INTRO = null;
+
+const introOverlay  = document.getElementById('introOverlay');
+const introPoster   = document.getElementById('introPoster');
+const introLeaflet  = document.getElementById('introLeaflet');
+const introContinue = document.getElementById('introContinue');
+
+function _introEsc(s){
+  return String(s ?? '')
+    .replaceAll('&','&amp;')
+    .replaceAll('<','&lt;')
+    .replaceAll('>','&gt;')
+    .replaceAll('"','&quot;')
+    .replaceAll("'","&#39;");
+}
+
+function _introFlushPara(out, paraLines){
+  if(!paraLines.length) return;
+  const html = paraLines.map(_introEsc).join('<br>');
+  out.push(`<p>${html}</p>`);
+  paraLines.length = 0;
+}
+
+function _introAppendToLastLi(out, extraLine){
+  if(!out.length) return false;
+  const last = out[out.length-1];
+  if(!last.endsWith('</li>')) return false;
+  out[out.length-1] = last.slice(0,-5) + '<br>' + _introEsc(extraLine) + '</li>';
+  return true;
+}
+
+function introLeafletTextToHTML(text){
+  const raw = String(text ?? '').replace(/\r\n/g,'\n');
+  const lines = raw.split('\n');
+
+  const out = [];
+  const para = [];
+
+  let inUl = false;
+  let inSub = false;
+  let pending = null; // 'ul' | 'sub' | null
+
+  const closeSub = ()=>{
+    if(inSub){ out.push('</ul>'); inSub=false; }
+  };
+  const closeUl = ()=>{
+    closeSub();
+    if(inUl){ out.push('</ul>'); inUl=false; }
+  };
+
+  for(let i=0;i<lines.length;i++){
+    const line = lines[i];
+    const t = line.trim();
+
+    if(t === ''){
+      if(pending){ pending=null; }
+      _introFlushPara(out, para);
+      closeUl();
+      continue;
+    }
+
+    if(t === '•' || t === ''){
+      _introFlushPara(out, para);
+      if(!inUl){ out.push('<ul class="leaflet-ul">'); inUl=true; }
+      pending = 'ul';
+      continue;
+    }
+
+    if(t === 'o' || t === 'ο' || t === '◦'){
+      _introFlushPara(out, para);
+      if(!inUl){ out.push('<ul class="leaflet-ul">'); inUl=true; }
+      if(!inSub){ out.push('<ul class="leaflet-sub">'); inSub=true; }
+      pending = 'sub';
+      continue;
+    }
+
+    if(pending === 'sub'){
+      out.push(`<li>${_introEsc(line)}</li>`);
+      pending = null;
+      continue;
+    }
+    if(pending === 'ul'){
+      out.push(`<li>${_introEsc(line)}</li>`);
+      pending = null;
+      continue;
+    }
+
+    // αν είμαστε σε λίστα, θεωρείται συνέχεια του προηγούμενου li
+    if(inUl){
+      if(!_introAppendToLastLi(out, line)){
+        out.push(`<li>${_introEsc(line)}</li>`);
+      }
+      continue;
+    }
+
+    // αλλιώς είναι παράγραφος
+    para.push(line);
+  }
+
+  _introFlushPara(out, para);
+  closeUl();
+
+  return out.join('\n');
+}
+
+function closeIntro(){
+  introOverlay.classList.add('hidden');
+  document.body.classList.remove('intro-open');
+}
+
+async function initIntro(){
+  try{
+    const res = await fetch('intro.json', { cache: 'no-store' });
+    if(!res.ok) throw new Error('intro.json load failed');
+    INTRO = await res.json();
+  }catch(e){
+    // αν δεν υπάρχει intro.json, απλά δεν δείχνουμε intro
+    introOverlay.classList.add('hidden');
+    document.body.classList.remove('intro-open');
+    return;
+  }
+
+  if(!INTRO || INTRO.enabled === false){
+    introOverlay.classList.add('hidden');
+    document.body.classList.remove('intro-open');
+    return;
+  }
+
+  document.body.classList.add('intro-open');
+
+  introPoster.src = INTRO.posterSrc || '';
+  introPoster.alt = INTRO.posterAlt || '';
+
+  introLeaflet.innerHTML = introLeafletTextToHTML(INTRO.leafletText || '');
+
+  introContinue.textContent = INTRO.buttonLabel || 'Συνέχεια';
+  introContinue.onclick = closeIntro;
+
+  // ESC κλείνει (δεν σε εμποδίζει — απλά convenience)
+  window.addEventListener('keydown', (ev)=>{
+    if(document.body.classList.contains('intro-open') && ev.key === 'Escape') closeIntro();
+  }, { once: true });
+}
+
+// τρέχει αμέσως (η σκηνή από κάτω φορτώνει κανονικά)
+initIntro();
 
 /* ---------- Φυσική / σκηνή ---------- */
 
