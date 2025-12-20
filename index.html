@@ -16,6 +16,24 @@
   <style>
     body.intro-open { overflow: hidden; }
 
+/* Όσο είναι ανοιχτό το intro, κρύβουμε τα “χειριστήρια” της σκηνής για να μην φαίνονται πίσω από το πέπλο */
+    body.intro-open .lang-toggle,
+    body.intro-open .signboard,
+    body.intro-open .clock,
+    body.intro-open #measureBox,
+    body.intro-open #laws,
+    body.intro-open #countdownOverlay,
+    body.intro-open #actBreakOverlay,
+    body.intro-open #foyerBreakOverlay,
+    body.intro-open #startBtn,
+    body.intro-open #btnPause,
+    body.intro-open #btnPlay,
+    body.intro-open #btnReset,
+    body.intro-open #btnFoyer,
+    body.intro-open #foyerBubble{
+      visibility: hidden !important;
+    }
+
     #introOverlay.intro-veil{
       position: fixed;
       inset: 0;
@@ -33,21 +51,28 @@
     #introOverlay .intro-card{
       width: min(980px, 100%);
       max-height: min(92vh, 980px);
-      overflow: auto;
       border-radius: 18px;
       padding: 18px 18px 16px;
       box-shadow: 0 18px 60px rgba(0,0,0,.38);
       border: 1px solid rgba(255,255,255,.22);
       background: rgba(222, 238, 222, .96); /* πρασινωπό “χαρτί” */
+
+      /* Σημαντικό: να ΜΗΝ γίνεται scroll όλη η κάρτα — μόνο το κείμενο */
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
     }
 
     #introOverlay .intro-poster{
       width: 100%;
       height: auto;
+      max-height: 28vh;
+      object-fit: contain;
       display: block;
       border-radius: 12px;
       margin: 0 0 14px;
       box-shadow: 0 10px 30px rgba(0,0,0,.18);
+      flex: 0 0 auto;
     }
 
     #introOverlay .intro-leaflet{
@@ -55,6 +80,11 @@
       font-size: 16.5px;
       line-height: 1.45;
       color: #142015;
+
+      /* εδώ γίνεται το scroll */
+      flex: 1 1 auto;
+      overflow: auto;
+      padding-right: 6px;
     }
 
     #introOverlay .intro-leaflet p{
@@ -78,21 +108,22 @@
 
     #introOverlay .intro-continue{
       margin: 14px auto 0;
-      display: block;
-      padding: 10px 16px;
+      display: inline-block;
+      padding: 10px 18px;
       border-radius: 12px;
       border: 0;
       cursor: pointer;
-      font-weight: 700;
+      font-weight: 800;
       background: #2f7a45;
       color: #fff;
       box-shadow: 0 10px 22px rgba(0,0,0,.22);
+      flex: 0 0 auto;
     }
     #introOverlay .intro-continue:hover{ filter: brightness(1.05); }
   </style>
 
 </head>
-<body>
+<body class="intro-open">
 <div class="stage" id="stage">
   <!-- Κουμπιά γλώσσας -->
   <div class="lang-toggle">
@@ -402,10 +433,6 @@ async function initIntro(){
 
   introContinue.textContent = INTRO.buttonLabel || 'Συνέχεια';
   introContinue.onclick = closeIntro;
-
-  // ESC κλείνει (δεν σε εμποδίζει — απλά convenience)
-  window.addEventListener('keydown', (ev)=>{
-    if(document.body.classList.contains('intro-open') && ev.key === 'Escape') closeIntro();
   }, { once: true });
 }
 
