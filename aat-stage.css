@@ -564,10 +564,36 @@ body{
   background:rgba(255,255,255,.2);
 }
 
+.btn-end{
+  position:absolute;
+  bottom:12px;
+  right:12px;
+  z-index:2000;
+  background:#333;
+  border:1px solid rgba(255,255,255,.25);
+  color:#fff;
+  border-radius:8px;
+  padding:8px 12px;
+  cursor:pointer;
+}
+
+.btn-foyer{
+  position:absolute;
+  bottom:12px;
+  left:12px;
+  z-index:2000;
+  background:#333;
+  border:1px solid rgba(255,255,255,.25);
+  color:#fff;
+  border-radius:8px;
+  padding:8px 12px;
+  cursor:pointer;
+}
+
 /* 🔴 ΝΕΟ: Κουμπί βιβλίου παράστασης */
 .btn-book{
   position:absolute;
-  bottom:12px;           /* κάτω αριστερά (δεν υπάρχει πλέον Φουαγιέ κουμπί) */
+  bottom:52px;           /* λίγο πάνω από το Φουαγιέ */
   left:12px;
   z-index:2000;
   background:#333;
@@ -818,3 +844,16 @@ body{
 .startbreak .box{ text-align:center; }
 .startbreak button,
 .startbreak .start-btn{ display:block; margin:0 auto; }
+
+
+/* Nav break (reuse actbreak styles) */
+#navBreak .navgrid{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  justify-content:center;
+  margin: 0 0 12px 0;
+}
+#navBreak .navgrid button{
+  min-width:110px;
+}
