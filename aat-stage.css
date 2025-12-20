@@ -839,3 +839,8 @@ body{
 .viewers .viewer-avatar.lit{
   filter:brightness(0.8);
 }
+
+/* v2 fix: center start button inside startbreak box */
+.startbreak .box{ text-align:center; }
+.startbreak button,
+.startbreak .start-btn{ display:block; margin:0 auto; }
