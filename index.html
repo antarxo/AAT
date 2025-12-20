@@ -220,9 +220,7 @@
     <button id="btnPlay"  title="κανονικά">▶</button>
     <button id="btnReset" title="reset">↺</button>
   </div>
-  <button class="btn-end"  id="btnEndShow">Τέλος Παράστασης</button>
-  <button class="btn-foyer" id="btnFoyer"   title="Φουαγιέ">Φουαγιέ</button>
-  <button class="btn-book"  id="btnBook"    title="Βιβλίο Παράστασης">📖 Βιβλίο Παράστασης</button>
+<button class="btn-book"  id="btnBook"    title="Βιβλίο Παράστασης">📖 Βιβλίο Παράστασης</button>
 
   <div class="startbreak" id="startBreak">
     <div class="box">
@@ -482,9 +480,15 @@ const countdownTimerEl  = document.getElementById('countdownTimer');
 const btnPause   = document.getElementById('btnPause');
 const btnPlay    = document.getElementById('btnPlay');
 const btnReset   = document.getElementById('btnReset');
-const btnEndShow = document.getElementById('btnEndShow');
-const btnFoyer   = document.getElementById('btnFoyer');
 const btnBook    = document.getElementById('btnBook');
+
+let bookUnlocked = false;
+function setBookUnlocked(on){
+  bookUnlocked = !!on;
+  if(!btnBook) return;
+  btnBook.style.display = bookUnlocked ? 'block' : 'none';
+}
+
 
 const actBreak   = document.getElementById('actBreak');
 const btnAct2    = document.getElementById('btnAct2');
@@ -626,15 +630,11 @@ function applyUITextFromUI(){
   if(foyerBreakTitle && ui.foyerBreakTitle != null) foyerBreakTitle.textContent = ui.foyerBreakTitle;
   if(foyerBreakMsg   && ui.foyerBreakMsg   != null) foyerBreakMsg.textContent   = ui.foyerBreakMsg;
   if(btnFoyerGo      && ui.btnFoyerGo      != null) btnFoyerGo.textContent      = ui.btnFoyerGo;
-
-  if(btnEndShow && ui.btnEndShow != null) btnEndShow.textContent = ui.btnEndShow;
-  if(btnFoyer   && ui.btnFoyer   != null) btnFoyer.textContent   = ui.btnFoyer;
   if(startBreakMsg && ui.startBtn != null) startBreakMsg.textContent = ui.startBtn;
 
   if(btnPause   && ui.btnPauseTitle != null) btnPause.title = ui.btnPauseTitle;
   if(btnPlay    && ui.btnPlayTitle  != null) btnPlay.title  = ui.btnPlayTitle;
   if(btnReset   && ui.btnResetTitle != null) btnReset.title = ui.btnResetTitle;
-  if(btnFoyer   && ui.btnFoyerTitle != null) btnFoyer.title = ui.btnFoyerTitle;
 
   if(btnLangGR && btnLangEN){
     btnLangGR.classList.toggle('active', currentLang === 'gr');
@@ -1976,6 +1976,7 @@ function closeCurtainToAct2(){
     stage.classList.remove('open');
     setAudienceLights(true);
     setTimeout(()=>{
+      setBookUnlocked(true);
       actBreak.style.display='flex';
       resolve();
     },1400);
@@ -2131,6 +2132,7 @@ function resetShow(){
   measureRowIdx=0;
   BOOK_SAMPLES = [];
   setMode('run');
+  setBookUnlocked(false);
 
   xtMarkState.active = false;
   xtMarkState.showTail = false;
@@ -2194,9 +2196,6 @@ function resetShow(){
 
 btnReset.addEventListener('click',resetShow);
 
-btnEndShow.addEventListener('click',()=>{
-  if(phase==='idle' || phase==='foyer'){
-    resetShow();
   }
 });
 
@@ -2231,6 +2230,7 @@ function exportBookDataToStorage(){
 
 if (btnBook) {
   btnBook.addEventListener('click', () => {
+    if(!bookUnlocked) return;
     const lang = (currentLang === 'en') ? 'en' : 'gr';
     exportBookDataToStorage();
     window.open('book.html?lang=' + lang, '_blank');
@@ -2284,9 +2284,6 @@ btnAct2.addEventListener('click',()=>{
   runAct2();
 });
 
-btnFoyer.addEventListener('click',()=>{
-  if(phase==='idle' || phase==='foyer'){
-    runFoyer();
   }
 });
 
