@@ -26,6 +26,7 @@
     body.intro-open #actBreakOverlay,
     body.intro-open #foyerBreakOverlay,
     body.intro-open #startBtn,
+    body.intro-open #startBreak,
     body.intro-open #btnPause,
     body.intro-open #btnPlay,
     body.intro-open #btnReset,
@@ -223,7 +224,13 @@
   <button class="btn-foyer" id="btnFoyer"   title="Φουαγιέ">Φουαγιέ</button>
   <button class="btn-book"  id="btnBook"    title="Βιβλίο Παράστασης">📖 Βιβλίο Παράστασης</button>
 
-  <button class="start-btn" id="startBtn">Έναρξη</button>
+  <div class="startbreak" id="startBreak">
+    <div class="box">
+      <h3 id="startBreakTitle">Έναρξη Παράστασης</h3>
+      <p  id="startBreakMsg">Ενας θεατής ας κάνει κλικ στην Έναρξη</p>
+      <button class="start-btn" id="startBtn">Έναρξη</button>
+    </div>
+  </div>
 
   <div class="countdown-overlay" id="countdownOverlay">
     <div class="countdown-box">
@@ -466,6 +473,9 @@ const bubbleTextEl = bubbleEl.querySelector('.text');
 const actBubble    = document.getElementById('actBubble');
 
 const startBtn          = document.getElementById('startBtn');
+const startBreak        = document.getElementById('startBreak');
+const startBreakMsg     = document.getElementById('startBreakMsg');
+
 const countdownOverlay  = document.getElementById('countdownOverlay');
 const countdownTimerEl  = document.getElementById('countdownTimer');
 
@@ -619,7 +629,7 @@ function applyUITextFromUI(){
 
   if(btnEndShow && ui.btnEndShow != null) btnEndShow.textContent = ui.btnEndShow;
   if(btnFoyer   && ui.btnFoyer   != null) btnFoyer.textContent   = ui.btnFoyer;
-  if(startBtn   && ui.startBtn   != null) startBtn.textContent   = ui.startBtn;
+  if(startBreakMsg && ui.startBtn != null) startBreakMsg.textContent = ui.startBtn;
 
   if(btnPause   && ui.btnPauseTitle != null) btnPause.title = ui.btnPauseTitle;
   if(btnPlay    && ui.btnPlayTitle  != null) btnPlay.title  = ui.btnPlayTitle;
@@ -2074,6 +2084,7 @@ async function runFoyer(){
   setAudienceLights(true);
   foyerEl.style.display='block';
   setFoyerTitles();
+  if(startBreak) startBreak.style.display='none';
   startBtn.style.display='none';
   boardLeft.innerHTML='';
   boardRight.innerHTML='';
@@ -2124,6 +2135,7 @@ function resetShow(){
   xtMarkState.active = false;
   xtMarkState.showTail = false;
 
+  if(startBreak) startBreak.style.display='flex';
   startBtn.style.display='block';
   countdownOverlay.style.display='none';
   measureBox.style.display='none';
@@ -2246,6 +2258,7 @@ function beginObservation(){
 
 function startShowCountdown(){
   phase='countdown';
+  if(startBreak) startBreak.style.display='none';
   startBtn.style.display='none';
   countdownOverlay.style.display='flex';
   const seconds=5;
