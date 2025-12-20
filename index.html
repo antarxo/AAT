@@ -433,7 +433,6 @@ async function initIntro(){
 
   introContinue.textContent = INTRO.buttonLabel || 'Συνέχεια';
   introContinue.onclick = closeIntro;
-  }, { once: true });
 }
 
 // τρέχει αμέσως (η σκηνή από κάτω φορτώνει κανονικά)
@@ -1070,7 +1069,7 @@ function addLaw(txt){
   }
   const div=document.createElement('div');
   div.className='law-line';
-  div.textContent=t;
+  div.innerHTML=String(t).replaceAll('\n','<br>');
   lawsBody.appendChild(div);
 }
 
