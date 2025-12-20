@@ -31,6 +31,10 @@
     body.intro-open #btnPlay,
     body.intro-open #btnReset,
     body.intro-open #btnFoyer,
+        body.intro-open #btnNav,
+    body.intro-open #btnNext,
+    body.intro-open #navBreak,
+    body.intro-open #btnBook,
     body.intro-open #foyerBubble{
       visibility: hidden !important;
     }
@@ -216,9 +220,11 @@
   <div class="act-bubble" id="actBubble">ΘΕΑΤΗΣ</div>
 
   <div class="controls" id="controls">
+    <button id="btnNav"   title="μεταβάσεις">☰</button>
     <button id="btnPause" title="παύση">⏸</button>
     <button id="btnPlay"  title="κανονικά">▶</button>
     <button id="btnReset" title="reset">↺</button>
+    <button id="btnNext"  title="επόμενο">⏭</button>
   </div>
 <button class="btn-book"  id="btnBook"    title="Βιβλίο Παράστασης">📖 Βιβλίο Παράστασης</button>
 
@@ -252,7 +258,20 @@
       <p  id="foyerBreakMsg">Θέλετε να περάσετε στο φουαγιέ για τη συζήτηση;</p>
       <button id="btnFoyerGo">Μετάβαση στο Φουαγιέ</button>
     </div>
+  
+  <div class="actbreak" id="navBreak">
+    <div class="box">
+      <h3 id="navTitle">Γρήγορη Μετάβαση</h3>
+      <p id="navMsg">Συντομεύσεις για επανάληψη/έλεγχο. Το «Βιβλίο Παράστασης» ξεκλειδώνει μόνο μετά το τέλος της Πράξης 1.</p>
+      <div class="navgrid">
+        <button id="navToAct1">Πράξη 1</button>
+        <button id="navToAct2">Πράξη 2</button>
+        <button id="navToFoyer">Φουαγιέ</button>
+      </div>
+      <button id="navClose">Κλείσιμο</button>
+    </div>
   </div>
+</div>
 
   <div class="foyer" id="foyer">
     <div class="wrap">
@@ -480,6 +499,13 @@ const countdownTimerEl  = document.getElementById('countdownTimer');
 const btnPause   = document.getElementById('btnPause');
 const btnPlay    = document.getElementById('btnPlay');
 const btnReset   = document.getElementById('btnReset');
+  const btnNext    = document.getElementById('btnNext');
+  const btnNav     = document.getElementById('btnNav');
+  const navBreak   = document.getElementById('navBreak');
+  const navClose   = document.getElementById('navClose');
+  const navToAct1  = document.getElementById('navToAct1');
+  const navToAct2  = document.getElementById('navToAct2');
+  const navToFoyer = document.getElementById('navToFoyer');
 const btnBook    = document.getElementById('btnBook');
 
 let bookUnlocked = false;
@@ -2121,6 +2147,39 @@ btnPause.addEventListener('click',()=>{
 });
 btnPlay.addEventListener('click',()=>{ setMode('run'); });
 
+/* ---------- Γρήγορες μεταβάσεις (preview / rewatch) ---------- */
+
+function navReload(start){
+  const lang = (currentLang === 'en') ? 'en' : 'gr';
+  const url = new URL(window.location.href);
+  url.searchParams.set('start', start);
+  url.searchParams.set('lang', lang);
+  url.searchParams.set('nav', '1');
+  window.location.href = url.toString();
+}
+
+function computeNextPhase(){
+  if(phase==='act1' || phase==='countdown' || phase==='between1and2') return 'act2';
+  if(phase==='act2' || phase==='between2andFoyer') return 'foyer';
+  if(phase==='foyer') return 'act1';
+  return 'act1';
+}
+
+if(btnNext){
+  btnNext.addEventListener('click',()=>{ navReload(computeNextPhase()); });
+}
+
+if(btnNav && navBreak){
+  btnNav.addEventListener('click',()=>{ navBreak.style.display='flex'; });
+}
+if(navClose && navBreak){
+  navClose.addEventListener('click',()=>{ navBreak.style.display='none'; });
+}
+if(navToAct1){ navToAct1.addEventListener('click',()=>navReload('act1')); }
+if(navToAct2){ navToAct2.addEventListener('click',()=>navReload('act2')); }
+if(navToFoyer){ navToFoyer.addEventListener('click',()=>navReload('foyer')); }
+
+
 function resetShow(){
   phase='idle';
   t0=performance.now();
@@ -2137,6 +2196,7 @@ function resetShow(){
   xtMarkState.active = false;
   xtMarkState.showTail = false;
 
+  if(navBreak) navBreak.style.display='none';
   if(startBreak) startBreak.style.display='flex';
   startBtn.style.display='block';
   countdownOverlay.style.display='none';
@@ -2239,7 +2299,8 @@ if (btnBook) {
 
 /* ---------- Έναρξη με countdown ---------- */
 
-function beginObservation(){
+
+function initShowBase(){
   stage.classList.add('open');
   setAudienceLights(false);
   if(!obsStarted){
@@ -2253,6 +2314,10 @@ function beginObservation(){
   markerEl.style.opacity='1';
   markerGhostEl.style.opacity='0';
   updateRuler();
+}
+
+function beginObservation(){
+  initShowBase();
   runAct1();
 }
 
@@ -2487,6 +2552,31 @@ function setLanguage(lang){
   }
 
   resetShow();
+
+  // Auto-start / quick jump (from ?start=act1|act2|foyer)
+  try{
+    const sp = new URLSearchParams(window.location.search);
+    const start = (sp.get('start')||'').toLowerCase();
+    if(start==='act1'){
+      if(startBreak) startBreak.style.display='none';
+      countdownOverlay.style.display='none';
+      initShowBase();
+      runAct1();
+    }else if(start==='act2'){
+      if(startBreak) startBreak.style.display='none';
+      countdownOverlay.style.display='none';
+      initShowBase();
+      actBreak.style.display='none';
+      runAct2();
+    }else if(start==='foyer'){
+      if(startBreak) startBreak.style.display='none';
+      countdownOverlay.style.display='none';
+      actBreak.style.display='none';
+      foyerBreak.style.display='none';
+      runFoyer();
+    }
+  }catch(e){}
+
   loadDialogs();
 }
 
