@@ -445,13 +445,20 @@
         max-height:none !important;
         overflow:visible !important;
       }
-      /* avoid awkward splits inside cards/rows */
-      .card,
-      .tx-card,
-      .param-pill,
-      .dialog-row{
+      /* allow content to break naturally across pages.
+         Only figures/images should avoid being split. */
+      img, svg, canvas,
+      .chart-wrap,
+      .figure,
+      .book-figure{
         break-inside:avoid;
         page-break-inside:avoid;
+      }
+
+      /* force page breaks between acts / foyer sections */
+      section + section{
+        break-before:page;
+        page-break-before:always;
       }
       /* keep sticky headers normal in print */
       .tx-table th{
@@ -498,7 +505,7 @@
         </label>
         <label class="pdf-label">Πίνακας t–x
           <select id="pdfTableMode" class="pdf-select">
-            <option value="summary">Σύνοψη</option>
+            <option value="summary">Σύνοψη (10 πρώτες)</option>
             <option value="full">Πλήρης</option>
           </select>
         </label>
@@ -2129,14 +2136,9 @@
     const arr = Array.isArray(samples) ? samples : [];
     if(mode === 'full') return arr;
 
-    const HEAD = 12;
-    const TAIL = 12;
-    if(arr.length <= HEAD + TAIL + 1) return arr;
-
-    const out = arr.slice(0, HEAD);
-    out.push({_ellipsis:true});
-    out.push(...arr.slice(-TAIL));
-    return out;
+    // "Σύνοψη" για PDF: μόνο οι αρχικές τιμές (10 πρώτες)
+    const HEAD = 10;
+    return arr.slice(0, Math.min(HEAD, arr.length));
   }
 
   function applyPrintPageStyle(orientation){
