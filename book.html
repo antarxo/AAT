@@ -355,6 +355,32 @@
       flex-shrink:0;
       margin-top:2px;
     }
+
+
+    .pdf-controls{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+    .pdf-label{
+      display:flex;
+      gap:6px;
+      align-items:center;
+      font-size:.82rem;
+      color:#334155;
+      white-space:nowrap;
+    }
+    .pdf-select{
+      border:1px solid #e5e7eb;
+      border-radius:10px;
+      padding:8px 10px;
+      background:#fff;
+      color:#111827;
+      font-size:.9rem;
+      box-shadow:0 8px 18px rgba(15,23,42,0.06);
+    }
     .btn{
       appearance:none;
       border:1px solid #e5e7eb;
@@ -384,6 +410,18 @@
         size:A4;
         margin:12mm;
       }
+      /* hide on-screen controls in PDF */
+      .book-actions{ display:none !important; }
+
+      /* keep the two-column theatre layout also in print */
+      .layout-act1{
+        grid-template-columns:minmax(0,1.1fr) minmax(0,1.1fr) !important;
+        gap:16px !important;
+      }
+      .dialog-row{
+        grid-template-columns:minmax(0,2.3fr) minmax(0,1.1fr) !important;
+      }
+
       body{
         background:#ffffff !important;
         color:#000000 !important;
@@ -422,7 +460,7 @@
     }
 
 
-    @media (max-width:900px){
+    @media screen and (max-width:900px){
       .layout-act1{
         grid-template-columns:1fr;
       }
@@ -451,6 +489,20 @@
       </div>
     </div>
     <div class="book-actions">
+      <div class="pdf-controls">
+        <label class="pdf-label">Προσανατολισμός
+          <select id="pdfOrient" class="pdf-select">
+            <option value="portrait">Portrait</option>
+            <option value="landscape">Landscape</option>
+          </select>
+        </label>
+        <label class="pdf-label">Πίνακας t–x
+          <select id="pdfTableMode" class="pdf-select">
+            <option value="summary">Σύνοψη</option>
+            <option value="full">Πλήρης</option>
+          </select>
+        </label>
+      </div>
       <button id="btnPdf" class="btn" type="button">Εξαγωγή PDF</button>
     </div>
   </header>
@@ -690,6 +742,19 @@
     }
 
     samples.forEach(pair=>{
+      if(pair && pair._ellipsis){
+        const tr = document.createElement('tr');
+        const td = document.createElement('td');
+        td.colSpan = 2;
+        td.textContent = (lang === 'en')
+          ? '… (intermediate rows omitted)'
+          : '… (παραλείπονται ενδιάμεσες τιμές)';
+        td.style.textAlign = 'center';
+        td.style.color = '#6b7280';
+        tr.appendChild(td);
+        tbody.appendChild(tr);
+        return;
+      }
       const tr = document.createElement('tr');
       const tdT = document.createElement('td');
       const tdX = document.createElement('td');
@@ -2060,17 +2125,92 @@
   }
 
 
+  function sampleTxForPrint(samples, mode){
+    const arr = Array.isArray(samples) ? samples : [];
+    if(mode === 'full') return arr;
+
+    const HEAD = 12;
+    const TAIL = 12;
+    if(arr.length <= HEAD + TAIL + 1) return arr;
+
+    const out = arr.slice(0, HEAD);
+    out.push({_ellipsis:true});
+    out.push(...arr.slice(-TAIL));
+    return out;
+  }
+
+  function applyPrintPageStyle(orientation){
+    const id = 'printPageStyle';
+    let el = document.getElementById(id);
+    if(!el){
+      el = document.createElement('style');
+      el.id = id;
+      document.head.appendChild(el);
+    }
+    const size = (orientation === 'landscape') ? 'A4 landscape' : 'A4 portrait';
+    el.textContent = `@page{ size:${size}; margin:12mm; }`;
+  }
+
   function setupPdfExport(){
     const btn = document.getElementById('btnPdf');
     if(!btn) return;
 
-    const cleanup = ()=> document.body.classList.remove('print-mode');
+    const orientSel = document.getElementById('pdfOrient');
+    const tableSel  = document.getElementById('pdfTableMode');
 
-    window.addEventListener('afterprint', cleanup);
+    const ORIENT_KEY = 'aatBookPdfOrient';
+    const TABLE_KEY  = 'aatBookPdfTableMode';
+
+    if(orientSel){
+      orientSel.value = localStorage.getItem(ORIENT_KEY) || 'portrait';
+      orientSel.addEventListener('change', ()=> localStorage.setItem(ORIENT_KEY, orientSel.value));
+    }
+    if(tableSel){
+      tableSel.value = localStorage.getItem(TABLE_KEY) || 'summary';
+      tableSel.addEventListener('change', ()=> localStorage.setItem(TABLE_KEY, tableSel.value));
+    }
 
     btn.addEventListener('click', ()=>{
+      const orientation = orientSel ? orientSel.value : (localStorage.getItem(ORIENT_KEY) || 'portrait');
+      const tableMode   = tableSel  ? tableSel.value  : (localStorage.getItem(TABLE_KEY)  || 'summary');
+
+      localStorage.setItem(ORIENT_KEY, orientation);
+      localStorage.setItem(TABLE_KEY, tableMode);
+
+      // Ensure correct page orientation (portrait/landscape)
+      applyPrintPageStyle(orientation);
+
+      // Condense the t–x table for print, unless user asks for full
+      const originalSamples = Array.isArray(gSamples) ? gSamples.slice() : [];
+      const samplesForPrint = sampleTxForPrint(originalSamples, tableMode);
+      const hadCondense = (tableMode !== 'full' && samplesForPrint.length !== originalSamples.length);
+
+      if(hadCondense){
+        renderTxTable(samplesForPrint);
+      }else{
+        renderTxTable(originalSamples);
+      }
+
+      // Enter print mode (CSS)
       document.body.classList.add('print-mode');
-      window.print();
+
+      const cleanupOnce = ()=>{
+        window.removeEventListener('afterprint', cleanupOnce);
+        document.body.classList.remove('print-mode');
+
+        const styleEl = document.getElementById('printPageStyle');
+        if(styleEl) styleEl.remove();
+
+        // restore full table on screen
+        if(hadCondense){
+          renderTxTable(originalSamples);
+        }
+      };
+
+      window.addEventListener('afterprint', cleanupOnce);
+
+      // Let DOM settle (important for consistent PDF)
+      requestAnimationFrame(()=> setTimeout(()=> window.print(), 60));
     });
   }
 
