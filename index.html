@@ -508,13 +508,21 @@ const btnReset   = document.getElementById('btnReset');
   const navToFoyer = document.getElementById('navToFoyer');
 const btnBook    = document.getElementById('btnBook');
 
-let bookUnlocked = false;
-function setBookUnlocked(on){
+const ACT1_UNLOCK_KEY = 'aat_act1_completed';
+
+let bookUnlocked = (localStorage.getItem(ACT1_UNLOCK_KEY) === '1');
+
+function setBookUnlocked(on, persist=true){
   bookUnlocked = !!on;
+
+  // persistence: once unlocked, stays unlocked until user clears storage manually
+  if(persist && bookUnlocked){
+    try{ localStorage.setItem(ACT1_UNLOCK_KEY, '1'); }catch(e){}
+  }
+
   if(!btnBook) return;
   btnBook.style.display = bookUnlocked ? 'block' : 'none';
 }
-
 
 const actBreak   = document.getElementById('actBreak');
 const btnAct2    = document.getElementById('btnAct2');
@@ -541,6 +549,93 @@ let sampleInterval = 0.4;
 let measureRowIdx = 0;
 
 let mode = 'run';
+
+
+/* ---------- PAUSE ENGINE (πραγματικό pause σε timers/typewriter/ροή) ---------- */
+
+const TM = (() => {
+  let _paused = false;
+  let _nextId = 1;
+  const _timers = new Map(); // id -> rec
+
+  function _schedule(rec, delayMs){
+    rec.start = performance.now();
+    rec.remaining = delayMs;
+    rec.nativeId = window.setTimeout(() => {
+      // μπορεί να έχει καθαριστεί/παγώσει/ξαναπρογραμματιστεί
+      if(!_timers.has(rec.id)) return;
+      _timers.delete(rec.id);
+      try{ rec.cb(); }catch(e){ console.error(e); }
+    }, Math.max(0, delayMs|0));
+  }
+
+  function setTimeout(cb, delayMs=0){
+    const id = _nextId++;
+    const rec = { id, cb, start: 0, remaining: (delayMs|0), nativeId: null };
+    _timers.set(id, rec);
+
+    if(_paused){
+      // δεν προγραμματίζουμε τώρα, κρατάμε μόνο remaining
+      rec.start = performance.now();
+      return id;
+    }
+    _schedule(rec, rec.remaining);
+    return id;
+  }
+
+  function clearTimeout(id){
+    const rec = _timers.get(id);
+    if(!rec) return;
+    _timers.delete(id);
+    if(rec.nativeId != null) window.clearTimeout(rec.nativeId);
+  }
+
+  function pause(){
+    if(_paused) return;
+    _paused = true;
+    const now = performance.now();
+    for(const rec of _timers.values()){
+      if(rec.nativeId != null){
+        window.clearTimeout(rec.nativeId);
+        rec.nativeId = null;
+        const elapsed = now - rec.start;
+        rec.remaining = Math.max(0, rec.remaining - elapsed);
+      }else{
+        // ήδη μη προγραμματισμένο
+        rec.start = now;
+      }
+    }
+  }
+
+  function resume(){
+    if(!_paused) return;
+    _paused = false;
+    for(const rec of _timers.values()){
+      if(rec.nativeId == null){
+        _schedule(rec, rec.remaining);
+      }
+    }
+  }
+
+  function clearAll(){
+    for(const rec of _timers.values()){
+      if(rec.nativeId != null) window.clearTimeout(rec.nativeId);
+    }
+    _timers.clear();
+  }
+
+  function sleep(ms){
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  function isPaused(){ return _paused; }
+
+  return { setTimeout, clearTimeout, pause, resume, clearAll, sleep, isPaused };
+})();
+
+/* Countdown state (για pause που πραγματικά παγώνει) */
+const countdownState = { active:false, remainingMs:0, lastNow:0 };
+
 
 let uXT = null;   // x–t canvas
 let vCan = null;  // v–t
@@ -797,7 +892,7 @@ function logMeasurement(tObs, xMeters){
     '<td>'+tObs.toFixed(2)+'</td>'+
     '<td>'+xMeters.toFixed(2)+'</td>';
   measureTBody.appendChild(tr);
-  setTimeout(()=>tr.classList.remove('new'),650);
+  TM.setTimeout(()=>tr.classList.remove('new'),650);
   try{ tr.scrollIntoView({block:'end'}); }catch(e){}
 
   // Καταγραφή και για το βιβλίο
@@ -1674,7 +1769,7 @@ function typeWriterHTML(el,html,totalMs,done){
       }
     }
     i++;
-    if(i<=totalChars) setTimeout(tick,step);
+    if(i<=totalChars) TM.setTimeout(tick,step);
     else if(typeof done==='function') done();
   })();
 }
@@ -1707,9 +1802,9 @@ function showBubbleForEvent(ev){
     const pauseMs=ev.pauseMs || 800;
 
     typeWriterHTML(bubbleTextEl,html,typeMs,()=>{
-      setTimeout(()=>{
+      TM.setTimeout(()=>{
         bubbleEl.classList.add('closing');
-        setTimeout(()=>{
+        TM.setTimeout(()=>{
           bubbleEl.classList.remove('active','closing');
           bubbleEl.style.display='none';
           hideSpeakerChip();
@@ -1768,9 +1863,9 @@ function showDynBubble(ev){
     const pauseMs=ev.pauseMs || 800;
 
     typeWriterHTML(bubbleTextEl,txt,typeMs,()=>{
-      setTimeout(()=>{
+      TM.setTimeout(()=>{
         bubbleEl.classList.add('closing');
-        setTimeout(()=>{
+        TM.setTimeout(()=>{
           bubbleEl.classList.remove('active','closing');
           bubbleEl.style.display='none';
           hideSpeakerChip();
@@ -1854,7 +1949,7 @@ async function runAct1(){
         triggerXtZeroMark(ev);
       }
 
-      await new Promise(r=>setTimeout(r,600));
+      await TM.sleep(600);
       continue;
     }
 
@@ -1978,7 +2073,7 @@ async function runAct2(){
       if(ev.plot ==='ax')ensureAxChart();
       if(ev.plot ==='xsin')ensureXSinChart();
 
-      await new Promise(r=>setTimeout(r,600));
+      await TM.sleep(600);
       continue;
     }
 
@@ -1992,7 +2087,7 @@ async function runAct2(){
   stage.classList.remove('open');
   setAudienceLights(true);
   phase='between2andFoyer';
-  setTimeout(()=>{ foyerBreak.style.display='flex'; },1200);
+  TM.setTimeout(()=>{ foyerBreak.style.display='flex'; },1200);
 }
 
 /* ---------- Κουρτίνες / μεταβάσεις ---------- */
@@ -2001,7 +2096,7 @@ function closeCurtainToAct2(){
   return new Promise(resolve=>{
     stage.classList.remove('open');
     setAudienceLights(true);
-    setTimeout(()=>{
+    TM.setTimeout(()=>{
       setBookUnlocked(true);
       actBreak.style.display='flex';
       resolve();
@@ -2053,7 +2148,7 @@ function typeWriterBoard(el,text,totalMs,done){
     el.innerHTML=src.slice(0,i).replaceAll('\n','<br>');
     try{ boardLeft.scrollTop=boardLeft.scrollHeight; }catch(e){}
     i++;
-    if(i<=src.length) setTimeout(tick,step);
+    if(i<=src.length) TM.setTimeout(tick,step);
     else if(typeof done==='function') done();
   })();
 }
@@ -2096,10 +2191,10 @@ function addFoyerRow(item){
     typeWriterBoard(l,item.left||'',typeMs,()=>{
       if((item.right||'').trim().length>0){
         typeWriterBoard(r,item.right||'',typeMs,()=>{
-          setTimeout(resolve,pauseMs);
+          TM.setTimeout(resolve,pauseMs);
         });
       }else{
-        setTimeout(resolve,pauseMs);
+        TM.setTimeout(resolve,pauseMs);
       }
     });
   });
@@ -2136,10 +2231,34 @@ async function runFoyer(){
 /* ---------- Κουμπιά / mode ---------- */
 
 function setMode(newMode){
-  mode=newMode;
-  btnPlay.classList.toggle('active',mode==='run');
-  btnPause.classList.toggle('active',mode==='pause');
-  slowHint.textContent='';
+  if(newMode !== 'run' && newMode !== 'pause') newMode = 'run';
+  mode = newMode;
+
+  const running = (mode === 'run');
+  btnPlay.classList.toggle('active', running);
+  btnPause.classList.toggle('active', !running);
+  slowHint.textContent = '';
+
+  if(running){
+    // Resume all pauseable timers/typewriters
+    TM.resume();
+
+    // Avoid time “jumps” after pause
+    const now = performance.now();
+    lastFrame = now;
+
+    // όταν δεν έχουμε ξεκινήσει παρατήρηση, το playbackTime βασίζεται στο t0
+    if(!obsStarted){
+      t0 = now - playbackTime*1000;
+    }
+
+    // countdown: μην “φάει” το paused gap
+    if(phase === 'countdown' && countdownState.active){
+      countdownState.lastNow = now;
+    }
+  }else{
+    TM.pause();
+  }
 }
 
 btnPause.addEventListener('click',()=>{
@@ -2181,6 +2300,10 @@ if(navToFoyer){ navToFoyer.addEventListener('click',()=>navReload('foyer')); }
 
 
 function resetShow(){
+  // καθάρισμα όλων των προγραμματισμένων callbacks (για να μη “σκάσουν” μετά από reset)
+  TM.clearAll();
+  countdownState.active = false;
+
   phase='idle';
   t0=performance.now();
   lastFrame=t0;
@@ -2191,7 +2314,8 @@ function resetShow(){
   measureRowIdx=0;
   BOOK_SAMPLES = [];
   setMode('run');
-  setBookUnlocked(false);
+  // κρατάμε το ξεκλείδωμα βιβλίου αν έχει γίνει στο παρελθόν
+  setBookUnlocked(localStorage.getItem(ACT1_UNLOCK_KEY) === '1', false);
 
   xtMarkState.active = false;
   xtMarkState.showTail = false;
@@ -2314,6 +2438,7 @@ function initShowBase(){
 }
 
 function beginObservation(){
+  countdownState.active = false;
   initShowBase();
   runAct1();
 }
@@ -2323,19 +2448,35 @@ function startShowCountdown(){
   if(startBreak) startBreak.style.display='none';
   startBtn.style.display='none';
   countdownOverlay.style.display='flex';
-  const seconds=5;
-  const end=performance.now()+seconds*1000;
+
+  const seconds = 5;
+  countdownState.active = true;
+  countdownState.remainingMs = seconds * 1000;
+  countdownState.lastNow = performance.now();
+
   function tick(){
-    const now=performance.now();
-    const remain=Math.max(0,Math.ceil((end-now)/1000));
-    countdownTimerEl.textContent=remain;
-    if(now>=end){
+    if(!countdownState.active || phase !== 'countdown') return;
+
+    const now = performance.now();
+
+    if(mode === 'run'){
+      const dtMs = now - countdownState.lastNow;
+      countdownState.remainingMs = Math.max(0, countdownState.remainingMs - dtMs);
+    }
+    countdownState.lastNow = now;
+
+    const remainS = Math.max(0, Math.ceil(countdownState.remainingMs / 1000));
+    countdownTimerEl.textContent = remainS;
+
+    if(countdownState.remainingMs <= 0){
+      countdownState.active = false;
       countdownOverlay.style.display='none';
       beginObservation();
-    }else{
-      requestAnimationFrame(tick);
+      return;
     }
+    requestAnimationFrame(tick);
   }
+
   requestAnimationFrame(tick);
 }
 
@@ -2356,14 +2497,16 @@ btnFoyerGo.addEventListener('click',()=>{
 function animate(now){
   const realDt=(now-lastFrame)/1000;
   lastFrame=now;
+  const dt = (mode==='run') ? realDt : 0;
 
   updateRuler();
 
   const tPhys=(now-t0)/1000;
   if(!obsStarted){
-    playbackTime=tPhys;
+    // πριν την “παρατήρηση” θέλουμε να παγώνει κι αυτό στο pause
+    if(mode==='run') playbackTime=tPhys;
   }else{
-    if(mode==='run') playbackTime+=realDt;
+    playbackTime+=dt;
   }
   const tObs=obsStarted? (playbackTime-obsStartPlaybackOffset):0;
   clockEl.textContent='t = '+tObs.toFixed(2)+' s';
@@ -2398,7 +2541,7 @@ function animate(now){
   if(ghost && ghostSpring){
     const target=ghostActive?1:0;
     const fadeSpeed=3;
-    const step=Math.min(1,fadeSpeed*realDt);
+    const step=Math.min(1,fadeSpeed*dt);
     ghostVisibility+= (target-ghostVisibility)*step;
     if(ghostVisibility<0.01 && !ghostActive){
       ghostVisibility=0;
