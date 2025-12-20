@@ -564,36 +564,10 @@ body{
   background:rgba(255,255,255,.2);
 }
 
-.btn-end{
-  position:absolute;
-  bottom:12px;
-  right:12px;
-  z-index:2000;
-  background:#333;
-  border:1px solid rgba(255,255,255,.25);
-  color:#fff;
-  border-radius:8px;
-  padding:8px 12px;
-  cursor:pointer;
-}
-
-.btn-foyer{
-  position:absolute;
-  bottom:12px;
-  left:12px;
-  z-index:2000;
-  background:#333;
-  border:1px solid rgba(255,255,255,.25);
-  color:#fff;
-  border-radius:8px;
-  padding:8px 12px;
-  cursor:pointer;
-}
-
 /* 🔴 ΝΕΟ: Κουμπί βιβλίου παράστασης */
 .btn-book{
   position:absolute;
-  bottom:52px;           /* λίγο πάνω από το Φουαγιέ */
+  bottom:12px;           /* κάτω αριστερά (δεν υπάρχει πλέον Φουαγιέ κουμπί) */
   left:12px;
   z-index:2000;
   background:#333;
