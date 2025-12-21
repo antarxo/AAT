@@ -31,7 +31,7 @@
       "avatarDy": 110,
       "avatarScale": 0.32,
       "chipDx": 80,
-      "chipDy": 50,
+      "chipDy": 40,
       "img": "viewer1.png"
     },
     {
@@ -855,6 +855,7 @@
     }
   }
 }
+
 
 
 
