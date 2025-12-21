@@ -31,7 +31,7 @@
       "avatarDy": 110,
       "avatarScale": 0.32,
       "chipDx": 80,
-      "chipDy": 47,
+      "chipDy": 50,
       "img": "viewer1.png"
     },
     {
@@ -44,7 +44,7 @@
       "avatarDy": 110,
       "avatarScale": 0.3,
       "chipDx": 80,
-      "chipDy": 47,
+      "chipDy": 50,
       "img": "viewer2.png"
     },
     {
@@ -55,9 +55,9 @@
       "bubbleDx": 50,
       "bubbleDy": 0,
       "avatarDy": 110,
-      "avatarScale": 0.3,
-      "chipDx": 90,
-      "chipDy": 47,
+      "avatarScale": 0.32,
+      "chipDx": 80,
+      "chipDy": 50,
       "img": "viewer3.png"
     },
     {
@@ -69,8 +69,8 @@
       "bubbleDy": 0,
       "avatarDy": 110,
       "avatarScale": 0.3,
-      "chipDx": 90,
-      "chipDy": 47,
+      "chipDx": 80,
+      "chipDy": 50,
       "img": "viewer4.png"
     },
     {
@@ -855,6 +855,7 @@
     }
   }
 }
+
 
 
 
