@@ -77,7 +77,7 @@
       "name_gr": "Θεατής 5",
       "name_en": "Viewer 5",
       "color": "#ff9966",
-      "xFrac": 0.79,
+      "xFrac": 0.81,
       "bubbleDx": 50,
       "bubbleDy": 0,
       "avatarDy": 115,
@@ -855,6 +855,7 @@
     }
   }
 }
+
 
 
 
