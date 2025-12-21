@@ -279,6 +279,14 @@
         <div class="ft-line1" id="foyerTitle1"></div>
         <div class="ft-line2" id="foyerTitle2"></div>
       </div>
+
+      <!-- Ένδειξη “ποιος μιλάει” στο φουαγιέ (ίδιο στυλ με το Βιβλίο) -->
+      <div class="foyer-speaker-indicator" id="foyerSpeakerBadge" aria-hidden="true">
+        <span class="speaker-badge">
+          <span class="speaker-avatar" id="foyerSpeakerAvatar"></span>
+          <span class="speaker-name" id="foyerSpeakerName">Θεατής</span>
+        </span>
+      </div>
       <div class="board-left"  id="boardLeft"></div>
       <div class="board-right" id="boardRight"></div>
     </div>
@@ -553,6 +561,9 @@ const boardRight  = document.getElementById('boardRight');
 const foyerTitle1 = document.getElementById('foyerTitle1');
 const foyerTitle2 = document.getElementById('foyerTitle2');
 const foyerBubble = document.getElementById('foyerBubble');
+const foyerSpeakerBadge  = document.getElementById('foyerSpeakerBadge');
+const foyerSpeakerAvatar = document.getElementById('foyerSpeakerAvatar');
+const foyerSpeakerName   = document.getElementById('foyerSpeakerName');
 
 const viewersStrip = document.getElementById('viewersStrip');
 
@@ -2143,6 +2154,21 @@ function setFoyerSpeaker(idx1based){
   const nameEN=info.name_en || ('Viewer '+idx1based);
   const label=currentLang==='en'? nameEN : nameGR;
 
+  // Ένδειξη θεατή στο φουαγιέ (book-style badge με εικονίδιο)
+  if(foyerSpeakerName) foyerSpeakerName.textContent = label;
+  if(foyerSpeakerAvatar){
+    if(info.img){
+      foyerSpeakerAvatar.style.backgroundImage = 'url("'+info.img+'")';
+      foyerSpeakerAvatar.textContent = '';
+    }else{
+      foyerSpeakerAvatar.style.backgroundImage = '';
+      foyerSpeakerAvatar.textContent = (label||'').trim().slice(0,1).toUpperCase();
+    }
+    // focus πιο πάνω για πρόσωπο (χωρίς αλλαγή μεγέθους)
+    foyerSpeakerAvatar.style.backgroundPosition = '50% 18%';
+  }
+  if(foyerSpeakerBadge) foyerSpeakerBadge.style.display = 'block';
+
   foyerBubble.textContent=label;
   foyerBubble.style.backgroundColor=tint(info.color,0.85);
   foyerBubble.style.borderColor='rgba(255,255,255,.9)';
@@ -2229,6 +2255,7 @@ async function runFoyer(){
   boardLeft.innerHTML='';
   boardRight.innerHTML='';
   foyerBubble.style.display='none';
+  if(foyerSpeakerBadge) foyerSpeakerBadge.style.display='none';
 
   boardLeft.style.gridColumn='1 / span 2';
   boardRight.style.display='none';
@@ -2432,6 +2459,7 @@ function resetShow(){
   if(foyerTitle1) foyerTitle1.textContent='';
   if(foyerTitle2) foyerTitle2.innerHTML='';
   foyerBubble.style.display='none';
+  if(foyerSpeakerBadge) foyerSpeakerBadge.style.display='none';
   boardLeft.innerHTML='';
   boardRight.innerHTML='';
   foyerTBody=null;
