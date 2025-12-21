@@ -51,11 +51,11 @@
       "name_gr": "Θεατής 3",
       "name_en": "Viewer 3",
       "color": "#ff99cc",
-      "xFrac": 0.45,
+      "xFrac": 0.48,
       "bubbleDx": 50,
       "bubbleDy": 0,
       "avatarDy": 115,
-      "avatarScale": 0.27,
+      "avatarScale": 0.29,
       "chipDx": 90,
       "chipDy": 47,
       "img": "viewer3.png"
@@ -855,6 +855,7 @@
     }
   }
 }
+
 
 
 
