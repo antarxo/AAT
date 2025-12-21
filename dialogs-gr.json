@@ -52,7 +52,7 @@
       "name_en": "Viewer 3",
       "color": "#ff99cc",
       "xFrac": 0.45,
-      "bubbleDx": 45,
+      "bubbleDx": 50,
       "bubbleDy": 0,
       "avatarDy": 110,
       "avatarScale": 0.32,
@@ -855,6 +855,7 @@
     }
   }
 }
+
 
 
 
