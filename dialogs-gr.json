@@ -25,10 +25,10 @@
       "name_gr": "Θεατής 1",
       "name_en": "Viewer 1",
       "color": "#ffcc00",
-      "xFrac": 0.1,
+      "xFrac": 0.09,
       "bubbleDx": 35,
       "bubbleDy": 12,
-      "avatarDy": 105,
+      "avatarDy": 110,
       "avatarScale": 0.32,
       "chipDx": 80,
       "chipDy": 47,
@@ -41,7 +41,7 @@
       "xFrac": 0.29,
       "bubbleDx": 30,
       "bubbleDy": 0,
-      "avatarDy": 105,
+      "avatarDy": 110,
       "avatarScale": 0.3,
       "chipDx": 80,
       "chipDy": 47,
@@ -54,7 +54,7 @@
       "xFrac": 0.45,
       "bubbleDx": 50,
       "bubbleDy": 0,
-      "avatarDy": 105,
+      "avatarDy": 110,
       "avatarScale": 0.3,
       "chipDx": 90,
       "chipDy": 47,
@@ -64,10 +64,10 @@
       "name_gr": "Θεατής 4",
       "name_en": "Viewer 4",
       "color": "#99ff99",
-      "xFrac": 0.65,
+      "xFrac": 0.63,
       "bubbleDx": 50,
       "bubbleDy": 0,
-      "avatarDy": 105,
+      "avatarDy": 110,
       "avatarScale": 0.3,
       "chipDx": 90,
       "chipDy": 47,
@@ -80,7 +80,7 @@
       "xFrac": 0.83,
       "bubbleDx": 50,
       "bubbleDy": 0,
-      "avatarDy": 105,
+      "avatarDy": 110,
       "avatarScale": 0.3,
       "chipDx": 80,
       "chipDy": 50,
@@ -855,6 +855,7 @@
     }
   }
 }
+
 
 
 
