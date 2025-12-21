@@ -2282,7 +2282,8 @@ btnPlay.addEventListener('click',()=>{ setMode('run'); });
 
 function navReload(start){
   const lang = (currentLang === 'en') ? 'en' : 'gr';
-  const url = new URL(window.location.href);
+  // Ξεκινάμε από καθαρή διεύθυνση, για να μη κουβαλάμε παλιά query params.
+  const url = new URL(window.location.origin + window.location.pathname);
   url.searchParams.set('start', start);
   url.searchParams.set('lang', lang);
   url.searchParams.set('nav', '1');
@@ -2331,6 +2332,19 @@ function bootFromQuery(){
 
   if(!startQ) return;
 
+  const shouldClean = (navQ === '1');
+  const cleanUrl = ()=>{
+    try{
+      const u = new URL(window.location.href);
+      u.searchParams.delete('start');
+      u.searchParams.delete('nav');
+      // κρατάμε μόνο το lang αν υπάρχει
+      const qs = u.searchParams.toString();
+      const newUrl = u.pathname + (qs ? ('?' + qs) : '') + u.hash;
+      history.replaceState({}, document.title, newUrl);
+    }catch(_e){}
+  };
+
   // Αν πρόκειται για “γρήγορη μετάβαση”, δεν θέλουμε intro/startbreak.
   if(navQ === '1'){
     closeIntro();
@@ -2354,16 +2368,19 @@ function bootFromQuery(){
     setAudienceLights(false);
     initShowBase();
     runAct1();
+    if(shouldClean) cleanUrl();
     return;
   }
 
   if(startQ === 'act2'){
     runAct2();
+    if(shouldClean) cleanUrl();
     return;
   }
 
   if(startQ === 'foyer'){
     runFoyer();
+    if(shouldClean) cleanUrl();
     return;
   }
 }
@@ -2759,31 +2776,7 @@ function setLanguage(lang){
 
   resetShow();
 
-  // Auto-start / quick jump (from ?start=act1|act2|foyer)
-  try{
-    const sp = new URLSearchParams(window.location.search);
-    const start = (sp.get('start')||'').toLowerCase();
-    if(start==='act1'){
-      if(startBreak) startBreak.style.display='none';
-      countdownOverlay.style.display='none';
-      initShowBase();
-      runAct1();
-    }else if(start==='act2'){
-      if(startBreak) startBreak.style.display='none';
-      countdownOverlay.style.display='none';
-      initShowBase();
-      actBreak.style.display='none';
-      runAct2();
-    }else if(start==='foyer'){
-      if(startBreak) startBreak.style.display='none';
-      countdownOverlay.style.display='none';
-      actBreak.style.display='none';
-      foyerBreak.style.display='none';
-      runFoyer();
-    }
-  }catch(e){}
-
-  loadDialogs();
+    loadDialogs();
 }
 
 /* ---------- Bootstrap ---------- */
