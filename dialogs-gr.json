@@ -41,7 +41,7 @@
       "xFrac": 0.29,
       "bubbleDx": 30,
       "bubbleDy": 0,
-      "avatarDy": 115,
+      "avatarDy": 105,
       "avatarScale": 0.27,
       "chipDx": 80,
       "chipDy": 47,
@@ -54,7 +54,7 @@
       "xFrac": 0.45,
       "bubbleDx": 50,
       "bubbleDy": 0,
-      "avatarDy": 115,
+      "avatarDy": 105,
       "avatarScale": 0.29,
       "chipDx": 90,
       "chipDy": 47,
@@ -67,7 +67,7 @@
       "xFrac": 0.65,
       "bubbleDx": 50,
       "bubbleDy": 0,
-      "avatarDy": 119,
+      "avatarDy": 105,
       "avatarScale": 0.3,
       "chipDx": 90,
       "chipDy": 47,
@@ -80,7 +80,7 @@
       "xFrac": 0.81,
       "bubbleDx": 50,
       "bubbleDy": 0,
-      "avatarDy": 114,
+      "avatarDy": 105,
       "avatarScale": 0.3,
       "chipDx": 80,
       "chipDy": 50,
@@ -855,6 +855,7 @@
     }
   }
 }
+
 
 
 
