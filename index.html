@@ -225,8 +225,8 @@
     <button id="btnPlay"  title="κανονικά">▶</button>
     <button id="btnReset" title="reset">↺</button>
     <button id="btnNext"  title="επόμενο">⏭</button>
+    <button id="btnBook"  title="Διαθέσιμο μετά το τέλος της Πράξης 1" disabled>📖</button>
   </div>
-<button class="btn-book"  id="btnBook"    title="Βιβλίο Παράστασης">📖 Βιβλίο Παράστασης</button>
 
   <div class="startbreak" id="startBreak">
     <div class="box">
@@ -533,8 +533,14 @@ function setBookUnlocked(on, persist=true){
   }
 
   if(!btnBook) return;
-  btnBook.style.display = bookUnlocked ? 'block' : 'none';
+
+  btnBook.disabled = !bookUnlocked;
+  btnBook.style.opacity = bookUnlocked ? '1' : '0.35';
+  btnBook.style.filter  = bookUnlocked ? 'none' : 'grayscale(100%)';
+  btnBook.title = bookUnlocked ? 'Βιβλίο Παράστασης' : 'Διαθέσιμο μετά το τέλος της Πράξης 1';
 }
+
+setBookUnlocked(bookUnlocked, false);
 
 const actBreak   = document.getElementById('actBreak');
 const btnAct2    = document.getElementById('btnAct2');
