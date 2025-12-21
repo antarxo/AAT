@@ -80,7 +80,7 @@
       "xFrac": 0.81,
       "bubbleDx": 50,
       "bubbleDy": 0,
-      "avatarDy": 117,
+      "avatarDy": 114,
       "avatarScale": 0.3,
       "chipDx": 80,
       "chipDy": 50,
@@ -855,6 +855,7 @@
     }
   }
 }
+
 
 
 
