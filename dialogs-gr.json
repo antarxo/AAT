@@ -564,13 +564,13 @@
       "gStop": false
     },
     {
-      "viewer": 3,
       "xShift": 0,
       "yOffset": 0,
       "typeMs": 2500,
       "pauseMs": 800,
       "left": "Επομένως μπορούμε για τον m<sub>1</sub>D<sub>1</sub> να υπολογίσουμε το D<sub>1</sub>! <b>Θα είναι: D<sub>1</sub>=m<sub>1</sub>ω<sup>2</sup>={D1}N/m</b>",
-      "right": ""
+      "right": "",
+      "viewer": 1
     },
     {
       "viewer": 5,
