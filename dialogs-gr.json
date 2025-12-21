@@ -38,7 +38,7 @@
       "name_gr": "Θεατής 2",
       "name_en": "Viewer 2",
       "color": "#66ccff",
-      "xFrac": 0.28,
+      "xFrac": 0.29,
       "bubbleDx": 30,
       "bubbleDy": 0,
       "avatarDy": 112,
@@ -51,7 +51,7 @@
       "name_gr": "Θεατής 3",
       "name_en": "Viewer 3",
       "color": "#ff99cc",
-      "xFrac": 0.5,
+      "xFrac": 0.45,
       "bubbleDx": 50,
       "bubbleDy": 0,
       "avatarDy": 112,
@@ -855,6 +855,7 @@
     }
   }
 }
+
 
 
 
