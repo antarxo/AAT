@@ -258,6 +258,7 @@
       <p  id="foyerBreakMsg">Θέλετε να περάσετε στο φουαγιέ για τη συζήτηση;</p>
       <button id="btnFoyerGo">Μετάβαση στο Φουαγιέ</button>
     </div>
+  </div>
   
   <div class="actbreak" id="navBreak">
     <div class="box">
@@ -271,7 +272,6 @@
       <button id="navClose">Κλείσιμο</button>
     </div>
   </div>
-</div>
 
   <div class="foyer" id="foyer">
     <div class="wrap">
@@ -438,7 +438,19 @@ async function initIntro(){
     return;
   }
 
-  if(!INTRO || INTRO.enabled === false){
+    // Αν ήρθαμε από “γρήγορη μετάβαση” (nav=1), παρακάμπτουμε το intro.
+  try{
+    const u = new URL(window.location.href);
+    const startQ = u.searchParams.get('start');
+    const navQ   = u.searchParams.get('nav');
+    if(startQ && navQ === '1'){
+      introOverlay.classList.add('hidden');
+      document.body.classList.remove('intro-open');
+      return;
+    }
+  }catch(_e){}
+
+if(!INTRO || INTRO.enabled === false){
     introOverlay.classList.add('hidden');
     document.body.classList.remove('intro-open');
     return;
@@ -2299,6 +2311,63 @@ if(navToAct2){ navToAct2.addEventListener('click',()=>navReload('act2')); }
 if(navToFoyer){ navToFoyer.addEventListener('click',()=>navReload('foyer')); }
 
 
+
+/* ---------- Εκκίνηση από URL (start=act1|act2|foyer) ---------- */
+
+function bootFromQuery(){
+  let startQ = null;
+  let navQ   = null;
+  let langQ  = null;
+  try{
+    const u = new URL(window.location.href);
+    startQ = u.searchParams.get('start');
+    navQ   = u.searchParams.get('nav');
+    langQ  = u.searchParams.get('lang');
+  }catch(_e){}
+
+  if(langQ){
+    setLanguage(langQ === 'en' ? 'en' : 'gr');
+  }
+
+  if(!startQ) return;
+
+  // Αν πρόκειται για “γρήγορη μετάβαση”, δεν θέλουμε intro/startbreak.
+  if(navQ === '1'){
+    closeIntro();
+  }
+
+  // καθάρισμα overlays
+  if(startBreak) startBreak.style.display = 'none';
+  if(startBtn)   startBtn.style.display   = 'none';
+  if(countdownOverlay) countdownOverlay.style.display = 'none';
+  if(actBreak)   actBreak.style.display   = 'none';
+  if(foyerBreak) foyerBreak.style.display = 'none';
+  if(navBreak)   navBreak.style.display   = 'none';
+
+  // Μην αφήνουμε “ουρές” από timers
+  TM.clearAll();
+  countdownState.active = false;
+
+  // Εκκίνηση στο ζητούμενο σημείο
+  if(startQ === 'act1'){
+    stage.classList.add('open');
+    setAudienceLights(false);
+    initShowBase();
+    runAct1();
+    return;
+  }
+
+  if(startQ === 'act2'){
+    runAct2();
+    return;
+  }
+
+  if(startQ === 'foyer'){
+    runFoyer();
+    return;
+  }
+}
+
 function resetShow(){
   // καθάρισμα όλων των προγραμματισμένων callbacks (για να μη “σκάσουν” μετά από reset)
   TM.clearAll();
@@ -2719,7 +2788,7 @@ function setLanguage(lang){
 
 /* ---------- Bootstrap ---------- */
 
-window.addEventListener('load',()=>{
+window.addEventListener('load',async ()=>{
   btnLangGR=document.getElementById('btnLangGR');
   btnLangEN=document.getElementById('btnLangEN');
 
@@ -2734,7 +2803,8 @@ window.addEventListener('load',()=>{
   measureSpringNaturalSize();
   ensureActorFloorBottom();
   resetShow();
-  loadDialogs();
+  await loadDialogs();
+  bootFromQuery();
 });
 </script>
 </body>
