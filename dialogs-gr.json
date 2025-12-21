@@ -27,7 +27,7 @@
       "color": "#ffcc00",
       "xFrac": 0.09,
       "bubbleDx": 35,
-      "bubbleDy": 20,
+      "bubbleDy": 12,
       "avatarDy": 100,
       "avatarScale": 0.3,
       "chipDx": 80,
@@ -41,7 +41,7 @@
       "xFrac": 0.3,
       "bubbleDx": 40,
       "bubbleDy": 12,
-      "avatarDy": 100,
+      "avatarDy": 90,
       "avatarScale": 0.27,
       "chipDx": 80,
       "chipDy": 47,
@@ -855,6 +855,7 @@
     }
   }
 }
+
 
 
 
