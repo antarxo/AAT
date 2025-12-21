@@ -288,6 +288,12 @@
             "type": "note",
             "column": "right",
             "html": "Διαπίστωση ότι υπάρχει συνοδευτικό \"εργαλείο\"  πίσω από την κίνηση του m,D."
+          },
+          {
+            "type": "image",
+            "column": "right",
+            "html": "",
+            "src": "assets/skaterAct2.png"
           }
         ],
         "after": []
@@ -310,8 +316,24 @@
             "type": "note",
             "column": "right",
             "html": "Θυμούνται την εμμονή του να διατηρεί την ίδια περίοδο με αυτή που κινείται σήμερα αν και στην άλλη παράστασή του κινήθηκε με μεγαλύτερες απομακρύνσεις από το κέντρο, με μεγαλύτερο πλάτος."
+          },
+          {
+            "type": "image",
+            "column": "right",
+            "html": "",
+            "src": "assets/skaterAct3.png"
           }
         ],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
         "after": []
       },
       {
@@ -433,6 +455,16 @@
     ],
     "afterAll": [],
     "rows": [
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
+      {
+        "before": [],
+        "inline": [],
+        "after": []
+      },
       {
         "before": [],
         "inline": [],
