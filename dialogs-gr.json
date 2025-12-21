@@ -26,7 +26,7 @@
       "name_en": "Viewer 1",
       "color": "#ffcc00",
       "xFrac": 0.09,
-      "bubbleDx": 35,
+      "bubbleDx": 45,
       "bubbleDy": 12,
       "avatarDy": 110,
       "avatarScale": 0.32,
@@ -44,7 +44,7 @@
       "avatarDy": 110,
       "avatarScale": 0.3,
       "chipDx": 80,
-      "chipDy": 50,
+      "chipDy": 40,
       "img": "viewer2.png"
     },
     {
@@ -57,7 +57,7 @@
       "avatarDy": 110,
       "avatarScale": 0.32,
       "chipDx": 80,
-      "chipDy": 50,
+      "chipDy": 40,
       "img": "viewer3.png"
     },
     {
@@ -70,7 +70,7 @@
       "avatarDy": 110,
       "avatarScale": 0.3,
       "chipDx": 80,
-      "chipDy": 50,
+      "chipDy": 40,
       "img": "viewer4.png"
     },
     {
@@ -83,7 +83,7 @@
       "avatarDy": 110,
       "avatarScale": 0.3,
       "chipDx": 80,
-      "chipDy": 50,
+      "chipDy": 40,
       "img": "viewer5.png"
     }
   ],
@@ -855,6 +855,7 @@
     }
   }
 }
+
 
 
 
