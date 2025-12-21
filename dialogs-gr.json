@@ -28,7 +28,7 @@
       "xFrac": 0.1,
       "bubbleDx": 35,
       "bubbleDy": 12,
-      "avatarDy": 100,
+      "avatarDy": 105,
       "avatarScale": 0.32,
       "chipDx": 80,
       "chipDy": 47,
@@ -42,7 +42,7 @@
       "bubbleDx": 30,
       "bubbleDy": 0,
       "avatarDy": 105,
-      "avatarScale": 0.27,
+      "avatarScale": 0.3,
       "chipDx": 80,
       "chipDy": 47,
       "img": "viewer2.png"
@@ -55,7 +55,7 @@
       "bubbleDx": 50,
       "bubbleDy": 0,
       "avatarDy": 105,
-      "avatarScale": 0.29,
+      "avatarScale": 0.3,
       "chipDx": 90,
       "chipDy": 47,
       "img": "viewer3.png"
@@ -77,7 +77,7 @@
       "name_gr": "Θεατής 5",
       "name_en": "Viewer 5",
       "color": "#ff9966",
-      "xFrac": 0.81,
+      "xFrac": 0.83,
       "bubbleDx": 50,
       "bubbleDy": 0,
       "avatarDy": 105,
@@ -855,6 +855,7 @@
     }
   }
 }
+
 
 
 
