@@ -246,9 +246,15 @@
       width:22px;
       height:22px;
       border-radius:999px;
-      background-size:cover;
-      background-position:center;
+
+      /* Face focus (χωρίς αλλαγή μεγέθους εικονιδίου):
+         - μετακινούμε το "κάδρο" πιο πάνω (y = 18%)
+         - αν θες πιο κοντινό πλάνο αργότερα, μπορείς να βάλεις:
+           --avatar-bg-size: 140% auto;  (ή 160% auto) */
+      background-size: var(--avatar-bg-size, cover);
+      background-position: 50% var(--avatar-bg-y, 18%);
       background-repeat:no-repeat;
+
       flex-shrink:0;
       display:flex;
       align-items:center;
