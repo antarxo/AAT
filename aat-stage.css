@@ -808,6 +808,13 @@ body{
   font-weight:500;
 }
 
+.foyer .foyer-line-badge-wrap{
+  margin:2px 0 6px;
+}
+.foyer .foyer-line-text{
+  min-height:1em;
+}
+
 .board-left,
 .board-right{
   grid-row:2;
