@@ -64,7 +64,7 @@
       "name_gr": "Θεατής 4",
       "name_en": "Viewer 4",
       "color": "#99ff99",
-      "xFrac": 0.66,
+      "xFrac": 0.65,
       "bubbleDx": 50,
       "bubbleDy": 0,
       "avatarDy": 110,
@@ -855,6 +855,7 @@
     }
   }
 }
+
 
 
 
