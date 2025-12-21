@@ -2146,28 +2146,53 @@ function isFormulaBlock(text){
   return false;
 }
 
+
+function getViewerLabel(info, idx1based){
+  const nameGR = (info && info.name_gr) ? info.name_gr : ('Θεατής ' + idx1based);
+  const nameEN = (info && info.name_en) ? info.name_en : ('Viewer ' + idx1based);
+  return (currentLang === 'en') ? nameEN : nameGR;
+}
+
+function buildFoyerLineBadge(viewer){
+  const vi = viewerInfo(viewer) || {};
+  const label = getViewerLabel(vi, viewer);
+
+  const wrap = document.createElement('div');
+  wrap.className = 'foyer-line-badge-wrap';
+
+  const badge = document.createElement('span');
+  badge.className = 'speaker-badge';
+
+  const av = document.createElement('span');
+  av.className = 'speaker-avatar';
+  if(vi.img){
+    av.style.backgroundImage = 'url("' + vi.img + '")';
+    av.textContent = '';
+  }else{
+    av.style.backgroundImage = '';
+    av.textContent = (label || '').trim().slice(0,1).toUpperCase();
+  }
+  // focus πιο πάνω για πρόσωπο (χωρίς αλλαγή μεγέθους)
+  av.style.backgroundPosition = '50% 18%';
+
+  const nm = document.createElement('span');
+  nm.className = 'speaker-name';
+  nm.textContent = label;
+
+  badge.appendChild(av);
+  badge.appendChild(nm);
+  wrap.appendChild(badge);
+  return wrap;
+}
+
 function setFoyerSpeaker(idx1based){
   const {x,y,info}=getViewerAvatarCenter(idx1based);
   if(!info) return;
 
-  const nameGR=info.name_gr || ('Θεατής '+idx1based);
-  const nameEN=info.name_en || ('Viewer '+idx1based);
-  const label=currentLang==='en'? nameEN : nameGR;
+  const label = getViewerLabel(info, idx1based);
 
-  // Ένδειξη θεατή στο φουαγιέ (book-style badge με εικονίδιο)
-  if(foyerSpeakerName) foyerSpeakerName.textContent = label;
-  if(foyerSpeakerAvatar){
-    if(info.img){
-      foyerSpeakerAvatar.style.backgroundImage = 'url("'+info.img+'")';
-      foyerSpeakerAvatar.textContent = '';
-    }else{
-      foyerSpeakerAvatar.style.backgroundImage = '';
-      foyerSpeakerAvatar.textContent = (label||'').trim().slice(0,1).toUpperCase();
-    }
-    // focus πιο πάνω για πρόσωπο (χωρίς αλλαγή μεγέθους)
-    foyerSpeakerAvatar.style.backgroundPosition = '50% 18%';
-  }
-  if(foyerSpeakerBadge) foyerSpeakerBadge.style.display = 'block';
+  // Πλέον το όνομα/εικονίδιο μπαίνει μπροστά σε κάθε διάλογο (όχι μόνιμα πάνω αριστερά)
+  if(foyerSpeakerBadge) foyerSpeakerBadge.style.display = 'none';
 
   foyerBubble.textContent=label;
   foyerBubble.style.backgroundColor=tint(info.color,0.85);
@@ -2181,6 +2206,7 @@ function setFoyerSpeaker(idx1based){
   foyerBubble.style.transform='translateX(-50%)';
   foyerBubble.style.display='block';
 }
+
 
 function typeWriterBoard(el,text,totalMs,done){
   const src=String(text||'').replaceAll('sqrt(','√(');
@@ -2229,12 +2255,22 @@ function addFoyerRow(item){
     showViewerAvatar(viewer);
     setFoyerSpeaker(viewer);
 
+    // Κάθε διάλογος ξεκινά με “Θεατής + εικονίδιο” (ίδιο στυλ με το βιβλίο)
+    const lText=document.createElement('div');
+    lText.className='foyer-line-text';
+    l.appendChild(buildFoyerLineBadge(viewer));
+    l.appendChild(lText);
+
+    const rText=document.createElement('div');
+    rText.className='foyer-line-text';
+    r.appendChild(rText);
+
     const typeMs =item.typeMs  || 4000;
     const pauseMs=item.pauseMs || 1500;
 
-    typeWriterBoard(l,item.left||'',typeMs,()=>{
+    typeWriterBoard(lText,item.left||'',typeMs,()=>{
       if((item.right||'').trim().length>0){
-        typeWriterBoard(r,item.right||'',typeMs,()=>{
+        typeWriterBoard(rText,item.right||'',typeMs,()=>{
           TM.setTimeout(resolve,pauseMs);
         });
       }else{
