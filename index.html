@@ -298,7 +298,7 @@
   <div class="foyerbreak" id="foyerBreak">
     <div class="box">
       <h3 id="foyerBreakTitle">Τέλος Πράξης 2</h3>
-      <p  id="foyerBreakMsg">Θέλετε να περάσετε στο φουαγιέ για τη συζήτηση;</p>
+      <p  id="foyerBreakMsg">Ελεύθερη συζήτηση στο χώρο του φουαγιέ!</p>
       <button id="btnFoyerGo">Μετάβαση στο Φουαγιέ</button>
     </div>
   </div>
@@ -319,8 +319,8 @@
   <div class="actbreak" id="act3Break" style="display:none;">
     <div class="box">
       <h3 id="act3BreakTitle">Πράξη 3η</h3>
-      <p  id="act3BreakMsg">Η Πράξη 3η θα προστεθεί σε επόμενη έκδοση.</p>
-      <button id="btnAct3" disabled aria-disabled="true" title="Δεν είναι διαθέσιμη ακόμα">Έναρξη Πράξης 3</button>
+      <p  id="act3BreakMsg">Ο (m₁,D₁) συνεχίζει. Είστε έτοιμοι για την Τρίτη Πράξη;</p>
+      <button id="btnAct3" disabled aria-disabled="true" title="Δεν είναι προφανώς διαθέσιμη!">Έναρξη Πράξης 3</button>
     </div>
   </div>
 
@@ -1892,8 +1892,8 @@ async function strobeExitWalk(){
   const standB = baseBMax + 26; // «όρθιοι»
 
   // --- Strobe tuning (ρυθμίζεις εδώ) ---
-  const flashOnMs  = 36;   // πόσο μένει “αναμμένο” κάθε flash
-  const flashOffMs = 90;   // πόσο μένει “σκοτάδι” κάθε flash (και αλλάζουμε θέση μέσα στο σκοτάδι)
+  const flashOnMs  = 26;   // πόσο μένει “αναμμένο” κάθε flash
+  const flashOffMs = 100;   // πόσο μένει “σκοτάδι” κάθε flash (και αλλάζουμε θέση μέσα στο σκοτάδι)
   const holdLitMs  = 520;  // μετά από burst: φώτα ανοιχτά για λίγο (να “παίξει” η στιγμή)
   const preBlackMs = 420;  // πρώτο σκοτάδι (για να φύγει ο πίνακας πριν αρχίσει το περπάτημα)
 
