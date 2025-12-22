@@ -927,10 +927,10 @@ function setFoyerTitles(){
 function updateMarbleTrack(){
   const track = document.getElementById('marbleTrack');
   const trackGhost = document.getElementById('marbleTrackGhost');
-  const floorEl = document.querySelector('.floor');
+  const curtainMid = document.querySelector('.curtain-upper');
   const actorImg = document.querySelector('#actor img');
 
-  if(!track || !floorEl || !actorImg || !stage) return;
+  if(!track || !curtainMid || !actorImg || !stage) return;
 
   // Το “μάρμαρο” υπάρχει μόνο στις Πράξεις 1 & 2.
   const inActs = (phase==='act1' || phase==='act2');
@@ -941,19 +941,20 @@ function updateMarbleTrack(){
   }
 
   const stageRect = stage.getBoundingClientRect();
-  const fRect = floorEl.getBoundingClientRect();
+  const cRect = curtainMid.getBoundingClientRect();
   const aRect = actorImg.getBoundingClientRect();
 
-  // Κάθετα: ο “όγκος” του μαρμάρου γεμίζει το κενό ανάμεσα στο πάτωμα (γραμμή) και το κάτω μέρος του ηθοποιού.
-  const h = Math.max(0, fRect.bottom - aRect.bottom);
-  const bottomPx = Math.max(0, stageRect.bottom - fRect.bottom);
+  // Κάθετα (ΣΩΣΤΟ): το ύψος του “μαρμάρου” είναι η διαφορά
+  // ανάμεσα στο κάτω μέρος της μεσαίας κουρτίνας και στο κάτω μέρος της εικόνας του ηθοποιού.
+  const h = Math.max(0, cRect.bottom - aRect.bottom);
+  const bottomPx = Math.max(0, stageRect.bottom - cRect.bottom);
 
   // Οριζόντια έκταση μαρμάρου: ακριβώς από x=-3 m έως x=+3 m (σύστημα αναφοράς)
   const cx = stage.clientWidth / 2;
-  const leftPx = cx - 3*pxPerMeter;
+  const leftPx  = cx - 3*pxPerMeter;
   const rightPx = cx + 3*pxPerMeter;
-  track.style.left  = leftPx + 'px';
-  track.style.width = Math.max(0, rightPx - leftPx) + 'px';
+  track.style.left   = leftPx + 'px';
+  track.style.width  = Math.max(0, rightPx - leftPx) + 'px';
   track.style.bottom = bottomPx + 'px';
   track.style.height = h + 'px';
   track.style.display = (h>0) ? 'block' : 'none';
@@ -962,10 +963,10 @@ function updateMarbleTrack(){
   if(trackGhost){
     const gVis = (typeof ghostVisibility==='number') ? ghostVisibility : 0;
     if(phase==='act2' && gVis>0.02 && h>0){
-      const gLeft = cx - 5*pxPerMeter;
+      const gLeft  = cx - 5*pxPerMeter;
       const gRight = cx + 5*pxPerMeter;
-      trackGhost.style.left  = gLeft + 'px';
-      trackGhost.style.width = Math.max(0, gRight - gLeft) + 'px';
+      trackGhost.style.left   = gLeft + 'px';
+      trackGhost.style.width  = Math.max(0, gRight - gLeft) + 'px';
       trackGhost.style.bottom = bottomPx + 'px';
       trackGhost.style.height = h + 'px';
       trackGhost.style.display = 'block';
