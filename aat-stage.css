@@ -130,7 +130,7 @@ body{
   width:0;
   z-index:156; /* πάνω από floor, κάτω από actor */
   pointer-events:none;
-  border-radius:0;
+  border-radius:10px;
   background:
     linear-gradient(180deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0) 70%),
     repeating-linear-gradient(135deg, rgba(255,255,255,0.28) 0 7px, rgba(0,0,0,0) 7px 20px),
