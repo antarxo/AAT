@@ -25,7 +25,7 @@
       "name_gr": "Θεατής 1",
       "name_en": "Viewer 1",
       "color": "#ffcc00",
-      "xFrac": 0.07,
+      "xFrac": 0.06,
       "bubbleDx": 60,
       "bubbleDy": 0,
       "avatarDy": 110,
@@ -883,6 +883,7 @@
     }
   }
 }
+
 
 
 
