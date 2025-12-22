@@ -110,6 +110,25 @@ body{
   filter:drop-shadow(0 4px 6px rgba(0,0,0,.6));
 }
 
+
+.marble-track{
+  position:absolute;
+  left:18%;
+  width:64%;
+  /* bottom & height υπολογίζονται δυναμικά από JS (με βάση κουρτίνα/ηθοποιό) */
+  background:
+    linear-gradient(135deg, rgba(255,255,255,.55) 0%, rgba(210,210,210,.55) 22%, rgba(245,245,245,.55) 48%, rgba(200,200,200,.55) 72%, rgba(255,255,255,.55) 100%),
+    radial-gradient(circle at 20% 40%, rgba(120,120,120,.18), rgba(120,120,120,0) 55%),
+    radial-gradient(circle at 70% 60%, rgba(90,90,90,.16), rgba(90,90,90,0) 60%);
+  border-top:1px solid rgba(255,255,255,.35);
+  border-bottom:1px solid rgba(0,0,0,.20);
+  border-radius:12px;
+  box-shadow:0 10px 24px rgba(0,0,0,.35);
+  z-index:156; /* κάτω από ηθοποιό (157), πάνω από πάτωμα (155) */
+  pointer-events:none;
+  display:none;
+}
+
 .floor{
   position:absolute;
   left:18%;
@@ -119,29 +138,6 @@ body{
   background:#aaa;
   z-index:155;
   pointer-events:none;
-}
-
-/* “Μάρμαρο” – ζώνη ακρίβειας (οριζόντια έκταση ορίζεται από JS σε m) */
-.marble-track{
-  position:absolute;
-  left:50%;
-  bottom:0;
-  height:0;
-  width:0;
-  z-index:156; /* πάνω από floor, κάτω από actor */
-  pointer-events:none;
-  border-radius:10px;
-  background:
-    linear-gradient(180deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0) 70%),
-    repeating-linear-gradient(135deg, rgba(255,255,255,0.28) 0 7px, rgba(0,0,0,0) 7px 20px),
-    linear-gradient(to right, rgba(28,120,95,0.95), rgba(140,230,195,0.95), rgba(28,120,95,0.95));
-  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.25);
-  opacity:0.95;
-  display:none;
-}
-.marble-track.ghost{
-  opacity:0.35;
-  filter:grayscale(1) brightness(1.12);
 }
 
 /* Κοινό */
@@ -924,36 +920,18 @@ body{
    χωρίς να καλύπτονται τα δεξιά γραφήματα/πίνακες.
    =============================== */
 
-/* ===============================
-   EXIT MASK (STROBE EXIT)
-   - Πέτασμα πάνω από ΟΜΙΛΗΤΕΣ
-   - Γραφήματα/πάνελ πάνω από πέτασμα
-   - Θέση: κάτω-δεξιά γωνία (δεξί πάνελ)
-   =============================== */
-
 .exit-panel-mask{
   position:absolute;
-  left:82%;
-  right:0;
+  left: calc(18% + 64% - 170px);
+  width:170px;
   bottom:0;
   height:46vh;
-  background:linear-gradient(to left,#300000,#1a0000);
-  z-index:1600; /* πάνω από viewers (1000) */
+  background: linear-gradient(180deg, #300000 0%, #1a0000 100%);
+  z-index:1005; /* πάνω από viewers (1000), κάτω από “blackout” curtain (5000) */
   pointer-events:none;
   display:none;
 }
 
 body.exit-mask-active .exit-panel-mask{
   display:block;
-}
-
-/* Τα δεξιά/αριστερά panels + charts ΠΡΕΠΕΙ να είναι πάνω από το πέτασμα */
-.clock,
-.measure-box,
-#xtChart,
-#xSinChart,
-.params-box,
-.laws,
-.law-charts{
-  z-index:1700;
 }
