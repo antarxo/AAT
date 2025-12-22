@@ -240,6 +240,7 @@
 
   <img id="spring" class="spring" src="spring.png" alt="ελατήριο">
   <div class="actor" id="actor"><img src="skater.png" alt="Skater"></div>
+  <div class="marble-track" id="marbleTrack" aria-hidden="true"></div>
   <div class="floor"></div>
 
   <img class="audience-extra" id="audienceExtra" src="koino_extra.png" alt="έξτρα κοινό">
@@ -836,6 +837,16 @@ function applyUITextFromUI(){
   if(btnFoyerGo      && ui.btnFoyerGo      != null) btnFoyerGo.textContent      = ui.btnFoyerGo;
   if(startBreakMsg && ui.startBtn != null) startBreakMsg.textContent = ui.startBtn;
 
+  // Τίτλοι Πράξης 3 (όπως και των άλλων): από uiTitles.act3
+  const act3BreakTitleEl = document.getElementById('act3BreakTitle');
+  const act3TeaserEl = document.getElementById('act3Teaser');
+  if(UI_TITLES && UI_TITLES.act3 && UI_TITLES.act3.signTitle != null){
+    const t3 = expandDynTemplate(String(UI_TITLES.act3.signTitle));
+    if(act3BreakTitleEl) act3BreakTitleEl.textContent = t3;
+    if(act3TeaserEl) act3TeaserEl.textContent = t3;
+  }
+
+
   if(btnPause   && ui.btnPauseTitle != null) btnPause.title = ui.btnPauseTitle;
   if(btnPlay    && ui.btnPlayTitle  != null) btnPlay.title  = ui.btnPlayTitle;
   if(btnReset   && ui.btnResetTitle != null) btnReset.title = ui.btnResetTitle;
@@ -911,6 +922,28 @@ function setFoyerTitles(){
 
 
 /* ---------- Βοηθητικά για σκηνή ---------- */
+
+function updateMarbleTrack(){
+  const track = document.getElementById('marbleTrack');
+  const curtainMid = document.querySelector('.curtain-upper');
+  const actorImg = document.querySelector('#actor img');
+  if(!track || !curtainMid || !actorImg || !stage) return;
+
+  // Υπολογίζουμε ΜΟΝΟ όταν η σκηνή είναι κλειστή (χωρίς μετασχηματισμό κουρτίνας).
+  if(stage.classList.contains('open')) return;
+
+  const stageRect = stage.getBoundingClientRect();
+  const cRect = curtainMid.getBoundingClientRect();
+  const aRect = actorImg.getBoundingClientRect();
+
+  const h = Math.max(0, cRect.bottom - aRect.bottom);
+  const bottomPx = Math.max(0, stageRect.bottom - cRect.bottom);
+
+  track.style.bottom = bottomPx + 'px';
+  track.style.height = h + 'px';
+  track.style.display = (h>0) ? 'block' : 'none';
+}
+
 
 function measureSpringNaturalSize(){
   if(!springEl) return;
@@ -1827,22 +1860,8 @@ function showAllViewerAvatars(){
 }
 
 async function runFoyerExitStrobe(){
-  // Μικρό κάλεσμα αποχώρησης (όπως ζήτησες)
-  await addFoyerRow({
-    viewer: 1,
-    left:  (currentLang==='en') ? 'Ok. Shall we leave?' : 'Οκ. τι λέτε, αποχωρούμε;',
-    right: '',
-    typeMs: 1400,
-    pauseMs: 200
-  });
-  await addFoyerRow({
-    viewer: 2,
-    left:  (currentLang==='en') ? "Let's go." : 'Πάμε.',
-    right: '',
-    typeMs: 700,
-    pauseMs: 350
-  });
-
+  // Οι διάλογοι αποχώρησης πλέον βρίσκονται στο dialogs-*.json (FOYER).
+  // Εδώ μένει μόνο το οπτικό εφέ αποχώρησης.
   await strobeExitWalk();
 }
 
@@ -2463,6 +2482,7 @@ async function runAct2(){
   }
 
   stage.classList.remove('open');
+  updateMarbleTrack();
   setAudienceLights(true);
   phase='between2andFoyer';
   TM.setTimeout(()=>{ foyerBreak.style.display='flex'; },1200);
@@ -2473,6 +2493,7 @@ async function runAct2(){
 function closeCurtainToAct2(){
   return new Promise(resolve=>{
     stage.classList.remove('open');
+  updateMarbleTrack();
     setAudienceLights(true);
     TM.setTimeout(()=>{
       setBookUnlocked(true);
@@ -2887,6 +2908,7 @@ function resetShow(){
   }
 
   stage.classList.remove('open');
+  updateMarbleTrack();
   markerEl.style.left=centerX()+'px';
   markerGhostEl.style.left=centerX()+'px';
 
