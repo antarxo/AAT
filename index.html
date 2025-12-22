@@ -1828,208 +1828,194 @@ async function strobeExitWalk(){
   if(foyerBubble) foyerBubble.style.display='none';
   if(actBubble)   actBubble.style.display='none';
 
-  // Strobe ON (blackout πάνω από ΟΛΗ τη σκηνή)
+  // --- Strobe mode: blackout πάνω από ΟΛΗ τη σκηνή ---
   document.body.classList.add('strobe-active');
   curtain.style.display='block';
-  curtain.style.opacity='1';
+  curtain.style.opacity='1'; // ξεκινάμε σκοτάδι
 
   const actors=[...viewersStrip.querySelectorAll('.viewer-avatar')]
     .filter(el=>el && el.style.display!=='none');
-
-  if(!actors.length){
-    curtain.style.display='none';
+  const n = actors.length;
+  if(!n){
     document.body.classList.remove('strobe-active');
+    curtain.style.display='none';
+    curtain.style.opacity='1';
     return;
   }
 
-  // snapshot original styles
-  const orig=actors.map(el=>({
-    el,
-    left: el.style.left,
-    bottom: el.style.bottom,
-    opacity: el.style.opacity
-  }));
+  // κρατάμε αρχικές θέσεις για restore (αν χρειαστεί)
+  const orig = actors.map(el=>({el,left:el.style.left,bottom:el.style.bottom,opacity:el.style.opacity}));
 
-  const stageW = stage.clientWidth || window.innerWidth;
-  const n = actors.length;
+  const stageRect = stage.getBoundingClientRect();
+  const stageW = stageRect.width || 900;
 
-  // start positions: από τα τωρινά anchors + “όρθιοι”
-  const starts=[];
-  let baseBMax=0;
-  for(let i=0;i<n;i++){
-    const el=actors[i];
-    const x = (parseFloat(el.style.left || '0') || (stageW*(0.2 + 0.6*(i+1)/(n+1))));
-    const baseBottom = (parseFloat(el.dataset.baseBottom || '0') || 0);
-    starts.push({x, baseBottom});
-    if(baseBottom>baseBMax) baseBMax=baseBottom;
-  }
+  // base layout (bottoms)
+  const bottoms = actors.map(el=>{
+    const b = parseFloat(el.style.bottom||'0');
+    return isFinite(b)? b : 0;
+  });
+  const baseBMax = Math.max(...bottoms);
+  const standB = baseBMax + 26; // «όρθιοι»
 
-  // Θα τους δώσουμε κοινό “ύψος στάσης” για να φαίνονται ίδιοι όρθιοι
-  const standB = baseBMax + 26;
+  // --- Strobe tuning (ρυθμίζεις εδώ) ---
+  const flashOnMs  = 36;   // πόσο μένει “αναμμένο” κάθε flash
+  const flashOffMs = 90;   // πόσο μένει “σκοτάδι” κάθε flash (και αλλάζουμε θέση μέσα στο σκοτάδι)
+  const holdLitMs  = 520;  // μετά από burst: φώτα ανοιχτά για λίγο (να “παίξει” η στιγμή)
+  const preBlackMs = 420;  // πρώτο σκοτάδι (για να φύγει ο πίνακας πριν αρχίσει το περπάτημα)
 
-  // ---- ΡΥΘΜΙΣΕΙΣ STROBE (όλο εδώ) ----
-  const flashOnMs  = 22;   // πόσο φαίνεται η σκηνή (ανά flash)
-  const flashOffMs = 42;   // πόσο είναι μαύρη η σκηνή (ανά flash) -> κύκλος ~64ms ≈ 15.6Hz
-  const blackoutGapMs = 180; // «φυσική παύση» ανάμεσα σε φάσεις (μένει μαύρο λίγο παραπάνω)
-
-  // Στόχοι κίνησης
-  const pairMeetLeft  = stageW*0.68;
-  const pairMeetRight = stageW*0.74;
-  const groupMeetX    = stageW*0.78;  // «συνάντηση» προς το τέλος της σκηνής
-  const exitX         = stageW*1.18;  // έξοδος δεξιά (εκτός σκηνής)
-
-  // “ποιοι πλησιάζουν ποιους”: ζευγάρια (0-1, 2-3, ...)
-  const pairIndex = (i)=>Math.floor(i/2);
+  // στόχοι κίνησης (δεξιά άκρη)
+  const rightEdgeX   = stageW*0.90;
+  const rightEdgeX2  = stageW*0.94;
+  const approachX1   = stageW*0.74;
+  const approachX2   = stageW*0.82;
 
   // deterministic RNG
-  let seed = 987654321;
+  let seed = 246813579;
   const rnd = ()=>{
     seed = (seed*1664525 + 1013904223) >>> 0;
     return seed / 4294967296;
   };
-
   const lerp = (a,b,t)=>a+(b-a)*t;
   const clamp01 = (t)=> (t<0?0:(t>1?1:t));
 
   const applyPose=(poses)=>{
     for(let i=0;i<n;i++){
       const el=actors[i];
-      const p=poses[i];
-      el.style.left   = Math.round(p.x) + 'px';
-      el.style.bottom = Math.round(p.b) + 'px';
-      el.classList.add('visible');
-      el.classList.remove('lit');
-      el.style.opacity='1';
+      const P=poses[i];
+      if(!P) continue;
+      el.style.left = `${P.x}px`;
+      el.style.bottom = `${P.b}px`;
+      el.style.opacity = '1';
     }
   };
 
-  const flash = async (poses, extraBlackMs=0)=>{
-    // Στο ΜΑΥΡΟ αλλάζουμε θέση (stop-motion)
-    curtain.style.opacity='1';
-    applyPose(poses);
-    await TM.sleep(flashOffMs + (extraBlackMs||0));
-    // FLASH: φαίνεται η σκηνή
+  // Βρίσκουμε “τρέχουσες” x θέσεις (από left ή από διάταξη)
+  const currX = actors.map((el,i)=>{
+    const v = parseFloat(el.style.left||'0');
+    if(isFinite(v) && v!==0) return v;
+    // fallback: απλώνουμε αρχικά στη μέση
+    const spread = (i-(n-1)/2) * 34;
+    return stageW*0.52 + spread;
+  });
+
+  // Φάσεις: 3–4 μαζέματα στη δεξιά άκρη, με “στρομπο-κίνηση” και μετά φώτα ON
+  const buildPosesPhase = (phase, t)=>{
+    const poses=[];
+    for(let i=0;i<n;i++){
+      const spread = (i-(n-1)/2) * 26; // pack
+      const jitterX = (rnd()-0.5)*3;
+      const jitterB = (rnd()-0.5)*2;
+
+      let xFrom = currX[i];
+      let xTo;
+
+      if(phase===0){ // σηκώνονται + μικρή μετατόπιση
+        xTo = lerp(xFrom, approachX1 + spread*0.35, t);
+      }else if(phase===1){ // ζευγάρια πλησιάζουν περισσότερο δεξιά
+        xTo = lerp(approachX1 + spread*0.35, approachX2 + spread*0.55, t);
+      }else if(phase===2){ // όλοι συγκλίνουν δεξιά
+        xTo = lerp(approachX2 + spread*0.55, rightEdgeX + spread*0.70, t);
+      }else{ // phase 3: τελικό “στρίμωγμα” στη δεξιά άκρη
+        xTo = lerp(rightEdgeX + spread*0.70, rightEdgeX2 + spread*0.65, t);
+      }
+
+      poses.push({x: xTo + jitterX, b: standB + jitterB});
+    }
+    return poses;
+  };
+
+  const strobeBurst = async (phase, frames)=>{
+    // κάνουμε burst flashes, και στο τέλος κρατάμε φώτα ON
+    for(let f=0; f<frames; f++){
+      // σκοτάδι: αλλάζουμε θέση
+      curtain.style.opacity='1';
+      const t = frames<=1 ? 1 : (f/(frames-1));
+      const poses = buildPosesPhase(phase, t);
+      applyPose(poses);
+      await TM.sleep(flashOffMs);
+
+      // flash: δείχνουμε το “καρέ”
+      curtain.style.opacity='0';
+      await TM.sleep(flashOnMs);
+    }
+    // στο τέλος, φώτα ON για να “ανασάνει” η στιγμή
     curtain.style.opacity='0';
-    await TM.sleep(flashOnMs);
+    await TM.sleep(holdLitMs);
+
+    // ενημερώνουμε τις currX για την επόμενη φάση (τελευταία pose της φάσης)
+    const posesFinal = buildPosesPhase(phase, 1);
+    for(let i=0;i<n;i++) currX[i] = posesFinal[i].x;
   };
 
-  const buildPoses_StandUp = (t)=>{
-    const poses=[];
-    for(let i=0;i<n;i++){
-      const x = starts[i].x;
-      const b = lerp(starts[i].baseBottom, standB, t);
-      poses.push({x,b});
+  const hideBoardDuringFirstBlack = async ()=>{
+    // Μαυροπίνακας φουαγιέ: φεύγει ΜΕΣΑ στο πρώτο σκοτάδι
+    const wrap = document.querySelector('#foyer .wrap');
+    if(wrap){
+      wrap.classList.add('foyer-board-exit');
+      // μέσα στο σκοτάδι δεν μας νοιάζει να “δούμε” animation, απλά να εξαφανιστεί
+      await TM.sleep(520);
+      wrap.style.display = 'none';
     }
-    return poses;
   };
 
-  const buildPoses_PairApproach = (t)=>{
-    const poses=[];
-    for(let i=0;i<n;i++){
-      const x0 = starts[i].x;
-      const p = pairIndex(i);
-      const pairCenter = (p%2===0)? pairMeetLeft : pairMeetRight;
-      const offset = (i%2===0? -18 : 18);
-      const x1 = pairCenter + offset;
-      const x = lerp(x0, x1, t);
-      poses.push({x, b: standB});
+  const showAct3Fake = ()=>{
+    const teaser = document.getElementById('act3Teaser');
+    if(teaser){
+      teaser.style.display='block';
+      teaser.setAttribute('aria-hidden','false');
     }
-    return poses;
   };
 
-  const buildPoses_Mingle = ()=>{
-    const poses=[];
-    for(let i=0;i<n;i++){
-      const p = pairIndex(i);
-      const pairCenter = (p%2===0)? pairMeetLeft : pairMeetRight;
-      const offset = (i%2===0? -18 : 18);
-      const baseX = pairCenter + offset;
-      const jx = (rnd()-0.5)*6;   // μικρή κίνηση
-      const jb = (rnd()-0.5)*2;
-      poses.push({x: baseX + jx, b: standB + jb});
+  const swapAudienceFinal = ()=>{
+    const main = document.querySelector('.audience-main');
+    if(main){
+      main.src = 'koino_final.png';
+      main.alt = 'κοινό (τελικό)';
     }
-    return poses;
   };
 
-  const buildPoses_GroupMeet = (t)=>{
-    const poses=[];
-    for(let i=0;i<n;i++){
-      const p = pairIndex(i);
-      const pairCenter = (p%2===0)? pairMeetLeft : pairMeetRight;
-      const offset = (i%2===0? -18 : 18);
-      const x0 = pairCenter + offset;
-      const spread = (i-(n-1)/2) * (34/(n||1));
-      const x1 = groupMeetX + spread;
-      const x = lerp(x0, x1, t);
-      poses.push({x, b: standB});
-    }
-    return poses;
+  const hideAllSpeakers = ()=>{
+    actors.forEach(el=>{
+      el.style.display='none';
+      el.style.opacity='0';
+    });
   };
 
-  const buildPoses_PauseMeet = ()=>{
-    const poses=[];
-    for(let i=0;i<n;i++){
-      const spread = (i-(n-1)/2) * (34/(n||1));
-      const baseX = groupMeetX + spread;
-      const jx = (rnd()-0.5)*4;
-      const jb = (rnd()-0.5)*2;
-      poses.push({x: baseX + jx, b: standB + jb});
-    }
-    return poses;
-  };
-
-  const buildPoses_Exit = (tGlobal)=>{
-    const poses=[];
-    for(let i=0;i<n;i++){
-      const spread = (i-(n-1)/2) * (34/(n||1));
-      const x0 = groupMeetX + spread;
-      const lag = (i%3)*0.08;
-      const t = clamp01((tGlobal - lag) / (1 - lag));
-      const x = lerp(x0, exitX, t);
-      const jb = (rnd()-0.5)*1.5;
-      poses.push({x, b: standB + jb});
-    }
-    return poses;
-  };
-
-  const phases = [
-    {frames:6,  pose:(f,F)=>buildPoses_StandUp(F? f/(F-1):1),      gap:blackoutGapMs},
-    {frames:10, pose:(f,F)=>buildPoses_PairApproach(F? f/(F-1):1), gap:blackoutGapMs},
-    {frames:10, pose:()=>buildPoses_Mingle(),                      gap:blackoutGapMs},
-    {frames:8,  pose:(f,F)=>buildPoses_GroupMeet(F? f/(F-1):1),    gap:blackoutGapMs},
-    {frames:8,  pose:()=>buildPoses_PauseMeet(),                   gap:blackoutGapMs+140},
-    {frames:16, pose:(f,F)=>buildPoses_Exit(F? f/(F-1):1),         gap:0},
-  ];
-
-  for(const ph of phases){
-    for(let f=0; f<ph.frames; f++){
-      const poses = ph.pose(f, ph.frames);
-      const extraBlack = (f===0 && ph.gap) ? ph.gap : 0;
-      await flash(poses, extraBlack);
-    }
-  }
-
-  // τελικό μαύρο
+  // --- 1) Πρώτο σκοτάδι: φεύγει ο πίνακας ---
   curtain.style.opacity='1';
-  await TM.sleep(240);
+  const boardExitPromise = hideBoardDuringFirstBlack();
+  await TM.sleep(preBlackMs);
+  await boardExitPromise;
 
-  // κρύψιμο ομιλητών
-  actors.forEach(el=>{ el.style.opacity='0'; });
-  await TM.sleep(220);
+  // --- 2) 4 φάσεις “στρομπο-βήματα” με ενδιάμεσο φωτισμό ---
+  await strobeBurst(0, 6);
+  await strobeBurst(1, 7);
+  await strobeBurst(2, 7);
+  await strobeBurst(3, 6);
 
-  // βγάζουμε το strobe
+  // --- 3) Τελικό σκοτάδι → εξαφανίζονται + αλλάζει το κοινό ---
+  curtain.style.opacity='1';
+  await TM.sleep(520);
+
+  hideAllSpeakers();
+  if(foyerBubble) foyerBubble.style.display='none';
+  if(actBubble)   actBubble.style.display='none';
+
+  // αφήνουμε άδειο χώρο + “fake” πράξη 3
+  swapAudienceFinal();
+  showAct3Fake();
+
+  // φώτα ON: άδεια αίθουσα
+  curtain.style.opacity='0';
+  await TM.sleep(1100);
+
+  // βγαίνουμε από strobe mode (κρατάμε την τελική εικόνα)
   document.body.classList.remove('strobe-active');
   curtain.style.display='none';
   curtain.style.opacity='1';
 
-  // restore originals (κρατάμε opacity=0)
-  orig.forEach(o=>{
-    o.el.style.left   = o.left;
-    o.el.style.bottom = o.bottom;
-  });
-
-  await foyerBoardExitWithTeaser();
-  await finalEmptySeatsShot();
+  // δεν κάνουμε restore των avatars: η ιδέα είναι ότι “έφυγαν”.
+  // (κρατάμε όμως τα orig για ασφάλεια σε reset, το οποίο ξαναχτίζει state ούτως ή άλλως)
 }
 
 async function foyerBoardExitWithTeaser(){
