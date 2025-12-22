@@ -241,6 +241,7 @@
   <img id="spring" class="spring" src="spring.png" alt="ελατήριο">
   <div class="actor" id="actor"><img src="skater.png" alt="Skater"></div>
   <div class="marble-track" id="marbleTrack" aria-hidden="true"></div>
+  <div class="marble-track ghost" id="marbleTrackGhost" aria-hidden="true"></div>
   <div class="floor"></div>
 
   <img class="audience-extra" id="audienceExtra" src="koino_extra.png" alt="έξτρα κοινό">
@@ -925,30 +926,54 @@ function setFoyerTitles(){
 
 function updateMarbleTrack(){
   const track = document.getElementById('marbleTrack');
-  const curtainMid = document.querySelector('.curtain-upper');
+  const trackGhost = document.getElementById('marbleTrackGhost');
+  const floorEl = document.querySelector('.floor');
   const actorImg = document.querySelector('#actor img');
-  if(!track || !curtainMid || !actorImg || !stage) return;
 
-  // Υπολογίζουμε ΜΟΝΟ όταν η σκηνή είναι κλειστή (χωρίς μετασχηματισμό κουρτίνας).
-  if(stage.classList.contains('open')) return;
+  if(!track || !floorEl || !actorImg || !stage) return;
+
+  // Το “μάρμαρο” υπάρχει μόνο στις Πράξεις 1 & 2.
+  const inActs = (phase==='act1' || phase==='act2');
+  if(!inActs){
+    track.style.display = 'none';
+    if(trackGhost) trackGhost.style.display = 'none';
+    return;
+  }
 
   const stageRect = stage.getBoundingClientRect();
-  const cRect = curtainMid.getBoundingClientRect();
+  const fRect = floorEl.getBoundingClientRect();
   const aRect = actorImg.getBoundingClientRect();
 
-  const h = Math.max(0, cRect.bottom - aRect.bottom);
-  const bottomPx = Math.max(0, stageRect.bottom - cRect.bottom);
+  // Κάθετα: ο “όγκος” του μαρμάρου γεμίζει το κενό ανάμεσα στο πάτωμα (γραμμή) και το κάτω μέρος του ηθοποιού.
+  const h = Math.max(0, fRect.bottom - aRect.bottom);
+  const bottomPx = Math.max(0, stageRect.bottom - fRect.bottom);
 
-    // Οριζόντια έκταση μαρμάρου: ακριβώς από x=-3 m έως x=+3 m (σύστημα αναφοράς)
+  // Οριζόντια έκταση μαρμάρου: ακριβώς από x=-3 m έως x=+3 m (σύστημα αναφοράς)
   const cx = stage.clientWidth / 2;
   const leftPx = cx - 3*pxPerMeter;
   const rightPx = cx + 3*pxPerMeter;
   track.style.left  = leftPx + 'px';
   track.style.width = Math.max(0, rightPx - leftPx) + 'px';
-
-track.style.bottom = bottomPx + 'px';
+  track.style.bottom = bottomPx + 'px';
   track.style.height = h + 'px';
   track.style.display = (h>0) ? 'block' : 'none';
+
+  // Ghost “δοκός”/μάρμαρο: από -5 έως +5, μόνο όταν ο ghost είναι ορατός.
+  if(trackGhost){
+    const gVis = (typeof ghostVisibility==='number') ? ghostVisibility : 0;
+    if(phase==='act2' && gVis>0.02 && h>0){
+      const gLeft = cx - 5*pxPerMeter;
+      const gRight = cx + 5*pxPerMeter;
+      trackGhost.style.left  = gLeft + 'px';
+      trackGhost.style.width = Math.max(0, gRight - gLeft) + 'px';
+      trackGhost.style.bottom = bottomPx + 'px';
+      trackGhost.style.height = h + 'px';
+      trackGhost.style.display = 'block';
+      trackGhost.style.opacity = Math.min(0.65, 0.15 + 0.5*gVis).toString();
+    }else{
+      trackGhost.style.display = 'none';
+    }
+  }
 }
 
 
@@ -3141,6 +3166,9 @@ function animate(now){
   }else{
     markerGhostEl.style.opacity='0';
   }
+
+  // “Μάρμαρο” (Act 1 & 2) + ghost δοκός (μόνο όταν εμφανίζεται ο ghost)
+  updateMarbleTrack();
 
   if(uXT)  drawXTChart();
   if(vCan) drawVelocityChart();
