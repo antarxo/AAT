@@ -253,6 +253,9 @@
     <div class="viewer-avatar" data-idx="4"></div>
   </div>
 
+  <!-- Μάσκα εξόδου (κρύβει ομιλητές όταν “βγαίνουν” δεξιά από την κεντρική σκηνή) -->
+  <div class="exit-panel-mask" id="exitMask" aria-hidden="true"></div>
+
   <div class="thought-bubble" id="bubble0">
     <div class="text"></div>
     <div class="checkmark">✓</div>
@@ -313,6 +316,14 @@
     </div>
   </div>
 
+  <div class="actbreak" id="act3Break" style="display:none;">
+    <div class="box">
+      <h3 id="act3BreakTitle">Πράξη 3η</h3>
+      <p  id="act3BreakMsg">Η Πράξη 3η θα προστεθεί σε επόμενη έκδοση.</p>
+      <button id="btnAct3" disabled aria-disabled="true" title="Δεν είναι διαθέσιμη ακόμα">Έναρξη Πράξης 3</button>
+    </div>
+  </div>
+
   <div class="foyer" id="foyer">
     <div class="wrap">
       <div class="foyer-titlebar" id="foyerTitlebar">
@@ -336,9 +347,6 @@
   </div>
 
   <div class="foyer-bubble" id="foyerBubble">ΘΕΑΤΗΣ</div>
-
-  <!-- Exit mask: κρύβει ομιλητές όταν βγαίνουν δεξιά, χωρίς να σκεπάζει τα δεξιά panels -->
-  <div class="exit-panel-mask" id="exitPanelMask" aria-hidden="true"></div>
 </div>
 
 
@@ -840,10 +848,14 @@ function applyUITextFromUI(){
 
 
 function getTitleKeyForPhase(p){
+  if(p==='countdown') return 'act1';
+  if(p==='act1') return 'act1';
   if(p==='act2' || p==='between2andFoyer') return 'act2';
   if(p==='foyer') return 'foyer';
+  if(p==='act3') return 'act3';
   return 'act1';
 }
+
 
 function applySignPatch(patch){
   if(!patch) return;
@@ -863,13 +875,25 @@ function applySignPatch(patch){
 
 function applySignboardForPhase(p=phase){
   const key=getTitleKeyForPhase(p);
-  const hasTitles = UI_TITLES && (UI_TITLES.act1 || UI_TITLES.act2 || UI_TITLES.foyer);
+
+  const hasTitles = UI_TITLES && (UI_TITLES.act1 || UI_TITLES.act2 || UI_TITLES.foyer || UI_TITLES.act3);
   if(hasTitles && UI_TITLES[key]){
     applySignPatch(UI_TITLES[key]);
-  }else{
-    // fallback: παλιό μοντέλο (UI.signTitle κλπ)
-    applySignPatch(UI || {});
+    return;
   }
+
+  if(key==='act3'){
+    applySignPatch({
+      signTitle: 'ΠΡΑΞΗ 3η',
+      signLineA: 'Τελική Πράξη (σύντομα)',
+      signLineB: '',
+      signLineC: '',
+      signLineD: ''
+    });
+    return;
+  }
+
+  applySignPatch(UI || {});
 }
 function setFoyerTitles(){
   if(!foyerTitle1 || !foyerTitle2) return;
@@ -1831,6 +1855,13 @@ async function strobeExitWalk(){
   if(foyerBubble) foyerBubble.style.display='none';
   if(actBubble)   actBubble.style.display='none';
 
+  // Hide foyer titlebar during exit (we will show Act 3 titles instead)
+  const foyerTitlebarEl = document.getElementById('foyerTitlebar');
+  if(foyerTitlebarEl) foyerTitlebarEl.style.display='none';
+
+  // Enable exit mask so speakers can pass behind it on the right edge
+  document.body.classList.add('exit-mask-active');
+
   // --- Strobe mode: blackout πάνω από ΟΛΗ τη σκηνή ---
   document.body.classList.add('strobe-active');
   curtain.style.display='block';
@@ -1962,11 +1993,20 @@ async function strobeExitWalk(){
   };
 
   const showAct3Fake = ()=>{
+    // Fake Act 3 panel with button (non-functional), plus Act 3 titles on signboard
     const teaser = document.getElementById('act3Teaser');
     if(teaser){
-      teaser.style.display='block';
-      teaser.setAttribute('aria-hidden','false');
+      teaser.style.display='none';
+      teaser.setAttribute('aria-hidden','true');
     }
+
+    const act3Break = document.getElementById('act3Break');
+    if(act3Break){
+      act3Break.style.display='flex';
+    }
+
+    phase='act3';
+    applySignboardForPhase('act3');
   };
 
   const swapAudienceFinal = ()=>{
@@ -2016,6 +2056,9 @@ async function strobeExitWalk(){
   document.body.classList.remove('strobe-active');
   curtain.style.display='none';
   curtain.style.opacity='1';
+
+  // Exit mask not needed after final shot
+  document.body.classList.remove('exit-mask-active');
 
   // δεν κάνουμε restore των avatars: η ιδέα είναι ότι “έφυγαν”.
   // (κρατάμε όμως τα orig για ασφάλεια σε reset, το οποίο ξαναχτίζει state ούτως ή άλλως)
@@ -2738,6 +2781,17 @@ function bootFromQuery(){
   TM.clearAll();
   countdownState.active = false;
 
+  // reset any exit/strobe leftovers
+  document.body.classList.remove('strobe-active','exit-mask-active');
+  const act3BreakEl = document.getElementById('act3Break');
+  if(act3BreakEl) act3BreakEl.style.display='none';
+  const act3TeaserEl = document.getElementById('act3Teaser');
+  if(act3TeaserEl){ act3TeaserEl.style.display='none'; act3TeaserEl.setAttribute('aria-hidden','true'); }
+  const foyerTitlebarEl = document.getElementById('foyerTitlebar');
+  if(foyerTitlebarEl) foyerTitlebarEl.style.display='';
+  const aMain = document.querySelector('.audience-main');
+  if(aMain){ aMain.src='koino.png'; aMain.alt='κοινό'; }
+
   // Εκκίνηση στο ζητούμενο σημείο
   if(startQ === 'act1'){
     stage.classList.add('open');
@@ -2765,6 +2819,17 @@ function resetShow(){
   // καθάρισμα όλων των προγραμματισμένων callbacks (για να μη “σκάσουν” μετά από reset)
   TM.clearAll();
   countdownState.active = false;
+
+  // reset any exit/strobe leftovers
+  document.body.classList.remove('strobe-active','exit-mask-active');
+  const act3BreakEl = document.getElementById('act3Break');
+  if(act3BreakEl) act3BreakEl.style.display='none';
+  const act3TeaserEl = document.getElementById('act3Teaser');
+  if(act3TeaserEl){ act3TeaserEl.style.display='none'; act3TeaserEl.setAttribute('aria-hidden','true'); }
+  const foyerTitlebarEl = document.getElementById('foyerTitlebar');
+  if(foyerTitlebarEl) foyerTitlebarEl.style.display='';
+  const aMain = document.querySelector('.audience-main');
+  if(aMain && /koino_final\.png$/i.test(aMain.getAttribute('src')||'')) aMain.src = 'koino.png';
 
   phase='idle';
   t0=performance.now();
