@@ -11,6 +11,49 @@
 
   <!-- CSS σκηνής -->
   <link rel="stylesheet" href="aat-stage.css">
+  <style>
+/* -----------------------------------------------------------
+   EPILOGUE: “Curtain call” / αποχώρηση θεατών με στρομπο εφέ
+------------------------------------------------------------*/
+.curtain-call{
+  position:absolute;
+  left:0;
+  right:0;
+  bottom:0;
+  height:36%;
+  z-index:1400;
+  pointer-events:none;
+  opacity:0;
+  transition:opacity 40ms linear;
+}
+
+.curtain-call.strobe-on{
+  opacity:1;
+}
+
+.curtain-call .cc-viewer{
+  position:absolute;
+  bottom:14px;
+  width:64px;
+  height:64px;
+  transform:translateX(-50%);
+  border-radius:999px;
+  background:rgba(255,255,255,.08);
+  background-repeat:no-repeat;
+  background-size:190% 190%;
+  background-position:50% 18%;
+  box-shadow:0 10px 26px rgba(0,0,0,.55);
+  border:1px solid rgba(255,255,255,.28);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:800;
+  letter-spacing:.02em;
+  color:rgba(255,255,255,.95);
+  text-shadow:0 2px 6px rgba(0,0,0,.65);
+  filter:saturate(1.05) contrast(1.05);
+}
+  </style>
 
   <!-- Intro veil (ενσωματωμένο στο index) -->
   <style>
@@ -211,6 +254,8 @@
     <div class="viewer-avatar" data-idx="2"></div>
     <div class="viewer-avatar" data-idx="3"></div>
     <div class="viewer-avatar" data-idx="4"></div>
+  <div class="curtain-call" id="curtainCall" aria-hidden="true" style="display:none;"></div>
+
   </div>
 
   <div class="thought-bubble" id="bubble0">
@@ -2307,7 +2352,129 @@ async function runFoyer(){
   for(const item of FOYER){
     await addFoyerRow(item);
   }
+
+  // Επίλογος / αποχώρηση θεατών
+  await runEpilogue();
 }
+
+function tmSleep(ms){
+  return new Promise(resolve => TM.setTimeout(resolve, ms|0));
+}
+
+function ensureCurtainCall(){
+  const el = document.getElementById('curtainCall');
+  if(!el) return null;
+
+  // (ξανα)χτίζουμε με βάση τα τρέχοντα VIEWERS
+  el.innerHTML = '';
+  const n = Math.min(5, (VIEWERS && VIEWERS.length) ? VIEWERS.length : 5);
+
+  for(let i=1;i<=n;i++){
+    const vi = viewerInfo(i) || {};
+    const d = document.createElement('div');
+    d.className = 'cc-viewer';
+    d.dataset.viewer = String(i);
+
+    const label = getViewerLabel(vi, i) || ('Θεατής ' + i);
+
+    if(vi.img){
+      d.style.backgroundImage = 'url("' + vi.img + '")';
+      d.textContent = '';
+    }else{
+      d.style.backgroundImage = '';
+      d.textContent = label.trim().slice(0,1).toUpperCase();
+    }
+
+    // focus πιο πάνω για πρόσωπο (χωρίς αλλαγή μεγέθους)
+    d.style.backgroundPosition = '50% 18%';
+
+    el.appendChild(d);
+  }
+
+  return el;
+}
+
+function setCurtainCallPositions(el, t01){
+  // start -> meet -> exit (συναντιούνται προς το τέλος και μετά “φεύγουν” δεξιά)
+  const start = [20, 35, 50, 65, 80];
+  const meet  = [52, 56, 60, 64, 68];
+  const exit  = [118, 123, 128, 133, 138];
+
+  const n = el.children.length;
+  const clamp = (v)=> Math.max(0, Math.min(1, v));
+  const t = clamp(t01);
+
+  const meetAt = 0.78;
+  let a, b, p;
+
+  if(t <= meetAt){
+    p = t / meetAt;
+    a = start; b = meet;
+  }else{
+    p = (t - meetAt) / (1 - meetAt);
+    a = meet; b = exit;
+  }
+
+  for(let i=0;i<n;i++){
+    const node = el.children[i];
+    const x = (a[i] + (b[i]-a[i]) * p);
+    node.style.left = x.toFixed(2) + '%';
+    // μικρή “νευρικότητα” για να μη φαίνεται στατικό
+    const wobble = ((i%2===0)?1:-1) * ( (t*100)|0 % 3 ) * 1.2;
+    node.style.bottom = (14 + wobble).toFixed(1) + 'px';
+  }
+}
+
+async function runEpilogue(){
+  // αν έχει γίνει reset/μετάβαση αλλού, δεν συνεχίζουμε
+  if(phase !== 'foyer') return;
+
+  phase = 'epilogue';
+
+  // Κλείσιμο φουαγιέ UI (κρατάμε τη σκηνή)
+  foyerBubble.style.display = 'none';
+  if(foyerSpeakerBadge) foyerSpeakerBadge.style.display = 'none';
+  foyerEl.style.display = 'none';
+  boardLeft.innerHTML = '';
+  boardRight.innerHTML = '';
+  if(foyerTBody) foyerTBody.innerHTML = '';
+
+  // Μικρό “κλείσιμο” από 2 θεατές
+  await showBubbleForEvent({ viewer: 2, left: 'Οκ. τι λέτε, αποχωρούμε;', typeMs: 1300, pauseMs: 900 });
+  if(phase !== 'epilogue') return;
+  await showBubbleForEvent({ viewer: 1, left: 'Πάμε.', typeMs: 700, pauseMs: 700 });
+  if(phase !== 'epilogue') return;
+
+  // “Curtain call” με στρομπο εφέ
+  const cc = ensureCurtainCall();
+  if(!cc) return;
+
+  cc.style.display = 'block';
+  cc.classList.remove('strobe-on');
+
+  const flashes = 14;
+  for(let k=0;k<flashes;k++){
+    if(phase !== 'epilogue') break;
+
+    const t = (flashes<=1) ? 1 : (k/(flashes-1));
+    setCurtainCallPositions(cc, t);
+
+    cc.classList.add('strobe-on');
+    await tmSleep(90);
+    if(phase !== 'epilogue') break;
+
+    cc.classList.remove('strobe-on');
+    await tmSleep(120);
+  }
+
+  cc.classList.remove('strobe-on');
+  cc.style.display = 'none';
+
+  // τέλος επίλογου: μένουμε σε “ήρεμη” σκηνή, ο χρήστης έχει τα nav/reset
+  phase = 'idle';
+}
+
+
 
 /* ---------- Κουμπιά / mode ---------- */
 
