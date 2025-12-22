@@ -892,15 +892,28 @@ body{
 .startbreak .box{ text-align:center; }
 .startbreak button,
 .startbreak .start-btn{ display:block; margin:0 auto; }
-/* Exit mask (δεξιά κάτω): κρύβει avatars που βγαίνουν από τα όρια της κεντρικής σκηνής.
-   Σημαντικό: z-index πάνω από avatars, αλλά ΚΑΤΩ από δεξιά panels/γραφήματα. */
+
+/* =========================================================
+   Exit panel mask (κρύβει τους ομιλητές όταν βγαίνουν δεξιά)
+   - ΠΑΝΩ από τους ομιλητές (.viewers z=1000)
+   - ΚΑΤΩ από τα panels/γραφήματα (τα ανεβάζουμε πάνω απ' το mask)
+   - Χρώμα ίδιο με τα side panels (.right / .left)
+   ========================================================= */
 .exit-panel-mask{
   position:absolute;
   right:0;
   bottom:0;
   width:18%;
   height:42vh;
-  background:radial-gradient(circle at center,#222 0%,#000 100%); /* ίδιο με body background */
-  z-index:200;
+  background:linear-gradient(to left,#300000,#1a0000);
+  box-shadow:inset 6px 0 10px rgba(0,0,0,.6);
+  z-index:1100;
   pointer-events:none;
+  display:none;
 }
+body.exit-active .exit-panel-mask{ display:block; }
+
+/* Side panels + charts ΠΑΝΩ από το mask (ώστε να μην τα κρύβει) */
+.laws{ z-index:1300 !important; }
+.law-charts{ z-index:1300 !important; }
+.measure-box{ z-index:1300 !important; }
