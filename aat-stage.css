@@ -87,7 +87,7 @@ body{
   left:10%;
   height:96px;
   width:auto;
-  z-index:156; /* κάτω από κουρτίνα (160), πάνω από πάτωμα (155) */
+  z-index:1502; /* πάνω από μάρμαρο, κάτω από κουρτίνα/panels */
   pointer-events:none;
   filter:drop-shadow(0 4px 6px rgba(0,0,0,.55));
   transform-origin:left center;
@@ -100,7 +100,7 @@ body{
   left:50%;
   width:144px;
   height:96px;
-  z-index:157; /* ηθοποιός > ελατήριο */
+  z-index:1503; /* ηθοποιός > μάρμαρο/ελατήριο */
   pointer-events:none;
 }
 .actor img{
@@ -118,19 +118,18 @@ body{
   height:2px;
   background:#aaa;
   z-index:155;
-  pointer-events:none;
-}
-
-/* “Μάρμαρο” – ζώνη ακρίβειας (οριζόντια έκταση ορίζεται από JS σε m) */
+  pointer-events:non
+/* “Μάρμαρο” – ζώνη ακρίβειας (οριζόντια έκταση ορίζεται από JS σε m)
+   ΣΗΜ: z-index ώστε να είναι ΠΑΝΩ από το κοινό αλλά ΚΑΤΩ από τον ηθοποιό. */
 .marble-track{
   position:absolute;
   left:50%;
   bottom:0;
   height:0;
   width:0;
-  z-index:156; /* πάνω από floor, κάτω από actor */
+  z-index:1501;
   pointer-events:none;
-  border-radius:10px;
+  border-radius:0; /* ΑΠΟΛΥΤΩΣ ορθογώνιο */
   background:
     linear-gradient(180deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0) 70%),
     repeating-linear-gradient(135deg, rgba(255,255,255,0.28) 0 7px, rgba(0,0,0,0) 7px 20px),
@@ -142,6 +141,9 @@ body{
 .marble-track.ghost{
   opacity:0.35;
   filter:grayscale(1) brightness(1.12);
+}
+
+e;
 }
 
 /* Κοινό */
@@ -924,36 +926,18 @@ body{
    χωρίς να καλύπτονται τα δεξιά γραφήματα/πίνακες.
    =============================== */
 
-/* ===============================
-   EXIT MASK (STROBE EXIT)
-   - Πέτασμα πάνω από ΟΜΙΛΗΤΕΣ
-   - Γραφήματα/πάνελ πάνω από πέτασμα
-   - Θέση: κάτω-δεξιά γωνία (δεξί πάνελ)
-   =============================== */
-
 .exit-panel-mask{
   position:absolute;
-  left:82%;
-  right:0;
+  left: calc(18% + 64% - 170px);
+  width:170px;
   bottom:0;
   height:46vh;
-  background:linear-gradient(to left,#300000,#1a0000);
-  z-index:1600; /* πάνω από viewers (1000) */
+  background: linear-gradient(180deg, #300000 0%, #1a0000 100%);
+  z-index:1005; /* πάνω από viewers (1000), κάτω από “blackout” curtain (5000) */
   pointer-events:none;
   display:none;
 }
 
 body.exit-mask-active .exit-panel-mask{
   display:block;
-}
-
-/* Τα δεξιά/αριστερά panels + charts ΠΡΕΠΕΙ να είναι πάνω από το πέτασμα */
-.clock,
-.measure-box,
-#xtChart,
-#xSinChart,
-.params-box,
-.laws,
-.law-charts{
-  z-index:1700;
 }
