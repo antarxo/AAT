@@ -939,7 +939,14 @@ function updateMarbleTrack(){
   const h = Math.max(0, cRect.bottom - aRect.bottom);
   const bottomPx = Math.max(0, stageRect.bottom - cRect.bottom);
 
-  track.style.bottom = bottomPx + 'px';
+    // Οριζόντια έκταση μαρμάρου: ακριβώς από x=-3 m έως x=+3 m (σύστημα αναφοράς)
+  const cx = stage.clientWidth / 2;
+  const leftPx = cx - 3*pxPerMeter;
+  const rightPx = cx + 3*pxPerMeter;
+  track.style.left  = leftPx + 'px';
+  track.style.width = Math.max(0, rightPx - leftPx) + 'px';
+
+track.style.bottom = bottomPx + 'px';
   track.style.height = h + 'px';
   track.style.display = (h>0) ? 'block' : 'none';
 }
