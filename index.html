@@ -2031,10 +2031,10 @@ async function strobeExitWalk(){
   await boardExitPromise;
 
   // --- 2) 4 φάσεις “στρομπο-βήματα” με ενδιάμεσο φωτισμό ---
-  await strobeBurst(0, 6);
-  await strobeBurst(1, 7);
-  await strobeBurst(2, 7);
-  await strobeBurst(3, 6);
+  await strobeBurst(0, 10);
+  await strobeBurst(1, 8);
+  await strobeBurst(2, 9);
+  await strobeBurst(3, 7);
 
   // --- 3) Τελικό σκοτάδι → εξαφανίζονται + αλλάζει το κοινό ---
   curtain.style.opacity='1';
