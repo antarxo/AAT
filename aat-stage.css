@@ -893,27 +893,26 @@ body{
 .startbreak button,
 .startbreak .start-btn{ display:block; margin:0 auto; }
 
-/* =========================================================
-   Exit panel mask (κρύβει τους ομιλητές όταν βγαίνουν δεξιά)
-   - ΠΑΝΩ από τους ομιλητές (.viewers z=1000)
-   - ΚΑΤΩ από τα panels/γραφήματα (τα ανεβάζουμε πάνω απ' το mask)
-   - Χρώμα ίδιο με τα side panels (.right / .left)
-   ========================================================= */
+/* ===============================
+   EXIT MASK (STROBE EXIT)
+   Καλύπτει ΜΟΝΟ τη δεξιά άκρη της ΚΕΝΤΡΙΚΗΣ σκηνής (18%–82%),
+   στο ίδιο χρώμα με τα πλαϊνά “πάνελ/κουρτίνες”.
+   Στόχος: οι ομιλητές να “χάνονται” όταν περνάνε δεξιά,
+   χωρίς να καλύπτονται τα δεξιά γραφήματα/πίνακες.
+   =============================== */
+
 .exit-panel-mask{
   position:absolute;
-  right:0;
+  left: calc(18% + 64% - 170px);
+  width:170px;
   bottom:0;
-  width:18%;
-  height:42vh;
-  background:linear-gradient(to left,#300000,#1a0000);
-  box-shadow:inset 6px 0 10px rgba(0,0,0,.6);
-  z-index:1100;
+  height:46vh;
+  background: linear-gradient(180deg, #300000 0%, #1a0000 100%);
+  z-index:1005; /* πάνω από viewers (1000), κάτω από “blackout” curtain (5000) */
   pointer-events:none;
   display:none;
 }
-body.exit-active .exit-panel-mask{ display:block; }
 
-/* Side panels + charts ΠΑΝΩ από το mask (ώστε να μην τα κρύβει) */
-.laws{ z-index:1300 !important; }
-.law-charts{ z-index:1300 !important; }
-.measure-box{ z-index:1300 !important; }
+body.exit-mask-active .exit-panel-mask{
+  display:block;
+}
