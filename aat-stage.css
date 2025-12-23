@@ -472,7 +472,7 @@ body{
   padding:10px 12px 12px;
   border-radius:10px;
   box-shadow:0 6px 12px rgba(0,0,0,.4);
-  z-index:1950;
+  z-index:2101;
   pointer-events:none;
   opacity:0;
   display:none;
@@ -527,10 +527,10 @@ body{
   background:rgba(0,0,0,.7);
 }
 .act-bubble{
-  z-index:1050;
+  z-index:2101;
 }
 .foyer-bubble{
-  z-index:2000;
+  z-index:2101;
 }
 
 /* Controls */
