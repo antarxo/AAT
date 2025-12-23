@@ -87,7 +87,7 @@ body{
   left:10%;
   height:96px;
   width:auto;
-  z-index:1502; /* πάνω από μάρμαρο, κάτω από κουρτίνα/panels */
+  z-index:156; /* κάτω από κουρτίνα (160), πάνω από πάτωμα (155) */
   pointer-events:none;
   filter:drop-shadow(0 4px 6px rgba(0,0,0,.55));
   transform-origin:left center;
@@ -100,7 +100,7 @@ body{
   left:50%;
   width:144px;
   height:96px;
-  z-index:1503; /* ηθοποιός > μάρμαρο/ελατήριο */
+  z-index:157; /* ηθοποιός > ελατήριο */
   pointer-events:none;
 }
 .actor img{
@@ -118,32 +118,7 @@ body{
   height:2px;
   background:#aaa;
   z-index:155;
-  pointer-events:non
-/* “Μάρμαρο” – ζώνη ακρίβειας (οριζόντια έκταση ορίζεται από JS σε m)
-   ΣΗΜ: z-index ώστε να είναι ΠΑΝΩ από το κοινό αλλά ΚΑΤΩ από τον ηθοποιό. */
-.marble-track{
-  position:absolute;
-  left:50%;
-  bottom:0;
-  height:0;
-  width:0;
-  z-index:1501;
   pointer-events:none;
-  border-radius:0; /* ΑΠΟΛΥΤΩΣ ορθογώνιο */
-  background:
-    linear-gradient(180deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0) 70%),
-    repeating-linear-gradient(135deg, rgba(255,255,255,0.28) 0 7px, rgba(0,0,0,0) 7px 20px),
-    linear-gradient(to right, rgba(28,120,95,0.95), rgba(140,230,195,0.95), rgba(28,120,95,0.95));
-  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.25);
-  opacity:0.95;
-  display:none;
-}
-.marble-track.ghost{
-  opacity:0.35;
-  filter:grayscale(1) brightness(1.12);
-}
-
-e;
 }
 
 /* Κοινό */
@@ -279,7 +254,7 @@ e;
   right:10px;
   top:44px;
   width:220px;
-  z-index:262;
+  z-index: 2200;
   background:rgba(0,0,0,.55);
   color:#fff;
   border:1px solid rgba(255,255,255,.25);
@@ -330,7 +305,7 @@ e;
   height:120px;          /* μικρότερο ύψος */
   top:calc(44px + 28vh + 8px);
   display:none;
-  z-index:266;
+  z-index: 2200;
   border:1px dashed rgba(255,255,255,.25);
   pointer-events:none;
 }
@@ -343,7 +318,7 @@ e;
   height:120px;          /* ίδιο μικρό ύψος */
   top:calc(44px + 28vh + 8px + 120px + 8px);
   display:none;
-  z-index:266;
+  z-index: 2200;
   border:1px dashed rgba(255,255,255,.25);
   pointer-events:none;
 }
@@ -353,7 +328,7 @@ e;
   position:absolute;
   right:10px;
   top:calc(44px + 28vh + 8px + 120px + 8px + 120px + 8px);
-  z-index:268;
+  z-index: 2200;
   background:rgba(0,0,0,.6);
   color:#fff;
   border:1px solid rgba(255,255,255,.25);
@@ -379,7 +354,7 @@ e;
   padding:6px 8px;
   font-size:14px;
   line-height:1.45;
-  z-index:260;
+  z-index: 2200;
   display:none;
 }
 .laws h4{
@@ -397,7 +372,7 @@ e;
   left:10px;
   top:calc(44px + 220px);
   width:225px;
-  z-index:259;
+  z-index: 2200;
   transform:translateY(-80px); /* λίγο πιο κάτω για να σκεπάζονται λιγότερο */
 }
 .law-charts canvas{
@@ -419,7 +394,7 @@ e;
   font-family:"Courier New",monospace;
   color:#aaa;
   pointer-events:none;
-  z-index:270;
+  z-index: 2200;
 }
 .ruler::before{
   content:'';
@@ -918,26 +893,83 @@ e;
 .startbreak button,
 .startbreak .start-btn{ display:block; margin:0 auto; }
 
+
 /* ===============================
-   EXIT MASK (STROBE EXIT)
-   Καλύπτει ΜΟΝΟ τη δεξιά άκρη της ΚΕΝΤΡΙΚΗΣ σκηνής (18%–82%),
-   στο ίδιο χρώμα με τα πλαϊνά “πάνελ/κουρτίνες”.
-   Στόχος: οι ομιλητές να “χάνονται” όταν περνάνε δεξιά,
-   χωρίς να καλύπτονται τα δεξιά γραφήματα/πίνακες.
+   EXIT MASK (STROBE EXIT) v4
+   - Πέτασμα μπροστά από ομιλητές
+   - Panels/γραφήματα μπροστά από πέτασμα
+   - Πέτασμα αγκυρωμένο κάτω-δεξιά (δεξιό πάνελ/κουρτίνα)
    =============================== */
 
+/* Ανέβασε panels/γραφήματα πάνω από το πέτασμα */
+.clock,
+.measure-box,
+#xtChart,
+#xSinChart,
+.params-box,
+.laws,
+.law-charts{
+  z-index: 2200;
+}
+
+/* Το πέτασμα: δεξιά ζώνη (18%), κάτω μέρος */
 .exit-panel-mask{
   position:absolute;
-  left: calc(18% + 64% - 170px);
-  width:170px;
+
+  /* ΚΑΤΩ-ΔΕΞΙΑ ΓΩΝΙΑ της ΚΕΝΤΡΙΚΗΣ σκηνής (18%–82%) */
+  right:18%;
   bottom:0;
+
+  width:170px;
   height:46vh;
-  background: linear-gradient(180deg, #300000 0%, #1a0000 100%);
-  z-index:1005; /* πάνω από viewers (1000), κάτω από “blackout” curtain (5000) */
+
+  /* ίδιο look με τα πλαϊνά panels/κουρτίνες */
+  background:linear-gradient(to left,#300000,#1a0000);
+  box-shadow:inset 6px 0 10px rgba(0,0,0,.6);
+
+  /* layering: ομιλητές < πέτασμα < panels/γραφήματα */
+  z-index:2100;
+
   pointer-events:none;
   display:none;
 }
 
 body.exit-mask-active .exit-panel-mask{
   display:block;
+}
+
+
+/* ===============================
+   MARBLE TRACK
+   - Κύριο μάρμαρο: -3..+3 (θέση/πλάτος δίνονται από JS)
+   - Ghost δοκός: -5..+5 (μόνο όταν εμφανίζεται ο ghost)
+   - Πλήρως ορθογώνιο (χωρίς rounded άκρες)
+   =============================== */
+
+.marble-track{
+  position:absolute;
+  display:none;              /* εμφανίζεται από JS όταν έχει νόημα */
+  pointer-events:none;
+
+  /* ορθογώνιο */
+  border-radius:0;
+
+  /* “πράσινο με άσπρα” – marble-ish νερά */
+  background:
+    repeating-linear-gradient(135deg,
+      rgba(255,255,255,.28) 0 6px,
+      rgba(255,255,255,0) 6px 20px),
+    linear-gradient(90deg,#2f7d57 0%, #2a6f4d 45%, #2f7d57 100%);
+  border:1px solid rgba(255,255,255,.22);
+  box-shadow:0 6px 18px rgba(0,0,0,.35);
+
+  /* πάνω από τη “γραμμή δαπέδου”, κάτω από τον ηθοποιό */
+  z-index:156;
+}
+
+.marble-track.ghost{
+  /* πιο “τεχνικό”/δοκός – αφήνουμε το opacity να το ορίζει το JS */
+  border:1px dashed rgba(255,255,255,.35);
+  box-shadow:none;
+  filter:brightness(1.05);
 }
