@@ -1960,7 +1960,7 @@ async function strobeExitWalk(){
   const flashOffMs = 100;   // πόσο μένει “σκοτάδι” κάθε flash (και αλλάζουμε θέση μέσα στο σκοτάδι)
   const holdLitMs  = 520;  // μετά από burst: φώτα ανοιχτά για λίγο (να “παίξει” η στιγμή)
   const preBlackMs = 420;  // πρώτο σκοτάδι (για να φύγει ο πίνακας πριν αρχίσει το περπάτημα)
-  const finalBlackMs = 1200; // τελικό σκοτάδι πριν εξαφανιστούν + αλλάξει το κοινό
+  const finalBlackMs = 2200; // τελικό σκοτάδι πριν εξαφανιστούν + αλλάξει το κοινό
 
   // στόχοι κίνησης
   const centerMeetX  = stageW*0.50;
@@ -2119,10 +2119,13 @@ async function strobeExitWalk(){
   await strobeBurst(2, 9);
   await strobeBurst(3, 7);
 
-  // --- 3) Τελικό σκοτάδι → εξαφανίζονται + αλλάζει το κοινό ---
+  // --- 3) Τελικό σκοτάδι → αλλαγές ΓΙΝΟΝΤΑΙ μέσα στο σκοτάδι ---
   curtain.style.opacity='1';
-  await TM.sleep(finalBlackMs);
 
+  // μικρό buffer ώστε να «γράψει» το μαύρο πριν αλλάξουμε οτιδήποτε
+  await TM.sleep(140);
+
+  // μέσα στο σκοτάδι: εξαφανίζονται + αλλάζει το κοινό + εμφανίζεται το “fake” act3
   hideAllSpeakers();
   if(foyerBubble) foyerBubble.style.display='none';
   if(actBubble)   actBubble.style.display='none';
@@ -2130,6 +2133,9 @@ async function strobeExitWalk(){
   // αφήνουμε άδειο χώρο + “fake” πράξη 3
   swapAudienceFinal();
   showAct3Fake();
+
+  // κρατάμε το σκοτάδι λίγο παραπάνω για να μη φαίνεται “τηλεμεταφορά”
+  await TM.sleep(finalBlackMs);
 
   // φώτα ON: άδεια αίθουσα
   curtain.style.opacity='0';
