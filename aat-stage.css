@@ -999,3 +999,22 @@ body.exit-mask-active .exit-panel-mask{
       rgba(255,255,255,0.0) 22px
     );
 }
+
+/* --- Layer fix: ensure dialogs/bubbles are never covered by the A-ω-φ0 params box --- */
+/* params box stays aligned with right panels/charts layer */
+.params-box, #paramsBox, .paramsPanel{
+  z-index: 2199 !important;
+}
+
+/* dialog bubbles ABOVE params box (and above panels/charts if they overlap) */
+.thought-bubble,
+.bubble,
+.dialog-bubble,
+#bubble,
+#bubbleLeft,
+#bubbleRight,
+#dialogBubble,
+#dialogLeft,
+#dialogRight{
+  z-index: 2300 !important;
+}
