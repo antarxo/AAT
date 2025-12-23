@@ -168,6 +168,8 @@
 <body class="intro-open">
 
   <div class="strobe-curtain" id="strobeCurtain" aria-hidden="true"></div>
+  <div id="exitMaskLeft" class="exit-mask exit-mask-left" aria-hidden="true"></div>
+  <div id="exitMaskRight" class="exit-mask exit-mask-right" aria-hidden="true"></div>
 
 <div class="stage" id="stage">
   <!-- Κουμπιά γλώσσας -->
@@ -240,6 +242,8 @@
 
   <img id="spring" class="spring" src="spring.png" alt="ελατήριο">
   <div class="actor" id="actor"><img src="skater.png" alt="Skater"></div>
+  <div class="marble-track" id="marbleTrack" aria-hidden="true"></div>
+  <div class="marble-track ghost" id="marbleTrackGhost" aria-hidden="true"></div>
   <div class="floor"></div>
 
   <img class="audience-extra" id="audienceExtra" src="koino_extra.png" alt="έξτρα κοινό">
@@ -254,8 +258,7 @@
   </div>
 
   <!-- Μάσκα εξόδου (κρύβει ομιλητές όταν “βγαίνουν” δεξιά από την κεντρική σκηνή) -->
-  <div class="exit-screen-mask exit-screen-mask-left" id="exitMaskLeft" aria-hidden="true"></div>
-  <div class="exit-screen-mask exit-screen-mask-right" id="exitMaskRight" aria-hidden="true"></div>
+  <div class="exit-panel-mask" id="exitMask" aria-hidden="true"></div>
 
   <div class="thought-bubble" id="bubble0">
     <div class="text"></div>
@@ -837,6 +840,16 @@ function applyUITextFromUI(){
   if(btnFoyerGo      && ui.btnFoyerGo      != null) btnFoyerGo.textContent      = ui.btnFoyerGo;
   if(startBreakMsg && ui.startBtn != null) startBreakMsg.textContent = ui.startBtn;
 
+  // Τίτλοι Πράξης 3 (όπως και των άλλων): από uiTitles.act3
+  const act3BreakTitleEl = document.getElementById('act3BreakTitle');
+  const act3TeaserEl = document.getElementById('act3Teaser');
+  if(UI_TITLES && UI_TITLES.act3 && UI_TITLES.act3.signTitle != null){
+    const t3 = expandDynTemplate(String(UI_TITLES.act3.signTitle));
+    if(act3BreakTitleEl) act3BreakTitleEl.textContent = t3;
+    if(act3TeaserEl) act3TeaserEl.textContent = t3;
+  }
+
+
   if(btnPause   && ui.btnPauseTitle != null) btnPause.title = ui.btnPauseTitle;
   if(btnPlay    && ui.btnPlayTitle  != null) btnPlay.title  = ui.btnPlayTitle;
   if(btnReset   && ui.btnResetTitle != null) btnReset.title = ui.btnResetTitle;
@@ -912,6 +925,63 @@ function setFoyerTitles(){
 
 
 /* ---------- Βοηθητικά για σκηνή ---------- */
+
+function updateMarbleTrack(){
+  const track = document.getElementById('marbleTrack');
+  const trackGhost = document.getElementById('marbleTrackGhost');
+  const actorImg = document.querySelector('#actor img');
+
+  if(!track || !actorImg || !stage) return;
+
+  // Το “μάρμαρο” υπάρχει μόνο στις Πράξεις 1 & 2.
+  const inActs = (phase==='act1' || phase==='act2');
+  if(!inActs){
+    track.style.display = 'none';
+    if(trackGhost) trackGhost.style.display = 'none';
+    return;
+  }
+
+  const stageRect = stage.getBoundingClientRect();
+  const aRect = actorImg.getBoundingClientRect();
+
+  // ΣΩΣΤΟ (σταθερό ως προς τη σκηνή): χρησιμοποιούμε το ΚΑΤΩ άκρο της “μεσαίας κουρτίνας”
+  // όπως θα ήταν στη ΘΕΣΗ ΗΡΕΜΙΑΣ της (κλειστή), όχι το τρέχον bounding box (που αλλάζει όταν ανοίγει).
+  // Από το CSS: top = (26% - 16px) και height = (44% + 24px)  => bottom = 70% + 8px.
+  const curtainBottomClosed = stageRect.top + (0.70 * stageRect.height) + 8;
+
+  // Κάθετα: ύψος “μαρμάρου” = (κάτω μεσαίας κουρτίνας) − (κάτω εικόνας ηθοποιού)
+  const h = Math.max(0, curtainBottomClosed - aRect.bottom);
+  // Απόσταση από το κάτω μέρος της σκηνής μέχρι το κάτω της μεσαίας κουρτίνας (στη θέση ηρεμίας)
+  const bottomPx = Math.max(0, stageRect.bottom - curtainBottomClosed);
+
+  // Οριζόντια έκταση μαρμάρου: ακριβώς από x=-3 m έως x=+3 m (σύστημα αναφοράς)
+  const cx = stage.clientWidth / 2;
+  const leftPx  = cx - 3*pxPerMeter;
+  const rightPx = cx + 3*pxPerMeter;
+  track.style.left   = leftPx + 'px';
+  track.style.width  = Math.max(0, rightPx - leftPx) + 'px';
+  track.style.bottom = bottomPx + 'px';
+  track.style.height = h + 'px';
+  track.style.display = (h>0) ? 'block' : 'none';
+
+  // Ghost “δοκός”/μάρμαρο: από -5 έως +5, μόνο όταν ο ghost είναι ορατός.
+  if(trackGhost){
+    const gVis = (typeof ghostVisibility==='number') ? ghostVisibility : 0;
+    if(phase==='act2' && gVis>0.02 && h>0){
+      const gLeft  = cx - 5*pxPerMeter;
+      const gRight = cx + 5*pxPerMeter;
+      trackGhost.style.left   = gLeft + 'px';
+      trackGhost.style.width  = Math.max(0, gRight - gLeft) + 'px';
+      trackGhost.style.bottom = bottomPx + 'px';
+      trackGhost.style.height = h + 'px';
+      trackGhost.style.display = 'block';
+      trackGhost.style.opacity = Math.min(0.65, 0.15 + 0.5*gVis).toString();
+    }else{
+      trackGhost.style.display = 'none';
+    }
+  }
+}
+
 
 function measureSpringNaturalSize(){
   if(!springEl) return;
@@ -1828,27 +1898,15 @@ function showAllViewerAvatars(){
 }
 
 async function runFoyerExitStrobe(){
-  // Μικρό κάλεσμα αποχώρησης (όπως ζήτησες)
-  await addFoyerRow({
-    viewer: 1,
-    left:  (currentLang==='en') ? 'Ok. Shall we leave?' : 'Οκ. τι λέτε, αποχωρούμε;',
-    right: '',
-    typeMs: 1400,
-    pauseMs: 200
-  });
-  await addFoyerRow({
-    viewer: 2,
-    left:  (currentLang==='en') ? "Let's go." : 'Πάμε.',
-    right: '',
-    typeMs: 700,
-    pauseMs: 350
-  });
-
+  // Οι διάλογοι αποχώρησης πλέον βρίσκονται στο dialogs-*.json (FOYER).
+  // Εδώ μένει μόνο το οπτικό εφέ αποχώρησης.
   await strobeExitWalk();
 }
 
 async function strobeExitWalk(){
   const curtain = document.getElementById('strobeCurtain');
+  const maskL   = document.getElementById('exitMaskLeft');
+  const maskR   = document.getElementById('exitMaskRight');
   if(!curtain || !viewersStrip || !stage) return;
 
   // Φροντίζουμε να φαίνονται όλοι οι ομιλητές (όρθιοι)
@@ -1860,8 +1918,9 @@ async function strobeExitWalk(){
   const foyerTitlebarEl = document.getElementById('foyerTitlebar');
   if(foyerTitlebarEl) foyerTitlebarEl.style.display='none';
 
-  // Enable exit mask so speakers can pass behind it on the right edge
-  document.body.classList.add('exit-mask-active');
+  // Masks OFF initially (θα ανάψουν μόνο στο split)
+  if(maskL) maskL.style.opacity = '0';
+  if(maskR) maskR.style.opacity = '0';
 
   // --- Strobe mode: blackout πάνω από ΟΛΗ τη σκηνή ---
   document.body.classList.add('strobe-active');
@@ -1878,9 +1937,6 @@ async function strobeExitWalk(){
     return;
   }
 
-  // κρατάμε αρχικές θέσεις για restore (αν χρειαστεί)
-  const orig = actors.map(el=>({el,left:el.style.left,bottom:el.style.bottom,opacity:el.style.opacity}));
-
   const stageRect = stage.getBoundingClientRect();
   const stageW = stageRect.width || 900;
 
@@ -1893,16 +1949,19 @@ async function strobeExitWalk(){
   const standB = baseBMax + 26; // «όρθιοι»
 
   // --- Strobe tuning (ρυθμίζεις εδώ) ---
-  const flashOnMs  = 26;   // πόσο μένει “αναμμένο” κάθε flash
-  const flashOffMs = 100;   // πόσο μένει “σκοτάδι” κάθε flash (και αλλάζουμε θέση μέσα στο σκοτάδι)
-  const holdLitMs  = 520;  // μετά από burst: φώτα ανοιχτά για λίγο (να “παίξει” η στιγμή)
-  const preBlackMs = 420;  // πρώτο σκοτάδι (για να φύγει ο πίνακας πριν αρχίσει το περπάτημα)
+  const flashOnMs   = 26;   // πόσο μένει “αναμμένο” κάθε flash
+  const flashOffMs  = 100;  // πόσο μένει “σκοτάδι” κάθε flash (αλλάζουμε θέση μέσα στο σκοτάδι)
+  const holdLitMs   = 720;  // μετά από burst: φώτα ανοιχτά για λίγο (να “σταθεί” η νέα θέση)
+  const preBlackMs  = 520;  // πρώτο σκοτάδι (φεύγει ο πίνακας)
+  const finalBlackMs= 1400; // ΤΕΛΙΚΟ blackout πριν εξαφανιστούν + koino_final
 
-  // στόχοι κίνησης (δεξιά άκρη)
-  const rightEdgeX   = stageW*0.90;
-  const rightEdgeX2  = stageW*0.94;
-  const approachX1   = stageW*0.74;
-  const approachX2   = stageW*0.82;
+  // targets
+  const centerX     = stageW*0.50;
+  const rightExitX  = stageW*0.94;
+  const leftExitX   = stageW*0.06;
+
+  // 1 και 2 (DOM order: 0,1) φεύγουν δεξιά — οι υπόλοιποι αριστερά
+  const groupRight = new Set([0,1]);
 
   // deterministic RNG
   let seed = 246813579;
@@ -1911,7 +1970,6 @@ async function strobeExitWalk(){
     return seed / 4294967296;
   };
   const lerp = (a,b,t)=>a+(b-a)*t;
-  const clamp01 = (t)=> (t<0?0:(t>1?1:t));
 
   const applyPose=(poses)=>{
     for(let i=0;i<n;i++){
@@ -1924,99 +1982,80 @@ async function strobeExitWalk(){
     }
   };
 
-  // Βρίσκουμε “τρέχουσες” x θέσεις (από left ή από διάταξη)
+  // “τρέχουσες” x θέσεις (fallback διάταξη)
   const currX = actors.map((el,i)=>{
     const v = parseFloat(el.style.left||'0');
     if(isFinite(v) && v!==0) return v;
-    // fallback: απλώνουμε αρχικά στη μέση
     const spread = (i-(n-1)/2) * 34;
     return stageW*0.52 + spread;
   });
 
-  // Φάσεις: 3–4 μαζέματα στη δεξιά άκρη, με “στρομπο-κίνηση” και μετά φώτα ON
-  
-// Ομάδες εξόδου: 1ος & 2ος δεξιά, οι υπόλοιποι αριστερά
-const groupRight = new Set([0,1]);
+  // Φάσεις:
+  // 0: σηκώνονται + μικρό shuffle
+  // 1: όλοι συναντιούνται στο κέντρο
+  // 2: split έξοδος (1&2 δεξιά, οι υπόλοιποι αριστερά) + ενεργοποίηση πετασμάτων
+  const buildPosesPhase = (phase, t)=>{
+    const poses=[];
+    for(let i=0;i<n;i++){
+      const pack = (i-(n-1)/2) * 26;
+      const jitterX = (rnd()-0.5)*3;
+      const jitterB = (rnd()-0.5)*2;
 
-// Φάσεις: (0) όλοι συγκλίνουν στο κέντρο, (1) split: ομάδα δεξιά/αριστερά
-const buildPosesPhase = (phase, t)=>{
-  const poses=[];
-  const centerX = stageW*0.50;
-  const packAll = (i)=> (i-(n-1)/2) * 30;
+      let xFrom = currX[i];
+      let xTo = xFrom;
 
-  // μικρό “ανθρώπινο” τρέμουλο
-  const jitterX = ()=> (rnd()-0.5)*3;
-  const jitterB = ()=> (rnd()-0.5)*2;
-
-  // βοηθητικό: index μέσα σε υπο-ομάδα
-  const rightIdx = [];
-  const leftIdx  = [];
-  for(let i=0;i<n;i++){
-    (groupRight.has(i)? rightIdx : leftIdx).push(i);
-  }
-  const rightPos = new Map(rightIdx.map((id,k)=>[id,k]));
-  const leftPos  = new Map(leftIdx.map((id,k)=>[id,k]));
-  const spreadGroup = (k, size)=> (k-(size-1)/2) * 28;
-
-  for(let i=0;i<n;i++){
-    let xFrom = currX[i];
-    let xTo;
-
-    if(phase===0){
-      // Συνάντηση στο κέντρο (όλοι)
-      xTo = lerp(xFrom, centerX + packAll(i)*0.35, t);
-    }else{
-      // Split έξοδος: 1&2 δεξιά, οι υπόλοιποι αριστερά
-      if(groupRight.has(i)){
-        const k = rightPos.get(i) ?? 0;
-        xTo = lerp(centerX + packAll(i)*0.35, stageW*0.92 + spreadGroup(k, rightIdx.length), t);
+      if(phase===0){
+        // λίγο προς το κέντρο, σαν να “μαζεύονται” πριν μιλήσουν
+        xTo = lerp(xFrom, centerX + pack*0.18, t);
+      }else if(phase===1){
+        // όλοι στο κέντρο (μικρή διάταξη για να μη πατήσουν ο ένας τον άλλον)
+        xTo = lerp(centerX + pack*0.18, centerX + pack*0.30, t);
       }else{
-        const k = leftPos.get(i) ?? 0;
-        xTo = lerp(centerX + packAll(i)*0.35, stageW*0.08 + spreadGroup(k, leftIdx.length), t);
+        // split exit
+        const spreadOut = pack*0.34;
+        if(groupRight.has(i)){
+          xTo = lerp(centerX + pack*0.30, rightExitX + spreadOut, t);
+        }else{
+          xTo = lerp(centerX + pack*0.30, leftExitX  + spreadOut, t);
+        }
       }
-    }
 
-    poses.push({x: xTo + jitterX(), b: standB + jitterB()});
-  }
-  return poses;
-};
+      poses.push({x: xTo + jitterX, b: standB + jitterB});
+    }
+    return poses;
+  };
 
   const strobeBurst = async (phase, frames)=>{
-    // κάνουμε burst flashes, και στο τέλος κρατάμε φώτα ON
     for(let f=0; f<frames; f++){
       // σκοτάδι: αλλάζουμε θέση
       curtain.style.opacity='1';
       const t = frames<=1 ? 1 : (f/(frames-1));
-      const poses = buildPosesPhase(phase, t);
-      applyPose(poses);
+      applyPose(buildPosesPhase(phase, t));
       await TM.sleep(flashOffMs);
 
-      // flash: δείχνουμε το “καρέ”
+      // flash: δείχνουμε το καρέ
       curtain.style.opacity='0';
       await TM.sleep(flashOnMs);
     }
-    // στο τέλος, φώτα ON για να “ανασάνει” η στιγμή
+    // κρατάμε φώτα ON λίγο
     curtain.style.opacity='0';
     await TM.sleep(holdLitMs);
 
-    // ενημερώνουμε τις currX για την επόμενη φάση (τελευταία pose της φάσης)
+    // ενημερώνουμε currX
     const posesFinal = buildPosesPhase(phase, 1);
     for(let i=0;i<n;i++) currX[i] = posesFinal[i].x;
   };
 
   const hideBoardDuringFirstBlack = async ()=>{
-    // Μαυροπίνακας φουαγιέ: φεύγει ΜΕΣΑ στο πρώτο σκοτάδι
     const wrap = document.querySelector('#foyer .wrap');
     if(wrap){
       wrap.classList.add('foyer-board-exit');
-      // μέσα στο σκοτάδι δεν μας νοιάζει να “δούμε” animation, απλά να εξαφανιστεί
       await TM.sleep(520);
       wrap.style.display = 'none';
     }
   };
 
   const showAct3Fake = ()=>{
-    // Fake Act 3 panel with button (non-functional), plus Act 3 titles on signboard
     const teaser = document.getElementById('act3Teaser');
     if(teaser){
       teaser.style.display='none';
@@ -2024,9 +2063,7 @@ const buildPosesPhase = (phase, t)=>{
     }
 
     const act3Break = document.getElementById('act3Break');
-    if(act3Break){
-      act3Break.style.display='flex';
-    }
+    if(act3Break) act3Break.style.display='flex';
 
     phase='act3';
     applySignboardForPhase('act3');
@@ -2053,37 +2090,38 @@ const buildPosesPhase = (phase, t)=>{
   await TM.sleep(preBlackMs);
   await boardExitPromise;
 
-  // --- 2) 2 φάσεις: (α) συνάντηση στο κέντρο, (β) split έξοδος ---
-  await strobeBurst(0, 9);
-  await strobeBurst(1, 10);
+  // --- 2) Burst 1: όλοι στο κέντρο ---
+  await strobeBurst(0, 7);
+  await strobeBurst(1, 8);
 
-  // --- 3) Τελικό σκοτάδι → εξαφανίζονται + αλλάζει το κοινό ---
+  // --- 3) Burst 2: split έξοδος + ενεργοποίηση πετασμάτων ---
+  if(maskL) maskL.style.opacity = '1';
+  if(maskR) maskR.style.opacity = '1';
+  await strobeBurst(2, 10);
+
+  // --- 4) Τελικό σκοτάδι → εξαφανίζονται + αλλάζει το κοινό ---
   curtain.style.opacity='1';
-  await TM.sleep(2200);
+  await TM.sleep(finalBlackMs);
 
   hideAllSpeakers();
   if(foyerBubble) foyerBubble.style.display='none';
   if(actBubble)   actBubble.style.display='none';
 
-  // αφήνουμε άδειο χώρο + “fake” πράξη 3
   swapAudienceFinal();
   showAct3Fake();
 
   // φώτα ON: άδεια αίθουσα
   curtain.style.opacity='0';
-  await TM.sleep(1100);
+  await TM.sleep(1400);
 
-  // βγαίνουμε από strobe mode (κρατάμε την τελική εικόνα)
+  // cleanup
   document.body.classList.remove('strobe-active');
   curtain.style.display='none';
   curtain.style.opacity='1';
-
-  // Exit mask not needed after final shot
-  document.body.classList.remove('exit-mask-active');
-
-  // δεν κάνουμε restore των avatars: η ιδέα είναι ότι “έφυγαν”.
-  // (κρατάμε όμως τα orig για ασφάλεια σε reset, το οποίο ξαναχτίζει state ούτως ή άλλως)
+  if(maskL) maskL.style.opacity = '0';
+  if(maskR) maskR.style.opacity = '0';
 }
+
 
 async function foyerBoardExitWithTeaser(){
   const wrap = document.querySelector('#foyer .wrap');
@@ -2484,6 +2522,7 @@ async function runAct2(){
   }
 
   stage.classList.remove('open');
+  updateMarbleTrack();
   setAudienceLights(true);
   phase='between2andFoyer';
   TM.setTimeout(()=>{ foyerBreak.style.display='flex'; },1200);
@@ -2494,6 +2533,7 @@ async function runAct2(){
 function closeCurtainToAct2(){
   return new Promise(resolve=>{
     stage.classList.remove('open');
+  updateMarbleTrack();
     setAudienceLights(true);
     TM.setTimeout(()=>{
       setBookUnlocked(true);
@@ -2804,6 +2844,8 @@ function bootFromQuery(){
 
   // reset any exit/strobe leftovers
   document.body.classList.remove('strobe-active','exit-mask-active');
+  const __mL=document.getElementById('exitMaskLeft'); if(__mL) __mL.style.opacity='0';
+  const __mR=document.getElementById('exitMaskRight'); if(__mR) __mR.style.opacity='0';
   const act3BreakEl = document.getElementById('act3Break');
   if(act3BreakEl) act3BreakEl.style.display='none';
   const act3TeaserEl = document.getElementById('act3Teaser');
@@ -2843,6 +2885,8 @@ function resetShow(){
 
   // reset any exit/strobe leftovers
   document.body.classList.remove('strobe-active','exit-mask-active');
+  const __mL=document.getElementById('exitMaskLeft'); if(__mL) __mL.style.opacity='0';
+  const __mR=document.getElementById('exitMaskRight'); if(__mR) __mR.style.opacity='0';
   const act3BreakEl = document.getElementById('act3Break');
   if(act3BreakEl) act3BreakEl.style.display='none';
   const act3TeaserEl = document.getElementById('act3Teaser');
@@ -2908,6 +2952,7 @@ function resetShow(){
   }
 
   stage.classList.remove('open');
+  updateMarbleTrack();
   markerEl.style.left=centerX()+'px';
   markerGhostEl.style.left=centerX()+'px';
 
@@ -3133,6 +3178,9 @@ function animate(now){
   }else{
     markerGhostEl.style.opacity='0';
   }
+
+  // “Μάρμαρο” (Act 1 & 2) + ghost δοκός (μόνο όταν εμφανίζεται ο ghost)
+  updateMarbleTrack();
 
   if(uXT)  drawXTChart();
   if(vCan) drawVelocityChart();
