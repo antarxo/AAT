@@ -973,3 +973,21 @@ body.exit-mask-active .exit-panel-mask{
   box-shadow:none;
   filter:brightness(1.05);
 }
+
+/* Ghost marble: make it greyer + more transparent (no size/position changes) */
+#marbleTrackGhost,
+.marble-track.ghost{
+  opacity: 0.45;
+  filter: grayscale(1);
+}
+#marbleTrackGhost{
+  /* override vivid green veins with a neutral grey marble look */
+  background:
+    linear-gradient(180deg, rgba(245,245,245,0.85), rgba(205,205,205,0.85)),
+    repeating-linear-gradient(135deg,
+      rgba(255,255,255,0.0) 0px,
+      rgba(255,255,255,0.0) 10px,
+      rgba(255,255,255,0.18) 12px,
+      rgba(255,255,255,0.0) 22px
+    );
+}
