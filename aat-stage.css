@@ -394,7 +394,7 @@ body{
   font-family:"Courier New",monospace;
   color:#aaa;
   pointer-events:none;
-  z-index: 2200;
+  z-index:  159;
 }
 .ruler::before{
   content:'';
