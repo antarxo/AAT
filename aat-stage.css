@@ -254,7 +254,7 @@ body{
   right:10px;
   top:44px;
   width:220px;
-  z-index: 2200;
+  z-index:262;
   background:rgba(0,0,0,.55);
   color:#fff;
   border:1px solid rgba(255,255,255,.25);
@@ -305,7 +305,7 @@ body{
   height:120px;          /* μικρότερο ύψος */
   top:calc(44px + 28vh + 8px);
   display:none;
-  z-index: 2200;
+  z-index:266;
   border:1px dashed rgba(255,255,255,.25);
   pointer-events:none;
 }
@@ -318,7 +318,7 @@ body{
   height:120px;          /* ίδιο μικρό ύψος */
   top:calc(44px + 28vh + 8px + 120px + 8px);
   display:none;
-  z-index: 2200;
+  z-index:266;
   border:1px dashed rgba(255,255,255,.25);
   pointer-events:none;
 }
@@ -328,7 +328,7 @@ body{
   position:absolute;
   right:10px;
   top:calc(44px + 28vh + 8px + 120px + 8px + 120px + 8px);
-  z-index: 2200;
+  z-index:268;
   background:rgba(0,0,0,.6);
   color:#fff;
   border:1px solid rgba(255,255,255,.25);
@@ -354,7 +354,7 @@ body{
   padding:6px 8px;
   font-size:14px;
   line-height:1.45;
-  z-index: 2200;
+  z-index:260;
   display:none;
 }
 .laws h4{
@@ -372,7 +372,7 @@ body{
   left:10px;
   top:calc(44px + 220px);
   width:225px;
-  z-index: 2200;
+  z-index:259;
   transform:translateY(-80px); /* λίγο πιο κάτω για να σκεπάζονται λιγότερο */
 }
 .law-charts canvas{
@@ -394,7 +394,7 @@ body{
   font-family:"Courier New",monospace;
   color:#aaa;
   pointer-events:none;
-  z-index:  159;
+  z-index:270;
 }
 .ruler::before{
   content:'';
@@ -895,99 +895,40 @@ body{
 
 
 /* ===============================
-   EXIT MASK (STROBE EXIT) v4
-   - Πέτασμα μπροστά από ομιλητές
-   - Panels/γραφήματα μπροστά από πέτασμα
-   - Πέτασμα αγκυρωμένο κάτω-δεξιά (δεξιό πάνελ/κουρτίνα)
+   EXIT MASKS (FOYER EXIT)
+   Fixed to SCREEN corners (κάτω-αριστερά / κάτω-δεξιά).
+   Layering στόχος:
+     viewers (1000)  <  masks  <  panels/γραφήματα  <  controls (2000) / strobe curtain (5000)
    =============================== */
 
-/* Ανέβασε panels/γραφήματα πάνω από το πέτασμα */
-.clock,
-.measure-box,
-#xtChart,
-#xSinChart,
-.params-box,
-.laws,
-.law-charts{
-  z-index: 2200;
-}
+.exit-panel-mask{ display:none !important; } /* legacy */
 
-/* Το πέτασμα: δεξιά ζώνη (18%), κάτω μέρος */
-.exit-panel-mask{
-  position:absolute;
-
-  /* ΚΑΤΩ-ΔΕΞΙΑ ΓΩΝΙΑ της ΚΕΝΤΡΙΚΗΣ σκηνής (18%–82%) */
-  right:18%;
+.exit-screen-mask{
+  position:fixed;
   bottom:0;
-
-  width:170px;
+  width:18vw;
   height:46vh;
-
-  /* ίδιο look με τα πλαϊνά panels/κουρτίνες */
+  pointer-events:none;
+  opacity:0;
+  z-index:1500; /* πάνω από viewers */
+}
+.exit-screen-mask-left{
+  left:0;
+  background:linear-gradient(to right,#300000,#1a0000);
+  box-shadow:inset -6px 0 10px rgba(0,0,0,.6);
+}
+.exit-screen-mask-right{
+  right:0;
   background:linear-gradient(to left,#300000,#1a0000);
   box-shadow:inset 6px 0 10px rgba(0,0,0,.6);
-
-  /* layering: ομιλητές < πέτασμα < panels/γραφήματα */
-  z-index:2100;
-
-  pointer-events:none;
-  display:none;
 }
+body.exit-mask-active .exit-screen-mask{ opacity:1; }
 
-body.exit-mask-active .exit-panel-mask{
-  display:block;
-}
-
-
-/* ===============================
-   MARBLE TRACK
-   - Κύριο μάρμαρο: -3..+3 (θέση/πλάτος δίνονται από JS)
-   - Ghost δοκός: -5..+5 (μόνο όταν εμφανίζεται ο ghost)
-   - Πλήρως ορθογώνιο (χωρίς rounded άκρες)
-   =============================== */
-
-.marble-track{
-  position:absolute;
-  display:none;              /* εμφανίζεται από JS όταν έχει νόημα */
-  pointer-events:none;
-
-  /* ορθογώνιο */
-  border-radius:0;
-
-  /* “πράσινο με άσπρα” – marble-ish νερά */
-  background:
-    repeating-linear-gradient(135deg,
-      rgba(255,255,255,.28) 0 6px,
-      rgba(255,255,255,0) 6px 20px),
-    linear-gradient(90deg,#2f7d57 0%, #2a6f4d 45%, #2f7d57 100%);
-  border:1px solid rgba(255,255,255,.22);
-  box-shadow:0 6px 18px rgba(0,0,0,.35);
-
-  /* πάνω από τη “γραμμή δαπέδου”, κάτω από τον ηθοποιό */
-  z-index:156;
-}
-
-.marble-track.ghost{
-  /* πιο “τεχνικό”/δοκός – αφήνουμε το opacity να το ορίζει το JS */
-  border:1px dashed rgba(255,255,255,.35);
-  box-shadow:none;
-  filter:brightness(1.05);
-}
-
-/* Ghost marble: make it greyer + more transparent (no size/position changes) */
-#marbleTrackGhost,
-.marble-track.ghost{
-  opacity: 0.45;
-  filter: grayscale(1);
-}
-#marbleTrackGhost{
-  /* override vivid green veins with a neutral grey marble look */
-  background:
-    linear-gradient(180deg, rgba(245,245,245,0.85), rgba(205,205,205,0.85)),
-    repeating-linear-gradient(135deg,
-      rgba(255,255,255,0.0) 0px,
-      rgba(255,255,255,0.0) 10px,
-      rgba(255,255,255,0.18) 12px,
-      rgba(255,255,255,0.0) 22px
-    );
+/* Panels/graphs ABOVE the masks */
+.laws,
+.law-charts,
+.measure-box,
+#xtChart,
+#xSinChart{
+  z-index:1600 !important;
 }
