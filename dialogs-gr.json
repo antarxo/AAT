@@ -896,7 +896,7 @@
       "signTitle": "Πράξη 3η: Η Ενέργεια στα ... Αλγεβρικά!",
       "signLineA": "Πρωταγωνιστεί ο ταλαντωτής (m₁, D₁) και οι θεαποιοί",
       "signLineB": "στον μονόλογο <span class=\"hl\">«ατέλειωτο πήγαινε έλα»</span>... επί σκηνής!",
-      "signLineC": "m₁={m1}Kg , D₁={D1}N/m , E<sub>Μηχ.</sub>={Emech}j",
+      "signLineC": "m₁={m1}Kg , D₁={D1}N/m , EΜηχ.={Emech}j",
       "signLineD": ""
     },
     "foyer": {
@@ -908,6 +908,7 @@
     }
   }
 }
+
 
 
 
