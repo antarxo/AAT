@@ -168,8 +168,6 @@
 <body class="intro-open">
 
   <div class="strobe-curtain" id="strobeCurtain" aria-hidden="true"></div>
-  <div id="exitMaskLeft" class="exit-mask exit-mask-left" aria-hidden="true"></div>
-  <div id="exitMaskRight" class="exit-mask exit-mask-right" aria-hidden="true"></div>
 
 <div class="stage" id="stage">
   <!-- Κουμπιά γλώσσας -->
@@ -259,6 +257,7 @@
 
   <!-- Μάσκα εξόδου (κρύβει ομιλητές όταν “βγαίνουν” δεξιά από την κεντρική σκηνή) -->
   <div class="exit-panel-mask" id="exitMask" aria-hidden="true"></div>
+  <div class="exit-panel-mask left" id="exitMaskLeft" aria-hidden="true"></div>
 
   <div class="thought-bubble" id="bubble0">
     <div class="text"></div>
@@ -1905,8 +1904,6 @@ async function runFoyerExitStrobe(){
 
 async function strobeExitWalk(){
   const curtain = document.getElementById('strobeCurtain');
-  const maskL   = document.getElementById('exitMaskLeft');
-  const maskR   = document.getElementById('exitMaskRight');
   if(!curtain || !viewersStrip || !stage) return;
 
   // Φροντίζουμε να φαίνονται όλοι οι ομιλητές (όρθιοι)
@@ -1918,9 +1915,8 @@ async function strobeExitWalk(){
   const foyerTitlebarEl = document.getElementById('foyerTitlebar');
   if(foyerTitlebarEl) foyerTitlebarEl.style.display='none';
 
-  // Masks OFF initially (θα ανάψουν μόνο στο split)
-  if(maskL) maskL.style.opacity = '0';
-  if(maskR) maskR.style.opacity = '0';
+  // Enable exit mask so speakers can pass behind it on the right edge
+  document.body.classList.add('exit-mask-active');
 
   // --- Strobe mode: blackout πάνω από ΟΛΗ τη σκηνή ---
   document.body.classList.add('strobe-active');
@@ -1930,12 +1926,23 @@ async function strobeExitWalk(){
   const actors=[...viewersStrip.querySelectorAll('.viewer-avatar')]
     .filter(el=>el && el.style.display!=='none');
   const n = actors.length;
+
+  // split: οι 1 & 2 δεξιά, οι υπόλοιποι αριστερά (0-based: 0,1)
+  const RIGHT_SET = new Set([0,1]);
+  const rightIdxs = Array.from({length:n},(_,i)=>i).filter(i=>RIGHT_SET.has(i));
+  const leftIdxs  = Array.from({length:n},(_,i)=>i).filter(i=>!RIGHT_SET.has(i));
+  const rankIn = (arr,i)=>arr.indexOf(i);
+  const spreadIn = (arr,i)=> (rankIn(arr,i) - (arr.length-1)/2) * 26;
+
   if(!n){
     document.body.classList.remove('strobe-active');
     curtain.style.display='none';
     curtain.style.opacity='1';
     return;
   }
+
+  // κρατάμε αρχικές θέσεις για restore (αν χρειαστεί)
+  const orig = actors.map(el=>({el,left:el.style.left,bottom:el.style.bottom,opacity:el.style.opacity}));
 
   const stageRect = stage.getBoundingClientRect();
   const stageW = stageRect.width || 900;
@@ -1949,19 +1956,20 @@ async function strobeExitWalk(){
   const standB = baseBMax + 26; // «όρθιοι»
 
   // --- Strobe tuning (ρυθμίζεις εδώ) ---
-  const flashOnMs   = 26;   // πόσο μένει “αναμμένο” κάθε flash
-  const flashOffMs  = 100;  // πόσο μένει “σκοτάδι” κάθε flash (αλλάζουμε θέση μέσα στο σκοτάδι)
-  const holdLitMs   = 720;  // μετά από burst: φώτα ανοιχτά για λίγο (να “σταθεί” η νέα θέση)
-  const preBlackMs  = 520;  // πρώτο σκοτάδι (φεύγει ο πίνακας)
-  const finalBlackMs= 1400; // ΤΕΛΙΚΟ blackout πριν εξαφανιστούν + koino_final
+  const flashOnMs  = 26;   // πόσο μένει “αναμμένο” κάθε flash
+  const flashOffMs = 100;   // πόσο μένει “σκοτάδι” κάθε flash (και αλλάζουμε θέση μέσα στο σκοτάδι)
+  const holdLitMs  = 520;  // μετά από burst: φώτα ανοιχτά για λίγο (να “παίξει” η στιγμή)
+  const preBlackMs = 420;  // πρώτο σκοτάδι (για να φύγει ο πίνακας πριν αρχίσει το περπάτημα)
+  const finalBlackMs = 1200; // τελικό σκοτάδι πριν εξαφανιστούν + αλλάξει το κοινό
 
-  // targets
-  const centerX     = stageW*0.50;
-  const rightExitX  = stageW*0.94;
-  const leftExitX   = stageW*0.06;
+  // στόχοι κίνησης
+  const centerMeetX  = stageW*0.50;
+  const centerPackX  = stageW*0.50;
 
-  // 1 και 2 (DOM order: 0,1) φεύγουν δεξιά — οι υπόλοιποι αριστερά
-  const groupRight = new Set([0,1]);
+  const rightEdgeX   = stageW*0.90;
+  const rightEdgeX2  = stageW*1.04;
+  const leftEdgeX    = stageW*0.10;
+  const leftEdgeX2   = -stageW*0.04;
 
   // deterministic RNG
   let seed = 246813579;
@@ -1970,6 +1978,7 @@ async function strobeExitWalk(){
     return seed / 4294967296;
   };
   const lerp = (a,b,t)=>a+(b-a)*t;
+  const clamp01 = (t)=> (t<0?0:(t>1?1:t));
 
   const applyPose=(poses)=>{
     for(let i=0;i<n;i++){
@@ -1982,42 +1991,49 @@ async function strobeExitWalk(){
     }
   };
 
-  // “τρέχουσες” x θέσεις (fallback διάταξη)
+  // Βρίσκουμε “τρέχουσες” x θέσεις (από left ή από διάταξη)
   const currX = actors.map((el,i)=>{
     const v = parseFloat(el.style.left||'0');
     if(isFinite(v) && v!==0) return v;
+    // fallback: απλώνουμε αρχικά στη μέση
     const spread = (i-(n-1)/2) * 34;
     return stageW*0.52 + spread;
   });
 
-  // Φάσεις:
-  // 0: σηκώνονται + μικρό shuffle
-  // 1: όλοι συναντιούνται στο κέντρο
-  // 2: split έξοδος (1&2 δεξιά, οι υπόλοιποι αριστερά) + ενεργοποίηση πετασμάτων
+  // Φάσεις: 3–4 μαζέματα στη δεξιά άκρη, με “στρομπο-κίνηση” και μετά φώτα ON
   const buildPosesPhase = (phase, t)=>{
     const poses=[];
     for(let i=0;i<n;i++){
-      const pack = (i-(n-1)/2) * 26;
+      const spread = (i-(n-1)/2) * 26; // pack
       const jitterX = (rnd()-0.5)*3;
       const jitterB = (rnd()-0.5)*2;
 
       let xFrom = currX[i];
-      let xTo = xFrom;
+      let xTo;
 
       if(phase===0){
-        // λίγο προς το κέντρο, σαν να “μαζεύονται” πριν μιλήσουν
-        xTo = lerp(xFrom, centerX + pack*0.18, t);
+        // σηκώνονται + μικρή μετατόπιση προς το κέντρο
+        const pack1 = centerPackX + spread*0.18;
+        xTo = lerp(xFrom, pack1, t);
       }else if(phase===1){
-        // όλοι στο κέντρο (μικρή διάταξη για να μη πατήσουν ο ένας τον άλλον)
-        xTo = lerp(centerX + pack*0.18, centerX + pack*0.30, t);
+        // όλοι συναντιούνται στο κέντρο (λίγο πιο “σφιχτά”)
+        const pack1 = centerPackX + spread*0.18;
+        const pack2 = centerPackX + spread*0.12;
+        xTo = lerp(pack1, pack2, t);
+      }else if(phase===2){
+        // split: οι 1&2 δεξιά, οι υπόλοιποι αριστερά
+        const pack2 = centerPackX + spread*0.12;
+        const goRight = RIGHT_SET.has(i);
+        const sp = goRight ? spreadIn(rightIdxs,i) : spreadIn(leftIdxs,i);
+        const edge = goRight ? rightEdgeX : leftEdgeX;
+        xTo = lerp(pack2, edge + sp*0.55, t);
       }else{
-        // split exit
-        const spreadOut = pack*0.34;
-        if(groupRight.has(i)){
-          xTo = lerp(centerX + pack*0.30, rightExitX + spreadOut, t);
-        }else{
-          xTo = lerp(centerX + pack*0.30, leftExitX  + spreadOut, t);
-        }
+        // phase 3: τελικό “βήμα” προς έξοδο (πίσω από τα πετάσματα)
+        const goRight = RIGHT_SET.has(i);
+        const sp = goRight ? spreadIn(rightIdxs,i) : spreadIn(leftIdxs,i);
+        const edge1 = goRight ? rightEdgeX : leftEdgeX;
+        const edge2 = goRight ? rightEdgeX2 : leftEdgeX2;
+        xTo = lerp(edge1 + sp*0.55, edge2 + sp*0.45, t);
       }
 
       poses.push({x: xTo + jitterX, b: standB + jitterB});
@@ -2026,36 +2042,41 @@ async function strobeExitWalk(){
   };
 
   const strobeBurst = async (phase, frames)=>{
+    // κάνουμε burst flashes, και στο τέλος κρατάμε φώτα ON
     for(let f=0; f<frames; f++){
       // σκοτάδι: αλλάζουμε θέση
       curtain.style.opacity='1';
       const t = frames<=1 ? 1 : (f/(frames-1));
-      applyPose(buildPosesPhase(phase, t));
+      const poses = buildPosesPhase(phase, t);
+      applyPose(poses);
       await TM.sleep(flashOffMs);
 
-      // flash: δείχνουμε το καρέ
+      // flash: δείχνουμε το “καρέ”
       curtain.style.opacity='0';
       await TM.sleep(flashOnMs);
     }
-    // κρατάμε φώτα ON λίγο
+    // στο τέλος, φώτα ON για να “ανασάνει” η στιγμή
     curtain.style.opacity='0';
     await TM.sleep(holdLitMs);
 
-    // ενημερώνουμε currX
+    // ενημερώνουμε τις currX για την επόμενη φάση (τελευταία pose της φάσης)
     const posesFinal = buildPosesPhase(phase, 1);
     for(let i=0;i<n;i++) currX[i] = posesFinal[i].x;
   };
 
   const hideBoardDuringFirstBlack = async ()=>{
+    // Μαυροπίνακας φουαγιέ: φεύγει ΜΕΣΑ στο πρώτο σκοτάδι
     const wrap = document.querySelector('#foyer .wrap');
     if(wrap){
       wrap.classList.add('foyer-board-exit');
+      // μέσα στο σκοτάδι δεν μας νοιάζει να “δούμε” animation, απλά να εξαφανιστεί
       await TM.sleep(520);
       wrap.style.display = 'none';
     }
   };
 
   const showAct3Fake = ()=>{
+    // Fake Act 3 panel with button (non-functional), plus Act 3 titles on signboard
     const teaser = document.getElementById('act3Teaser');
     if(teaser){
       teaser.style.display='none';
@@ -2063,7 +2084,9 @@ async function strobeExitWalk(){
     }
 
     const act3Break = document.getElementById('act3Break');
-    if(act3Break) act3Break.style.display='flex';
+    if(act3Break){
+      act3Break.style.display='flex';
+    }
 
     phase='act3';
     applySignboardForPhase('act3');
@@ -2090,16 +2113,13 @@ async function strobeExitWalk(){
   await TM.sleep(preBlackMs);
   await boardExitPromise;
 
-  // --- 2) Burst 1: όλοι στο κέντρο ---
-  await strobeBurst(0, 7);
+  // --- 2) 4 φάσεις “στρομπο-βήματα” με ενδιάμεσο φωτισμό ---
+  await strobeBurst(0, 10);
   await strobeBurst(1, 8);
+  await strobeBurst(2, 9);
+  await strobeBurst(3, 7);
 
-  // --- 3) Burst 2: split έξοδος + ενεργοποίηση πετασμάτων ---
-  if(maskL) maskL.style.opacity = '1';
-  if(maskR) maskR.style.opacity = '1';
-  await strobeBurst(2, 10);
-
-  // --- 4) Τελικό σκοτάδι → εξαφανίζονται + αλλάζει το κοινό ---
+  // --- 3) Τελικό σκοτάδι → εξαφανίζονται + αλλάζει το κοινό ---
   curtain.style.opacity='1';
   await TM.sleep(finalBlackMs);
 
@@ -2107,21 +2127,25 @@ async function strobeExitWalk(){
   if(foyerBubble) foyerBubble.style.display='none';
   if(actBubble)   actBubble.style.display='none';
 
+  // αφήνουμε άδειο χώρο + “fake” πράξη 3
   swapAudienceFinal();
   showAct3Fake();
 
   // φώτα ON: άδεια αίθουσα
   curtain.style.opacity='0';
-  await TM.sleep(1400);
+  await TM.sleep(1100);
 
-  // cleanup
+  // βγαίνουμε από strobe mode (κρατάμε την τελική εικόνα)
   document.body.classList.remove('strobe-active');
   curtain.style.display='none';
   curtain.style.opacity='1';
-  if(maskL) maskL.style.opacity = '0';
-  if(maskR) maskR.style.opacity = '0';
-}
 
+  // Exit mask not needed after final shot
+  document.body.classList.remove('exit-mask-active');
+
+  // δεν κάνουμε restore των avatars: η ιδέα είναι ότι “έφυγαν”.
+  // (κρατάμε όμως τα orig για ασφάλεια σε reset, το οποίο ξαναχτίζει state ούτως ή άλλως)
+}
 
 async function foyerBoardExitWithTeaser(){
   const wrap = document.querySelector('#foyer .wrap');
@@ -2844,8 +2868,6 @@ function bootFromQuery(){
 
   // reset any exit/strobe leftovers
   document.body.classList.remove('strobe-active','exit-mask-active');
-  const __mL=document.getElementById('exitMaskLeft'); if(__mL) __mL.style.opacity='0';
-  const __mR=document.getElementById('exitMaskRight'); if(__mR) __mR.style.opacity='0';
   const act3BreakEl = document.getElementById('act3Break');
   if(act3BreakEl) act3BreakEl.style.display='none';
   const act3TeaserEl = document.getElementById('act3Teaser');
@@ -2885,8 +2907,6 @@ function resetShow(){
 
   // reset any exit/strobe leftovers
   document.body.classList.remove('strobe-active','exit-mask-active');
-  const __mL=document.getElementById('exitMaskLeft'); if(__mL) __mL.style.opacity='0';
-  const __mR=document.getElementById('exitMaskRight'); if(__mR) __mR.style.opacity='0';
   const act3BreakEl = document.getElementById('act3Break');
   if(act3BreakEl) act3BreakEl.style.display='none';
   const act3TeaserEl = document.getElementById('act3Teaser');
