@@ -156,7 +156,7 @@ body{
   width:100%;
   bottom:0;
   height:260px;          /* Σταθερό ύψος ώστε να χωράνε τα avatars */
-  z-index: 150;          /* πάνω από κοινό */
+  z-index:1000;          /* πάνω από κοινό */
   pointer-events:none;
   overflow:visible;
 }
@@ -394,7 +394,7 @@ body{
   font-family:"Courier New",monospace;
   color:#aaa;
   pointer-events:none;
-  z-index: 159;
+  z-index:  159;
 }
 .ruler::before{
   content:'';
@@ -894,6 +894,57 @@ body{
 .startbreak .start-btn{ display:block; margin:0 auto; }
 
 
+/* ===============================
+   EXIT MASK (STROBE EXIT) v4
+   - Πέτασμα μπροστά από ομιλητές
+   - Panels/γραφήματα μπροστά από πέτασμα
+   - Πέτασμα αγκυρωμένο κάτω-δεξιά (δεξιό πάνελ/κουρτίνα)
+   =============================== */
+
+/* Ανέβασε panels/γραφήματα πάνω από το πέτασμα */
+.clock,
+.measure-box,
+#xtChart,
+#xSinChart,
+.params-box,
+.laws,
+.law-charts{
+  z-index: 2200;
+}
+
+/* Το πέτασμα: δεξιά ζώνη (18%), κάτω μέρος */
+.exit-panel-mask{
+  position:fixed;
+  bottom:0;
+
+  /* ΓΩΝΙΑ ΟΘΟΝΗΣ: δεξιά */
+  right:0;
+
+  width:18vw;
+  max-width:240px;
+  min-width:160px;
+  height:46vh;
+
+  /* ίδιο look με τα πλαϊνά panels/κουρτίνες */
+  background:linear-gradient(to left,#300000,#1a0000);
+  box-shadow:inset 6px 0 10px rgba(0,0,0,.6);
+
+  /* πάνω από τους ομιλητές, κάτω από panels/γραφήματα */
+  z-index:2100;
+
+  pointer-events:none;
+  display:none;
+}
+.exit-panel-mask.left{
+  left:0;
+  right:auto;
+  background:linear-gradient(to right,#300000,#1a0000);
+  box-shadow:inset -6px 0 10px rgba(0,0,0,.6);
+}
+
+body.exit-mask-active .exit-panel-mask{
+  display:block;
+}
 
 
 /* ===============================
@@ -947,30 +998,4 @@ body{
       rgba(255,255,255,0.18) 12px,
       rgba(255,255,255,0.0) 22px
     );
-}
-
-/* ===============================
-   EXIT MASKS (FOYER EXIT)
-   - fixed στις κάτω γωνίες της ΟΘΟΝΗΣ
-   - πάνω από τους ομιλητές, κάτω από panels/γραφήματα
-   =============================== */
-
-.exit-mask{
-  position:fixed;
-  bottom:0;
-  width:18vw;
-  height:42vh;
-  pointer-events:none;
-  opacity:0;          /* το JS το ανάβει/σβήνει */
-  z-index:255;
-}
-.exit-mask-left{
-  left:0;
-  background:linear-gradient(to right,#300000,#1a0000);
-  box-shadow:inset -6px 0 10px rgba(0,0,0,.6);
-}
-.exit-mask-right{
-  right:0;
-  background:linear-gradient(to left,#300000,#1a0000);
-  box-shadow:inset 6px 0 10px rgba(0,0,0,.6);
 }
