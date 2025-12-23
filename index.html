@@ -1956,11 +1956,16 @@ async function strobeExitWalk(){
   const standB = baseBMax + 26; // «όρθιοι»
 
   // --- Strobe tuning (ρυθμίζεις εδώ) ---
-  const flashOnMs  = 26;   // πόσο μένει “αναμμένο” κάθε flash
-  const flashOffMs = 100;   // πόσο μένει “σκοτάδι” κάθε flash (και αλλάζουμε θέση μέσα στο σκοτάδι)
-  const holdLitMs  = 520;  // μετά από burst: φώτα ανοιχτά για λίγο (να “παίξει” η στιγμή)
-  const preBlackMs = 420;  // πρώτο σκοτάδι (για να φύγει ο πίνακας πριν αρχίσει το περπάτημα)
-  const finalBlackMs = 2200; // τελικό σκοτάδι πριν εξαφανιστούν + αλλάξει το κοινό
+  const flashOnMs  = 70;   // πόσο μένει “αναμμένο” κάθε flash (ορατό καρέ)
+  const flashOffMs = 90;   // πόσο μένει “σκοτάδι” κάθε flash (αλλαγή θέσης μέσα στο σκοτάδι)
+  const holdLitMs  = 1100;  // μετά από burst: φώτα ανοιχτά (φυσιολογικός ρυθμός/ανάσα)
+  const preBlackMs = 600;  // πρώτο σκοτάδι (ο πίνακας φεύγει μέσα στο σκοτάδι)
+  const finalBlackMs = 3200; // τελικό σκοτάδι πριν εξαφανιστούν + αλλάξει το κοινό
+
+  const extraHoldAfterMeetMs  = 700;  // μικρή “ανάσα” αφού συναντηθούν στο κέντρο
+  const extraHoldAfterSplitMs = 500;  // μικρή καθυστέρηση πριν το τελικό βήμα εξόδου
+  const postExitHoldMs        = 900;  // αφού χαθούν πίσω από τα πετάσματα, κρατάμε φώτα on λίγο
+
 
   // στόχοι κίνησης
   const centerMeetX  = stageW*0.50;
@@ -2113,11 +2118,20 @@ async function strobeExitWalk(){
   await TM.sleep(preBlackMs);
   await boardExitPromise;
 
-  // --- 2) 4 φάσεις “στρομπο-βήματα” με ενδιάμεσο φωτισμό ---
-  await strobeBurst(0, 10);
-  await strobeBurst(1, 8);
-  await strobeBurst(2, 9);
-  await strobeBurst(3, 7);
+    // --- 2) 4 φάσεις “στρομπο-βήματα” με ενδιάμεσο φωτισμό ---
+  // Φυσιολογικός ρυθμός: λίγα flash-καρέ ανά φάση + αρκετό φως ανάμεσα.
+  await strobeBurst(0, 4);
+  await strobeBurst(1, 4);
+  curtain.style.opacity='0';
+  await TM.sleep(extraHoldAfterMeetMs);
+
+  await strobeBurst(2, 5);
+  curtain.style.opacity='0';
+  await TM.sleep(extraHoldAfterSplitMs);
+
+  await strobeBurst(3, 4);
+  curtain.style.opacity='0';
+  await TM.sleep(postExitHoldMs);
 
   // --- 3) Τελικό σκοτάδι → αλλαγές ΓΙΝΟΝΤΑΙ μέσα στο σκοτάδι ---
   curtain.style.opacity='1';
