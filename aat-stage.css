@@ -1018,3 +1018,17 @@ body.exit-mask-active .exit-panel-mask{
 #dialogRight{
   z-index: 2300 !important;
 }
+
+/* --- Layer tweak: laws panel above the left charts by at least +1 --- */
+.law-charts,
+#lawCharts,
+.left-charts,
+.chart-panel-left{
+  z-index: 1600 !important;
+}
+
+.laws,
+#laws,
+.laws-panel{
+  z-index: 1601 !important;
+}
