@@ -10,7 +10,7 @@
   <script src="https://unpkg.com/uplot@1.6.30/dist/uPlot.iife.min.js"></script>
 
   <!-- CSS σκηνής -->
-  <link rel="stylesheet" href="aat-stage.css">
+  <link rel="stylesheet" href="aat-stage_EXIT_TUNED_FINAL.css">
 
   <!-- Intro veil (ενσωματωμένο στο index) -->
   <style>
@@ -1932,7 +1932,11 @@ async function strobeExitWalk(){
   const rightIdxs = Array.from({length:n},(_,i)=>i).filter(i=>RIGHT_SET.has(i));
   const leftIdxs  = Array.from({length:n},(_,i)=>i).filter(i=>!RIGHT_SET.has(i));
   const rankIn = (arr,i)=>arr.indexOf(i);
-  const spreadIn = (arr,i)=> (rankIn(arr,i) - (arr.length-1)/2) * 26;
+  const spreadIn = (arr,i,spreadPx)=>{
+    const k = arr.indexOf(i);
+    if(k<0) return 0;
+    return (k - (arr.length-1)/2) * spreadPx;
+  };
 
   if(!n){
     document.body.classList.remove('strobe-active');
@@ -1955,17 +1959,18 @@ async function strobeExitWalk(){
   const baseBMax = Math.max(...bottoms);
   const standB = baseBMax + 26; // «όρθιοι»
 
-  // --- Strobe tuning (ρυθμίζεις εδώ) ---
-  const flashOnMs  = 70;   // πόσο μένει “αναμμένο” κάθε flash (ορατό καρέ)
-  const flashOffMs = 90;   // πόσο μένει “σκοτάδι” κάθε flash (αλλαγή θέσης μέσα στο σκοτάδι)
-  const holdLitMs  = 1100;  // μετά από burst: φώτα ανοιχτά (φυσιολογικός ρυθμός/ανάσα)
-  const preBlackMs = 600;  // πρώτο σκοτάδι (ο πίνακας φεύγει μέσα στο σκοτάδι)
-  const finalBlackMs = 3200; // τελικό σκοτάδι πριν εξαφανιστούν + αλλάξει το κοινό
+  // --- Strobe tuning (από ρυθμίσεις exit_tuner) ---
+  const flashOnMs    = 18;   // ορατό καρέ
+  const flashOffMs   = 75;   // σκοτάδι (μετακίνηση μέσα στο σκοτάδι)
+  const holdLitMs    = 120;  // φώτα ON μετά από κάθε burst
 
-  const extraHoldAfterMeetMs  = 700;  // μικρή “ανάσα” αφού συναντηθούν στο κέντρο
-  const extraHoldAfterSplitMs = 500;  // μικρή καθυστέρηση πριν το τελικό βήμα εξόδου
-  const postExitHoldMs        = 900;  // αφού χαθούν πίσω από τα πετάσματα, κρατάμε φώτα on λίγο
+  const preBlackMs   = 100;  // πρώτο σκοτάδι (ο πίνακας φεύγει μέσα στο σκοτάδι)
+  const finalBlackMs = 1000; // τελικό σκοτάδι πριν εξαφανιστούν + αλλάξει το κοινό
 
+  // spreads (μόνο οριζόντια)
+  const meetSpreadPx  = 45;   // στο κέντρο
+  const splitSpreadPx = 56;   // στο split
+  const exitSpreadPx  = 105;  // κοντά στα πετάσματα/μέσα στα panels
 
   // στόχοι κίνησης
   const centerMeetX  = stageW*0.50;
@@ -2005,40 +2010,43 @@ async function strobeExitWalk(){
     return stageW*0.52 + spread;
   });
 
-  // Φάσεις: 3–4 μαζέματα στη δεξιά άκρη, με “στρομπο-κίνηση” και μετά φώτα ON
+  // Φάσεις: meet → tighten → split → exit (μόνο ΟΡΙΖΟΝΤΙΑ)
   const buildPosesPhase = (phase, t)=>{
     const poses=[];
     for(let i=0;i<n;i++){
-      const spread = (i-(n-1)/2) * 26; // pack
       const jitterX = (rnd()-0.5)*3;
-      const jitterB = (rnd()-0.5)*2;
+      const jitterB = 0; // καμία κατακόρυφη κίνηση
 
-      let xFrom = currX[i];
-      let xTo;
+      const xFrom = currX[i];
+      let xTo = xFrom;
+
+      // κέντρο συνάντησης: απλωμένοι (όχι “στοίβα”)
+      const meetSpread = (i-(n-1)/2) * meetSpreadPx;
+      const meetX1 = centerMeetX + meetSpread;
+      const meetX2 = centerMeetX + meetSpread*0.78; // λίγο πιο “μαζεμένοι” χωρίς να πατάνε ο ένας τον άλλον
+
+      const goRight = RIGHT_SET.has(i);
+      const subset  = goRight ? rightIdxs : leftIdxs;
+
+      // split / exit spreads (ανά ομάδα)
+      const spSplit = spreadIn(subset,i,splitSpreadPx);
+      const spExit  = spreadIn(subset,i,exitSpreadPx);
 
       if(phase===0){
-        // σηκώνονται + μικρή μετατόπιση προς το κέντρο
-        const pack1 = centerPackX + spread*0.18;
-        xTo = lerp(xFrom, pack1, t);
+        // προς το κέντρο
+        xTo = lerp(xFrom, meetX1, t);
       }else if(phase===1){
-        // όλοι συναντιούνται στο κέντρο (λίγο πιο “σφιχτά”)
-        const pack1 = centerPackX + spread*0.18;
-        const pack2 = centerPackX + spread*0.12;
-        xTo = lerp(pack1, pack2, t);
+        // μικρό “μάζεμα”/διόρθωση στο κέντρο
+        xTo = lerp(meetX1, meetX2, t);
       }else if(phase===2){
-        // split: οι 1&2 δεξιά, οι υπόλοιποι αριστερά
-        const pack2 = centerPackX + spread*0.12;
-        const goRight = RIGHT_SET.has(i);
-        const sp = goRight ? spreadIn(rightIdxs,i) : spreadIn(leftIdxs,i);
+        // split: 1&2 δεξιά, οι υπόλοιποι αριστερά
         const edge = goRight ? rightEdgeX : leftEdgeX;
-        xTo = lerp(pack2, edge + sp*0.55, t);
+        xTo = lerp(meetX2, edge + spSplit, t);
       }else{
-        // phase 3: τελικό “βήμα” προς έξοδο (πίσω από τα πετάσματα)
-        const goRight = RIGHT_SET.has(i);
-        const sp = goRight ? spreadIn(rightIdxs,i) : spreadIn(leftIdxs,i);
-        const edge1 = goRight ? rightEdgeX : leftEdgeX;
+        // τελικό βήμα προς πετάσματα/πίσω από panels
+        const edge1 = goRight ? rightEdgeX  : leftEdgeX;
         const edge2 = goRight ? rightEdgeX2 : leftEdgeX2;
-        xTo = lerp(edge1 + sp*0.55, edge2 + sp*0.45, t);
+        xTo = lerp(edge1 + spSplit, edge2 + spExit, t);
       }
 
       poses.push({x: xTo + jitterX, b: standB + jitterB});
@@ -2119,25 +2127,19 @@ async function strobeExitWalk(){
   await boardExitPromise;
 
     // --- 2) 4 φάσεις “στρομπο-βήματα” με ενδιάμεσο φωτισμό ---
-  // Φυσιολογικός ρυθμός: λίγα flash-καρέ ανά φάση + αρκετό φως ανάμεσα.
-  await strobeBurst(0, 4);
-  await strobeBurst(1, 4);
-  curtain.style.opacity='0';
-  await TM.sleep(extraHoldAfterMeetMs);
+  const phaseFrames = [12,5,15,15];
 
-  await strobeBurst(2, 5);
-  curtain.style.opacity='0';
-  await TM.sleep(extraHoldAfterSplitMs);
-
-  await strobeBurst(3, 4);
-  curtain.style.opacity='0';
-  await TM.sleep(postExitHoldMs);
+  await strobeBurst(0, phaseFrames[0]);
+  await strobeBurst(1, phaseFrames[1]);
+  await strobeBurst(2, phaseFrames[2]);
+  await strobeBurst(3, phaseFrames[3]);
 
   // --- 3) Τελικό σκοτάδι → αλλαγές ΓΙΝΟΝΤΑΙ μέσα στο σκοτάδι ---
+ Τελικό σκοτάδι → αλλαγές ΓΙΝΟΝΤΑΙ μέσα στο σκοτάδι ---
   curtain.style.opacity='1';
 
   // μικρό buffer ώστε να «γράψει» το μαύρο πριν αλλάξουμε οτιδήποτε
-  await TM.sleep(140);
+  await TM.sleep(120);
 
   // μέσα στο σκοτάδι: εξαφανίζονται + αλλάζει το κοινό + εμφανίζεται το “fake” act3
   hideAllSpeakers();
