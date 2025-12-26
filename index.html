@@ -136,6 +136,7 @@
     display:none;
     z-index:10000;
     pointer-events:none;
+    transition: opacity 0ms linear;
   }
   body.strobe-active .strobe-curtain{ display:block; }
   body.strobe-active .viewer-avatar{ transition:none !important; }
@@ -1923,6 +1924,9 @@ async function strobeExitWalk(){
   curtain.style.display='block';
   curtain.style.opacity='1'; // ξεκινάμε σκοτάδι
 
+
+  // strobe flashes πρέπει να είναι στιγμιαία (χωρίς fade)
+  curtain.style.transition = 'opacity 0ms linear';
   const actors=[...viewersStrip.querySelectorAll('.viewer-avatar')]
     .filter(el=>el && el.style.display!=='none');
   const n = actors.length;
@@ -2154,7 +2158,13 @@ async function strobeExitWalk(){
   await TM.sleep(finalBlackMs);
 
   // φώτα ON: άδεια αίθουσα
+  // fade-in φώτων (μόνο στο τέλος)
+  const finalFadeInMs = 320;
+  curtain.style.transition = `opacity ${finalFadeInMs}ms linear`;
   curtain.style.opacity='0';
+  await TM.sleep(finalFadeInMs);
+  curtain.style.transition = 'opacity 0ms linear';
+
   await TM.sleep(1100);
 
   // βγαίνουμε από strobe mode (κρατάμε την τελική εικόνα)
