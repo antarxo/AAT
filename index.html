@@ -10,7 +10,7 @@
   <script src="https://unpkg.com/uplot@1.6.30/dist/uPlot.iife.min.js"></script>
 
   <!-- CSS σκηνής -->
-  <link rel="stylesheet" href="./aat-stage.css">
+  <link rel="stylesheet" href="./aat-stage_EXIT_TUNED_FINAL_RESPONSIVE.css">
 
   <!-- Intro veil (ενσωματωμένο στο index) -->
   <style>
@@ -551,10 +551,15 @@ const BASE_H = 900;
 function fitApp(){
   const w = window.innerWidth || BASE_W;
   const h = window.innerHeight || BASE_H;
-  const s = Math.min(w / BASE_W, h / BASE_H) || 1;
-  window.__APP_SCALE = s;
-  if(appBase) appBase.style.transform = `scale(${s})`;
+  const sx = (w / BASE_W) || 1;
+  const sy = (h / BASE_H) || 1;
+
+  window.__APP_SX = sx;
+  window.__APP_SY = sy;
+
+  if(appBase) appBase.style.transform = `scale(${sx}, ${sy})`;
 }
+
 window.addEventListener('resize', fitApp);
 fitApp();
 
@@ -959,7 +964,8 @@ function updateMarbleTrack(){
     if(trackGhost) trackGhost.style.display = 'none';
     return;
   }
-  const S = window.__APP_SCALE || 1;
+  const SX = window.__APP_SX || 1;
+  const SY = window.__APP_SY || 1;
   const stageRect = stage.getBoundingClientRect();
   const aRect = actorImg.getBoundingClientRect();
   const stageH = stage.clientHeight || 900;
@@ -968,7 +974,7 @@ function updateMarbleTrack(){
   const curtainBottomClosed = (0.70 * stageH) + 8;
 
   // Κάτω άκρο εικόνας ηθοποιού σε συντεταγμένες σκηνής (logical px).
-  const actorBottom = (aRect.bottom - stageRect.top) / S;
+  const actorBottom = (aRect.bottom - stageRect.top) / SY;
 
   // Ύψος “μαρμάρου” και bottom offset μέσα στη σκηνή (logical px).
   const h = Math.max(0, curtainBottomClosed - actorBottom);
@@ -1011,10 +1017,11 @@ function measureSpringNaturalSize(){
   springEl.style.display   = 'block';
   springEl.style.transform = 'none';
 
-  const S = window.__APP_SCALE || 1;
+  const SX = window.__APP_SX || 1;
+    const SY = window.__APP_SY || 1;
   const rect = springEl.getBoundingClientRect();
-  springNaturalWidth  = (rect.width || 1) / S;
-  springNaturalHeight = (rect.height || 1) / S;
+  springNaturalWidth  = (rect.width || 1) / SX;
+  springNaturalHeight = (rect.height || 1) / SY;
 
   springEl.style.display   = prevDisplay;
   springEl.style.transform = prevTransform;
@@ -1865,14 +1872,15 @@ function getViewerAvatarCenter(idx1based){
   const idx0=(idx1based||1)-1;
   const div=viewersStrip.querySelector('.viewer-avatar[data-idx="'+idx0+'"]');
   const info=viewerInfo(idx1based);
-  const S = window.__APP_SCALE || 1;
+  const SX = window.__APP_SX || 1;
+    const SY = window.__APP_SY || 1;
   const stageRect=stage.getBoundingClientRect();
   const stageH = stage.clientHeight || 900;
   if(div){
     const r=div.getBoundingClientRect();
     const baseBottom=parseFloat(div.dataset.baseBottom || '0') || 0;
-    const cx=(r.left + r.width/2 - stageRect.left) / S;
-    const cy=stageH - baseBottom - (r.height / S)/2;
+    const cx=(r.left + r.width/2 - stageRect.left) / SX;
+    const cy=stageH - baseBottom - (r.height / SY)/2;
     return {x:cx,y:cy,info};
   }
   return viewerAnchor(idx1based);
@@ -1975,9 +1983,10 @@ async function strobeExitWalk(){
   // κρατάμε αρχικές θέσεις για restore (αν χρειαστεί)
   const orig = actors.map(el=>({el,left:el.style.left,bottom:el.style.bottom,opacity:el.style.opacity}));
 
-  const S = window.__APP_SCALE || 1;
+  const SX = window.__APP_SX || 1;
+    const SY = window.__APP_SY || 1;
   const stageRect = stage.getBoundingClientRect();
-  const stageW = stage.clientWidth || ((stageRect.width || 1600) / S);
+  const stageW = stage.clientWidth || ((stageRect.width || 1600) / SX);
 
   // base layout (bottoms)
   const bottoms = actors.map(el=>{
@@ -2496,10 +2505,11 @@ function ensureGhost(){
   ensureActorFloorBottom();
 
   if(!ghost){
-    const S = window.__APP_SCALE || 1;
+    const SX = window.__APP_SX || 1;
+    const SY = window.__APP_SY || 1;
   const ar = actor.getBoundingClientRect();
-  const aw = (actor.offsetWidth || ((ar.width || 144) / S));
-  const ah = (actor.offsetHeight || ((ar.height || 96) / S));
+  const aw = (actor.offsetWidth || ((ar.width || 144) / SX));
+  const ah = (actor.offsetHeight || ((ar.height || 96) / SY));
 ghost=document.createElement('div');
     ghost.id='actorGhost';
     ghost.style.position='absolute';
@@ -3190,15 +3200,16 @@ function animate(now){
 
   const hookX=cx+A_px*Math.sin(omega*playbackTime);
 
-  const S = window.__APP_SCALE || 1;
-      const baseL = springNaturalWidth || ((springEl.getBoundingClientRect().width || 1) / S);
+  const SX = window.__APP_SX || 1;
+    const SY = window.__APP_SY || 1;
+      const baseL = springNaturalWidth || ((springEl.getBoundingClientRect().width || 1) / SX);
   const dist=hookX-axx;
   const scale=dist/baseL;
   springEl.style.left=axx+'px';
   springEl.style.transform='scaleX('+scale+')';
 
   const actorRect = actor.getBoundingClientRect();
-      const actorWidth = (actor.offsetWidth || ((actorRect.width || 80) / S));
+      const actorWidth = (actor.offsetWidth || ((actorRect.width || 80) / SX));
   actor.style.bottom=bottomPx+'px';
   actor.style.left=(hookX-actorWidth/2)+'px';
 
@@ -3231,7 +3242,7 @@ function animate(now){
 
       const springBottom=getComputedStyle(springEl).bottom || 'calc(var(--vh)*32 + 92px)';
       const ghostRect = ghost.getBoundingClientRect();
-      const ghostWidth = (ghost.offsetWidth || ((ghostRect.width || actorWidth || 80) / S));
+      const ghostWidth = (ghost.offsetWidth || ((ghostRect.width || actorWidth || 80) / SX));
 
       ghost.style.bottom=bottomPx+'px';
       ghost.style.left  =(hookXg-ghostWidth/2)+'px';
@@ -3243,7 +3254,7 @@ function animate(now){
       ghostSpring.style.left     =axx+'px';
       ghostSpring.style.height   =springNaturalHeight
         ? (springNaturalHeight+'px')
-        : ((springEl.getBoundingClientRect().height || 1)/S)+'px';
+        : ((springEl.getBoundingClientRect().height || 1)/SY)+'px';
       ghostSpring.style.transform='scaleX('+scaleg+')';
 
       const vis=ghostVisibility;
