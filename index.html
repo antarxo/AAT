@@ -551,13 +551,12 @@ const BASE_H = 900;
 function fitApp(){
   const w = window.innerWidth || BASE_W;
   const h = window.innerHeight || BASE_H;
-  const sx = (w / BASE_W) || 1;
-  const sy = (h / BASE_H) || 1;
+  const s = Math.max(w / BASE_W, h / BASE_H) || 1;
 
-  window.__APP_SX = sx;
-  window.__APP_SY = sy;
+  window.__APP_SX = s;
+  window.__APP_SY = s;
 
-  if(appBase) appBase.style.transform = `scale(${sx}, ${sy})`;
+  if(appBase) appBase.style.transform = `scale(${s})`;
 }
 
 window.addEventListener('resize', fitApp);
