@@ -10,7 +10,7 @@
   <script src="https://unpkg.com/uplot@1.6.30/dist/uPlot.iife.min.js"></script>
 
   <!-- CSS σκηνής -->
-  <link rel="stylesheet" href="./aat-stage.css">
+  <link rel="stylesheet" href="./aat-stage_EXIT_TUNED_FINAL_RESPONSIVE.css">
 
   <!-- Intro veil (ενσωματωμένο στο index) -->
   <style>
@@ -170,7 +170,9 @@
 
   <div class="strobe-curtain" id="strobeCurtain" aria-hidden="true"></div>
 
-<div class="stage" id="stage">
+<div id="appViewport">
+  <div id="appBase">
+    <div class="stage" id="stage">
   <!-- Κουμπιά γλώσσας -->
   <div class="lang-toggle">
     <button id="btnLangGR" class="lang-btn active">GR</button>
@@ -351,6 +353,8 @@
   </div>
 
   <div class="foyer-bubble" id="foyerBubble">ΘΕΑΤΗΣ</div>
+</div>
+</div>
 </div>
 
 
@@ -539,6 +543,21 @@ initIntro();
 /* ---------- Φυσική / σκηνή ---------- */
 
 const stage        = document.getElementById('stage');
+
+// Responsive fit (base design: 1600×900)
+const appBase = document.getElementById('appBase');
+const BASE_W = 1600;
+const BASE_H = 900;
+function fitApp(){
+  const w = window.innerWidth || BASE_W;
+  const h = window.innerHeight || BASE_H;
+  const s = Math.min(w / BASE_W, h / BASE_H) || 1;
+  window.__APP_SCALE = s;
+  if(appBase) appBase.style.transform = `scale(${s})`;
+}
+window.addEventListener('resize', fitApp);
+fitApp();
+
 const springEl     = document.getElementById('spring');
 const actor        = document.getElementById('actor');
 const spotlight    = document.getElementById('spotlight');
@@ -940,19 +959,20 @@ function updateMarbleTrack(){
     if(trackGhost) trackGhost.style.display = 'none';
     return;
   }
-
+  const S = window.__APP_SCALE || 1;
   const stageRect = stage.getBoundingClientRect();
   const aRect = actorImg.getBoundingClientRect();
+  const stageH = stage.clientHeight || 900;
 
-  // ΣΩΣΤΟ (σταθερό ως προς τη σκηνή): χρησιμοποιούμε το ΚΑΤΩ άκρο της “μεσαίας κουρτίνας”
-  // όπως θα ήταν στη ΘΕΣΗ ΗΡΕΜΙΑΣ της (κλειστή), όχι το τρέχον bounding box (που αλλάζει όταν ανοίγει).
-  // Από το CSS: top = (26% - 16px) και height = (44% + 24px)  => bottom = 70% + 8px.
-  const curtainBottomClosed = stageRect.top + (0.70 * stageRect.height) + 8;
+  // Σταθερό ως προς τη σκηνή: bottom(μεσαίας κουρτίνας στην ηρεμία) = 70% + 8px.
+  const curtainBottomClosed = (0.70 * stageH) + 8;
 
-  // Κάθετα: ύψος “μαρμάρου” = (κάτω μεσαίας κουρτίνας) − (κάτω εικόνας ηθοποιού)
-  const h = Math.max(0, curtainBottomClosed - aRect.bottom);
-  // Απόσταση από το κάτω μέρος της σκηνής μέχρι το κάτω της μεσαίας κουρτίνας (στη θέση ηρεμίας)
-  const bottomPx = Math.max(0, stageRect.bottom - curtainBottomClosed);
+  // Κάτω άκρο εικόνας ηθοποιού σε συντεταγμένες σκηνής (logical px).
+  const actorBottom = (aRect.bottom - stageRect.top) / S;
+
+  // Ύψος “μαρμάρου” και bottom offset μέσα στη σκηνή (logical px).
+  const h = Math.max(0, curtainBottomClosed - actorBottom);
+  const bottomPx = Math.max(0, stageH - curtainBottomClosed);
 
   // Οριζόντια έκταση μαρμάρου: ακριβώς από x=-3 m έως x=+3 m (σύστημα αναφοράς)
   const cx = stage.clientWidth / 2;
@@ -991,9 +1011,10 @@ function measureSpringNaturalSize(){
   springEl.style.display   = 'block';
   springEl.style.transform = 'none';
 
+  const S = window.__APP_SCALE || 1;
   const rect = springEl.getBoundingClientRect();
-  springNaturalWidth  = rect.width || 1;
-  springNaturalHeight = rect.height || 1;
+  springNaturalWidth  = (rect.width || 1) / S;
+  springNaturalHeight = (rect.height || 1) / S;
 
   springEl.style.display   = prevDisplay;
   springEl.style.transform = prevTransform;
@@ -1844,12 +1865,14 @@ function getViewerAvatarCenter(idx1based){
   const idx0=(idx1based||1)-1;
   const div=viewersStrip.querySelector('.viewer-avatar[data-idx="'+idx0+'"]');
   const info=viewerInfo(idx1based);
+  const S = window.__APP_SCALE || 1;
   const stageRect=stage.getBoundingClientRect();
+  const stageH = stage.clientHeight || 900;
   if(div){
     const r=div.getBoundingClientRect();
     const baseBottom=parseFloat(div.dataset.baseBottom || '0') || 0;
-    const cx=r.left+r.width/2 - stageRect.left;
-    const cy=stageRect.height - baseBottom - r.height/2;
+    const cx=(r.left + r.width/2 - stageRect.left) / S;
+    const cy=stageH - baseBottom - (r.height / S)/2;
     return {x:cx,y:cy,info};
   }
   return viewerAnchor(idx1based);
@@ -1952,8 +1975,9 @@ async function strobeExitWalk(){
   // κρατάμε αρχικές θέσεις για restore (αν χρειαστεί)
   const orig = actors.map(el=>({el,left:el.style.left,bottom:el.style.bottom,opacity:el.style.opacity}));
 
+  const S = window.__APP_SCALE || 1;
   const stageRect = stage.getBoundingClientRect();
-  const stageW = stageRect.width || 900;
+  const stageW = stage.clientWidth || ((stageRect.width || 1600) / S);
 
   // base layout (bottoms)
   const bottoms = actors.map(el=>{
@@ -2472,11 +2496,11 @@ function ensureGhost(){
   ensureActorFloorBottom();
 
   if(!ghost){
-    const ar=actor.getBoundingClientRect();
-    const aw=ar.width || 144;
-    const ah=ar.height|| 96;
-
-    ghost=document.createElement('div');
+    const S = window.__APP_SCALE || 1;
+  const ar = actor.getBoundingClientRect();
+  const aw = (actor.offsetWidth || ((ar.width || 144) / S));
+  const ah = (actor.offsetHeight || ((ar.height || 96) / S));
+ghost=document.createElement('div');
     ghost.id='actorGhost';
     ghost.style.position='absolute';
     ghost.style.zIndex='158';
@@ -3166,14 +3190,15 @@ function animate(now){
 
   const hookX=cx+A_px*Math.sin(omega*playbackTime);
 
-  const baseL=springNaturalWidth || (springEl.getBoundingClientRect().width || 1);
+  const S = window.__APP_SCALE || 1;
+      const baseL = springNaturalWidth || ((springEl.getBoundingClientRect().width || 1) / S);
   const dist=hookX-axx;
   const scale=dist/baseL;
   springEl.style.left=axx+'px';
   springEl.style.transform='scaleX('+scale+')';
 
-  const actorRect=actor.getBoundingClientRect();
-  const actorWidth=actorRect.width || 80;
+  const actorRect = actor.getBoundingClientRect();
+      const actorWidth = (actor.offsetWidth || ((actorRect.width || 80) / S));
   actor.style.bottom=bottomPx+'px';
   actor.style.left=(hookX-actorWidth/2)+'px';
 
@@ -3204,9 +3229,9 @@ function animate(now){
       const sinθ=Math.max(-1,Math.min(1,(hookX-cx)/Math.max(1,A_px)));
       const hookXg=cx+Aghost_px*sinθ;
 
-      const springBottom=getComputedStyle(springEl).bottom || 'calc(32vh + 92px)';
-      const ghostRect=ghost.getBoundingClientRect();
-      const ghostWidth=ghostRect.width || actorWidth || 80;
+      const springBottom=getComputedStyle(springEl).bottom || 'calc(var(--vh)*32 + 92px)';
+      const ghostRect = ghost.getBoundingClientRect();
+      const ghostWidth = (ghost.offsetWidth || ((ghostRect.width || actorWidth || 80) / S));
 
       ghost.style.bottom=bottomPx+'px';
       ghost.style.left  =(hookXg-ghostWidth/2)+'px';
@@ -3218,7 +3243,7 @@ function animate(now){
       ghostSpring.style.left     =axx+'px';
       ghostSpring.style.height   =springNaturalHeight
         ? (springNaturalHeight+'px')
-        : (springEl.getBoundingClientRect().height || 1)+'px';
+        : ((springEl.getBoundingClientRect().height || 1)/S)+'px';
       ghostSpring.style.transform='scaleX('+scaleg+')';
 
       const vis=ghostVisibility;
