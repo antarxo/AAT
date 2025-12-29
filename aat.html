@@ -69,7 +69,7 @@
       // default launcher file name (v6) + app param passthrough if present
       const p = new URLSearchParams(location.search);
       const app = p.get('app') || './index.html';
-      location.href = './aat-launcher-resize-iframe-v6.html?app=' + encodeURIComponent(app) + '&debug=1';
+      location.href = './laat.html?app=' + encodeURIComponent(app) + '&debug=1';
     });
 
     window.addEventListener('resize', render, {passive:true});
@@ -79,3 +79,4 @@
   </script>
 </body>
 </html>
+
