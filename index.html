@@ -165,77 +165,8 @@
 
 </style>
 
-<style id="fit-cover-style">
-  html, body { width:100%; height:100%; margin:0; overflow:hidden; }
-  body { background:#000; }
-  #fitHost { position:fixed; inset:0; overflow:hidden; }
-  #fitRoot { position:absolute; left:0; top:0; transform-origin:0 0; will-change:transform; }
-</style>
 </head>
 <body class="intro-open">
-<div id="fitHost"><div id="fitRoot">
-<script id="fit-cover-script">
-(() => {
-  const host = document.getElementById('fitHost');
-  const root = document.getElementById('fitRoot');
-  if (!host || !root) return;
-  root.style.visibility = 'hidden';
-
-  function viewportSize() {
-    const vv = window.visualViewport;
-    return {
-      w: vv ? vv.width  : document.documentElement.clientWidth,
-      h: vv ? vv.height : document.documentElement.clientHeight
-    };
-  }
-
-  function measureBase() {
-    const prev = root.style.transform;
-    root.style.transform = 'none';
-    const w = root.offsetWidth  || 1;
-    const h = root.offsetHeight || 1;
-    root.style.transform = prev;
-    return { w, h };
-  }
-
-  function applyCoverFit() {
-    const { w: baseW, h: baseH } = measureBase();
-    const { w: vw, h: vh } = viewportSize();
-
-    const s = Math.max(vw / baseW, vh / baseH); // COVER => μηδέν κενά
-    const tx = (vw - baseW * s) / 2;
-    const ty = (vh - baseH * s) / 2;
-
-    root.style.transform = `translate(${tx}px, ${ty}px) scale(${s})`;
-    document.documentElement.style.setProperty('--fitScale', String(s));
-    root.style.visibility = 'visible';
-  }
-
-  // Helpers για “λογικά” rects (unscaled) όταν χρειάζονται
-  window.__fitScale = () => parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--fitScale')) || 1;
-  window.__rectU = (el) => {
-    const r = el.getBoundingClientRect();
-    const s = window.__fitScale();
-    return {
-      left: r.left / s,
-      top: r.top / s,
-      right: r.right / s,
-      bottom: r.bottom / s,
-      width: r.width / s,
-      height: r.height / s
-    };
-  };
-
-  window.addEventListener('resize', applyCoverFit, { passive: true });
-  if (window.visualViewport) {
-    window.visualViewport.addEventListener('resize', applyCoverFit, { passive: true });
-    window.visualViewport.addEventListener('scroll', applyCoverFit, { passive: true });
-  }
-  window.addEventListener('load', applyCoverFit, { passive: true });
-
-  requestAnimationFrame(applyCoverFit);
-})();
-</script>
 
   <div class="strobe-curtain" id="strobeCurtain" aria-hidden="true"></div>
 
@@ -304,7 +235,7 @@
   </div>
   <!-- ghost δείκτης -->
   <div class="marker" id="markerGhost">
-    <div class.marker-line></div>
+    <div class="marker-line"></div>
     <div class="marker-tip"></div>
   </div>
 
@@ -1010,8 +941,8 @@ function updateMarbleTrack(){
     return;
   }
 
-  const stageRect = window.__rectU(stage);
-  const aRect = window.__rectU(actorImg);
+  const stageRect = stage.getBoundingClientRect();
+  const aRect = actorImg.getBoundingClientRect();
 
   // ΣΩΣΤΟ (σταθερό ως προς τη σκηνή): χρησιμοποιούμε το ΚΑΤΩ άκρο της “μεσαίας κουρτίνας”
   // όπως θα ήταν στη ΘΕΣΗ ΗΡΕΜΙΑΣ της (κλειστή), όχι το τρέχον bounding box (που αλλάζει όταν ανοίγει).
@@ -1913,9 +1844,9 @@ function getViewerAvatarCenter(idx1based){
   const idx0=(idx1based||1)-1;
   const div=viewersStrip.querySelector('.viewer-avatar[data-idx="'+idx0+'"]');
   const info=viewerInfo(idx1based);
-  const stageRect = window.__rectU(stage);
+  const stageRect=stage.getBoundingClientRect();
   if(div){
-    const r = window.__rectU(div);
+    const r=div.getBoundingClientRect();
     const baseBottom=parseFloat(div.dataset.baseBottom || '0') || 0;
     const cx=r.left+r.width/2 - stageRect.left;
     const cy=stageRect.height - baseBottom - r.height/2;
@@ -2021,7 +1952,7 @@ async function strobeExitWalk(){
   // κρατάμε αρχικές θέσεις για restore (αν χρειαστεί)
   const orig = actors.map(el=>({el,left:el.style.left,bottom:el.style.bottom,opacity:el.style.opacity}));
 
-  const stageRect = window.__rectU(stage);
+  const stageRect = stage.getBoundingClientRect();
   const stageW = stageRect.width || 900;
 
   // base layout (bottoms)
@@ -2541,7 +2472,7 @@ function ensureGhost(){
   ensureActorFloorBottom();
 
   if(!ghost){
-    const ar = window.__rectU(actor);
+    const ar=actor.getBoundingClientRect();
     const aw=ar.width || 144;
     const ah=ar.height|| 96;
 
@@ -3235,13 +3166,13 @@ function animate(now){
 
   const hookX=cx+A_px*Math.sin(omega*playbackTime);
 
-  const baseL=springNaturalWidth || (springEl.offsetWidth || 1);
+  const baseL=springNaturalWidth || (springEl.getBoundingClientRect().width || 1);
   const dist=hookX-axx;
   const scale=dist/baseL;
   springEl.style.left=axx+'px';
   springEl.style.transform='scaleX('+scale+')';
 
-  const actorRect = window.__rectU(actor);
+  const actorRect=actor.getBoundingClientRect();
   const actorWidth=actorRect.width || 80;
   actor.style.bottom=bottomPx+'px';
   actor.style.left=(hookX-actorWidth/2)+'px';
@@ -3274,7 +3205,7 @@ function animate(now){
       const hookXg=cx+Aghost_px*sinθ;
 
       const springBottom=getComputedStyle(springEl).bottom || 'calc(32vh + 92px)';
-      const ghostRect = window.__rectU(ghost);
+      const ghostRect=ghost.getBoundingClientRect();
       const ghostWidth=ghostRect.width || actorWidth || 80;
 
       ghost.style.bottom=bottomPx+'px';
@@ -3287,7 +3218,7 @@ function animate(now){
       ghostSpring.style.left     =axx+'px';
       ghostSpring.style.height   =springNaturalHeight
         ? (springNaturalHeight+'px')
-        : (springEl.offsetHeight || 1)+'px';
+        : (springEl.getBoundingClientRect().height || 1)+'px';
       ghostSpring.style.transform='scaleX('+scaleg+')';
 
       const vis=ghostVisibility;
@@ -3432,7 +3363,5 @@ window.addEventListener('load',async ()=>{
   bootFromQuery();
 });
 </script>
-
-</div></div>
 </body>
 </html>
