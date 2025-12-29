@@ -12,6 +12,11 @@
   <!-- CSS σκηνής -->
   <link rel="stylesheet" href="./aat-stage.css">
 
+  <!-- Stage scale-down (responsive): δεν πειράζει layout, μόνο κλιμακώνει όταν η οθόνη είναι μικρότερη από 1600×900 -->
+  <style id="stageScaleDownStyle">
+    #stage{ transform-origin: top left; will-change: transform; }
+  </style>
+
   <!-- Intro veil (ενσωματωμένο στο index) -->
   <style>
     body.intro-open { overflow: hidden; }
@@ -170,8 +175,6 @@
 
   <div class="strobe-curtain" id="strobeCurtain" aria-hidden="true"></div>
 
-<div id="stageViewport">
-
 <div class="stage" id="stage">
   <!-- Κουμπιά γλώσσας -->
   <div class="lang-toggle">
@@ -237,7 +240,7 @@
   </div>
   <!-- ghost δείκτης -->
   <div class="marker" id="markerGhost">
-    <div class="marker-line"></div>
+    <div class.marker-line></div>
     <div class="marker-tip"></div>
   </div>
 
@@ -354,7 +357,7 @@
 
   <div class="foyer-bubble" id="foyerBubble">ΘΕΑΤΗΣ</div>
 </div>
-</div>
+
 
 <!-- Intro (πέπλο πάνω από τη σκηνή) -->
 <div id="introOverlay" class="intro-veil" aria-hidden="false">
@@ -364,35 +367,6 @@
     <button id="introContinue" class="intro-continue">Συνέχεια</button>
   </div>
 </div>
-
-<script>
-/* ---------- Responsive scaling (design: 1600×900) ---------- */
-(function(){
-  const DESIGN_W = 1600;
-  const DESIGN_H = 900;
-
-  function fitStage(){
-    const stage = document.getElementById('stage');
-    if (!stage) return;
-
-    const vw = window.innerWidth;
-    const vh = window.innerHeight;
-
-    const s = Math.min(vw / DESIGN_W, vh / DESIGN_H);
-    const x = (vw - DESIGN_W * s) / 2;
-    const y = (vh - DESIGN_H * s) / 2;
-
-    stage.style.transform = `translate(${x}px, ${y}px) scale(${s})`;
-    stage.dataset.scale = String(s);
-    stage.dataset.offsetX = String(x);
-    stage.dataset.offsetY = String(y);
-  }
-
-  window.addEventListener('resize', fitStage, { passive:true });
-  window.addEventListener('orientationchange', fitStage);
-  fitStage();
-})();
-</script>
 
 <script>
 /* ---------- ΔΕΔΟΜΕΝΑ ΑΠΟ dialogs-*.json ---------- */
@@ -3394,5 +3368,35 @@ window.addEventListener('load',async ()=>{
   bootFromQuery();
 });
 </script>
+
+<script id="stageScaleDownScript">
+(function(){
+  const BASE_W = 1600;
+  const BASE_H = 900;
+
+  function fit(){
+    const stage = document.getElementById('stage');
+    if(!stage) return;
+
+    const vw = window.innerWidth || document.documentElement.clientWidth || BASE_W;
+    const vh = window.innerHeight || document.documentElement.clientHeight || BASE_H;
+
+    // ΜΟΝΟ scale-down. Στη “μάνα” οθόνη σου δεν αλλάζει τίποτα (s=1).
+    const s = Math.min(1, vw / BASE_W, vh / BASE_H);
+
+    // Το #stage είναι 100vw×100vh (τρέχον viewport). Με scale-down, το κεντράρουμε.
+    const x = (vw - vw * s) / 2;
+    const y = (vh - vh * s) / 2;
+
+    stage.style.transform = (s === 1) ? '' : `translate(${x}px, ${y}px) scale(${s})`;
+    stage.dataset.scaleDown = String(s);
+  }
+
+  window.addEventListener('resize', fit, {passive:true});
+  window.addEventListener('orientationchange', fit);
+  window.addEventListener('load', fit);
+})();
+</script>
+
 </body>
 </html>
