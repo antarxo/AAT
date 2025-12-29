@@ -83,7 +83,7 @@ body{
 
 .spring{
   position:absolute;
-  bottom:calc(32vh + 92px);
+  bottom:calc(32 * var(--aat-vh) + 92px * var(--aat-scale));
   left:10%;
   height:96px;
   width:auto;
@@ -96,7 +96,7 @@ body{
 
 .actor{
   position:absolute;
-  bottom:calc(32vh + 135px);
+  bottom:calc(32 * var(--aat-vh) + 135px * var(--aat-scale));
   left:50%;
   width:144px;
   height:96px;
@@ -114,7 +114,7 @@ body{
   position:absolute;
   left:18%;
   width:64%;
-  bottom:calc(32vh - 8px);
+  bottom:calc(32 * var(--aat-vh) - 8px * var(--aat-scale));
   height:2px;
   background:#aaa;
   z-index:155;
@@ -156,7 +156,7 @@ body{
   width:100%;
   bottom:0;
   height:260px;          /* Σταθερό ύψος ώστε να χωράνε τα avatars */
-  z-index:1000;          /* πάνω από κοινό */
+  z-index:1600;          /* πάνω από κοινό */
   pointer-events:none;
   overflow:visible;
 }
@@ -164,7 +164,7 @@ body{
 .viewer-avatar{
   position:absolute;
   width:140px;           /* ΣΗΜΑΝΤΙΚΟ: όχι auto, αλλιώς 0px και εξαφανίζονται */
-  height:22vh;           /* default, μπορεί να αλλάξει από JSON */
+  height:calc(22 * var(--aat-vh));           /* default, μπορεί να αλλάξει από JSON */
   overflow:visible;
   border-radius:0;
   border:none;
@@ -261,7 +261,7 @@ body{
   border-radius:8px;
   padding:6px 8px;
   display:none;
-  max-height:25vh;      /* πιο χαμηλός πίνακας */
+  max-height:calc(25 * var(--aat-vh));      /* πιο χαμηλός πίνακας */
   overflow-y:auto;
   font-size:12px;
 }
@@ -303,7 +303,7 @@ body{
   right:10px;
   width:220px;           /* πιο στενό, ευθυγραμμισμένο με measure-box/params */
   height:120px;          /* μικρότερο ύψος */
-  top:calc(44px + 28vh + 8px);
+  top:calc(44px * var(--aat-scale) + 28 * var(--aat-vh) + 8px * var(--aat-scale));
   display:none;
   z-index: 2200;
   border:1px dashed rgba(255,255,255,.25);
@@ -316,7 +316,7 @@ body{
   right:10px;
   width:220px;           /* ίδιο πλάτος */
   height:120px;          /* ίδιο μικρό ύψος */
-  top:calc(44px + 28vh + 8px + 120px + 8px);
+  top:calc(44px * var(--aat-scale) + 28 * var(--aat-vh) + 8px * var(--aat-scale) + 120px * var(--aat-scale) + 8px * var(--aat-scale));
   display:none;
   z-index: 2200;
   border:1px dashed rgba(255,255,255,.25);
@@ -327,7 +327,7 @@ body{
 .params-box{
   position:absolute;
   right:10px;
-  top:calc(44px + 28vh + 8px + 120px + 8px + 120px + 8px);
+  top:calc(44px * var(--aat-scale) + 28 * var(--aat-vh) + 8px * var(--aat-scale) + 120px * var(--aat-scale) + 8px * var(--aat-scale) + 120px * var(--aat-scale) + 8px * var(--aat-scale));
   z-index: 2199;
   background:rgba(0,0,0,.6);
   color:#fff;
@@ -388,7 +388,7 @@ body{
   position:absolute;
   left:18%;
   width:64%;
-  bottom:calc(32vh - 8px + 1px);
+  bottom:calc(32 * var(--aat-vh) - 8px * var(--aat-scale) + 1px * var(--aat-scale));
   height:24px;
   font-size:10px;
   font-family:"Courier New",monospace;
@@ -423,7 +423,7 @@ body{
 
 .marker{
   position:absolute;
-  bottom:calc(32vh - 8px + 1px);
+  bottom:calc(32 * var(--aat-vh) - 8px * var(--aat-scale) + 1px * var(--aat-scale));
   width:0;
   height:80px;
   transform:translateX(-50%);
@@ -920,10 +920,10 @@ body{
   /* ΓΩΝΙΑ ΟΘΟΝΗΣ: δεξιά */
   right:0;
 
-  width:18vw;
-  max-width:240px;
-  min-width:160px;
-  height:46vh;
+  width:calc(18 * var(--aat-vw));
+  max-width:calc(240px * var(--aat-scale));
+  min-width:calc(160px * var(--aat-scale));
+  height:calc(46 * var(--aat-vh));
 
   /* ίδιο look με τα πλαϊνά panels/κουρτίνες */
   background:linear-gradient(to left,#300000,#1a0000);
