@@ -2,6 +2,8 @@
   --aat-dw: 1403;
   --aat-dh: 648;
   --aat-scale: 1;
+  --aat-pan-x: 0;
+  --aat-pan-y: 0;
   --aat-vh0: calc(var(--aat-dh) * 1px / 100);
   --aat-vw0: calc(var(--aat-dw) * 1px / 100);
 
@@ -30,7 +32,7 @@ body{
   top:50%;
   width:calc(var(--aat-dw) * 1px);
   height:calc(var(--aat-dh) * 1px);
-  transform:translate(-50%,-50%) scale(var(--aat-scale));
+  transform:translate(-50%,-50%) translate(calc(var(--aat-pan-x) * 1px), calc(var(--aat-pan-y) * 1px)) scale(var(--aat-scale));
   transform-origin:center center;
   overflow:hidden;
 }
@@ -168,7 +170,7 @@ body{
   width:100%;
   bottom:0;
   height:260px;          /* Σταθερό ύψος ώστε να χωράνε τα avatars */
-  z-index:1400;          /* πίσω από koino.png */
+  z-index: 1400;          /* πίσω από koino.png */
   pointer-events:none;
   overflow:visible;
 }
