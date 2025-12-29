@@ -3,12 +3,11 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>AAT Launcher — 16:9 scaling (baseline-aware)</title>
+  <title>AAT Launcher — iframe resize (preserve baseline aspect)</title>
   <style>
     html,body{height:100%;margin:0;overflow:hidden;background:#0b0f14;}
     #wrap{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;overflow:hidden;}
-    #pane{position:relative;transform-origin:center center;}
-    #app{border:0;display:block;background:transparent;}
+    #app{border:0;display:block;background:transparent;image-rendering:auto;}
     #msg{
       position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);
       max-width:min(760px,92vw);
@@ -21,14 +20,30 @@
     #msg b{display:block;margin-bottom:8px;font-size:15px;}
     #msg code{background:rgba(255,255,255,.08);padding:2px 6px;border-radius:6px;}
     #msg .small{opacity:.85;margin-top:10px;font-size:13px;}
+    #hud{
+      position:fixed;left:12px;top:12px;z-index:999999;
+      padding:10px 12px;border-radius:12px;
+      background:rgba(20,24,32,.88);
+      border:1px solid rgba(255,255,255,.14);
+      color:#e7eefc;
+      font:12.5px/1.35 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      box-shadow:0 12px 32px rgba(0,0,0,.45);
+      display:none;
+      max-width:min(520px, 92vw);
+      white-space:nowrap;
+    }
+    #hud b{font-size:13px;}
+    #hud .row{display:flex;gap:10px;align-items:baseline;}
+    #hud .k{opacity:.8;}
+    #hud .v{font-variant-numeric:tabular-nums;}
   </style>
 </head>
 <body>
   <div id="wrap">
-    <div id="pane">
-      <iframe id="app" scrolling="no"></iframe>
-    </div>
+    <iframe id="app" scrolling="no"></iframe>
   </div>
+
+  <div id="hud"></div>
 
   <div id="msg">
     <b>Δεν βρίσκω/δεν μπορώ να φορτώσω το app.</b>
@@ -40,14 +55,13 @@
 
   <script>
   (function(){
-    const DEFAULT_W = 1600, DEFAULT_H = 900; // 16:9
-    const KEY_W = 'AAT_LAUNCH_BASE_W_16_9';
-    const KEY_H = 'AAT_LAUNCH_BASE_H_16_9';
+    const KEY_W = 'AAT_IFR_BASE_W';
+    const KEY_H = 'AAT_IFR_BASE_H';
 
-    const pane = document.getElementById('pane');
     const app  = document.getElementById('app');
     const msg  = document.getElementById('msg');
     const srcOut = document.getElementById('srcOut');
+    const hud  = document.getElementById('hud');
 
     const p = new URLSearchParams(location.search);
     const appParam = p.get('app') || './index.html';
@@ -55,59 +69,81 @@
     app.src = appURL;
     srcOut.textContent = appParam;
 
-    const fitMode = (p.get('fit') || 'contain').toLowerCase(); // contain | cover
-    const mode    = (p.get('mode') || 'locked').toLowerCase(); // locked | baseline
+    const mode = (p.get('mode') || 'baseline').toLowerCase(); // baseline | locked
+    const debugOn = p.get('debug') === '1';
+    hud.style.display = debugOn ? 'block' : 'none';
+
+    const qW = parseFloat(p.get('baseW') || '');
+    const qH = parseFloat(p.get('baseH') || '');
 
     function showMsg(){ msg.style.display = 'block'; }
     function hideMsg(){ msg.style.display = 'none'; }
 
     function viewport(){
       const vv = window.visualViewport;
-      const vw = vv ? vv.width  : (window.innerWidth  || document.documentElement.clientWidth  || DEFAULT_W);
-      const vh = vv ? vv.height : (window.innerHeight || document.documentElement.clientHeight || DEFAULT_H);
-      return {vw, vh};
-    }
-
-    function max16by9Inside(vw, vh){
-      const wFromH = vh * (16/9);
-      const baseW = Math.min(vw, wFromH);
-      const baseH = baseW * (9/16);
-      return {baseW, baseH};
+      const vw = vv ? vv.width  : (window.innerWidth  || document.documentElement.clientWidth  || 0);
+      const vh = vv ? vv.height : (window.innerHeight || document.documentElement.clientHeight || 0);
+      return {vw, vh, vvScale: vv ? vv.scale : 1};
     }
 
     function getBase(){
-      const qW = parseFloat(p.get('baseW') || '');
-      const qH = parseFloat(p.get('baseH') || '');
-      if (isFinite(qW) && isFinite(qH) && qW>0 && qH>0) return {baseW:qW, baseH:qH};
+      if (isFinite(qW) && isFinite(qH) && qW>0 && qH>0) return {bw:qW, bh:qH};
 
-      if (mode !== 'baseline') return {baseW: DEFAULT_W, baseH: DEFAULT_H};
+      if (mode === 'locked'){
+        return {bw:1600, bh:900};
+      }
 
       let bw = parseFloat(localStorage.getItem(KEY_W) || '');
       let bh = parseFloat(localStorage.getItem(KEY_H) || '');
-      if (isFinite(bw) && isFinite(bh) && bw>0 && bh>0) return {baseW:bw, baseH:bh};
+      if (isFinite(bw) && isFinite(bh) && bw>0 && bh>0) return {bw, bh};
 
       const {vw, vh} = viewport();
-      const {baseW, baseH} = max16by9Inside(vw, vh);
-      localStorage.setItem(KEY_W, String(baseW));
-      localStorage.setItem(KEY_H, String(baseH));
-      return {baseW, baseH};
+      if (vw>0 && vh>0){
+        localStorage.setItem(KEY_W, String(vw));
+        localStorage.setItem(KEY_H, String(vh));
+        return {bw:vw, bh:vh};
+      }
+      return {bw:1600, bh:900};
     }
 
     function fit(){
-      const {vw, vh} = viewport();
-      const {baseW, baseH} = getBase();
+      const {vw, vh, vvScale} = viewport();
+      const {bw, bh} = getBase();
+      if (!vw || !vh || !bw || !bh) return;
 
-      pane.style.width  = baseW + 'px';
-      pane.style.height = baseH + 'px';
-      app.style.width   = baseW + 'px';
-      app.style.height  = baseH + 'px';
+      const ar = bw / bh;
 
-      const sx = vw / baseW;
-      const sy = vh / baseH;
-      const s = (fitMode === 'cover') ? Math.max(sx, sy) : Math.min(sx, sy);
+      let w, h;
+      if ((vw / vh) >= ar){
+        h = vh;
+        w = h * ar;
+      } else {
+        w = vw;
+        h = w / ar;
+      }
 
-      pane.style.transform = `scale(${s})`;
+      w = Math.floor(w);
+      h = Math.floor(h);
+
+      app.style.width = w + 'px';
+      app.style.height = h + 'px';
+
+      if (debugOn){
+        const dpr = window.devicePixelRatio || 1;
+        hud.innerHTML =
+          `<div class="row"><b>iframe-resize debug</b></div>` +
+          `<div class="row"><span class="k">app</span><span class="v">${esc(appParam)}</span></div>` +
+          `<div class="row"><span class="k">mode</span><span class="v">${mode}</span></div>` +
+          `<div class="row"><span class="k">baseline</span><span class="v">${rnd(bw)}×${rnd(bh)} (AR ${ar.toFixed(4)})</span></div>` +
+          `<div class="row"><span class="k">viewport</span><span class="v">${rnd(vw)}×${rnd(vh)} (AR ${(vw/vh).toFixed(4)})</span></div>` +
+          `<div class="row"><span class="k">iframe</span><span class="v">${w}×${h}</span></div>` +
+          `<div class="row"><span class="k">dpr</span><span class="v">${dpr.toFixed(2)}</span><span class="k">vv.scale</span><span class="v">${(vvScale||1).toFixed(3)}</span></div>` +
+          `<div class="row"><span class="k">reset baseline</span><span class="v">Alt+Ctrl+Shift+R</span></div>`;
+      }
     }
+
+    function rnd(x){ return Math.round(x); }
+    function esc(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
     window.addEventListener('keydown', (e)=>{
       if (mode === 'baseline' && e.altKey && e.ctrlKey && e.shiftKey && (e.key === 'R' || e.key === 'r')){
@@ -119,6 +155,7 @@
 
     window.addEventListener('resize', fit, {passive:true});
     window.addEventListener('orientationchange', fit);
+    if (window.visualViewport) window.visualViewport.addEventListener('resize', fit, {passive:true});
 
     async function checkReachable(){
       try{
@@ -129,10 +166,9 @@
       }
     }
 
-    app.addEventListener('load', ()=>{ hideMsg(); });
+    app.addEventListener('load', ()=>{ hideMsg(); fit(); });
     setTimeout(checkReachable, 600);
     setTimeout(checkReachable, 1500);
-
     fit();
   })();
   </script>
