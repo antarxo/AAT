@@ -45,6 +45,19 @@
       root.style.setProperty('--aat-dw', DW);
       root.style.setProperty('--aat-dh', DH);
       root.style.setProperty('--aat-scale', (Math.max(0.01, s)).toFixed(6));
+
+      // Αν σε cover/fill* προκύπτει crop, προτιμάμε να κόβεται από ΠΑΝΩ (όχι κάτω)
+      // ώστε να φαίνονται τα κουμπιά/χειριστήρια στο κάτω μέρος (κινητό landscape κλπ).
+      const scaledW = DW * s;
+      const scaledH = DH * s;
+      const cropW = Math.max(0, scaledW - vw);
+      const cropH = Math.max(0, scaledH - vh);
+
+      const panX = 0; // κρατάμε κέντρο οριζόντια
+      const panY = cropH > 0 ? (-(cropH / 2) / s) : 0; // unscaled (design px)
+
+      root.style.setProperty('--aat-pan-x', panX.toFixed(3));
+      root.style.setProperty('--aat-pan-y', panY.toFixed(3));
     }
 
     window.addEventListener('resize', apply, {passive:true});
