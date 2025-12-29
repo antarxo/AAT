@@ -166,8 +166,8 @@
 </style>
 
 
-  <!-- Responsive scale-down χωρίς αλλαγές σε CSS/z-index: κάνουμε scale στο BODY ώστε να πιάνει και fixed/vh/vw -->
-  <style id="aatBodyScaleStyle">
+  <!-- Responsive scale-down με baseline από το δικό σου viewport (ώστε στη δική σου οθόνη να ΜΗ μικραίνει) -->
+  <style id="aatBaselineScaleStyle">
     html, body { width: 100%; height: 100%; margin: 0; }
     body { transform-origin: top left; }
   </style>
@@ -3371,32 +3371,49 @@ window.addEventListener('load',async ()=>{
 });
 </script>
 
-<script id="aatBodyScaleScript">
+<script id="aatBaselineScaleScript">
 (function(){
-  const BASE_W = 1600;
-  const BASE_H = 900;
+  const KEY_W = 'AAT_BASELINE_VW';
+  const KEY_H = 'AAT_BASELINE_VH';
+
+  function getBaseline(){
+    let bw = parseFloat(localStorage.getItem(KEY_W) || '');
+    let bh = parseFloat(localStorage.getItem(KEY_H) || '');
+    if (!isFinite(bw) || !isFinite(bh) || bw <= 0 || bh <= 0){
+      bw = window.innerWidth || document.documentElement.clientWidth || 1600;
+      bh = window.innerHeight || document.documentElement.clientHeight || 900;
+      localStorage.setItem(KEY_W, String(bw));
+      localStorage.setItem(KEY_H, String(bh));
+    }
+    return {bw, bh};
+  }
 
   function fit(){
-    const vw = window.innerWidth || document.documentElement.clientWidth || BASE_W;
-    const vh = window.innerHeight || document.documentElement.clientHeight || BASE_H;
+    const {bw, bh} = getBaseline();
+    const vw = window.innerWidth || document.documentElement.clientWidth || bw;
+    const vh = window.innerHeight || document.documentElement.clientHeight || bh;
 
-    // scale-down only: στη δική σου βασική οθόνη δεν αλλάζει τίποτα
-    const s = Math.min(1, vw / BASE_W, vh / BASE_H);
-
-    // Κεντράρισμα του scaled whole-page (body). Με transform στο body, τα fixed γίνονται “fixed” ως προς το body.
+    // Scale-down only relative to baseline
+    const s = Math.min(1, vw / bw, vh / bh);
     const x = (vw - vw * s) / 2;
     const y = (vh - vh * s) / 2;
 
-    if (s === 1){
-      document.body.style.transform = '';
-    } else {
-      document.body.style.transform = `translate(${x}px, ${y}px) scale(${s})`;
-    }
-
+    document.body.style.transform = (s === 1) ? '' : `translate(${x}px, ${y}px) scale(${s})`;
     document.documentElement.style.overflow = 'hidden';
     document.body.style.overflow = 'hidden';
     document.body.dataset.scale = String(s);
+    document.body.dataset.baselineW = String(bw);
+    document.body.dataset.baselineH = String(bh);
   }
+
+  // Reset baseline with Alt+Ctrl+Shift+R
+  window.addEventListener('keydown', (e)=>{
+    if (e.altKey && e.ctrlKey && e.shiftKey && (e.key === 'R' || e.key === 'r')){
+      localStorage.removeItem(KEY_W);
+      localStorage.removeItem(KEY_H);
+      location.reload();
+    }
+  });
 
   window.addEventListener('resize', fit, {passive:true});
   window.addEventListener('orientationchange', fit);
