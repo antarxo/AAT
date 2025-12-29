@@ -3,99 +3,23 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>AAT Launcher — iframe size from width (AR 1450/768)</title>
+  <title>AAT Launcher — fixed iframe 1600×768</title>
   <style>
     html,body{height:100%;margin:0;overflow:hidden;background:#000;}
     #wrap{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;overflow:hidden;}
-    #app{border:0;display:block;background:transparent;}
-    #hud{
-      position:fixed;left:12px;top:12px;z-index:999999;
-      padding:10px 12px;border-radius:12px;
-      background:rgba(20,24,32,.88);
-      border:1px solid rgba(255,255,255,.14);
-      color:#e7eefc;
-      font:12.5px/1.35 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
-      box-shadow:0 12px 32px rgba(0,0,0,.45);
-      display:none;
-      max-width:min(820px, 92vw);
-      white-space:nowrap;
-    }
-    #hud b{font-size:13px;}
-    #hud .row{display:flex;gap:10px;align-items:baseline;}
-    #hud .k{opacity:.8;}
-    #hud .v{font-variant-numeric:tabular-nums;}
+    #app{border:0;display:block;width:1600px;height:768px;background:transparent;}
   </style>
 </head>
 <body>
   <div id="wrap">
     <iframe id="app" scrolling="no"></iframe>
   </div>
-  <div id="hud"></div>
 
   <script>
   (function(){
-    const RATIO_W_OVER_H = 1450/768;      // = 1.888...
-    const RATIO_H_OVER_W = 768/1450;      // = 0.529655...
-
-    const app = document.getElementById('app');
-    const hud = document.getElementById('hud');
-
     const p = new URLSearchParams(location.search);
     const appParam = p.get('app') || './index.html';
-    const debugOn  = p.get('debug') === '1';
-    hud.style.display = debugOn ? 'block' : 'none';
-
-    app.src = new URL(appParam, location.href).href;
-
-    function viewport(){
-      const vv = window.visualViewport;
-      const vw = vv ? vv.width  : (window.innerWidth  || document.documentElement.clientWidth  || 0);
-      const vh = vv ? vv.height : (window.innerHeight || document.documentElement.clientHeight || 0);
-      const vvs = vv ? vv.scale : 1;
-      return {vw, vh, vvs};
-    }
-
-    // Ζητούμενο: το iframe να παίρνει ΔΙΑΣΤΑΣΗ από το πλάτος:
-    // 1) θέτουμε w = vw (όσο χωράει),
-    // 2) υπολογίζουμε h = w * (768/1450),
-    // 3) αν το h ξεπερνά το vh, τότε περιορίζουμε με βάση το ύψος (contain fallback).
-    function fit(){
-      const {vw, vh, vvs} = viewport();
-      if(!vw || !vh) return;
-
-      let w = vw;
-      let h = w * RATIO_H_OVER_W;
-
-      if (h > vh) {
-        h = vh;
-        w = h * RATIO_W_OVER_H;
-      }
-
-      w = Math.floor(w);
-      h = Math.floor(h);
-
-      app.style.width  = w + 'px';
-      app.style.height = h + 'px';
-
-      if (debugOn){
-        const dpr = window.devicePixelRatio || 1;
-        hud.innerHTML =
-          `<div class="row"><b>v13 (size from width, AR 1450/768)</b></div>` +
-          `<div class="row"><span class="k">app</span><span class="v">${esc(appParam)}</span></div>` +
-          `<div class="row"><span class="k">viewport</span><span class="v">${Math.round(vw)}×${Math.round(vh)} (AR ${(vw/vh).toFixed(4)})</span></div>` +
-          `<div class="row"><span class="k">iframe</span><span class="v">${w}×${h} (AR ${(w/h).toFixed(4)})</span></div>` +
-          `<div class="row"><span class="k">dpr</span><span class="v">${dpr.toFixed(2)}</span><span class="k">vv.scale</span><span class="v">${(vvs||1).toFixed(3)}</span></div>`;
-      }
-    }
-
-    function esc(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-
-    window.addEventListener('resize', fit, {passive:true});
-    window.addEventListener('orientationchange', fit);
-    if (window.visualViewport) window.visualViewport.addEventListener('resize', fit, {passive:true});
-    app.addEventListener('load', fit);
-
-    fit();
+    document.getElementById('app').src = new URL(appParam, location.href).href;
   })();
   </script>
 </body>
