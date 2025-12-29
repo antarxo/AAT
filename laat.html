@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>AAT Launcher — fixed internal viewport + COVER (center-crop)</title>
+  <title>AAT Launcher — fill width, crop height if needed</title>
   <style>
     html,body{height:100%;margin:0;overflow:hidden;background:#000;}
     #host{position:fixed;inset:0;overflow:hidden;}
@@ -26,7 +26,7 @@
       font:12.5px/1.35 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
       box-shadow:0 12px 32px rgba(0,0,0,.45);
       display:none;
-      max-width:min(820px, 92vw);
+      max-width:min(860px, 92vw);
       white-space:nowrap;
     }
     #hud b{font-size:13px;}
@@ -75,7 +75,6 @@
     const appURL = new URL(appParam, location.href).href;
     app.src = appURL;
 
-    // fixed internal viewport ("design canvas")
     const DW = Math.max(1, parseFloat(p.get('dw') || '1450'));
     const DH = Math.max(1, parseFloat(p.get('dh') || '768'));
 
@@ -97,25 +96,25 @@
       app.style.width  = DW + 'px';
       app.style.height = DH + 'px';
 
-      // COVER: γεμίζει πάντα, με center-crop όπου χρειάζεται
-      const s = Math.max(vw / DW, vh / DH);
+      // Ζητούμενο: γεμίζουμε ΠΑΝΤΑ το πλάτος. Άρα scale = vw / DW.
+      // Αν μετά το scaled ύψος είναι μεγαλύτερο, κόβουμε ύψος (crop). Αν είναι μικρότερο, θα έχουμε γράμματα (letterbox).
+      const s = vw / DW;
 
-      // center in viewport:
-      // anchor at center, then translate by half design size, then scale
       app.style.transform = `translate(${-(DW/2)}px, ${-(DH/2)}px) scale(${s})`;
 
       if(debugOn){
         const dpr = window.devicePixelRatio || 1;
         const shownW = DW * s, shownH = DH * s;
-        const cropX = Math.max(0, shownW - vw);
-        const cropY = Math.max(0, shownH - vh);
+        const cropY = Math.max(0, shownH - vh);   // αν >0 κόβεται ύψος (total)
+        const barsY = Math.max(0, vh - shownH);   // αν >0 έχουμε κενό πάνω/κάτω (total)
         hud.innerHTML =
-          `<div class="row"><b>v11 (COVER, center-crop)</b></div>` +
+          `<div class="row"><b>v12 (fill width → crop height if needed)</b></div>` +
           `<div class="row"><span class="k">app</span><span class="v">${esc(appParam)}</span></div>` +
           `<div class="row"><span class="k">design</span><span class="v">${DW}×${DH} (AR ${(DW/DH).toFixed(4)})</span></div>` +
           `<div class="row"><span class="k">viewport</span><span class="v">${Math.round(vw)}×${Math.round(vh)} (AR ${(vw/vh).toFixed(4)})</span></div>` +
           `<div class="row"><span class="k">scale</span><span class="v">${s.toFixed(4)}</span></div>` +
-          `<div class="row"><span class="k">cropping</span><span class="v">x=${Math.round(cropX)}px, y=${Math.round(cropY)}px (total)</span></div>` +
+          `<div class="row"><span class="k">height</span><span class="v">shownH=${Math.round(shownH)}px</span></div>` +
+          `<div class="row"><span class="k">cropY</span><span class="v">${Math.round(cropY)}px (total)</span><span class="k">barsY</span><span class="v">${Math.round(barsY)}px (total)</span></div>` +
           `<div class="row"><span class="k">dpr</span><span class="v">${dpr.toFixed(2)}</span><span class="k">vv.scale</span><span class="v">${(vvs||1).toFixed(3)}</span></div>` +
           `<div class="row"><span class="k">params</span><span class="v">?dw=${DW}&dh=${DH}</span></div>`;
       }
