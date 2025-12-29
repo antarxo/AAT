@@ -170,6 +170,8 @@
 
   <div class="strobe-curtain" id="strobeCurtain" aria-hidden="true"></div>
 
+<div id="stageViewport">
+
 <div class="stage" id="stage">
   <!-- Κουμπιά γλώσσας -->
   <div class="lang-toggle">
@@ -352,7 +354,7 @@
 
   <div class="foyer-bubble" id="foyerBubble">ΘΕΑΤΗΣ</div>
 </div>
-
+</div>
 
 <!-- Intro (πέπλο πάνω από τη σκηνή) -->
 <div id="introOverlay" class="intro-veil" aria-hidden="false">
@@ -362,6 +364,35 @@
     <button id="introContinue" class="intro-continue">Συνέχεια</button>
   </div>
 </div>
+
+<script>
+/* ---------- Responsive scaling (design: 1600×900) ---------- */
+(function(){
+  const DESIGN_W = 1600;
+  const DESIGN_H = 900;
+
+  function fitStage(){
+    const stage = document.getElementById('stage');
+    if (!stage) return;
+
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+
+    const s = Math.min(vw / DESIGN_W, vh / DESIGN_H);
+    const x = (vw - DESIGN_W * s) / 2;
+    const y = (vh - DESIGN_H * s) / 2;
+
+    stage.style.transform = `translate(${x}px, ${y}px) scale(${s})`;
+    stage.dataset.scale = String(s);
+    stage.dataset.offsetX = String(x);
+    stage.dataset.offsetY = String(y);
+  }
+
+  window.addEventListener('resize', fitStage, { passive:true });
+  window.addEventListener('orientationchange', fitStage);
+  fitStage();
+})();
+</script>
 
 <script>
 /* ---------- ΔΕΔΟΜΕΝΑ ΑΠΟ dialogs-*.json ---------- */
