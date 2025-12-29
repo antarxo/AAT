@@ -15,14 +15,17 @@
 
 body{
   margin:0;
-  position:relative;
-  width:100vw;
-  height:100vh;
+  position:fixed;
+  left:var(--aat-vvoffx, 0px);
+  top:var(--aat-vvoffy, 0px);
+  width:var(--aat-vvw, 100vw);
+  height:var(--aat-vvh, 100vh);
   background:radial-gradient(circle at center,#222 0%,#000 100%);
   overflow:hidden;
   font-family:Inter,system-ui,sans-serif;
   color:#fff;
 }
+
 
 .stage{
   position:absolute;
@@ -1043,15 +1046,4 @@ body.exit-mask-active .exit-panel-mask{
 #laws,
 .laws-panel{
   z-index: 1601 !important;
-}
-
-/* --- Mobile safe-area + low-height landscape safeguard (keeps controls visible) --- */
-@supports (padding: env(safe-area-inset-bottom)) {
-  .controls{ bottom: calc(12px + env(safe-area-inset-bottom)); }
-}
-@media (orientation: landscape) and (max-height: 520px) {
-  .controls{
-    bottom: 24px;
-    transform: translateX(-50%) scale(0.92);
-  }
 }
