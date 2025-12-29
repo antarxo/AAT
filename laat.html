@@ -3,18 +3,21 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>AAT Launcher — full viewport iframe (no scaling)</title>
+  <title>AAT Launcher — fixed internal viewport + uniform scale</title>
   <style>
     html,body{height:100%;margin:0;overflow:hidden;background:#000;}
-    /* Host page fills the browser viewport exactly */
+    /* host fills viewport */
+    #host{position:fixed;inset:0;overflow:hidden;}
+    /* iframe is a fixed-size "design canvas" that we uniformly scale */
     #app{
-      position:fixed;
-      inset:0;
-      width:100vw;
-      height:100vh;
+      position:absolute;
+      left:50%;
+      top:50%;
       border:0;
       display:block;
       background:transparent;
+      transform-origin: top left;
+      will-change: transform;
     }
     #hud{
       position:fixed;left:12px;top:12px;z-index:999999;
@@ -25,7 +28,7 @@
       font:12.5px/1.35 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
       box-shadow:0 12px 32px rgba(0,0,0,.45);
       display:none;
-      max-width:min(740px, 92vw);
+      max-width:min(760px, 92vw);
       white-space:nowrap;
     }
     #hud b{font-size:13px;}
@@ -47,32 +50,41 @@
   </style>
 </head>
 <body>
-  <iframe id="app" scrolling="no"></iframe>
+  <div id="host">
+    <iframe id="app" scrolling="no"></iframe>
+  </div>
+
   <div id="hud"></div>
 
   <div id="msg">
     <b>Δεν βρίσκω/δεν μπορώ να φορτώσω το app.</b>
     Το launcher προσπαθεί να φορτώσει: <code id="srcOut"></code>
     <div class="small">
-      Δώσε path με <code>?app=...</code> (π.χ. <code>?app=./index.html</code> ή <code>?app=./app/index.html</code>).
+      Δώσε path με <code>?app=...</code> (π.χ. <code>?app=./index.html</code>) ή όρισε <code>?dw=...</code> <code>&dh=...</code>.
     </div>
   </div>
 
   <script>
   (function(){
+    const host = document.getElementById('host');
     const app  = document.getElementById('app');
     const hud  = document.getElementById('hud');
     const msg  = document.getElementById('msg');
 
     const p = new URLSearchParams(location.search);
+
+    // app path
     const appParam = p.get('app') || './index.html';
-    const debugOn = p.get('debug') === '1';
-    hud.style.display = debugOn ? 'block' : 'none';
-
     document.getElementById('srcOut').textContent = appParam;
-
     const appURL = new URL(appParam, location.href).href;
     app.src = appURL;
+
+    // "design" internal viewport (σταθερό). Default: τα δικά σου 1403×648.
+    const DW = Math.max(1, parseFloat(p.get('dw') || '1403'));
+    const DH = Math.max(1, parseFloat(p.get('dh') || '648'));
+
+    const debugOn = p.get('debug') === '1';
+    hud.style.display = debugOn ? 'block' : 'none';
 
     function vp(){
       const vv = window.visualViewport;
@@ -82,23 +94,31 @@
       return {vw, vh, vvs};
     }
 
-    // We do NOT scale content. We only make the iframe match the host viewport exactly.
     function fit(){
       const {vw, vh, vvs} = vp();
-      if (!vw || !vh) return;
+      if(!vw || !vh) return;
 
-      // Use px for robustness (avoids 100vh quirks on some browsers)
-      app.style.width  = Math.floor(vw) + 'px';
-      app.style.height = Math.floor(vh) + 'px';
+      // fixed internal size
+      app.style.width  = DW + 'px';
+      app.style.height = DH + 'px';
 
-      if (debugOn){
+      // uniform scale to fit host viewport (letterbox όταν αλλάζει aspect)
+      const s = Math.min(vw / DW, vh / DH);
+
+      // center: translate(-50%,-50%) then scale from top-left
+      // to keep origin stable: we offset by half of (DW,DH) in the translate.
+      app.style.transform = `translate(${-(DW/2)}px, ${-(DH/2)}px) scale(${s})`;
+
+      if(debugOn){
         const dpr = window.devicePixelRatio || 1;
         hud.innerHTML =
-          `<div class="row"><b>v9 (full viewport, no scaling)</b></div>` +
+          `<div class="row"><b>v10 (fixed internal viewport + scale)</b></div>` +
           `<div class="row"><span class="k">app</span><span class="v">${esc(appParam)}</span></div>` +
-          `<div class="row"><span class="k">viewport</span><span class="v">${Math.round(vw)}×${Math.round(vh)}</span></div>` +
-          `<div class="row"><span class="k">iframe</span><span class="v">${app.style.width}×${app.style.height}</span></div>` +
-          `<div class="row"><span class="k">dpr</span><span class="v">${dpr.toFixed(2)}</span><span class="k">vv.scale</span><span class="v">${(vvs||1).toFixed(3)}</span></div>`;
+          `<div class="row"><span class="k">design</span><span class="v">${DW}×${DH} (AR ${(DW/DH).toFixed(4)})</span></div>` +
+          `<div class="row"><span class="k">viewport</span><span class="v">${Math.round(vw)}×${Math.round(vh)} (AR ${(vw/vh).toFixed(4)})</span></div>` +
+          `<div class="row"><span class="k">scale</span><span class="v">${s.toFixed(4)}</span></div>` +
+          `<div class="row"><span class="k">dpr</span><span class="v">${dpr.toFixed(2)}</span><span class="k">vv.scale</span><span class="v">${(vvs||1).toFixed(3)}</span></div>` +
+          `<div class="row"><span class="k">params</span><span class="v">?dw=${DW}&dh=${DH}</span></div>`;
       }
     }
 
