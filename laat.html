@@ -3,13 +3,29 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>AAT Launcher — 1600×900 (contain, no distortion)</title>
+  <title>AAT Launcher — Debug scaling</title>
   <style>
     html,body{height:100%;margin:0;overflow:hidden;background:#0b0f14;}
     #wrap{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;overflow:hidden;}
-    /* ΣΤΑΘΕΡΟ design surface 1600×900 (16:9). Το scaling γίνεται ΜΟΝΟ με ομοιόμορφο scale(s). */
-    #pane{width:1600px;height:900px;transform-origin:center center;position:relative;}
-    #app{width:1600px;height:900px;border:0;display:block;background:transparent;}
+    #pane{position:relative;transform-origin:center center;}
+    #app{border:0;display:block;background:transparent;}
+    #hud{
+      position:fixed;left:12px;top:12px;z-index:999999;
+      padding:10px 12px;border-radius:12px;
+      background:rgba(20,24,32,.88);
+      border:1px solid rgba(255,255,255,.14);
+      color:#e7eefc;
+      font:12.5px/1.35 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      box-shadow:0 12px 32px rgba(0,0,0,.45);
+      display:none;
+      max-width:min(520px, 92vw);
+      white-space:nowrap;
+    }
+    #hud b{font-size:13px;}
+    #hud .row{display:flex;gap:10px;align-items:baseline;}
+    #hud .k{opacity:.8;}
+    #hud .v{font-variant-numeric:tabular-nums;}
+    #hud .hint{opacity:.75;margin-top:6px;white-space:normal;}
     #msg{
       position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);
       max-width:min(760px,92vw);
@@ -31,6 +47,8 @@
     </div>
   </div>
 
+  <div id="hud"></div>
+
   <div id="msg">
     <b>Δεν βρίσκω/δεν μπορώ να φορτώσω το app.</b>
     Το launcher προσπαθεί να φορτώσει: <code id="srcOut"></code>
@@ -41,38 +59,122 @@
 
   <script>
   (function(){
-    const BASE_W = 1600, BASE_H = 900;
     const pane = document.getElementById('pane');
     const app  = document.getElementById('app');
     const msg  = document.getElementById('msg');
     const srcOut = document.getElementById('srcOut');
+    const hud  = document.getElementById('hud');
 
     const p = new URLSearchParams(location.search);
-    const appParam = p.get('app') || './index.html';
-    const fitMode  = (p.get('fit') || 'contain').toLowerCase(); // contain | cover
-    const appURL = new URL(appParam, location.href).href;
 
+    // App URL (default: ./index.html)
+    const appParam = p.get('app') || './index.html';
+    const appURL = new URL(appParam, location.href).href;
     app.src = appURL;
     srcOut.textContent = appParam;
+
+    // Fit mode: contain (no crop) | cover (may crop)
+    const fitMode  = (p.get('fit') || 'contain').toLowerCase();
+
+    // Base size: default 1600×900, αλλά μπορείς να το αλλάξεις από query
+    // ?baseW=1536&baseH=864  ή ό,τι θες για δοκιμή
+    let baseW = parseFloat(p.get('baseW') || '1600');
+    let baseH = parseFloat(p.get('baseH') || '900');
+
+    // Baseline mode: αποθήκευση baseline viewport σου την 1η φορά που το ανοίγεις.
+    // ?baseline=1  => (αν δεν υπάρχει) γράφει baseline στο localStorage και το χρησιμοποιεί ως baseW/baseH
+    const KEY_W = 'AAT_LAUNCH_BASE_W';
+    const KEY_H = 'AAT_LAUNCH_BASE_H';
+    const baselineMode = p.get('baseline') === '1';
 
     function showMsg(){ msg.style.display = 'block'; }
     function hideMsg(){ msg.style.display = 'none'; }
 
-    // ΟΜΟΙΟΜΟΡΦΟ scaling: contain => min, cover => max (με πιθανό κόψιμο)
-    function fit(){
-      const vw = window.innerWidth  || document.documentElement.clientWidth  || BASE_W;
-      const vh = window.innerHeight || document.documentElement.clientHeight || BASE_H;
-
-      const sx = vw / BASE_W;
-      const sy = vh / BASE_H;
-
-      const s = (fitMode === 'cover') ? Math.max(sx, sy) : Math.min(sx, sy);
-      pane.style.transform = `scale(${s})`;
+    function getViewport(){
+      // visualViewport πιάνει zoom/URL bars καλύτερα σε mobile, αλλιώς fallback
+      const vv = window.visualViewport;
+      const vw = vv ? vv.width  : (window.innerWidth  || document.documentElement.clientWidth  || 0);
+      const vh = vv ? vv.height : (window.innerHeight || document.documentElement.clientHeight || 0);
+      return {vw, vh, vvScale: vv ? vv.scale : 1};
     }
+
+    function ensureBaseline(){
+      if (!baselineMode) return;
+      const sw = parseFloat(localStorage.getItem(KEY_W) || '');
+      const sh = parseFloat(localStorage.getItem(KEY_H) || '');
+      if (isFinite(sw) && isFinite(sh) && sw>0 && sh>0){
+        baseW = sw; baseH = sh;
+        return;
+      }
+      const {vw, vh} = getViewport();
+      if (vw>0 && vh>0){
+        localStorage.setItem(KEY_W, String(vw));
+        localStorage.setItem(KEY_H, String(vh));
+        baseW = vw; baseH = vh;
+      }
+    }
+
+    function fit(){
+      ensureBaseline();
+
+      const {vw, vh, vvScale} = getViewport();
+      if (!vw || !vh || !baseW || !baseH) return;
+
+      // Pane & iframe σε σταθερό base size
+      pane.style.width  = baseW + 'px';
+      pane.style.height = baseH + 'px';
+      app.style.width   = baseW + 'px';
+      app.style.height  = baseH + 'px';
+
+      const sx = vw / baseW;
+      const sy = vh / baseH;
+      const s  = (fitMode === 'cover') ? Math.max(sx, sy) : Math.min(sx, sy);
+
+      pane.style.transform = `scale(${s})`;
+
+      // HUD
+      const arV = vw/vh;
+      const arB = baseW/baseH;
+      const dpr = window.devicePixelRatio || 1;
+
+      if (hud.dataset.on === '1'){
+        hud.innerHTML =
+          `<div class="row"><b>Scaling debug</b></div>` +
+          `<div class="row"><span class="k">app</span><span class="v">${escapeHtml(appParam)}</span></div>` +
+          `<div class="row"><span class="k">fit</span><span class="v">${fitMode}</span></div>` +
+          `<div class="row"><span class="k">base</span><span class="v">${fmt(baseW)}×${fmt(baseH)} (AR ${arB.toFixed(4)})</span></div>` +
+          `<div class="row"><span class="k">viewport</span><span class="v">${fmt(vw)}×${fmt(vh)} (AR ${arV.toFixed(4)})</span></div>` +
+          `<div class="row"><span class="k">scale s</span><span class="v">${s.toFixed(4)} (sx ${sx.toFixed(4)} / sy ${sy.toFixed(4)})</span></div>` +
+          `<div class="row"><span class="k">dpr</span><span class="v">${dpr.toFixed(2)}</span><span class="k">visualViewport.scale</span><span class="v">${(vvScale||1).toFixed(3)}</span></div>` +
+          `<div class="hint">Toggle HUD: <b>D</b>. Reset baseline: <b>Alt+Ctrl+Shift+R</b> (μόνο αν baseline=1).</div>`;
+      }
+    }
+
+    function fmt(x){ return Math.round(x); }
+    function escapeHtml(s){
+      return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    }
+
+    // HUD toggle
+    const debugOn = p.get('debug') === '1';
+    hud.dataset.on = debugOn ? '1' : '0';
+    hud.style.display = debugOn ? 'block' : 'none';
+
+    window.addEventListener('keydown', (e)=>{
+      if (e.key === 'd' || e.key === 'D'){
+        hud.dataset.on = (hud.dataset.on === '1') ? '0' : '1';
+        hud.style.display = (hud.dataset.on === '1') ? 'block' : 'none';
+        fit();
+      }
+      if (baselineMode && e.altKey && e.ctrlKey && e.shiftKey && (e.key === 'R' || e.key === 'r')){
+        localStorage.removeItem(KEY_W);
+        localStorage.removeItem(KEY_H);
+        location.reload();
+      }
+    });
 
     window.addEventListener('resize', fit, {passive:true});
     window.addEventListener('orientationchange', fit);
-    fit();
 
     async function checkReachable(){
       try{
@@ -86,6 +188,9 @@
     app.addEventListener('load', ()=>{ hideMsg(); });
     setTimeout(checkReachable, 600);
     setTimeout(checkReachable, 1500);
+
+    // initial
+    fit();
   })();
   </script>
 </body>
