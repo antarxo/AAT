@@ -3,37 +3,20 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>AAT Launcher — 1600×900 scaling</title>
+  <title>AAT Launcher — 1600×900 (contain, no distortion)</title>
   <style>
     html,body{height:100%;margin:0;overflow:hidden;background:#0b0f14;}
-    #wrap{
-      position:fixed; inset:0;
-      display:flex; align-items:center; justify-content:center;
-      overflow:hidden;
-    }
-    #pane{
-      width:1600px; height:900px;
-      transform-origin:center center;
-      position:relative;
-      background:transparent;
-    }
-    #app{
-      width:1600px; height:900px;
-      border:0;
-      display:block;
-      background:transparent;
-    }
+    #wrap{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+    /* ΣΤΑΘΕΡΟ design surface 1600×900 (16:9). Το scaling γίνεται ΜΟΝΟ με ομοιόμορφο scale(s). */
+    #pane{width:1600px;height:900px;transform-origin:center center;position:relative;}
+    #app{width:1600px;height:900px;border:0;display:block;background:transparent;}
     #msg{
-      position:fixed; left:50%; top:50%;
-      transform:translate(-50%,-50%);
-      max-width:min(720px, 92vw);
-      background:rgba(20,24,32,.92);
-      color:#e7eefc;
+      position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);
+      max-width:min(760px,92vw);
+      background:rgba(20,24,32,.92);color:#e7eefc;
       font:14px/1.35 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
-      padding:16px 18px;
-      border:1px solid rgba(255,255,255,.16);
-      border-radius:12px;
-      box-shadow:0 14px 40px rgba(0,0,0,.55);
+      padding:16px 18px;border:1px solid rgba(255,255,255,.16);
+      border-radius:12px;box-shadow:0 14px 40px rgba(0,0,0,.55);
       display:none;
     }
     #msg b{display:block;margin-bottom:8px;font-size:15px;}
@@ -44,16 +27,15 @@
 <body>
   <div id="wrap">
     <div id="pane">
-      <iframe id="app" src="./index.html" scrolling="no"></iframe>
+      <iframe id="app" scrolling="no"></iframe>
     </div>
   </div>
 
   <div id="msg">
-    <b>Δεν φορτώνει το app.</b>
-    Αυτό το αρχείο πρέπει να είναι <u>στον ίδιο φάκελο</u> με το <code>index.html</code> και τα assets του (css/js/png/json).
+    <b>Δεν βρίσκω/δεν μπορώ να φορτώσω το app.</b>
+    Το launcher προσπαθεί να φορτώσει: <code id="srcOut"></code>
     <div class="small">
-      Αν το ανοίγεις με <code>file://</code> και ο browser κάνει νερά, άνοιξε τον φάκελο με ένα απλό local server
-      (π.χ. <code>python -m http.server</code>) και μπες από <code>http://localhost:8000</code>.
+      Δώσε path με <code>?app=...</code> (π.χ. <code>?app=./app/index.html</code> ή <code>?app=../index.html</code>).
     </div>
   </div>
 
@@ -63,44 +45,47 @@
     const pane = document.getElementById('pane');
     const app  = document.getElementById('app');
     const msg  = document.getElementById('msg');
+    const srcOut = document.getElementById('srcOut');
 
+    const p = new URLSearchParams(location.search);
+    const appParam = p.get('app') || './index.html';
+    const fitMode  = (p.get('fit') || 'contain').toLowerCase(); // contain | cover
+    const appURL = new URL(appParam, location.href).href;
+
+    app.src = appURL;
+    srcOut.textContent = appParam;
+
+    function showMsg(){ msg.style.display = 'block'; }
+    function hideMsg(){ msg.style.display = 'none'; }
+
+    // ΟΜΟΙΟΜΟΡΦΟ scaling: contain => min, cover => max (με πιθανό κόψιμο)
     function fit(){
-      const vw = window.innerWidth || document.documentElement.clientWidth || BASE_W;
+      const vw = window.innerWidth  || document.documentElement.clientWidth  || BASE_W;
       const vh = window.innerHeight || document.documentElement.clientHeight || BASE_H;
-      const s = Math.min(vw/BASE_W, vh/BASE_H);
+
+      const sx = vw / BASE_W;
+      const sy = vh / BASE_H;
+
+      const s = (fitMode === 'cover') ? Math.max(sx, sy) : Math.min(sx, sy);
       pane.style.transform = `scale(${s})`;
     }
+
     window.addEventListener('resize', fit, {passive:true});
     window.addEventListener('orientationchange', fit);
     fit();
 
-    // Προσπάθεια να ανιχνεύσουμε "blank/failed" load (best-effort)
-    let shown = false;
-    function showMsg(){ msg.style.display = 'block'; }
-    function hideMsg(){ msg.style.display = 'none'; }
-
-    app.addEventListener('load', ()=>{
+    async function checkReachable(){
       try{
-        const doc = app.contentDocument;
-        const ok = doc && doc.body && doc.body.children && doc.body.children.length > 0;
-        if(ok) hideMsg();
-        else showMsg();
-      }catch(e){
-        // Αν δεν έχουμε πρόσβαση (κάποια file:// quirks), μην το κρύβεις — δείξε οδηγίες.
-        showMsg();
-      }
-    });
-
-    // Αν μετά από 1.2s δεν έχει φορτώσει κάτι, δείξε οδηγίες.
-    setTimeout(()=>{
-      try{
-        const doc = app.contentDocument;
-        const ok = doc && doc.body && doc.body.children && doc.body.children.length > 0;
-        if(!ok) showMsg();
+        const r = await fetch(appURL, {cache:'no-store'});
+        if (r.ok) hideMsg(); else showMsg();
       }catch(e){
         showMsg();
       }
-    }, 1200);
+    }
+
+    app.addEventListener('load', ()=>{ hideMsg(); });
+    setTimeout(checkReachable, 600);
+    setTimeout(checkReachable, 1500);
   })();
   </script>
 </body>
