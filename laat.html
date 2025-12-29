@@ -3,11 +3,10 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>AAT Launcher — iframe resize v7 (scale-down only, no upscaling)</title>
+  <title>AAT Launcher — fixed ratio w = h * (1450/768)</title>
   <style>
     html,body{height:100%;margin:0;overflow:hidden;background:#0b0f14;}
     #wrap{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;overflow:hidden;}
-    /* Κλειδώνουμε το app στο baseline viewport σου. Σε μεγαλύτερα viewports (π.χ. F11) ΔΕΝ μεγαλώνει (για να μη σπάει). */
     #app{border:0;display:block;background:transparent;}
     #hud{
       position:fixed;left:12px;top:12px;z-index:999999;
@@ -18,7 +17,7 @@
       font:12.5px/1.35 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
       box-shadow:0 12px 32px rgba(0,0,0,.45);
       display:none;
-      max-width:min(620px, 92vw);
+      max-width:min(640px, 92vw);
       white-space:nowrap;
     }
     #hud b{font-size:13px;}
@@ -47,24 +46,26 @@
   <div id="hud"></div>
 
   <div id="msg">
-    <b>Λείπει baseline.</b>
-    Άνοιξε πρώτα: <code>aat-capture-baseline.html</code> και πάτα “Αποθήκευση baseline”.
-    <div class="small">Μετά ξαναέλα εδώ.</div>
+    <b>Δεν βρίσκω/δεν μπορώ να φορτώσω το app.</b>
+    Το launcher προσπαθεί να φορτώσει: <code id="srcOut"></code>
+    <div class="small">
+      Δώσε path με <code>?app=...</code> (π.χ. <code>?app=./app/index.html</code> ή <code>?app=../index.html</code>).
+    </div>
   </div>
 
   <script>
   (function(){
-    const KEY_W = 'AAT_BASELINE_VW_STANDALONE';
-    const KEY_H = 'AAT_BASELINE_VH_STANDALONE';
-
+    const RATIO = 1.888020833333; // 1450/768
     const app  = document.getElementById('app');
-    const msg  = document.getElementById('msg');
     const hud  = document.getElementById('hud');
+    const msg  = document.getElementById('msg');
 
     const p = new URLSearchParams(location.search);
     const appParam = p.get('app') || './index.html';
     const debugOn = p.get('debug') === '1';
     hud.style.display = debugOn ? 'block' : 'none';
+
+    document.getElementById('srcOut').textContent = appParam;
 
     const appURL = new URL(appParam, location.href).href;
     app.src = appURL;
@@ -74,57 +75,57 @@
       const vw = vv ? vv.width  : (window.innerWidth  || document.documentElement.clientWidth  || 0);
       const vh = vv ? vv.height : (window.innerHeight || document.documentElement.clientHeight || 0);
       const vvs = vv ? vv.scale : 1;
-      return {vw, vh, vvs};
-    }
-
-    function getBaseline(){
-      const bw = parseFloat(localStorage.getItem(KEY_W) || '');
-      const bh = parseFloat(localStorage.getItem(KEY_H) || '');
-      if (!isFinite(bw) || !isFinite(bh) || bw<=0 || bh<=0) return null;
-      return {bw, bh};
+      return { vw, vh, vvs };
     }
 
     function fit(){
-      const base = getBaseline();
-      if(!base) {
-        msg.style.display = 'block';
-        return;
+      const { vw, vh, vvs } = viewport();
+      if(!vw || !vh) return;
+
+      // Ζητούμενο: w = h * RATIO.
+      // Προτεραιότητα: γεμίζουμε το ύψος. Αν δεν χωράει στο πλάτος, γεμίζουμε το πλάτος.
+      let h = vh;
+      let w = h * RATIO;
+
+      if (w > vw) {
+        w = vw;
+        h = w / RATIO;
       }
-      msg.style.display = 'none';
 
-      const {vw, vh, vvs} = viewport();
-      const {bw, bh} = base;
-
-      // Scale-down only (ποτέ upscaling). Αυτό κρατάει το app “όπως το βλέπεις κανονικά” και δεν το αφήνει να σπάσει σε F11.
-      const s = Math.min(1, vw / bw, vh / bh);
-
-      const w = Math.floor(bw * s);
-      const h = Math.floor(bh * s);
+      w = Math.floor(w);
+      h = Math.floor(h);
 
       app.style.width = w + 'px';
       app.style.height = h + 'px';
 
-      if (debugOn){
+      if (debugOn) {
         const dpr = window.devicePixelRatio || 1;
         hud.innerHTML =
-          `<div class="row"><b>v7 (scale-down only)</b></div>` +
-          `<div class="row"><span class="k">app</span><span class="v">${esc(appParam)}</span></div>` +
-          `<div class="row"><span class="k">baseline</span><span class="v">${rnd(bw)}×${rnd(bh)} (AR ${(bw/bh).toFixed(4)})</span></div>` +
-          `<div class="row"><span class="k">viewport</span><span class="v">${rnd(vw)}×${rnd(vh)} (AR ${(vw/vh).toFixed(4)})</span></div>` +
-          `<div class="row"><span class="k">scale</span><span class="v">${s.toFixed(4)}</span></div>` +
-          `<div class="row"><span class="k">iframe</span><span class="v">${w}×${h}</span></div>` +
+          `<div class="row"><b>v8 (fixed ratio)</b></div>` +
+          `<div class="row"><span class="k">ratio</span><span class="v">${RATIO.toFixed(6)} (1450/768)</span></div>` +
+          `<div class="row"><span class="k">viewport</span><span class="v">${Math.round(vw)}×${Math.round(vh)} (AR ${(vw/vh).toFixed(4)})</span></div>` +
+          `<div class="row"><span class="k">iframe</span><span class="v">${w}×${h} (AR ${(w/h).toFixed(4)})</span></div>` +
           `<div class="row"><span class="k">dpr</span><span class="v">${dpr.toFixed(2)}</span><span class="k">vv.scale</span><span class="v">${(vvs||1).toFixed(3)}</span></div>`;
       }
     }
 
-    function rnd(x){ return Math.round(x); }
-    function esc(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+    async function checkReachable(){
+      try{
+        const r = await fetch(appURL, { cache:'no-store' });
+        msg.style.display = r.ok ? 'none' : 'block';
+      } catch(e) {
+        msg.style.display = 'block';
+      }
+    }
 
-    window.addEventListener('resize', fit, {passive:true});
+    window.addEventListener('resize', fit, { passive:true });
     window.addEventListener('orientationchange', fit);
-    if (window.visualViewport) window.visualViewport.addEventListener('resize', fit, {passive:true});
-    app.addEventListener('load', fit);
+    if (window.visualViewport) window.visualViewport.addEventListener('resize', fit, { passive:true });
 
+    app.addEventListener('load', ()=>{ msg.style.display='none'; fit(); });
+
+    setTimeout(checkReachable, 600);
+    setTimeout(checkReachable, 1500);
     fit();
   })();
   </script>
