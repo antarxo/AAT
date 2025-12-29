@@ -1,58 +1,140 @@
-<!-- launcher.html -->
 <!doctype html>
 <html lang="el">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Launcher</title>
-
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>AAT Launcher — 16:9 scaling (baseline-aware)</title>
   <style>
-    html, body {
-      height: 100%;
-      margin: 0;
-      overflow: hidden;
-      background: #000;
+    html,body{height:100%;margin:0;overflow:hidden;background:#0b0f14;}
+    #wrap{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+    #pane{position:relative;transform-origin:center center;}
+    #app{border:0;display:block;background:transparent;}
+    #msg{
+      position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);
+      max-width:min(760px,92vw);
+      background:rgba(20,24,32,.92);color:#e7eefc;
+      font:14px/1.35 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      padding:16px 18px;border:1px solid rgba(255,255,255,.16);
+      border-radius:12px;box-shadow:0 14px 40px rgba(0,0,0,.55);
+      display:none;
     }
-
-    /* Fullscreen iframe (σαν standalone) */
-    #appFrame {
-      position: fixed;
-      inset: 0;
-      width: 100vw;
-      height: 100dvh;   /* modern browsers */
-      border: 0;
-      display: block;
-      overflow: hidden;
-      background: #000;
-    }
+    #msg b{display:block;margin-bottom:8px;font-size:15px;}
+    #msg code{background:rgba(255,255,255,.08);padding:2px 6px;border-radius:6px;}
+    #msg .small{opacity:.85;margin-top:10px;font-size:13px;}
   </style>
 </head>
-
 <body>
-  <iframe id="appFrame" src="./index.html" allow="fullscreen"></iframe>
+  <div id="wrap">
+    <div id="pane">
+      <iframe id="app" scrolling="no"></iframe>
+    </div>
+  </div>
+
+  <div id="msg">
+    <b>Δεν βρίσκω/δεν μπορώ να φορτώσω το app.</b>
+    Το launcher προσπαθεί να φορτώσει: <code id="srcOut"></code>
+    <div class="small">
+      Δώσε path με <code>?app=...</code> (π.χ. <code>?app=./app/index.html</code> ή <code>?app=../index.html</code>).
+    </div>
+  </div>
 
   <script>
-    // Robust sizing for embedded contexts (iframe in page, mobile toolbars, etc.)
-    (function () {
-      const f = document.getElementById("appFrame");
+  (function(){
+    const DEFAULT_W = 1600, DEFAULT_H = 900; // 16:9
+    const KEY_W = 'AAT_LAUNCH_BASE_W_16_9';
+    const KEY_H = 'AAT_LAUNCH_BASE_H_16_9';
 
-      function fit() {
-        const vv = window.visualViewport;
-        const w = vv ? vv.width  : document.documentElement.clientWidth;
-        const h = vv ? vv.height : document.documentElement.clientHeight;
+    const pane = document.getElementById('pane');
+    const app  = document.getElementById('app');
+    const msg  = document.getElementById('msg');
+    const srcOut = document.getElementById('srcOut');
 
-        // set explicit px to defeat weird layout constraints
-        f.style.width = Math.round(w) + "px";
-        f.style.height = Math.round(h) + "px";
+    const p = new URLSearchParams(location.search);
+    const appParam = p.get('app') || './index.html';
+    const appURL = new URL(appParam, location.href).href;
+    app.src = appURL;
+    srcOut.textContent = appParam;
+
+    const fitMode = (p.get('fit') || 'contain').toLowerCase(); // contain | cover
+    const mode    = (p.get('mode') || 'locked').toLowerCase(); // locked | baseline
+
+    function showMsg(){ msg.style.display = 'block'; }
+    function hideMsg(){ msg.style.display = 'none'; }
+
+    function viewport(){
+      const vv = window.visualViewport;
+      const vw = vv ? vv.width  : (window.innerWidth  || document.documentElement.clientWidth  || DEFAULT_W);
+      const vh = vv ? vv.height : (window.innerHeight || document.documentElement.clientHeight || DEFAULT_H);
+      return {vw, vh};
+    }
+
+    function max16by9Inside(vw, vh){
+      const wFromH = vh * (16/9);
+      const baseW = Math.min(vw, wFromH);
+      const baseH = baseW * (9/16);
+      return {baseW, baseH};
+    }
+
+    function getBase(){
+      const qW = parseFloat(p.get('baseW') || '');
+      const qH = parseFloat(p.get('baseH') || '');
+      if (isFinite(qW) && isFinite(qH) && qW>0 && qH>0) return {baseW:qW, baseH:qH};
+
+      if (mode !== 'baseline') return {baseW: DEFAULT_W, baseH: DEFAULT_H};
+
+      let bw = parseFloat(localStorage.getItem(KEY_W) || '');
+      let bh = parseFloat(localStorage.getItem(KEY_H) || '');
+      if (isFinite(bw) && isFinite(bh) && bw>0 && bh>0) return {baseW:bw, baseH:bh};
+
+      const {vw, vh} = viewport();
+      const {baseW, baseH} = max16by9Inside(vw, vh);
+      localStorage.setItem(KEY_W, String(baseW));
+      localStorage.setItem(KEY_H, String(baseH));
+      return {baseW, baseH};
+    }
+
+    function fit(){
+      const {vw, vh} = viewport();
+      const {baseW, baseH} = getBase();
+
+      pane.style.width  = baseW + 'px';
+      pane.style.height = baseH + 'px';
+      app.style.width   = baseW + 'px';
+      app.style.height  = baseH + 'px';
+
+      const sx = vw / baseW;
+      const sy = vh / baseH;
+      const s = (fitMode === 'cover') ? Math.max(sx, sy) : Math.min(sx, sy);
+
+      pane.style.transform = `scale(${s})`;
+    }
+
+    window.addEventListener('keydown', (e)=>{
+      if (mode === 'baseline' && e.altKey && e.ctrlKey && e.shiftKey && (e.key === 'R' || e.key === 'r')){
+        localStorage.removeItem(KEY_W);
+        localStorage.removeItem(KEY_H);
+        location.reload();
       }
+    });
 
-      fit();
-      window.addEventListener("resize", fit, { passive: true });
-      if (window.visualViewport) {
-        window.visualViewport.addEventListener("resize", fit, { passive: true });
-        window.visualViewport.addEventListener("scroll", fit, { passive: true });
+    window.addEventListener('resize', fit, {passive:true});
+    window.addEventListener('orientationchange', fit);
+
+    async function checkReachable(){
+      try{
+        const r = await fetch(appURL, {cache:'no-store'});
+        if (r.ok) hideMsg(); else showMsg();
+      }catch(e){
+        showMsg();
       }
-    })();
+    }
+
+    app.addEventListener('load', ()=>{ hideMsg(); });
+    setTimeout(checkReachable, 600);
+    setTimeout(checkReachable, 1500);
+
+    fit();
+  })();
   </script>
 </body>
 </html>
