@@ -3,11 +3,19 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>AAT Launcher — fixed ratio w = h * (1450/768)</title>
+  <title>AAT Launcher — full viewport iframe (no scaling)</title>
   <style>
-    html,body{height:100%;margin:0;overflow:hidden;background:#0b0f14;}
-    #wrap{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;overflow:hidden;}
-    #app{border:0;display:block;background:transparent;}
+    html,body{height:100%;margin:0;overflow:hidden;background:#000;}
+    /* Host page fills the browser viewport exactly */
+    #app{
+      position:fixed;
+      inset:0;
+      width:100vw;
+      height:100vh;
+      border:0;
+      display:block;
+      background:transparent;
+    }
     #hud{
       position:fixed;left:12px;top:12px;z-index:999999;
       padding:10px 12px;border-radius:12px;
@@ -17,7 +25,7 @@
       font:12.5px/1.35 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
       box-shadow:0 12px 32px rgba(0,0,0,.45);
       display:none;
-      max-width:min(640px, 92vw);
+      max-width:min(740px, 92vw);
       white-space:nowrap;
     }
     #hud b{font-size:13px;}
@@ -39,23 +47,19 @@
   </style>
 </head>
 <body>
-  <div id="wrap">
-    <iframe id="app" scrolling="no"></iframe>
-  </div>
-
+  <iframe id="app" scrolling="no"></iframe>
   <div id="hud"></div>
 
   <div id="msg">
     <b>Δεν βρίσκω/δεν μπορώ να φορτώσω το app.</b>
     Το launcher προσπαθεί να φορτώσει: <code id="srcOut"></code>
     <div class="small">
-      Δώσε path με <code>?app=...</code> (π.χ. <code>?app=./app/index.html</code> ή <code>?app=../index.html</code>).
+      Δώσε path με <code>?app=...</code> (π.χ. <code>?app=./index.html</code> ή <code>?app=./app/index.html</code>).
     </div>
   </div>
 
   <script>
   (function(){
-    const RATIO = 1.888020833333; // 1450/768
     const app  = document.getElementById('app');
     const hud  = document.getElementById('hud');
     const msg  = document.getElementById('msg');
@@ -70,62 +74,53 @@
     const appURL = new URL(appParam, location.href).href;
     app.src = appURL;
 
-    function viewport(){
+    function vp(){
       const vv = window.visualViewport;
       const vw = vv ? vv.width  : (window.innerWidth  || document.documentElement.clientWidth  || 0);
       const vh = vv ? vv.height : (window.innerHeight || document.documentElement.clientHeight || 0);
       const vvs = vv ? vv.scale : 1;
-      return { vw, vh, vvs };
+      return {vw, vh, vvs};
     }
 
+    // We do NOT scale content. We only make the iframe match the host viewport exactly.
     function fit(){
-      const { vw, vh, vvs } = viewport();
-      if(!vw || !vh) return;
+      const {vw, vh, vvs} = vp();
+      if (!vw || !vh) return;
 
-      // Ζητούμενο: w = h * RATIO.
-      // Προτεραιότητα: γεμίζουμε το ύψος. Αν δεν χωράει στο πλάτος, γεμίζουμε το πλάτος.
-      let h = vh;
-      let w = h * RATIO;
+      // Use px for robustness (avoids 100vh quirks on some browsers)
+      app.style.width  = Math.floor(vw) + 'px';
+      app.style.height = Math.floor(vh) + 'px';
 
-      if (w > vw) {
-        w = vw;
-        h = w / RATIO;
-      }
-
-      w = Math.floor(w);
-      h = Math.floor(h);
-
-      app.style.width = w + 'px';
-      app.style.height = h + 'px';
-
-      if (debugOn) {
+      if (debugOn){
         const dpr = window.devicePixelRatio || 1;
         hud.innerHTML =
-          `<div class="row"><b>v8 (fixed ratio)</b></div>` +
-          `<div class="row"><span class="k">ratio</span><span class="v">${RATIO.toFixed(6)} (1450/768)</span></div>` +
-          `<div class="row"><span class="k">viewport</span><span class="v">${Math.round(vw)}×${Math.round(vh)} (AR ${(vw/vh).toFixed(4)})</span></div>` +
-          `<div class="row"><span class="k">iframe</span><span class="v">${w}×${h} (AR ${(w/h).toFixed(4)})</span></div>` +
+          `<div class="row"><b>v9 (full viewport, no scaling)</b></div>` +
+          `<div class="row"><span class="k">app</span><span class="v">${esc(appParam)}</span></div>` +
+          `<div class="row"><span class="k">viewport</span><span class="v">${Math.round(vw)}×${Math.round(vh)}</span></div>` +
+          `<div class="row"><span class="k">iframe</span><span class="v">${app.style.width}×${app.style.height}</span></div>` +
           `<div class="row"><span class="k">dpr</span><span class="v">${dpr.toFixed(2)}</span><span class="k">vv.scale</span><span class="v">${(vvs||1).toFixed(3)}</span></div>`;
       }
     }
 
+    function esc(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
     async function checkReachable(){
       try{
-        const r = await fetch(appURL, { cache:'no-store' });
+        const r = await fetch(appURL, {cache:'no-store'});
         msg.style.display = r.ok ? 'none' : 'block';
-      } catch(e) {
+      }catch(e){
         msg.style.display = 'block';
       }
     }
 
-    window.addEventListener('resize', fit, { passive:true });
+    window.addEventListener('resize', fit, {passive:true});
     window.addEventListener('orientationchange', fit);
-    if (window.visualViewport) window.visualViewport.addEventListener('resize', fit, { passive:true });
+    if (window.visualViewport) window.visualViewport.addEventListener('resize', fit, {passive:true});
 
     app.addEventListener('load', ()=>{ msg.style.display='none'; fit(); });
-
     setTimeout(checkReachable, 600);
     setTimeout(checkReachable, 1500);
+
     fit();
   })();
   </script>
