@@ -10,12 +10,12 @@
   <script src="https://unpkg.com/uplot@1.6.30/dist/uPlot.iife.min.js"></script>
 
   <!-- CSS σκηνής -->
-  <link rel="stylesheet" href="./aat-stage.css">
-
-  <!-- Stage scale-down (responsive): δεν πειράζει layout, μόνο κλιμακώνει όταν η οθόνη είναι μικρότερη από 1600×900 -->
-  <style id="stageScaleDownStyle">
+  <link rel="stylesheet" href="./aat-stage.scale1600.css">
+  <!-- Canvas scaling (design 1600×900) -->
+  <style id="stageScaleCanvasStyle">
     #stage{ transform-origin: top left; will-change: transform; }
   </style>
+
 
   <!-- Intro veil (ενσωματωμένο στο index) -->
   <style>
@@ -3209,7 +3209,7 @@ function animate(now){
       const sinθ=Math.max(-1,Math.min(1,(hookX-cx)/Math.max(1,A_px)));
       const hookXg=cx+Aghost_px*sinθ;
 
-      const springBottom=getComputedStyle(springEl).bottom || 'calc(32vh + 92px)';
+      const springBottom=getComputedStyle(springEl).bottom || 'calc(288px + 92px)';
       const ghostRect=ghost.getBoundingClientRect();
       const ghostWidth=ghostRect.width || actorWidth || 80;
 
@@ -3271,7 +3271,7 @@ function initViewersAvatars(){
       div.style.backgroundImage='url("'+v.img+'")';
     }
     if(typeof v.heightVh==='number'){
-      div.style.height=v.heightVh+'vh';
+      div.style.height=(v.heightVh*9.0)+'px';
     }else{
       div.style.height='';
     }
@@ -3369,7 +3369,7 @@ window.addEventListener('load',async ()=>{
 });
 </script>
 
-<script id="stageScaleDownScript">
+<script id="stageCanvasScaleScript">
 (function(){
   const BASE_W = 1600;
   const BASE_H = 900;
@@ -3378,18 +3378,19 @@ window.addEventListener('load',async ()=>{
     const stage = document.getElementById('stage');
     if(!stage) return;
 
-    const vw = window.innerWidth || document.documentElement.clientWidth || BASE_W;
+    const vw = window.innerWidth  || document.documentElement.clientWidth  || BASE_W;
     const vh = window.innerHeight || document.documentElement.clientHeight || BASE_H;
 
-    // ΜΟΝΟ scale-down. Στη “μάνα” οθόνη σου δεν αλλάζει τίποτα (s=1).
-    const s = Math.min(1, vw / BASE_W, vh / BASE_H);
+    // scale both down & up, preserving aspect
+    const s = Math.min(vw / BASE_W, vh / BASE_H);
 
-    // Το #stage είναι 100vw×100vh (τρέχον viewport). Με scale-down, το κεντράρουμε.
-    const x = (vw - vw * s) / 2;
-    const y = (vh - vh * s) / 2;
+    const x = (vw - BASE_W * s) / 2;
+    const y = (vh - BASE_H * s) / 2;
 
-    stage.style.transform = (s === 1) ? '' : `translate(${x}px, ${y}px) scale(${s})`;
-    stage.dataset.scaleDown = String(s);
+    stage.style.transform = `translate(${x}px, ${y}px) scale(${s})`;
+    stage.dataset.stageScale = String(s);
+    stage.dataset.stageOffsetX = String(x);
+    stage.dataset.stageOffsetY = String(y);
   }
 
   window.addEventListener('resize', fit, {passive:true});
