@@ -1,14 +1,12 @@
 :root{
+  --aat-dw: 1403;
+  --aat-dh: 648;
+  --aat-scale: 1;
+  --aat-vh0: calc(var(--aat-dh) * 1px / 100);
+  --aat-vw0: calc(var(--aat-dw) * 1px / 100);
+
   --foyer-h: 445px;
-
-  --app-vh: 1vh;
-  --app-vw: 1vw;
-  --aat-safe-top: 0px;
-  --aat-safe-right: 0px;
-  --aat-safe-bottom: 0px;
-  --aat-safe-left: 0px;
 }
-
 *{
   box-sizing:border-box;
   margin:0;
@@ -17,6 +15,9 @@
 
 body{
   margin:0;
+  position:relative;
+  width:100vw;
+  height:100vh;
   background:radial-gradient(circle at center,#222 0%,#000 100%);
   overflow:hidden;
   font-family:Inter,system-ui,sans-serif;
@@ -24,9 +25,13 @@ body{
 }
 
 .stage{
-  position:relative;
-  width:calc(var(--app-vw, 1vw) * 100);
-  height:calc(var(--app-vh, 1vh) * 100);
+  position:absolute;
+  left:50%;
+  top:50%;
+  width:calc(var(--aat-dw) * 1px);
+  height:calc(var(--aat-dh) * 1px);
+  transform:translate(-50%,-50%) scale(var(--aat-scale));
+  transform-origin:center center;
   overflow:hidden;
 }
 
@@ -90,7 +95,7 @@ body{
 
 .spring{
   position:absolute;
-  bottom:calc(32 * var(--aat-vh) + 92px * var(--aat-scale));
+  bottom:calc(calc(32 * var(--aat-vh0)) + 92px);
   left:10%;
   height:96px;
   width:auto;
@@ -103,7 +108,7 @@ body{
 
 .actor{
   position:absolute;
-  bottom:calc(32 * var(--aat-vh) + 135px * var(--aat-scale));
+  bottom:calc(calc(32 * var(--aat-vh0)) + 135px);
   left:50%;
   width:144px;
   height:96px;
@@ -121,7 +126,7 @@ body{
   position:absolute;
   left:18%;
   width:64%;
-  bottom:calc(32 * var(--aat-vh) - 8px * var(--aat-scale));
+  bottom:calc(calc(32 * var(--aat-vh0)) - 8px);
   height:2px;
   background:#aaa;
   z-index:155;
@@ -163,7 +168,7 @@ body{
   width:100%;
   bottom:0;
   height:260px;          /* Σταθερό ύψος ώστε να χωράνε τα avatars */
-  z-index:1600;          /* πάνω από κοινό */
+  z-index:1400;          /* πίσω από koino.png */
   pointer-events:none;
   overflow:visible;
 }
@@ -171,7 +176,7 @@ body{
 .viewer-avatar{
   position:absolute;
   width:140px;           /* ΣΗΜΑΝΤΙΚΟ: όχι auto, αλλιώς 0px και εξαφανίζονται */
-  height:calc(22 * var(--aat-vh));           /* default, μπορεί να αλλάξει από JSON */
+  height:calc(22 * var(--aat-vh0));           /* default, μπορεί να αλλάξει από JSON */
   overflow:visible;
   border-radius:0;
   border:none;
@@ -268,7 +273,7 @@ body{
   border-radius:8px;
   padding:6px 8px;
   display:none;
-  max-height:calc(25 * var(--aat-vh));      /* πιο χαμηλός πίνακας */
+  max-height:calc(25 * var(--aat-vh0));      /* πιο χαμηλός πίνακας */
   overflow-y:auto;
   font-size:12px;
 }
@@ -310,7 +315,7 @@ body{
   right:10px;
   width:220px;           /* πιο στενό, ευθυγραμμισμένο με measure-box/params */
   height:120px;          /* μικρότερο ύψος */
-  top:calc(44px * var(--aat-scale) + 28 * var(--aat-vh) + 8px * var(--aat-scale));
+  top:calc(44px + calc(28 * var(--aat-vh0)) + 8px);
   display:none;
   z-index: 2200;
   border:1px dashed rgba(255,255,255,.25);
@@ -323,7 +328,7 @@ body{
   right:10px;
   width:220px;           /* ίδιο πλάτος */
   height:120px;          /* ίδιο μικρό ύψος */
-  top:calc(44px * var(--aat-scale) + 28 * var(--aat-vh) + 8px * var(--aat-scale) + 120px * var(--aat-scale) + 8px * var(--aat-scale));
+  top:calc(44px + calc(28 * var(--aat-vh0)) + 8px + 120px + 8px);
   display:none;
   z-index: 2200;
   border:1px dashed rgba(255,255,255,.25);
@@ -334,7 +339,7 @@ body{
 .params-box{
   position:absolute;
   right:10px;
-  top:calc(44px * var(--aat-scale) + 28 * var(--aat-vh) + 8px * var(--aat-scale) + 120px * var(--aat-scale) + 8px * var(--aat-scale) + 120px * var(--aat-scale) + 8px * var(--aat-scale));
+  top:calc(44px + calc(28 * var(--aat-vh0)) + 8px + 120px + 8px + 120px + 8px);
   z-index: 2199;
   background:rgba(0,0,0,.6);
   color:#fff;
@@ -395,7 +400,7 @@ body{
   position:absolute;
   left:18%;
   width:64%;
-  bottom:calc(32 * var(--aat-vh) - 8px * var(--aat-scale) + 1px * var(--aat-scale));
+  bottom:calc(calc(32 * var(--aat-vh0)) - 8px + 1px);
   height:24px;
   font-size:10px;
   font-family:"Courier New",monospace;
@@ -430,7 +435,7 @@ body{
 
 .marker{
   position:absolute;
-  bottom:calc(32 * var(--aat-vh) - 8px * var(--aat-scale) + 1px * var(--aat-scale));
+  bottom:calc(calc(32 * var(--aat-vh0)) - 8px + 1px);
   width:0;
   height:80px;
   transform:translateX(-50%);
@@ -544,7 +549,7 @@ body{
 
 .controls{
   position:absolute;
-  bottom:calc(12px + var(--aat-safe-bottom));
+  bottom:12px;
   left:50%;
   transform:translateX(-50%);
   background:rgba(0,0,0,.7);
@@ -927,10 +932,10 @@ body{
   /* ΓΩΝΙΑ ΟΘΟΝΗΣ: δεξιά */
   right:0;
 
-  width:calc(18 * var(--aat-vw));
-  max-width:calc(240px * var(--aat-scale));
-  min-width:calc(160px * var(--aat-scale));
-  height:calc(46 * var(--aat-vh));
+  width:calc(18 * var(--aat-vw0));
+  max-width:240px;
+  min-width:160px;
+  height:calc(46 * var(--aat-vh0));
 
   /* ίδιο look με τα πλαϊνά panels/κουρτίνες */
   background:linear-gradient(to left,#300000,#1a0000);
@@ -1038,4 +1043,15 @@ body.exit-mask-active .exit-panel-mask{
 #laws,
 .laws-panel{
   z-index: 1601 !important;
+}
+
+/* --- Mobile safe-area + low-height landscape safeguard (keeps controls visible) --- */
+@supports (padding: env(safe-area-inset-bottom)) {
+  .controls{ bottom: calc(12px + env(safe-area-inset-bottom)); }
+}
+@media (orientation: landscape) and (max-height: 520px) {
+  .controls{
+    bottom: 24px;
+    transform: translateX(-50%) scale(0.92);
+  }
 }
