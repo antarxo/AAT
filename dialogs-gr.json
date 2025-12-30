@@ -30,7 +30,7 @@
       "bubbleDy": -10,
       "avatarDy": 110,
       "avatarScale": 0.32,
-      "chipDx": 50,
+      "chipDx": 55,
       "chipDy": 20,
       "img": "viewer1.png"
     },
@@ -43,7 +43,7 @@
       "bubbleDy": -10,
       "avatarDy": 110,
       "avatarScale": 0.3,
-      "chipDx": 50,
+      "chipDx": 55,
       "chipDy": 20,
       "img": "viewer2.png"
     },
@@ -56,7 +56,7 @@
       "bubbleDy": -10,
       "avatarDy": 110,
       "avatarScale": 0.32,
-      "chipDx": 50,
+      "chipDx": 55,
       "chipDy": 20,
       "img": "viewer3.png"
     },
@@ -69,7 +69,7 @@
       "bubbleDy": -10,
       "avatarDy": 110,
       "avatarScale": 0.3,
-      "chipDx": 50,
+      "chipDx": 55,
       "chipDy": 20,
       "img": "viewer4.png"
     },
@@ -82,7 +82,7 @@
       "bubbleDy": -10,
       "avatarDy": 110,
       "avatarScale": 0.3,
-      "chipDx": 50,
+      "chipDx": 55,
       "chipDy": 20,
       "img": "viewer5.png"
     }
@@ -944,6 +944,7 @@
     }
   }
 }
+
 
 
 
