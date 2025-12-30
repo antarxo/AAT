@@ -1920,6 +1920,23 @@ function getViewerAvatarCenter(idx1based){
   return viewerAnchor(idx1based);
 }
 
+function getActorBottomLocalDesign(){
+  // y (px) του κάτω άκρου του ηθοποιού μέσα στη σκηνή, σε *design px* (unscaled).
+  if(!stage) return 0;
+  const actorImg = document.querySelector('#actor img');
+  if(!actorImg) return 0;
+
+  const s = (()=>{
+    const v = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--aat-scale'));
+    return (isFinite(v) && v>0) ? v : 1;
+  })();
+
+  const stageRect = stage.getBoundingClientRect();
+  const aRect = actorImg.getBoundingClientRect();
+  return (aRect.bottom - stageRect.top) / s;
+}
+
+
 function tint(hex,alpha){
   const c=(hex||'#ffffff').replace('#','');
   const r=parseInt(c.slice(0,2),16)||255;
@@ -2280,9 +2297,17 @@ function showSpeakerChip(idx1based){
   actBubble.textContent=label;
   const dx=(typeof info.chipDx==='number'? info.chipDx:0);
   const dy=(typeof info.chipDy==='number'? info.chipDy:0);
+
   actBubble.style.left=(x+dx)+'px';
-  const __lift = ((phase==='act1' || phase==='act2') ? 18 : 0);
-  actBubble.style.top =(y-dy-__lift)+'px';
+
+  let top = (y - dy);
+  if(phase==='act1' || phase==='act2'){
+    // Στόχος: πολύ λίγο κάτω από τα πόδια του ηθοποιού.
+    const lim = getActorBottomLocalDesign() + 10;
+    top = Math.min(top, lim);
+  }
+  actBubble.style.top = top + 'px';
+
   actBubble.style.transform='translateX(-50%)';
   actBubble.style.backgroundColor=tint(info.color,0.9);
   actBubble.style.display='block';
@@ -2295,9 +2320,15 @@ function placeBubble(idx1based,xShift,yOffset){
   const {x,y,info}=getViewerAvatarCenter(idx1based);
   const dx=(info && typeof info.bubbleDx==='number'? info.bubbleDx:0)+(xShift||0);
   const dy=(info && typeof info.bubbleDy==='number'? info.bubbleDy:0)+(yOffset||0);
+
   bubbleEl.style.left=(x+dx)+'px';
-  const __lift = ((phase==='act1' || phase==='act2') ? 18 : 0);
-  bubbleEl.style.top =(y-dy-__lift)+'px';
+
+  let top = (y - dy);
+  if(phase==='act1' || phase==='act2'){
+    const lim = getActorBottomLocalDesign() + 10;
+    top = Math.min(top, lim);
+  }
+  bubbleEl.style.top = top + 'px';
 }
 
 function typeWriterHTML(el,html,totalMs,done){
