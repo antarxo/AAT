@@ -2281,7 +2281,8 @@ function showSpeakerChip(idx1based){
   const dx=(typeof info.chipDx==='number'? info.chipDx:0);
   const dy=(typeof info.chipDy==='number'? info.chipDy:0);
   actBubble.style.left=(x+dx)+'px';
-  actBubble.style.top =(y-dy)+'px';
+  const __lift = ((phase==='act1' || phase==='act2') ? 18 : 0);
+  actBubble.style.top =(y-dy-__lift)+'px';
   actBubble.style.transform='translateX(-50%)';
   actBubble.style.backgroundColor=tint(info.color,0.9);
   actBubble.style.display='block';
@@ -2295,7 +2296,8 @@ function placeBubble(idx1based,xShift,yOffset){
   const dx=(info && typeof info.bubbleDx==='number'? info.bubbleDx:0)+(xShift||0);
   const dy=(info && typeof info.bubbleDy==='number'? info.bubbleDy:0)+(yOffset||0);
   bubbleEl.style.left=(x+dx)+'px';
-  bubbleEl.style.top =(y-dy)+'px';
+  const __lift = ((phase==='act1' || phase==='act2') ? 18 : 0);
+  bubbleEl.style.top =(y-dy-__lift)+'px';
 }
 
 function typeWriterHTML(el,html,totalMs,done){
