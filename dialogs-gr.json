@@ -30,8 +30,8 @@
       "bubbleDy": 0,
       "avatarDy": 110,
       "avatarScale": 0.32,
-      "chipDx": 85,
-      "chipDy": 40,
+      "chipDx": 65,
+      "chipDy": 30,
       "img": "viewer1.png"
     },
     {
@@ -944,6 +944,7 @@
     }
   }
 }
+
 
 
 
