@@ -1,3 +1,8 @@
+function num(v,fallback=0){
+  const n=(typeof v==='number')? v : parseFloat(v);
+  return (isFinite(n))? n : fallback;
+}
+
 <!DOCTYPE html>
 <html lang="el">
 <head>
@@ -11,58 +16,6 @@
 
   <!-- CSS σκηνής -->
   <link rel="stylesheet" href="./aat-stage.css">
-
-  <!-- AAT responsive scaler (baseline + uniform scale on .stage) -->
-  <script>
-  (function(){
-    const root = document.documentElement;
-    const p = new URLSearchParams(location.search);
-
-    const DW = parseFloat(p.get('dw')) || 1403;
-    const DH = parseFloat(p.get('dh')) || 648;
-    const mode = (p.get('mode') || 'contain').toLowerCase();
-
-    function viewport(){
-      const vv = window.visualViewport;
-      const vw = vv ? vv.width  : (window.innerWidth  || root.clientWidth  || 0);
-      const vh = vv ? vv.height : (window.innerHeight || root.clientHeight || 0);
-      return {vw, vh};
-    }
-
-    function pickScale(vw, vh){
-      const sx = vw / DW;
-      const sy = vh / DH;
-      if(mode === 'cover') return Math.max(sx, sy);
-      if(mode === 'fillw') return sx;
-      if(mode === 'fillh') return sy;
-      return Math.min(sx, sy); // contain default
-    }
-
-    function apply(){
-      const {vw, vh} = viewport();
-      if(!vw || !vh) return;
-      const s = pickScale(vw, vh);
-      root.style.setProperty('--aat-dw', DW);
-      root.style.setProperty('--aat-dh', DH);
-      root.style.setProperty('--aat-scale', (Math.max(0.01, s)).toFixed(6));
-          const vv = window.visualViewport;
-      const vvw = vv ? vv.width  : (window.innerWidth  || 0);
-      const vvh = vv ? vv.height : (window.innerHeight || 0);
-      const offX = vv ? vv.offsetLeft : 0;
-      const offY = vv ? vv.offsetTop  : 0;
-      root.style.setProperty('--aat-vvw', Math.round(vvw) + 'px');
-      root.style.setProperty('--aat-vvh', Math.round(vvh) + 'px');
-      root.style.setProperty('--aat-vvoffx', Math.round(offX) + 'px');
-      root.style.setProperty('--aat-vvoffy', Math.round(offY) + 'px');
-}
-
-    window.addEventListener('resize', apply, {passive:true});
-    if(window.visualViewport) window.visualViewport.addEventListener('resize', apply, {passive:true});
-    document.addEventListener('DOMContentLoaded', apply);
-    apply();
-  })();
-  </script>
-
 
   <!-- Intro veil (ενσωματωμένο στο index) -->
   <style>
@@ -416,6 +369,55 @@
 </div>
 
 <script>
+
+/* ---------- RESPONSIVE BASELINE (scale-aware vh/vw & px) ---------- */
+/* Baseline viewport (στο οποίο "κάθονται" σωστά τα offsets σου). */
+const AAT_BASELINE = { dw: 1403, dh: 648 }; // άλλαξέ το αν θες
+
+function aatGetViewport(){
+  const vv = window.visualViewport;
+  const vw = vv ? vv.width  : (window.innerWidth  || document.documentElement.clientWidth  || 0);
+  const vh = vv ? vv.height : (window.innerHeight || document.documentElement.clientHeight || 0);
+  const vvs = vv ? vv.scale : 1;
+  return { vw, vh, vvs };
+}
+
+function aatApplyResponsiveVars(){
+  const { vw, vh } = aatGetViewport();
+  const dw = AAT_BASELINE.dw || 1;
+  const dh = AAT_BASELINE.dh || 1;
+
+  // Contain scaling: κρατάμε αναλογίες, δεν παραμορφώνουμε.
+  const s = Math.min(vw / dw, vh / dh) || 1;
+
+  // "Virtual vw/vh" σε px, βασισμένα στο baseline + scale.
+  // Έτσι μετατρέπεις 32vh → 32 * var(--aat-vh), και px constants → px * var(--aat-scale)
+  const vvh = (dh * s) / 100; // px
+  const vvw = (dw * s) / 100; // px
+
+  const root = document.documentElement.style;
+  root.setProperty('--aat-scale', String(s));
+  root.setProperty('--aat-vh', vvh + 'px');
+  root.setProperty('--aat-vw', vvw + 'px');
+  root.setProperty('--aat-dw', dw + 'px');
+  root.setProperty('--aat-dh', dh + 'px');
+}
+
+(function(){
+  // allow override via query params: ?dw=...&dh=...
+  try{
+    const p = new URLSearchParams(location.search);
+    const qdw = parseFloat(p.get('dw'));
+    const qdh = parseFloat(p.get('dh'));
+    if (Number.isFinite(qdw) && qdw > 0) AAT_BASELINE.dw = qdw;
+    if (Number.isFinite(qdh) && qdh > 0) AAT_BASELINE.dh = qdh;
+  }catch(e){}
+  aatApplyResponsiveVars();
+  window.addEventListener('resize', aatApplyResponsiveVars, { passive:true });
+  if (window.visualViewport) window.visualViewport.addEventListener('resize', aatApplyResponsiveVars, { passive:true });
+})();
+/* ---------- /RESPONSIVE BASELINE ---------- */
+
 /* ---------- ΔΕΔΟΜΕΝΑ ΑΠΟ dialogs-*.json ---------- */
 
 let VIEWERS = [];
@@ -993,27 +995,18 @@ function updateMarbleTrack(){
     return;
   }
 
-  // IMPORTANT: η σκηνή πλέον κλιμακώνεται με CSS transform.
-  // Άρα ό,τι μετράμε με getBoundingClientRect() είναι SCALED.
-  // Εδώ δουλεύουμε σε *design px* (unscaled), οπότε διαιρούμε με scale.
-  const s = (()=>{
-    const v = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--aat-scale'));
-    return (isFinite(v) && v>0) ? v : 1;
-  })();
-
   const stageRect = stage.getBoundingClientRect();
   const aRect = actorImg.getBoundingClientRect();
 
-  const stageH = stage.clientHeight || 0;
-  const actorBottomLocal = (aRect.bottom - stageRect.top) / s;
-
+  // ΣΩΣΤΟ (σταθερό ως προς τη σκηνή): χρησιμοποιούμε το ΚΑΤΩ άκρο της “μεσαίας κουρτίνας”
+  // όπως θα ήταν στη ΘΕΣΗ ΗΡΕΜΙΑΣ της (κλειστή), όχι το τρέχον bounding box (που αλλάζει όταν ανοίγει).
   // Από το CSS: top = (26% - 16px) και height = (44% + 24px)  => bottom = 70% + 8px.
-  const curtainBottomClosedLocal = (0.70 * stageH) + 8;
+  const curtainBottomClosed = stageRect.top + (0.70 * stageRect.height) + 8;
 
   // Κάθετα: ύψος “μαρμάρου” = (κάτω μεσαίας κουρτίνας) − (κάτω εικόνας ηθοποιού)
-  const h = Math.max(0, curtainBottomClosedLocal - actorBottomLocal);
+  const h = Math.max(0, curtainBottomClosed - aRect.bottom);
   // Απόσταση από το κάτω μέρος της σκηνής μέχρι το κάτω της μεσαίας κουρτίνας (στη θέση ηρεμίας)
-  const bottomPx = Math.max(0, stageH - curtainBottomClosedLocal);
+  const bottomPx = Math.max(0, stageRect.bottom - curtainBottomClosed);
 
   // Οριζόντια έκταση μαρμάρου: ακριβώς από x=-3 m έως x=+3 m (σύστημα αναφοράς)
   const cx = stage.clientWidth / 2;
@@ -1052,9 +1045,9 @@ function measureSpringNaturalSize(){
   springEl.style.display   = 'block';
   springEl.style.transform = 'none';
 
-  // offsetWidth/offsetHeight ΔΕΝ επηρεάζονται από transform της σκηνής (design px).
-  springNaturalWidth  = springEl.offsetWidth  || 1;
-  springNaturalHeight = springEl.offsetHeight || 1;
+  const rect = springEl.getBoundingClientRect();
+  springNaturalWidth  = rect.width || 1;
+  springNaturalHeight = rect.height || 1;
 
   springEl.style.display   = prevDisplay;
   springEl.style.transform = prevTransform;
@@ -1905,37 +1898,16 @@ function getViewerAvatarCenter(idx1based){
   const idx0=(idx1based||1)-1;
   const div=viewersStrip.querySelector('.viewer-avatar[data-idx="'+idx0+'"]');
   const info=viewerInfo(idx1based);
-
+  const stageRect=stage.getBoundingClientRect();
   if(div){
+    const r=div.getBoundingClientRect();
     const baseBottom=parseFloat(div.dataset.baseBottom || '0') || 0;
-    const curBottom = (()=>{ const b=parseFloat(div.style.bottom||''); return Number.isFinite(b)? b : baseBottom; })();
-    const w = div.offsetWidth  || 0;
-    const h = div.offsetHeight || 0;
-    const left = parseFloat(div.style.left||'0') || 0;
-
-    const cx = left + w/2;
-    const cy = stage.clientHeight - curBottom - h/2;
+    const cx=r.left+r.width/2 - stageRect.left;
+    const cy=stageRect.height - baseBottom - r.height/2;
     return {x:cx,y:cy,info};
   }
   return viewerAnchor(idx1based);
 }
-
-function getActorBottomLocalDesign(){
-  // y (px) του κάτω άκρου του ηθοποιού μέσα στη σκηνή, σε *design px* (unscaled).
-  if(!stage) return 0;
-  const actorImg = document.querySelector('#actor img');
-  if(!actorImg) return 0;
-
-  const s = (()=>{
-    const v = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--aat-scale'));
-    return (isFinite(v) && v>0) ? v : 1;
-  })();
-
-  const stageRect = stage.getBoundingClientRect();
-  const aRect = actorImg.getBoundingClientRect();
-  return (aRect.bottom - stageRect.top) / s;
-}
-
 
 function tint(hex,alpha){
   const c=(hex||'#ffffff').replace('#','');
@@ -2034,7 +2006,8 @@ async function strobeExitWalk(){
   // κρατάμε αρχικές θέσεις για restore (αν χρειαστεί)
   const orig = actors.map(el=>({el,left:el.style.left,bottom:el.style.bottom,opacity:el.style.opacity}));
 
-  const stageW = stage.clientWidth || 900;
+  const stageRect = stage.getBoundingClientRect();
+  const stageW = stageRect.width || 900;
 
   // base layout (bottoms)
   const bottoms = actors.map(el=>{
@@ -2295,19 +2268,10 @@ function showSpeakerChip(idx1based){
   const nameEN=info.name_en || ('Viewer '+idx1based);
   const label=currentLang==='en'? nameEN : nameGR;
   actBubble.textContent=label;
-  const dx=(typeof info.chipDx==='number'? info.chipDx:0);
-  const dy=(typeof info.chipDy==='number'? info.chipDy:0);
-
+  const dx=num(info.chipDx,0);
+  const dy=num(info.chipDy,0);
   actBubble.style.left=(x+dx)+'px';
-
-  let top = (y - dy);
-  if(phase==='act1' || phase==='act2'){
-    // Στόχος: πολύ λίγο κάτω από τα πόδια του ηθοποιού.
-    const lim = getActorBottomLocalDesign() + 10;
-    top = Math.min(top, lim);
-  }
-  actBubble.style.top = top + 'px';
-
+  actBubble.style.top =(y-dy)+'px';
   actBubble.style.transform='translateX(-50%)';
   actBubble.style.backgroundColor=tint(info.color,0.9);
   actBubble.style.display='block';
@@ -2318,17 +2282,10 @@ function hideSpeakerChip(){
 
 function placeBubble(idx1based,xShift,yOffset){
   const {x,y,info}=getViewerAvatarCenter(idx1based);
-  const dx=(info && typeof info.bubbleDx==='number'? info.bubbleDx:0)+(xShift||0);
-  const dy=(info && typeof info.bubbleDy==='number'? info.bubbleDy:0)+(yOffset||0);
-
+  const dx=(info? num(info.bubbleDx,0):0)+(xShift||0);
+  const dy=(info? num(info.bubbleDy,0):0)+(yOffset||0);
   bubbleEl.style.left=(x+dx)+'px';
-
-  let top = (y - dy);
-  if(phase==='act1' || phase==='act2'){
-    const lim = getActorBottomLocalDesign() + 10;
-    top = Math.min(top, lim);
-  }
-  bubbleEl.style.top = top + 'px';
+  bubbleEl.style.top =(y-dy)+'px';
 }
 
 function typeWriterHTML(el,html,totalMs,done){
@@ -2569,8 +2526,9 @@ function ensureGhost(){
   ensureActorFloorBottom();
 
   if(!ghost){
-    const aw=actor.offsetWidth || 144;
-    const ah=actor.offsetHeight|| 96;
+    const ar=actor.getBoundingClientRect();
+    const aw=ar.width || 144;
+    const ah=ar.height|| 96;
 
     ghost=document.createElement('div');
     ghost.id='actorGhost';
@@ -2760,8 +2718,8 @@ function setFoyerSpeaker(idx1based){
   foyerBubble.style.backgroundColor=tint(info.color,0.85);
   foyerBubble.style.borderColor='rgba(255,255,255,.9)';
 
-  const dx=(typeof info.chipDx==='number'? info.chipDx:0);
-  const dy=(typeof info.chipDy==='number'? info.chipDy:0);
+  const dx=num(info.chipDx,0);
+  const dy=num(info.chipDy,0);
 
   foyerBubble.style.left=(x+dx)+'px';
   foyerBubble.style.top =(y-dy)+'px';
@@ -3300,7 +3258,7 @@ function animate(now){
       const sinθ=Math.max(-1,Math.min(1,(hookX-cx)/Math.max(1,A_px)));
       const hookXg=cx+Aghost_px*sinθ;
 
-      const springBottom=getComputedStyle(springEl).bottom || 'calc((32 * var(--aat-vh0)) + 92px)';
+      const springBottom=getComputedStyle(springEl).bottom || 'calc(32 * var(--aat-vh) + 92px * var(--aat-scale))';
       const ghostRect=ghost.getBoundingClientRect();
       const ghostWidth=ghostRect.width || actorWidth || 80;
 
@@ -3362,7 +3320,7 @@ function initViewersAvatars(){
       div.style.backgroundImage='url("'+v.img+'")';
     }
     if(typeof v.heightVh==='number'){
-      div.style.height='calc(' + v.heightVh + ' * var(--aat-vh0))';
+      div.style.height=`calc(${v.heightVh} * var(--aat-vh))`;
     }else{
       div.style.height='';
     }
