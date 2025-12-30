@@ -40,11 +40,11 @@
       "color": "#66ccff",
       "xFrac": 0.36,
       "bubbleDx": 45,
-      "bubbleDy": 0,
+      "bubbleDy": -10,
       "avatarDy": 110,
       "avatarScale": 0.3,
-      "chipDx": 85,
-      "chipDy": 40,
+      "chipDx": 65,
+      "chipDy": 20,
       "img": "viewer2.png"
     },
     {
@@ -52,12 +52,12 @@
       "name_en": "Viewer 3",
       "color": "#ff99cc",
       "xFrac": 0.44,
-      "bubbleDx": 50,
-      "bubbleDy": 0,
+      "bubbleDx": 45,
+      "bubbleDy": -10,
       "avatarDy": 110,
       "avatarScale": 0.32,
-      "chipDx": 90,
-      "chipDy": 40,
+      "chipDx": 65,
+      "chipDy": 20,
       "img": "viewer3.png"
     },
     {
@@ -66,11 +66,11 @@
       "color": "#99ff99",
       "xFrac": 0.6,
       "bubbleDx": 45,
-      "bubbleDy": 0,
+      "bubbleDy": -10,
       "avatarDy": 110,
       "avatarScale": 0.3,
-      "chipDx": 80,
-      "chipDy": 40,
+      "chipDx": 65,
+      "chipDy": 20,
       "img": "viewer4.png"
     },
     {
@@ -79,11 +79,11 @@
       "color": "#ff9966",
       "xFrac": 0.77,
       "bubbleDx": 45,
-      "bubbleDy": 0,
+      "bubbleDy": -10,
       "avatarDy": 110,
       "avatarScale": 0.3,
-      "chipDx": 80,
-      "chipDy": 40,
+      "chipDx": 65,
+      "chipDy": 20,
       "img": "viewer5.png"
     }
   ],
@@ -944,6 +944,7 @@
     }
   }
 }
+
 
 
 
