@@ -2300,18 +2300,13 @@ function showSpeakerChip(idx1based){
   const nameEN=info.name_en || ('Viewer '+idx1based);
   const label=currentLang==='en'? nameEN : nameGR;
   actBubble.textContent=label;
-  const dx=num(info.chipDx,0);
-  const dy=num(info.chipDy,0);
+
+  // JSON offsets (με act-specific overrides, χωρίς hard clamp)
+  const dx = num(info['chipDx_'+phase], num(info.chipDx, 0));
+  const dy = num(info['chipDy_'+phase], num(info.chipDy, 0));
 
   actBubble.style.left=(x+dx)+'px';
-
-  let top = (y - dy);
-  if(phase==='act1' || phase==='act2'){
-    // Στόχος: πολύ λίγο κάτω από τα πόδια του ηθοποιού.
-    const lim = getActorBottomLocalDesign() + 10;
-    top = Math.min(top, lim);
-  }
-  actBubble.style.top = top + 'px';
+  actBubble.style.top =(y-dy)+'px';
 
   actBubble.style.transform='translateX(-50%)';
   actBubble.style.backgroundColor=tint(info.color,0.9);
@@ -2323,17 +2318,16 @@ function hideSpeakerChip(){
 
 function placeBubble(idx1based,xShift,yOffset){
   const {x,y,info}=getViewerAvatarCenter(idx1based);
-  const dx=(info? num(info.bubbleDx,0):0)+(xShift||0);
-  const dy=(info? num(info.bubbleDy,0):0)+(yOffset||0);
+
+  // JSON offsets (με act-specific overrides, χωρίς hard clamp)
+  const baseDx = info ? num(info['bubbleDx_'+phase], num(info.bubbleDx, 0)) : 0;
+  const baseDy = info ? num(info['bubbleDy_'+phase], num(info.bubbleDy, 0)) : 0;
+
+  const dx = baseDx + (xShift||0);
+  const dy = baseDy + (yOffset||0);
 
   bubbleEl.style.left=(x+dx)+'px';
-
-  let top = (y - dy);
-  if(phase==='act1' || phase==='act2'){
-    const lim = getActorBottomLocalDesign() + 10;
-    top = Math.min(top, lim);
-  }
-  bubbleEl.style.top = top + 'px';
+  bubbleEl.style.top =(y-dy)+'px';
 }
 
 function typeWriterHTML(el,html,totalMs,done){
