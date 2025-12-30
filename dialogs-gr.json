@@ -27,11 +27,11 @@
       "color": "#ffcc00",
       "xFrac": 0.06,
       "bubbleDx": 60,
-      "bubbleDy": 0,
+      "bubbleDy": 10,
       "avatarDy": 110,
       "avatarScale": 0.32,
-      "chipDx": 100,
-      "chipDy": 40,
+      "chipDx": 80,
+      "chipDy": 50,
       "img": "viewer1.png"
     },
     {
@@ -944,4 +944,5 @@
     }
   }
 }
+
 
