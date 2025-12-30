@@ -1912,14 +1912,18 @@ function getViewerAvatarCenter(idx1based){
   const info=viewerInfo(idx1based);
 
   if(div){
+    // ΠΟΛΥ ΣΗΜΑΝΤΙΚΟ:
+    // Στις Πράξεις 1–2 τα avatars μετακινούνται (ACTS_AVATAR_OFFSET) ώστε να "καθίσουν" στη σκηνή,
+    // αλλά οι διάλογοι/μπαλόνια ΔΕΝ πρέπει να ακολουθούν αυτή τη μετακίνηση.
+    // Γι’ αυτό αγκυρώνουμε πάντα στο baseBottom (από JSON), όχι στο τρέχον style.bottom.
     const baseBottom=parseFloat(div.dataset.baseBottom || '0') || 0;
-    const curBottom = (()=>{ const b=parseFloat(div.style.bottom||''); return Number.isFinite(b)? b : baseBottom; })();
+
     const w = div.offsetWidth  || 0;
     const h = div.offsetHeight || 0;
     const left = parseFloat(div.style.left||'0') || 0;
 
     const cx = left + w/2;
-    const cy = stage.clientHeight - curBottom - h/2;
+    const cy = stage.clientHeight - baseBottom - h/2;
     return {x:cx,y:cy,info};
   }
   return viewerAnchor(idx1based);
