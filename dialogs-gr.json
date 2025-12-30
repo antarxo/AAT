@@ -26,11 +26,11 @@
       "name_en": "Viewer 1",
       "color": "#ffcc00",
       "xFrac": 0.06,
-      "bubbleDx": 45,
+      "bubbleDx": 30,
       "bubbleDy": -10,
       "avatarDy": 110,
       "avatarScale": 0.32,
-      "chipDx": 65,
+      "chipDx": 50,
       "chipDy": 20,
       "img": "viewer1.png"
     },
@@ -39,11 +39,11 @@
       "name_en": "Viewer 2",
       "color": "#66ccff",
       "xFrac": 0.36,
-      "bubbleDx": 45,
+      "bubbleDx": 30,
       "bubbleDy": -10,
       "avatarDy": 110,
       "avatarScale": 0.3,
-      "chipDx": 65,
+      "chipDx": 50,
       "chipDy": 20,
       "img": "viewer2.png"
     },
@@ -52,11 +52,11 @@
       "name_en": "Viewer 3",
       "color": "#ff99cc",
       "xFrac": 0.44,
-      "bubbleDx": 45,
+      "bubbleDx": 30,
       "bubbleDy": -10,
       "avatarDy": 110,
       "avatarScale": 0.32,
-      "chipDx": 65,
+      "chipDx": 50,
       "chipDy": 20,
       "img": "viewer3.png"
     },
@@ -65,11 +65,11 @@
       "name_en": "Viewer 4",
       "color": "#99ff99",
       "xFrac": 0.6,
-      "bubbleDx": 45,
+      "bubbleDx": 30,
       "bubbleDy": -10,
       "avatarDy": 110,
       "avatarScale": 0.3,
-      "chipDx": 65,
+      "chipDx": 50,
       "chipDy": 20,
       "img": "viewer4.png"
     },
@@ -78,11 +78,11 @@
       "name_en": "Viewer 5",
       "color": "#ff9966",
       "xFrac": 0.77,
-      "bubbleDx": 45,
+      "bubbleDx": 30,
       "bubbleDy": -10,
       "avatarDy": 110,
       "avatarScale": 0.3,
-      "chipDx": 65,
+      "chipDx": 50,
       "chipDy": 20,
       "img": "viewer5.png"
     }
@@ -944,6 +944,7 @@
     }
   }
 }
+
 
 
 
