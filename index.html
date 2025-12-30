@@ -1,3 +1,8 @@
+function num(v,fallback=0){
+  const n=(typeof v==='number')? v : parseFloat(v);
+  return (isFinite(n))? n : fallback;
+}
+
 <!DOCTYPE html>
 <html lang="el">
 <head>
@@ -2263,8 +2268,8 @@ function showSpeakerChip(idx1based){
   const nameEN=info.name_en || ('Viewer '+idx1based);
   const label=currentLang==='en'? nameEN : nameGR;
   actBubble.textContent=label;
-  const dx=(typeof info.chipDx==='number'? info.chipDx:0);
-  const dy=(typeof info.chipDy==='number'? info.chipDy:0);
+  const dx=num(info.chipDx,0);
+  const dy=num(info.chipDy,0);
   actBubble.style.left=(x+dx)+'px';
   actBubble.style.top =(y-dy)+'px';
   actBubble.style.transform='translateX(-50%)';
@@ -2277,8 +2282,8 @@ function hideSpeakerChip(){
 
 function placeBubble(idx1based,xShift,yOffset){
   const {x,y,info}=getViewerAvatarCenter(idx1based);
-  const dx=(info && typeof info.bubbleDx==='number'? info.bubbleDx:0)+(xShift||0);
-  const dy=(info && typeof info.bubbleDy==='number'? info.bubbleDy:0)+(yOffset||0);
+  const dx=(info? num(info.bubbleDx,0):0)+(xShift||0);
+  const dy=(info? num(info.bubbleDy,0):0)+(yOffset||0);
   bubbleEl.style.left=(x+dx)+'px';
   bubbleEl.style.top =(y-dy)+'px';
 }
@@ -2363,16 +2368,6 @@ function expandDynTemplate(tpl){
   if(!tpl) return '';
   const x0 = x0Val().toFixed(2);
   const phi0deg = getPhi0Deg();
-  // φ₀ σε rad (κανονικοποιημένο στο [0,2π))
-  const twoPi = 2*Math.PI;
-  let phi0rad = getPhi0Rad();
-  if(isFinite(phi0rad)){
-    phi0rad = phi0rad % twoPi;
-    if(phi0rad < 0) phi0rad += twoPi;
-  } else {
-    phi0rad = 0;
-  }
-
   const v0 = getV0();
   const vSym = getVSignSymbol(v0);
   const vWord = getVSignWord(v0);
@@ -2386,9 +2381,6 @@ function expandDynTemplate(tpl){
     .replaceAll('{omega}',omega.toFixed(3))
     .replaceAll('{x0}',x0)
     .replaceAll('{phi0}',phi0deg.toFixed(1))
-    .replaceAll('{phi0Rad}',phi0rad.toFixed(3))
-    .replaceAll('{phi0rad}',phi0rad.toFixed(3))
-    .replaceAll('{phi0_rad}',phi0rad.toFixed(3))
     .replaceAll('{vSignSymbol}', vSym)
     .replaceAll('{vSignWord}', vWord)
     .replaceAll('{tZero}', tZero.toFixed(2))
@@ -2726,8 +2718,8 @@ function setFoyerSpeaker(idx1based){
   foyerBubble.style.backgroundColor=tint(info.color,0.85);
   foyerBubble.style.borderColor='rgba(255,255,255,.9)';
 
-  const dx=(typeof info.chipDx==='number'? info.chipDx:0);
-  const dy=(typeof info.chipDy==='number'? info.chipDy:0);
+  const dx=num(info.chipDx,0);
+  const dy=num(info.chipDy,0);
 
   foyerBubble.style.left=(x+dx)+'px';
   foyerBubble.style.top =(y-dy)+'px';
