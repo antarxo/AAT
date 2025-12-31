@@ -96,56 +96,54 @@ function num(v,fallback=0){
       visibility: hidden !important;
     }
 
-    #introOverlay.intro-veil{
-      position: fixed;
-      inset: 0;
-      z-index: 10000;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 18px;
-      overflow: hidden; /* κόβονται σωστά τα blurred layers */
-      background: transparent; /* το φόντο το φτιάχνουν τα ::before/::after */
-      isolation: isolate; /* κρατάει τα layers μέσα στο overlay */
-    }
+#introOverlay.intro-veil{
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  overflow: hidden;
+  isolation: isolate;
+  background: transparent; /* το φόντο το φτιάχνουν τα ::before/::after */
+}
 
-    /* blurred BG (από το poster) */
-    #introOverlay.intro-veil::before{
-      content:'';
-      position:absolute;
-      inset:-40px;
-      background-color:#000;
-      /* 1) πρώτα παίρνει αυτό που δίνει το JS, 2) fallback σε γνωστά paths */
-      background-image:
-        var(--intro-bg, url("assets/theatron-banner.png")),
-        url("assets/theatron-banner.png");
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
-      filter: blur(18px) saturate(1.12);
-      transform: scale(1.08);
-      opacity: 1;
-      z-index: 0;
-      pointer-events:none;
-    }
+/* blurred BG (από το poster) */
+#introOverlay.intro-veil::before{
+  content:'';
+  position:absolute;
+  inset:-40px;
+  background-color:#000;
+  background-image: var(--intro-bg, none);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  filter: blur(18px) saturate(1.12);
+  transform: scale(1.08);
+  opacity: .92;
+  z-index: 0;
+  pointer-events:none;
+}
 
-    /* dark overlay για να “κάτσει” το κείμενο/χαρτί */
-    #introOverlay.intro-veil::after{
-      content:'';
-      position:absolute;
-      inset:0;
-      background:
-        radial-gradient(circle at 50% 25%, rgba(0,0,0,0.10) 0%, rgba(0,0,0,0.68) 70%),
-        linear-gradient(180deg, rgba(0,0,0,0.10) 0%, rgba(0,0,0,0.78) 100%);
-      z-index: 1;
-      pointer-events:none;
-    }
-    #introOverlay.hidden{ display:none; }
+/* dark overlay για να “κάτσει” το κείμενο/χαρτί */
+#introOverlay.intro-veil::after{
+  content:'';
+  position:absolute;
+  inset:0;
+  background:
+    radial-gradient(circle at 50% 25%, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.85) 70%),
+    linear-gradient(180deg, rgba(0,0,0,0.20) 0%, rgba(0,0,0,0.88) 100%);
+  z-index: 1;
+  pointer-events:none;
+}
+
+#introOverlay.hidden{ display:none; }
 
     #introOverlay .intro-card{
-      position: relative;
+            position: relative;
       z-index: 2;
-      width: min(980px, 100%);
+width: min(980px, 100%);
       max-height: min(92vh, 980px);
       border-radius: 18px;
       padding: 18px 18px 16px;
@@ -614,16 +612,21 @@ if(!INTRO || INTRO.enabled === false){
   }
 
   document.body.classList.add('intro-open');
+// Poster + background (χωρίς να σπάει σε GitHub Pages / repo paths)
+{
+  const rawPoster = (INTRO.posterSrc || '').toString();
+  const cleanPoster = rawPoster.replace(/^\/+/, ''); // κόβει τυχόν leading "/"
+  const posterAbs = cleanPoster ? (new URL(cleanPoster, window.location.href)).href : '';
 
-  introPoster.src = INTRO.posterSrc || '';
+  introPoster.src = posterAbs;
   introPoster.alt = INTRO.posterAlt || '';
 
-  // BG του intro = blurred poster (ίδιο “ύφος” με την ταμπέλα)
-  try{
-    const raw = INTRO.posterSrc || '';
-    const bgUrl = raw ? new URL(raw, window.location.href).href : '';
-    if(bgUrl) introOverlay.style.setProperty('--intro-bg', `url("${bgUrl}")`);
-  }catch(_e){}
+  if(posterAbs){
+    introOverlay.style.setProperty('--intro-bg', `url("${posterAbs}")`);
+  }else{
+    introOverlay.style.removeProperty('--intro-bg');
+  }
+}
 
   introLeaflet.innerHTML = introLeafletTextToHTML(INTRO.leafletText || '');
 
