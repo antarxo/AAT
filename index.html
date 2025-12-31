@@ -14,12 +14,7 @@
 
   <!-- AAT responsive scaler (baseline + uniform scale on .stage) -->
   <script>
-  
-function num(v,fallback=0){
-  const n=(typeof v==='number') ? v : (typeof v==='string' ? parseFloat(v) : NaN);
-  return Number.isFinite(n) ? n : fallback;
-}
-(function(){
+  (function(){
     const root = document.documentElement;
     const p = new URLSearchParams(location.search);
 
@@ -50,16 +45,7 @@ function num(v,fallback=0){
       root.style.setProperty('--aat-dw', DW);
       root.style.setProperty('--aat-dh', DH);
       root.style.setProperty('--aat-scale', (Math.max(0.01, s)).toFixed(6));
-          const vv = window.visualViewport;
-      const vvw = vv ? vv.width  : (window.innerWidth  || 0);
-      const vvh = vv ? vv.height : (window.innerHeight || 0);
-      const offX = vv ? vv.offsetLeft : 0;
-      const offY = vv ? vv.offsetTop  : 0;
-      root.style.setProperty('--aat-vvw', Math.round(vvw) + 'px');
-      root.style.setProperty('--aat-vvh', Math.round(vvh) + 'px');
-      root.style.setProperty('--aat-vvoffx', Math.round(offX) + 'px');
-      root.style.setProperty('--aat-vvoffy', Math.round(offY) + 'px');
-}
+    }
 
     window.addEventListener('resize', apply, {passive:true});
     if(window.visualViewport) window.visualViewport.addEventListener('resize', apply, {passive:true});
@@ -1912,39 +1898,18 @@ function getViewerAvatarCenter(idx1based){
   const info=viewerInfo(idx1based);
 
   if(div){
-    // ΠΟΛΥ ΣΗΜΑΝΤΙΚΟ:
-    // Στις Πράξεις 1–2 τα avatars μετακινούνται (ACTS_AVATAR_OFFSET) ώστε να "καθίσουν" στη σκηνή,
-    // αλλά οι διάλογοι/μπαλόνια ΔΕΝ πρέπει να ακολουθούν αυτή τη μετακίνηση.
-    // Γι’ αυτό αγκυρώνουμε πάντα στο baseBottom (από JSON), όχι στο τρέχον style.bottom.
     const baseBottom=parseFloat(div.dataset.baseBottom || '0') || 0;
-
+    const curBottom = (()=>{ const b=parseFloat(div.style.bottom||''); return Number.isFinite(b)? b : baseBottom; })();
     const w = div.offsetWidth  || 0;
     const h = div.offsetHeight || 0;
     const left = parseFloat(div.style.left||'0') || 0;
 
     const cx = left + w/2;
-    const cy = stage.clientHeight - baseBottom - h/2;
+    const cy = stage.clientHeight - curBottom - h/2;
     return {x:cx,y:cy,info};
   }
   return viewerAnchor(idx1based);
 }
-
-function getActorBottomLocalDesign(){
-  // y (px) του κάτω άκρου του ηθοποιού μέσα στη σκηνή, σε *design px* (unscaled).
-  if(!stage) return 0;
-  const actorImg = document.querySelector('#actor img');
-  if(!actorImg) return 0;
-
-  const s = (()=>{
-    const v = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--aat-scale'));
-    return (isFinite(v) && v>0) ? v : 1;
-  })();
-
-  const stageRect = stage.getBoundingClientRect();
-  const aRect = actorImg.getBoundingClientRect();
-  return (aRect.bottom - stageRect.top) / s;
-}
-
 
 function tint(hex,alpha){
   const c=(hex||'#ffffff').replace('#','');
@@ -2304,14 +2269,10 @@ function showSpeakerChip(idx1based){
   const nameEN=info.name_en || ('Viewer '+idx1based);
   const label=currentLang==='en'? nameEN : nameGR;
   actBubble.textContent=label;
-
-  // JSON offsets (με act-specific overrides, χωρίς hard clamp)
-  const dx = num(info['chipDx_'+phase], num(info.chipDx, 0));
-  const dy = num(info['chipDy_'+phase], num(info.chipDy, 0));
-
+  const dx=(typeof info.chipDx==='number'? info.chipDx:0);
+  const dy=(typeof info.chipDy==='number'? info.chipDy:0);
   actBubble.style.left=(x+dx)+'px';
   actBubble.style.top =(y-dy)+'px';
-
   actBubble.style.transform='translateX(-50%)';
   actBubble.style.backgroundColor=tint(info.color,0.9);
   actBubble.style.display='block';
@@ -2322,14 +2283,8 @@ function hideSpeakerChip(){
 
 function placeBubble(idx1based,xShift,yOffset){
   const {x,y,info}=getViewerAvatarCenter(idx1based);
-
-  // JSON offsets (με act-specific overrides, χωρίς hard clamp)
-  const baseDx = info ? num(info['bubbleDx_'+phase], num(info.bubbleDx, 0)) : 0;
-  const baseDy = info ? num(info['bubbleDy_'+phase], num(info.bubbleDy, 0)) : 0;
-
-  const dx = baseDx + (xShift||0);
-  const dy = baseDy + (yOffset||0);
-
+  const dx=(info && typeof info.bubbleDx==='number'? info.bubbleDx:0)+(xShift||0);
+  const dy=(info && typeof info.bubbleDy==='number'? info.bubbleDy:0)+(yOffset||0);
   bubbleEl.style.left=(x+dx)+'px';
   bubbleEl.style.top =(y-dy)+'px';
 }
@@ -2414,7 +2369,7 @@ function expandDynTemplate(tpl){
   if(!tpl) return '';
   const x0 = x0Val().toFixed(2);
   const phi0deg = getPhi0Deg();
-  const phi0rad = ((phi0deg * Math.PI / 180) % (2*Math.PI) + (2*Math.PI)) % (2*Math.PI);
+  const phi0rad = ((getPhi0Rad()%(2*Math.PI))+2*Math.PI)%(2*Math.PI);
   const v0 = getV0();
   const vSym = getVSignSymbol(v0);
   const vWord = getVSignWord(v0);
@@ -3134,7 +3089,6 @@ function exportBookDataToStorage(){
   try{
     const x0 = x0Val();
     const phi0deg = getPhi0Deg();
-  const phi0rad = ((phi0deg * Math.PI / 180) % (2*Math.PI) + (2*Math.PI)) % (2*Math.PI);
     const tZero = xtZeroCrossingTime(); // ✅ ΤΩΡΑ ΥΠΑΡΧΕΙ ΠΡΑΓΜΑΤΙΚΑ
 
     const payload = {
