@@ -39,12 +39,12 @@
       "name_en": "Viewer 2",
       "color": "#66ccff",
       "xFrac": 0.36,
-      "bubbleDx": 15,
+      "bubbleDx": 25,
       "bubbleDy": -10,
       "avatarDy": 110,
       "avatarScale": 0.3,
-      "chipDx": 25,
-      "chipDy": 20,
+      "chipDx": 35,
+      "chipDy": 18,
       "img": "viewer2.png"
     },
     {
