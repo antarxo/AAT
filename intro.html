@@ -6,8 +6,7 @@
   <title>Πρόγραμμα Παράστασης · Α.Α.Τ.</title>
   <style>
     :root{
-      --intro-bg-url: none;
-
+      --intro-bg: none;
       color-scheme: dark;
       --paper: rgba(248,247,242,.96);
       --paper-brd: rgba(0,0,0,.18);
@@ -15,10 +14,10 @@
       --muted: rgba(18,18,18,.70);
       --shadow: 0 18px 70px rgba(0,0,0,.55);
     }
-    html,body{height:100%;}
+    html,body{height:100%; background:#000;}
     body{
       margin:0;
-      background: transparent;
+      background:#000;
       display:grid;
       place-items:center;
       font: 16px/1.55 system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
@@ -90,38 +89,31 @@
     }
   
 
-    /* ===== Banner-matched background (auto from intro.json posterSrc) ===== */
-    html, body{ width:100%; height:100%; }
-
-    body{
-      background:#000; /* fallback */
-      overflow:hidden;
-    }
     body::before{
       content:"";
-      position:fixed;
-      inset:-28px;
-      background-image: var(--intro-bg-url);
+      position: fixed;
+      inset: -40px;
+      background-image: var(--intro-bg);
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
       transform: scale(1.08);
-      filter: blur(18px) saturate(1.15);
+      filter: blur(18px) saturate(1.12);
       opacity: .85;
-      pointer-events:none;
-      z-index:0;
+      z-index: -2;
+      pointer-events: none;
     }
     body::after{
       content:"";
-      position:fixed;
-      inset:0;
+      position: fixed;
+      inset: 0;
       background:
-        radial-gradient(circle at 50% 30%, rgba(0,0,0,.20) 0%, rgba(0,0,0,.88) 70%),
-        linear-gradient(180deg, rgba(0,0,0,.35) 0%, rgba(0,0,0,.90) 100%);
-      pointer-events:none;
-      z-index:0;
+        radial-gradient(circle at 50% 25%, rgba(0,0,0,.15) 0%, rgba(0,0,0,.85) 70%),
+        linear-gradient(180deg, rgba(0,0,0,.25) 0%, rgba(0,0,0,.85) 100%);
+      z-index: -1;
+      pointer-events: none;
     }
-    .wrap{ position:relative; z-index:1; }
+
 </style>
 </head>
 <body>
@@ -262,7 +254,7 @@
 
       const img = document.getElementById('poster');
       if (cfg.posterSrc) img.src = cfg.posterSrc;
-      if (cfg.posterSrc) document.documentElement.style.setProperty('--intro-bg-url', `url("${cfg.posterSrc}")`);
+      if (cfg.posterSrc) document.documentElement.style.setProperty('--intro-bg', `url("${cfg.posterSrc}")`);
       if (cfg.posterAlt) img.alt = cfg.posterAlt;
 
       const cont = document.getElementById('leafletContent');
