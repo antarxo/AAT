@@ -808,11 +808,11 @@ let xtMarkState = {
   showTail: false
 };
 
-function computePhaseZeroT(phi0Rad, omegaVal){
+function computePhaseZeroT(phi0rad, omegaVal){
   const twoPi = 2*Math.PI;
-  if(!isFinite(phi0Rad) || !isFinite(omegaVal) || omegaVal === 0) return 0;
+  if(!isFinite(phi0rad) || !isFinite(omegaVal) || omegaVal === 0) return 0;
 
-  let p = phi0Rad % twoPi;
+  let p = phi0rad % twoPi;
   if(p < 0) p += twoPi;
 
   const tZero = (twoPi - p) / omegaVal;
@@ -829,8 +829,8 @@ function getPhi0Rad(){
 // Βρίσκουμε τη στιγμή t_zero στο [0,T] όπου η φάση μηδενίζεται πρώτη φορά (mod 2π)
 // και άρα x=0 με θετική φορά (για την κόκκινη πρόβλεψη).
 function xtZeroCrossingTime(){
-  const phi0Rad = getPhi0Rad();
-  return computePhaseZeroT(phi0Rad, omega);
+  const phi0rad = getPhi0Rad();
+  return computePhaseZeroT(phi0rad, omega);
 }
 
 function triggerXtZeroMark(ev){
@@ -2383,7 +2383,7 @@ function expandDynTemplate(tpl){
     .replaceAll('{omega}',omega.toFixed(3))
     .replaceAll('{x0}',x0)
     .replaceAll('{phi0}',phi0deg.toFixed(1))
-    .replaceAll('{phi0Rad}',phi0rad.toFixed(3))
+    .replaceAll('{phi0rad}',phi0rad.toFixed(3))
     .replaceAll('{phi0rad}',phi0rad.toFixed(3))
     .replaceAll('{vSignSymbol}', vSym)
     .replaceAll('{vSignWord}', vWord)
