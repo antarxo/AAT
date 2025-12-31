@@ -539,14 +539,6 @@ function introLeafletTextToHTML(text){
 function closeIntro(){
   introOverlay.classList.add('hidden');
   document.body.classList.remove('intro-open');
-
-  // failsafe: αν δεν έχει ξεκινήσει ακόμη η παράσταση, βεβαιώσου ότι βλέπουμε το startBreak
-  try{
-    const started = document.body.classList.contains('show-running');
-    if(!started && startBreak){
-      startBreak.style.display = 'flex';
-    }
-  }catch(_e){}
 }
 
 async function initIntro(){
@@ -1872,7 +1864,6 @@ function getVSignWord(v0){
 
 function showParamsBox(){
   const phi0deg = getPhi0Deg();
-  const phi0rad = getPhi0Rad();
   paramAEl.textContent  = 'A = '+A_m.toFixed(2)+' m';
   paramWEl.textContent  = 'ω = '+omega.toFixed(3)+' rad/s';
   paramPhiEl.textContent= 'φ₀ = '+phi0deg.toFixed(1)+'°';
@@ -1899,24 +1890,21 @@ function viewerAnchor(idx1based){
 }
 
 function getViewerAvatarCenter(idx1based){
-  const idx0 = (idx1based || 1) - 1;
-  const div  = viewersStrip.querySelector('.viewer-avatar[data-idx="'+idx0+'"]');
-  const info = viewerInfo(idx1based);
+  const idx0=(idx1based||1)-1;
+  const div=viewersStrip.querySelector('.viewer-avatar[data-idx="'+idx0+'"]');
+  const info=viewerInfo(idx1based);
 
-  // ΣΤΟΧΟΣ:
-  // - x/y σε *ίδιες μονάδες* (CSS px, μέσα στο stage)
-  // - για Πράξη 1/2: αγκυρώνουμε στο baseBottom (foyer baseline) ώστε οι διάλογοι/ετικέτες
-  //   να ΜΗΝ ακολουθούν το κατέβασμα των avatars.
+  // IMPORTANT:
+  // Οι διάλογοι/ετικέτες πρέπει να αγκυρώνουν στο *baseline* (dataset.baseBottom),
+  // όχι στο τρέχον bottom των avatars που αλλάζει στις Πράξεις 1–2.
+  // Για να μη χαλάει με responsive scaling, δουλεύουμε σε *layout coords* (offset* / client*),
+  // όχι σε getBoundingClientRect (που είναι scaled pixels).
   if(div){
-    const baseBottom = parseFloat(div.dataset.baseBottom || '0') || 0;
-
-    // offsetLeft/Top είναι ήδη στο coordinate system του stage (CSS px).
-    const cx = div.offsetLeft + div.offsetWidth / 2;
-    const cy = stage.clientHeight - baseBottom - div.offsetHeight / 2;
-
-    return { x: cx, y: cy, info };
+    const baseBottom=parseFloat(div.dataset.baseBottom || '0') || 0;
+    const cx=div.offsetLeft + div.offsetWidth/2;
+    const cy=stage.clientHeight - baseBottom - div.offsetHeight/2;
+    return {x:cx,y:cy,info};
   }
-
   return viewerAnchor(idx1based);
 }
 
@@ -2379,7 +2367,7 @@ function expandDynTemplate(tpl){
   if(!tpl) return '';
   const x0 = x0Val().toFixed(2);
   const phi0deg = getPhi0Deg();
-  const phi0rad = getPhi0Rad();
+  const phi0rad = ((((phi0deg*Math.PI/180)%(2*Math.PI)) + 2*Math.PI)%(2*Math.PI));
   const v0 = getV0();
   const vSym = getVSignSymbol(v0);
   const vWord = getVSignWord(v0);
@@ -2394,6 +2382,7 @@ function expandDynTemplate(tpl){
     .replaceAll('{x0}',x0)
     .replaceAll('{phi0}',phi0deg.toFixed(1))
     .replaceAll('{phi0rad}',phi0rad.toFixed(3))
+    .replaceAll('{phi0Rad}',phi0rad.toFixed(3))
     .replaceAll('{vSignSymbol}', vSym)
     .replaceAll('{vSignWord}', vWord)
     .replaceAll('{tZero}', tZero.toFixed(2))
@@ -3099,7 +3088,6 @@ function exportBookDataToStorage(){
   try{
     const x0 = x0Val();
     const phi0deg = getPhi0Deg();
-  const phi0rad = getPhi0Rad();
     const tZero = xtZeroCrossingTime(); // ✅ ΤΩΡΑ ΥΠΑΡΧΕΙ ΠΡΑΓΜΑΤΙΚΑ
 
     const payload = {
