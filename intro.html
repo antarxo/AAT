@@ -6,7 +6,8 @@
   <title>Πρόγραμμα Παράστασης · Α.Α.Τ.</title>
   <style>
     :root{
-      --intro-bg: none;
+      --intro-bg-url: none;
+
       color-scheme: dark;
       --paper: rgba(248,247,242,.96);
       --paper-brd: rgba(0,0,0,.18);
@@ -14,41 +15,7 @@
       --muted: rgba(18,18,18,.70);
       --shadow: 0 18px 70px rgba(0,0,0,.55);
     }
-    
-    html,body{height:100%; margin:0;}
-    body{
-      min-height:100%;
-      background:#000;
-      position:relative;
-      overflow-x:hidden;
-    }
-    /* Background = blurred poster image */
-    body::before{
-      content:"";
-      position:fixed;
-      inset:-32px;
-      background-image: var(--intro-bg);
-      background-size: cover;
-      background-position: center;
-      background-repeat:no-repeat;
-      transform: scale(1.08);
-      filter: blur(18px) saturate(1.15);
-      opacity:.85;
-      z-index:-2;
-      pointer-events:none;
-    }
-    /* Dark veil for readability */
-    body::after{
-      content:"";
-      position:fixed;
-      inset:0;
-      background:
-        radial-gradient(circle at 50% 30%, rgba(0,0,0,.15) 0%, rgba(0,0,0,.85) 72%),
-        linear-gradient(180deg, rgba(0,0,0,.25) 0%, rgba(0,0,0,.90) 100%);
-      z-index:-1;
-      pointer-events:none;
-    }
-html,body{height:100%;}
+    html,body{height:100%;}
     body{
       margin:0;
       background: transparent;
@@ -57,8 +24,6 @@ html,body{height:100%;}
       font: 16px/1.55 system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
     }
     .wrap{
-      position:relative;
-      z-index:0;
       width:min(1040px, 94vw);
       height:min(92vh, 860px);
       display:grid;
@@ -123,7 +88,41 @@ html,body{height:100%;}
       font-size: 13px;
       color: var(--muted);
     }
-  </style>
+  
+
+    /* ===== Banner-matched background (auto from intro.json posterSrc) ===== */
+    html, body{ width:100%; height:100%; }
+
+    body{
+      background:#000; /* fallback */
+      overflow:hidden;
+    }
+    body::before{
+      content:"";
+      position:fixed;
+      inset:-28px;
+      background-image: var(--intro-bg-url);
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      transform: scale(1.08);
+      filter: blur(18px) saturate(1.15);
+      opacity: .85;
+      pointer-events:none;
+      z-index:0;
+    }
+    body::after{
+      content:"";
+      position:fixed;
+      inset:0;
+      background:
+        radial-gradient(circle at 50% 30%, rgba(0,0,0,.20) 0%, rgba(0,0,0,.88) 70%),
+        linear-gradient(180deg, rgba(0,0,0,.35) 0%, rgba(0,0,0,.90) 100%);
+      pointer-events:none;
+      z-index:0;
+    }
+    .wrap{ position:relative; z-index:1; }
+</style>
 </head>
 <body>
   <div class="wrap" role="document" aria-label="Πρόγραμμα παράστασης Α.Α.Τ.">
@@ -263,7 +262,7 @@ html,body{height:100%;}
 
       const img = document.getElementById('poster');
       if (cfg.posterSrc) img.src = cfg.posterSrc;
-      if (cfg.posterSrc) document.documentElement.style.setProperty('--intro-bg', `url("${cfg.posterSrc}")`);
+      if (cfg.posterSrc) document.documentElement.style.setProperty('--intro-bg-url', `url("${cfg.posterSrc}")`);
       if (cfg.posterAlt) img.alt = cfg.posterAlt;
 
       const cont = document.getElementById('leafletContent');
