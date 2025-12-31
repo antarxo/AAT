@@ -26,12 +26,12 @@
       "name_en": "Viewer 1",
       "color": "#ffcc00",
       "xFrac": 0.06,
-      "bubbleDx": 60,
-      "bubbleDy": 0,
+      "bubbleDx": 25,
+      "bubbleDy": -10,
       "avatarDy": 110,
       "avatarScale": 0.32,
-      "chipDx": 100,
-      "chipDy": 40,
+      "chipDx": 55,
+      "chipDy": 18,
       "img": "viewer1.png"
     },
     {
@@ -43,7 +43,7 @@
       "bubbleDy": -10,
       "avatarDy": 110,
       "avatarScale": 0.3,
-      "chipDx": 35,
+      "chipDx": 55,
       "chipDy": 18,
       "img": "viewer2.png"
     },
