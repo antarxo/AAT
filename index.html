@@ -1881,16 +1881,6 @@ function getVSignWord(v0){
 
 function showParamsBox(){
   const phi0deg = getPhi0Deg();
-  const phi0rad = ((phi0deg * Math.PI / 180) % (2*Math.PI) + (2*Math.PI)) % (2*Math.PI);
-  // φ₀ σε rad (κανονικοποιημένο στο [0,2π))
-  const twoPi = 2*Math.PI;
-  let phi0rad = getPhi0Rad();
-  if(isFinite(phi0rad)){
-    phi0rad = phi0rad % twoPi;
-    if(phi0rad < 0) phi0rad += twoPi;
-  } else {
-    phi0rad = 0;
-  }
   paramAEl.textContent  = 'A = '+A_m.toFixed(2)+' m';
   paramWEl.textContent  = 'ω = '+omega.toFixed(3)+' rad/s';
   paramPhiEl.textContent= 'φ₀ = '+phi0deg.toFixed(1)+'°';
