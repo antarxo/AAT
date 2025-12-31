@@ -104,35 +104,39 @@ function num(v,fallback=0){
       align-items: center;
       justify-content: center;
       padding: 18px;
-      overflow: hidden; /* για να “κόβονται” τα blurred layers */
-      background: transparent; /* το πέπλο το φτιάχνουν τα ::before/::after */
+      overflow: hidden; /* κόβονται σωστά τα blurred layers */
+      background: transparent; /* το φόντο το φτιάχνουν τα ::before/::after */
+      isolation: isolate; /* κρατάει τα layers μέσα στο overlay */
     }
 
-/* blurred BG (από το poster) */
+    /* blurred BG (από το poster) */
     #introOverlay.intro-veil::before{
       content:'';
       position:absolute;
       inset:-40px;
       background-color:#000;
-      background-image: var(--intro-bg, none);
+      /* 1) πρώτα παίρνει αυτό που δίνει το JS, 2) fallback σε γνωστά paths */
+      background-image:
+        var(--intro-bg, url("assets/theatron-banner.png")),
+        url("theatron-banner.png");
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
       filter: blur(18px) saturate(1.12);
       transform: scale(1.08);
-      opacity: .9;
+      opacity: 1;
       z-index: 0;
       pointer-events:none;
     }
 
-/* dark overlay για να “κάτσει” το κείμενο/χαρτί */
+    /* dark overlay για να “κάτσει” το κείμενο/χαρτί */
     #introOverlay.intro-veil::after{
       content:'';
       position:absolute;
       inset:0;
       background:
-        radial-gradient(circle at 50% 25%, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.85) 70%),
-        linear-gradient(180deg, rgba(0,0,0,0.20) 0%, rgba(0,0,0,0.88) 100%);
+        radial-gradient(circle at 50% 25%, rgba(0,0,0,0.10) 0%, rgba(0,0,0,0.68) 70%),
+        linear-gradient(180deg, rgba(0,0,0,0.10) 0%, rgba(0,0,0,0.78) 100%);
       z-index: 1;
       pointer-events:none;
     }
@@ -615,9 +619,11 @@ if(!INTRO || INTRO.enabled === false){
   introPoster.alt = INTRO.posterAlt || '';
 
   // BG του intro = blurred poster (ίδιο “ύφος” με την ταμπέλα)
-  if(introPoster.src){
-    introOverlay.style.setProperty('--intro-bg', `url("${introPoster.src}")`);
-  }
+  try{
+    const raw = INTRO.posterSrc || '';
+    const bgUrl = raw ? new URL(raw, window.location.href).href : '';
+    if(bgUrl) introOverlay.style.setProperty('--intro-bg', `url("${bgUrl}")`);
+  }catch(_e){}
 
   introLeaflet.innerHTML = introLeafletTextToHTML(INTRO.leafletText || '');
 
