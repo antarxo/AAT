@@ -272,10 +272,15 @@
       if (!cfg) return;
 
       const img = document.getElementById('poster');
-      if (cfg.posterSrc) img.src = cfg.posterSrc;
-      // BG from the same posterSrc
-      const bg = document.getElementById('introBg');
-      if (bg && cfg.posterSrc) bg.style.backgroundImage = `url("${cfg.posterSrc}")`;
+      const bg  = document.getElementById('introBg');
+
+      const srcRaw = String(cfg.posterSrc || '').trim();
+      if (srcRaw){
+        const safe = srcRaw.replace(/^\/+/, '');           // κόψε leading "/" (GitHub Pages /repo θέμα)
+        const resolved = new URL(safe, r.url).href;         // resolve relative to intro.json
+        img.src = resolved;
+        if (bg) bg.style.backgroundImage = `url("${resolved}")`;
+      }
       if (cfg.posterAlt) img.alt = cfg.posterAlt;
 
       const cont = document.getElementById('leafletContent');
