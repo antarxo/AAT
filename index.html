@@ -1881,6 +1881,15 @@ function getVSignWord(v0){
 
 function showParamsBox(){
   const phi0deg = getPhi0Deg();
+  // φ₀ σε rad (κανονικοποιημένο στο [0,2π))
+  const twoPi = 2*Math.PI;
+  let phi0rad = getPhi0Rad();
+  if(isFinite(phi0rad)){
+    phi0rad = phi0rad % twoPi;
+    if(phi0rad < 0) phi0rad += twoPi;
+  } else {
+    phi0rad = 0;
+  }
   paramAEl.textContent  = 'A = '+A_m.toFixed(2)+' m';
   paramWEl.textContent  = 'ω = '+omega.toFixed(3)+' rad/s';
   paramPhiEl.textContent= 'φ₀ = '+phi0deg.toFixed(1)+'°';
@@ -2427,6 +2436,7 @@ function expandDynTemplate(tpl){
     .replaceAll('{omega}',omega.toFixed(3))
     .replaceAll('{x0}',x0)
     .replaceAll('{phi0}',phi0deg.toFixed(1))
+    .replaceAll('{phi0Rad}',phi0rad.toFixed(3))
     .replaceAll('{vSignSymbol}', vSym)
     .replaceAll('{vSignWord}', vWord)
     .replaceAll('{tZero}', tZero.toFixed(2))
