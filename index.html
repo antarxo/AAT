@@ -1881,6 +1881,7 @@ function getVSignWord(v0){
 
 function showParamsBox(){
   const phi0deg = getPhi0Deg();
+  const phi0rad = ((phi0deg * Math.PI / 180) % (2*Math.PI) + (2*Math.PI)) % (2*Math.PI);
   // φ₀ σε rad (κανονικοποιημένο στο [0,2π))
   const twoPi = 2*Math.PI;
   let phi0rad = getPhi0Rad();
@@ -2423,6 +2424,7 @@ function expandDynTemplate(tpl){
   if(!tpl) return '';
   const x0 = x0Val().toFixed(2);
   const phi0deg = getPhi0Deg();
+  const phi0rad = ((phi0deg * Math.PI / 180) % (2*Math.PI) + (2*Math.PI)) % (2*Math.PI);
   const v0 = getV0();
   const vSym = getVSignSymbol(v0);
   const vWord = getVSignWord(v0);
@@ -2437,6 +2439,7 @@ function expandDynTemplate(tpl){
     .replaceAll('{x0}',x0)
     .replaceAll('{phi0}',phi0deg.toFixed(1))
     .replaceAll('{phi0Rad}',phi0rad.toFixed(3))
+    .replaceAll('{phi0rad}',phi0rad.toFixed(3))
     .replaceAll('{vSignSymbol}', vSym)
     .replaceAll('{vSignWord}', vWord)
     .replaceAll('{tZero}', tZero.toFixed(2))
@@ -3141,6 +3144,7 @@ function exportBookDataToStorage(){
   try{
     const x0 = x0Val();
     const phi0deg = getPhi0Deg();
+  const phi0rad = ((phi0deg * Math.PI / 180) % (2*Math.PI) + (2*Math.PI)) % (2*Math.PI);
     const tZero = xtZeroCrossingTime(); // ✅ ΤΩΡΑ ΥΠΑΡΧΕΙ ΠΡΑΓΜΑΤΙΚΑ
 
     const payload = {
