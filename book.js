@@ -14,7 +14,7 @@ const BOOK_STORAGE_KEY = 'aatBookData';
   let gOmega = 2*Math.PI/6.0;
   let gX0 = 0.0;
   let gPhi0Deg = 0.0;
-  let gPhi0Rad = 0.0;
+  let gphi0rad = 0.0;
   let gV0 = 0.0;
   let gVSignSymbol = 'υ=0';
   let gVSignWord = 'μηδενική';
@@ -68,7 +68,7 @@ const BOOK_STORAGE_KEY = 'aatBookData';
       .replaceAll('{omega}', String(gOmega.toFixed(2)))
       .replaceAll('{x0}', String(gX0.toFixed(2)))
       .replaceAll('{phi0}', String(gPhi0Deg.toFixed(1)))
-      .replaceAll('{phi0Rad}', (isFinite(gPhi0Deg) ? String(((((gPhi0Deg*Math.PI/180)%(2*Math.PI))+(2*Math.PI))%(2*Math.PI)).toFixed(3)) : ''))
+      .replaceAll('{phi0rad}', (isFinite(gPhi0Deg) ? String(((((gPhi0Deg*Math.PI/180)%(2*Math.PI))+(2*Math.PI))%(2*Math.PI)).toFixed(3)) : ''))
       .replaceAll('{phi0rad}', (isFinite(gPhi0Deg) ? String(((((gPhi0Deg*Math.PI/180)%(2*Math.PI))+(2*Math.PI))%(2*Math.PI)).toFixed(3)) : ''))
       .replaceAll('{vSignSymbol}', gVSignSymbol)
       .replaceAll('{vSignWord}', gVSignWord)
@@ -444,7 +444,7 @@ const BOOK_STORAGE_KEY = 'aatBookData';
     });
   }
 
-  // ----- Σχεδίαση διαγραμμάτων (χρησιμοποιούν gA, gT, gOmega, gPhi0Rad, gX0) -----
+  // ----- Σχεδίαση διαγραμμάτων (χρησιμοποιούν gA, gT, gOmega, gphi0rad, gX0) -----
 
   function renderDiagramJobs(){
     diagramJobs.forEach(job=>{
@@ -516,7 +516,7 @@ const BOOK_STORAGE_KEY = 'aatBookData';
     ctx.beginPath();
     for(let i=0;i<=200;i++){
       const t = tMin + (tMax-tMin)*i/200;
-      const x = gA*Math.sin(gOmega*t + gPhi0Rad);
+      const x = gA*Math.sin(gOmega*t + gphi0rad);
       const xf = tToX(t);
       const yf = xToY(x);
       if(i===0) ctx.moveTo(xf,yf);
@@ -527,7 +527,7 @@ const BOOK_STORAGE_KEY = 'aatBookData';
 
     if(job && job.tZeroMark != null){
       const t0 = job.tZeroMark;
-      const x0 = gA*Math.sin(gOmega*t0 + gPhi0Rad);
+      const x0 = gA*Math.sin(gOmega*t0 + gphi0rad);
       const xf = tToX(t0);
       const yf = xToY(x0);
 
@@ -546,7 +546,7 @@ const BOOK_STORAGE_KEY = 'aatBookData';
         ctx.moveTo(xf,yf);
         for(let i=0;i<=120;i++){
           const t = t0 + (tEnd - t0)*i/120;
-          const x = gA*Math.sin(gOmega*t + gPhi0Rad);
+          const x = gA*Math.sin(gOmega*t + gphi0rad);
           const xx = tToX(t);
           const yy = xToY(x);
           if(i===0) ctx.moveTo(xx,yy);
@@ -622,7 +622,7 @@ const BOOK_STORAGE_KEY = 'aatBookData';
     ctx.beginPath();
     for(let i=0;i<=200;i++){
       const t = tMin + (tMax-tMin)*i/200;
-      const v = gOmega*gA*Math.cos(gOmega*t + gPhi0Rad);
+      const v = gOmega*gA*Math.cos(gOmega*t + gphi0rad);
       const xf = tToX(t);
       const yf = vToY(v);
       if(i===0) ctx.moveTo(xf,yf);
@@ -691,7 +691,7 @@ const BOOK_STORAGE_KEY = 'aatBookData';
     ctx.beginPath();
     for(let i=0;i<=200;i++){
       const t = tMin + (tMax-tMin)*i/200;
-      const a = -gOmega*gOmega*gA*Math.sin(gOmega*t + gPhi0Rad);
+      const a = -gOmega*gOmega*gA*Math.sin(gOmega*t + gphi0rad);
       const xf = tToX(t);
       const yf = aToY(a);
       if(i===0) ctx.moveTo(xf,yf);
@@ -866,7 +866,7 @@ const BOOK_STORAGE_KEY = 'aatBookData';
 
     gX0 = (bookData && typeof bookData.x0 === 'number') ? bookData.x0 : 1.80;
     gPhi0Deg = (bookData && typeof bookData.phi0Deg === 'number') ? bookData.phi0Deg : 35.0;
-    gPhi0Rad = gPhi0Deg * Math.PI/180;
+    gphi0rad = gPhi0Deg * Math.PI/180;
 
     if(bookData && typeof bookData.tZero === 'number'){
       gPhaseZeroT = bookData.tZero;
@@ -893,7 +893,7 @@ const BOOK_STORAGE_KEY = 'aatBookData';
       gEmech = NaN;
     }
 
-    gV0 = gOmega * gA * Math.cos(gPhi0Rad);
+    gV0 = gOmega * gA * Math.cos(gphi0rad);
     const eps = 1e-6;
     if(gV0 > eps){
       gVSignSymbol = 'υ>0';
