@@ -138,7 +138,7 @@
   <div id="introBgBadge" aria-hidden="true">BG v5</div>
   <div class="wrap" role="document" aria-label="Πρόγραμμα παράστασης Α.Α.Τ.">
     <div class="banner">
-      <img id="poster" src="intro-poster.jpg" alt="Πρόγραμμα παράστασης Α.Α.Τ." />
+      <img id="poster" alt="Πρόγραμμα παράστασης Α.Α.Τ." />
     </div>
 
     <div class="leaflet">
@@ -269,19 +269,51 @@
     try{
       const r = await fetch('intro.json', { cache: 'no-cache' });
       const cfg = r.ok ? await r.json() : null;
-      if (!cfg) return;
-
-      const img = document.getElementById('poster');
+      if (!cfg) return;      const img = document.getElementById('poster');
       const bg  = document.getElementById('introBg');
 
+      // Resolve posterSrc robustly (works in subpaths like /repo/ and avoids leading "/" pitfalls)
       const srcRaw = String(cfg.posterSrc || '').trim();
-      if (srcRaw){
-        const safe = srcRaw.replace(/^\/+/, '');           // κόψε leading "/" (GitHub Pages /repo θέμα)
-        const resolved = new URL(safe, r.url).href;         // resolve relative to intro.json
-        img.src = resolved;
-        if (bg) bg.style.backgroundImage = `url("${resolved}")`;
+
+      function probeImage(url){
+        return new Promise((resolve)=>{
+          const im = new Image();
+          im.onload = () => resolve(true);
+          im.onerror = () => resolve(false);
+          im.src = url;
+        });
       }
-      if (cfg.posterAlt) img.alt = cfg.posterAlt;
+      function pushCandidate(arr, rel){
+        if(!rel) return;
+        const safe = String(rel).trim().replace(/^\/+/,''); // cut leading "/"
+        if(!safe) return;
+        try{ arr.push(new URL(safe, r.url).href); }catch(_e){}
+      }
+
+      const candidates = [];
+      pushCandidate(candidates, srcRaw);
+      // convenience fallback: if given only a filename, also try under assets/
+      if(srcRaw && !srcRaw.includes('/')) pushCandidate(candidates, 'assets/' + srcRaw);
+
+      // last-resort fallbacks (won't run unless posterSrc is empty)
+      if(!srcRaw){
+        pushCandidate(candidates, 'assets/theatron-banner.png');
+        pushCandidate(candidates, 'theatron-banner.png');
+      }
+
+      // try sequentially; stop at first that loads
+      let finalUrl = null;
+      const uniq = [...new Set(candidates)];
+      for (const u of uniq){
+        // eslint-disable-next-line no-await-in-loop
+        if (await probeImage(u)){ finalUrl = u; break; }
+      }
+
+      if(finalUrl){
+        img.src = finalUrl;
+        if (bg) bg.style.backgroundImage = `url("${finalUrl}")`;
+      }
+if (cfg.posterAlt) img.alt = cfg.posterAlt;
 
       const cont = document.getElementById('leafletContent');
       const txt = cfg.leafletText || '';
