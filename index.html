@@ -104,13 +104,43 @@ function num(v,fallback=0){
       align-items: center;
       justify-content: center;
       padding: 18px;
-      background: rgba(0,0,0,.18); /* ελαφρύ πέπλο */
-      backdrop-filter: blur(2px);
-      -webkit-backdrop-filter: blur(2px);
+      overflow: hidden; /* για να “κόβονται” τα blurred layers */
+      background: transparent; /* το πέπλο το φτιάχνουν τα ::before/::after */
+    }
+
+/* blurred BG (από το poster) */
+    #introOverlay.intro-veil::before{
+      content:'';
+      position:absolute;
+      inset:-40px;
+      background-color:#000;
+      background-image: var(--intro-bg, none);
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      filter: blur(18px) saturate(1.12);
+      transform: scale(1.08);
+      opacity: .9;
+      z-index: 0;
+      pointer-events:none;
+    }
+
+/* dark overlay για να “κάτσει” το κείμενο/χαρτί */
+    #introOverlay.intro-veil::after{
+      content:'';
+      position:absolute;
+      inset:0;
+      background:
+        radial-gradient(circle at 50% 25%, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.85) 70%),
+        linear-gradient(180deg, rgba(0,0,0,0.20) 0%, rgba(0,0,0,0.88) 100%);
+      z-index: 1;
+      pointer-events:none;
     }
     #introOverlay.hidden{ display:none; }
 
     #introOverlay .intro-card{
+      position: relative;
+      z-index: 2;
       width: min(980px, 100%);
       max-height: min(92vh, 980px);
       border-radius: 18px;
@@ -583,6 +613,11 @@ if(!INTRO || INTRO.enabled === false){
 
   introPoster.src = INTRO.posterSrc || '';
   introPoster.alt = INTRO.posterAlt || '';
+
+  // BG του intro = blurred poster (ίδιο “ύφος” με την ταμπέλα)
+  if(introPoster.src){
+    introOverlay.style.setProperty('--intro-bg', `url("${introPoster.src}")`);
+  }
 
   introLeaflet.innerHTML = introLeafletTextToHTML(INTRO.leafletText || '');
 
