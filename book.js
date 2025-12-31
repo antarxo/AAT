@@ -61,23 +61,16 @@ const BOOK_STORAGE_KEY = 'aatBookData';
   // expand {A},{T},{omega},{x0},{phi0},{vSignSymbol},{vSignWord}
   function expandDynTemplate(tpl){
     if(!tpl) return '';
-    const tplStr = String(tpl);
-
-    // φ0 σε rad (κανονικοποίηση στο [0, 2π)) — για placeholders {phi0Rad}/{phi0rad}
-    const _phi0Deg = (typeof gPhi0Deg === 'number' && isFinite(gPhi0Deg)) ? gPhi0Deg : NaN;
-    const _phi0rad = isFinite(_phi0Deg)
-      ? ((((_phi0Deg * Math.PI) / 180) % (2*Math.PI)) + (2*Math.PI)) % (2*Math.PI)
-      : NaN;
-    const phi0RadStr = isFinite(_phi0rad) ? _phi0rad.toFixed(3) : '';
-
-    return tplStr
+    const s = String(tpl);
+    const __phi0rad = ((gPhi0Rad%(2*Math.PI))+2*Math.PI)%(2*Math.PI);
+    return s
       .replaceAll('{A}', String(gA.toFixed(2)))
       .replaceAll('{T}', String(gT.toFixed(2)))
       .replaceAll('{omega}', String(gOmega.toFixed(2)))
       .replaceAll('{x0}', String(gX0.toFixed(2)))
       .replaceAll('{phi0}', String(gPhi0Deg.toFixed(1)))
-      .replaceAll('{phi0Rad}', phi0RadStr)
-      .replaceAll('{phi0rad}', phi0RadStr)
+      .replaceAll('{phi0Rad}', String(__phi0rad.toFixed(3)))
+      .replaceAll('{phi0rad}', String(__phi0rad.toFixed(3)))
       .replaceAll('{vSignSymbol}', gVSignSymbol)
       .replaceAll('{vSignWord}', gVSignWord)
       .replaceAll('{tZero}', (isFinite(gPhaseZeroT) ? String(gPhaseZeroT.toFixed(2)) : ''))
