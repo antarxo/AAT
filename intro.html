@@ -6,6 +6,7 @@
   <title>Πρόγραμμα Παράστασης · Α.Α.Τ.</title>
   <style>
     :root{
+      --intro-bg: none;
       color-scheme: dark;
       --paper: rgba(248,247,242,.96);
       --paper-brd: rgba(0,0,0,.18);
@@ -14,14 +15,42 @@
       --shadow: 0 18px 70px rgba(0,0,0,.55);
     }
     html,body{height:100%;}
-    body{
+    
+    body::before{
+      content:"";
+      position:fixed;
+      inset:-24px;
+      background-image: var(--intro-bg);
+      background-size: cover;
+      background-position: center;
+      background-repeat:no-repeat;
+      transform: scale(1.06);
+      filter: blur(18px) saturate(1.08);
+      opacity:.86;
+      z-index:-2;
+      pointer-events:none;
+    }
+    body::after{
+      content:"";
+      position:fixed;
+      inset:0;
+      background:
+        radial-gradient(circle at 50% 30%, rgba(0,0,0,.18) 0%, rgba(0,0,0,.80) 70%),
+        linear-gradient(180deg, rgba(0,0,0,.28) 0%, rgba(0,0,0,.82) 100%);
+      z-index:-1;
+      pointer-events:none;
+    }
+body{
       margin:0;
-      background: transparent;
+      background:#000;
+      position:relative;
       display:grid;
       place-items:center;
       font: 16px/1.55 system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
     }
     .wrap{
+      position:relative;
+      z-index:0;
       width:min(1040px, 94vw);
       height:min(92vh, 860px);
       display:grid;
@@ -91,7 +120,7 @@
 <body>
   <div class="wrap" role="document" aria-label="Πρόγραμμα παράστασης Α.Α.Τ.">
     <div class="banner">
-      <img id="poster" src="theatron-banner.png" alt="Πρόγραμμα παράστασης Α.Α.Τ." />
+      <img id="poster" src="intro-poster.jpg" alt="Πρόγραμμα παράστασης Α.Α.Τ." />
     </div>
 
     <div class="leaflet">
@@ -226,6 +255,8 @@
 
       const img = document.getElementById('poster');
       if (cfg.posterSrc) img.src = cfg.posterSrc;
+      const bgSrc = cfg.posterSrc || img.getAttribute('src');
+      if (bgSrc) document.documentElement.style.setProperty('--intro-bg', `url("${bgSrc}")`);
       if (cfg.posterAlt) img.alt = cfg.posterAlt;
 
       const cont = document.getElementById('leafletContent');
