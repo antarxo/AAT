@@ -581,8 +581,9 @@ function closeIntro(){
 }
 
 async function initIntro(){
+  let res;
   try{
-    const res = await fetch('intro.json', { cache: 'no-store' });
+    res = await fetch('intro.json', { cache: 'no-store' });
     if(!res.ok) throw new Error('intro.json load failed');
     INTRO = await res.json();
   }catch(e){
