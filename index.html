@@ -12,6 +12,63 @@
   <!-- CSS σκηνής -->
   <link rel="stylesheet" href="./aat-stage.css">
 
+  <!-- AAT responsive scaler (baseline + uniform scale on .stage) -->
+  <script>
+  
+function num(v,fallback=0){
+  const n=(typeof v==='number') ? v : (typeof v==='string' ? parseFloat(v) : NaN);
+  return Number.isFinite(n) ? n : fallback;
+}
+(function(){
+    const root = document.documentElement;
+    const p = new URLSearchParams(location.search);
+
+    const DW = parseFloat(p.get('dw')) || 1403;
+    const DH = parseFloat(p.get('dh')) || 648;
+    const mode = (p.get('mode') || 'contain').toLowerCase();
+
+    function viewport(){
+      const vv = window.visualViewport;
+      const vw = vv ? vv.width  : (window.innerWidth  || root.clientWidth  || 0);
+      const vh = vv ? vv.height : (window.innerHeight || root.clientHeight || 0);
+      return {vw, vh};
+    }
+
+    function pickScale(vw, vh){
+      const sx = vw / DW;
+      const sy = vh / DH;
+      if(mode === 'cover') return Math.max(sx, sy);
+      if(mode === 'fillw') return sx;
+      if(mode === 'fillh') return sy;
+      return Math.min(sx, sy); // contain default
+    }
+
+    function apply(){
+      const {vw, vh} = viewport();
+      if(!vw || !vh) return;
+      const s = pickScale(vw, vh);
+      root.style.setProperty('--aat-dw', DW);
+      root.style.setProperty('--aat-dh', DH);
+      root.style.setProperty('--aat-scale', (Math.max(0.01, s)).toFixed(6));
+          const vv = window.visualViewport;
+      const vvw = vv ? vv.width  : (window.innerWidth  || 0);
+      const vvh = vv ? vv.height : (window.innerHeight || 0);
+      const offX = vv ? vv.offsetLeft : 0;
+      const offY = vv ? vv.offsetTop  : 0;
+      root.style.setProperty('--aat-vvw', Math.round(vvw) + 'px');
+      root.style.setProperty('--aat-vvh', Math.round(vvh) + 'px');
+      root.style.setProperty('--aat-vvoffx', Math.round(offX) + 'px');
+      root.style.setProperty('--aat-vvoffy', Math.round(offY) + 'px');
+}
+
+    window.addEventListener('resize', apply, {passive:true});
+    if(window.visualViewport) window.visualViewport.addEventListener('resize', apply, {passive:true});
+    document.addEventListener('DOMContentLoaded', apply);
+    apply();
+  })();
+  </script>
+
+
   <!-- Intro veil (ενσωματωμένο στο index) -->
   <style>
     body.intro-open { overflow: hidden; }
@@ -51,36 +108,7 @@
       backdrop-filter: blur(2px);
       -webkit-backdrop-filter: blur(2px);
     }
-    
-    .intro-veil{
-      --intro-bg: none;
-    }
-    .intro-bg{
-      position: absolute;
-      inset: -40px;
-      background-image: var(--intro-bg);
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
-      transform: scale(1.08);
-      filter: blur(18px) saturate(1.15);
-      opacity: .95;
-      z-index: 0;
-      pointer-events: none;
-    }
-    .intro-bg::after{
-      content:"";
-      position:absolute;
-      inset:0;
-      background:
-        radial-gradient(circle at 50% 25%, rgba(0,0,0,.10) 0%, rgba(0,0,0,.82) 72%),
-        linear-gradient(180deg, rgba(0,0,0,.20) 0%, rgba(0,0,0,.86) 100%);
-    }
-    .intro-card{
-      position: relative;
-      z-index: 1;
-    }
-#introOverlay.hidden{ display:none; }
+    #introOverlay.hidden{ display:none; }
 
     #introOverlay .intro-card{
       width: min(980px, 100%);
@@ -385,7 +413,6 @@
 
 <!-- Intro (πέπλο πάνω από τη σκηνή) -->
 <div id="introOverlay" class="intro-veil" aria-hidden="false">
-  <div id="introBg" class="intro-bg" aria-hidden="true"></div>
   <div class="intro-card" role="dialog" aria-modal="true" aria-label="Πρόγραμμα παράστασης">
     <img id="introPoster" class="intro-poster" src="" alt="">
     <div id="introLeaflet" class="intro-leaflet"></div>
@@ -394,55 +421,6 @@
 </div>
 
 <script>
-
-/* ---------- RESPONSIVE BASELINE (scale-aware vh/vw & px) ---------- */
-/* Baseline viewport (στο οποίο "κάθονται" σωστά τα offsets σου). */
-const AAT_BASELINE = { dw: 1403, dh: 648 }; // άλλαξέ το αν θες
-
-function aatGetViewport(){
-  const vv = window.visualViewport;
-  const vw = vv ? vv.width  : (window.innerWidth  || document.documentElement.clientWidth  || 0);
-  const vh = vv ? vv.height : (window.innerHeight || document.documentElement.clientHeight || 0);
-  const vvs = vv ? vv.scale : 1;
-  return { vw, vh, vvs };
-}
-
-function aatApplyResponsiveVars(){
-  const { vw, vh } = aatGetViewport();
-  const dw = AAT_BASELINE.dw || 1;
-  const dh = AAT_BASELINE.dh || 1;
-
-  // Contain scaling: κρατάμε αναλογίες, δεν παραμορφώνουμε.
-  const s = Math.min(vw / dw, vh / dh) || 1;
-
-  // "Virtual vw/vh" σε px, βασισμένα στο baseline + scale.
-  // Έτσι μετατρέπεις 32vh → 32 * var(--aat-vh), και px constants → px * var(--aat-scale)
-  const vvh = (dh * s) / 100; // px
-  const vvw = (dw * s) / 100; // px
-
-  const root = document.documentElement.style;
-  root.setProperty('--aat-scale', String(s));
-  root.setProperty('--aat-vh', vvh + 'px');
-  root.setProperty('--aat-vw', vvw + 'px');
-  root.setProperty('--aat-dw', dw + 'px');
-  root.setProperty('--aat-dh', dh + 'px');
-}
-
-(function(){
-  // allow override via query params: ?dw=...&dh=...
-  try{
-    const p = new URLSearchParams(location.search);
-    const qdw = parseFloat(p.get('dw'));
-    const qdh = parseFloat(p.get('dh'));
-    if (Number.isFinite(qdw) && qdw > 0) AAT_BASELINE.dw = qdw;
-    if (Number.isFinite(qdh) && qdh > 0) AAT_BASELINE.dh = qdh;
-  }catch(e){}
-  aatApplyResponsiveVars();
-  window.addEventListener('resize', aatApplyResponsiveVars, { passive:true });
-  if (window.visualViewport) window.visualViewport.addEventListener('resize', aatApplyResponsiveVars, { passive:true });
-})();
-/* ---------- /RESPONSIVE BASELINE ---------- */
-
 /* ---------- ΔΕΔΟΜΕΝΑ ΑΠΟ dialogs-*.json ---------- */
 
 let VIEWERS = [];
@@ -604,8 +582,6 @@ if(!INTRO || INTRO.enabled === false){
   document.body.classList.add('intro-open');
 
   introPoster.src = INTRO.posterSrc || '';
-
-  introOverlay.style.setProperty('--intro-bg', INTRO.posterSrc ? `url("${INTRO.posterSrc}")` : 'none');
   introPoster.alt = INTRO.posterAlt || '';
 
   introLeaflet.innerHTML = introLeafletTextToHTML(INTRO.leafletText || '');
@@ -1022,18 +998,27 @@ function updateMarbleTrack(){
     return;
   }
 
+  // IMPORTANT: η σκηνή πλέον κλιμακώνεται με CSS transform.
+  // Άρα ό,τι μετράμε με getBoundingClientRect() είναι SCALED.
+  // Εδώ δουλεύουμε σε *design px* (unscaled), οπότε διαιρούμε με scale.
+  const s = (()=>{
+    const v = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--aat-scale'));
+    return (isFinite(v) && v>0) ? v : 1;
+  })();
+
   const stageRect = stage.getBoundingClientRect();
   const aRect = actorImg.getBoundingClientRect();
 
-  // ΣΩΣΤΟ (σταθερό ως προς τη σκηνή): χρησιμοποιούμε το ΚΑΤΩ άκρο της “μεσαίας κουρτίνας”
-  // όπως θα ήταν στη ΘΕΣΗ ΗΡΕΜΙΑΣ της (κλειστή), όχι το τρέχον bounding box (που αλλάζει όταν ανοίγει).
+  const stageH = stage.clientHeight || 0;
+  const actorBottomLocal = (aRect.bottom - stageRect.top) / s;
+
   // Από το CSS: top = (26% - 16px) και height = (44% + 24px)  => bottom = 70% + 8px.
-  const curtainBottomClosed = stageRect.top + (0.70 * stageRect.height) + 8;
+  const curtainBottomClosedLocal = (0.70 * stageH) + 8;
 
   // Κάθετα: ύψος “μαρμάρου” = (κάτω μεσαίας κουρτίνας) − (κάτω εικόνας ηθοποιού)
-  const h = Math.max(0, curtainBottomClosed - aRect.bottom);
+  const h = Math.max(0, curtainBottomClosedLocal - actorBottomLocal);
   // Απόσταση από το κάτω μέρος της σκηνής μέχρι το κάτω της μεσαίας κουρτίνας (στη θέση ηρεμίας)
-  const bottomPx = Math.max(0, stageRect.bottom - curtainBottomClosed);
+  const bottomPx = Math.max(0, stageH - curtainBottomClosedLocal);
 
   // Οριζόντια έκταση μαρμάρου: ακριβώς από x=-3 m έως x=+3 m (σύστημα αναφοράς)
   const cx = stage.clientWidth / 2;
@@ -1072,9 +1057,9 @@ function measureSpringNaturalSize(){
   springEl.style.display   = 'block';
   springEl.style.transform = 'none';
 
-  const rect = springEl.getBoundingClientRect();
-  springNaturalWidth  = rect.width || 1;
-  springNaturalHeight = rect.height || 1;
+  // offsetWidth/offsetHeight ΔΕΝ επηρεάζονται από transform της σκηνής (design px).
+  springNaturalWidth  = springEl.offsetWidth  || 1;
+  springNaturalHeight = springEl.offsetHeight || 1;
 
   springEl.style.display   = prevDisplay;
   springEl.style.transform = prevTransform;
@@ -1925,16 +1910,41 @@ function getViewerAvatarCenter(idx1based){
   const idx0=(idx1based||1)-1;
   const div=viewersStrip.querySelector('.viewer-avatar[data-idx="'+idx0+'"]');
   const info=viewerInfo(idx1based);
-  const stageRect=stage.getBoundingClientRect();
+
   if(div){
-    const r=div.getBoundingClientRect();
+    // ΠΟΛΥ ΣΗΜΑΝΤΙΚΟ:
+    // Στις Πράξεις 1–2 τα avatars μετακινούνται (ACTS_AVATAR_OFFSET) ώστε να "καθίσουν" στη σκηνή,
+    // αλλά οι διάλογοι/μπαλόνια ΔΕΝ πρέπει να ακολουθούν αυτή τη μετακίνηση.
+    // Γι’ αυτό αγκυρώνουμε πάντα στο baseBottom (από JSON), όχι στο τρέχον style.bottom.
     const baseBottom=parseFloat(div.dataset.baseBottom || '0') || 0;
-    const cx=r.left+r.width/2 - stageRect.left;
-    const cy=stageRect.height - baseBottom - r.height/2;
+
+    const w = div.offsetWidth  || 0;
+    const h = div.offsetHeight || 0;
+    const left = parseFloat(div.style.left||'0') || 0;
+
+    const cx = left + w/2;
+    const cy = stage.clientHeight - baseBottom - h/2;
     return {x:cx,y:cy,info};
   }
   return viewerAnchor(idx1based);
 }
+
+function getActorBottomLocalDesign(){
+  // y (px) του κάτω άκρου του ηθοποιού μέσα στη σκηνή, σε *design px* (unscaled).
+  if(!stage) return 0;
+  const actorImg = document.querySelector('#actor img');
+  if(!actorImg) return 0;
+
+  const s = (()=>{
+    const v = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--aat-scale'));
+    return (isFinite(v) && v>0) ? v : 1;
+  })();
+
+  const stageRect = stage.getBoundingClientRect();
+  const aRect = actorImg.getBoundingClientRect();
+  return (aRect.bottom - stageRect.top) / s;
+}
+
 
 function tint(hex,alpha){
   const c=(hex||'#ffffff').replace('#','');
@@ -2033,8 +2043,7 @@ async function strobeExitWalk(){
   // κρατάμε αρχικές θέσεις για restore (αν χρειαστεί)
   const orig = actors.map(el=>({el,left:el.style.left,bottom:el.style.bottom,opacity:el.style.opacity}));
 
-  const stageRect = stage.getBoundingClientRect();
-  const stageW = stageRect.width || 900;
+  const stageW = stage.clientWidth || 900;
 
   // base layout (bottoms)
   const bottoms = actors.map(el=>{
@@ -2295,10 +2304,14 @@ function showSpeakerChip(idx1based){
   const nameEN=info.name_en || ('Viewer '+idx1based);
   const label=currentLang==='en'? nameEN : nameGR;
   actBubble.textContent=label;
-  const dx=(typeof info.chipDx==='number'? info.chipDx:0);
-  const dy=(typeof info.chipDy==='number'? info.chipDy:0);
+
+  // JSON offsets (με act-specific overrides, χωρίς hard clamp)
+  const dx = num(info['chipDx_'+phase], num(info.chipDx, 0));
+  const dy = num(info['chipDy_'+phase], num(info.chipDy, 0));
+
   actBubble.style.left=(x+dx)+'px';
   actBubble.style.top =(y-dy)+'px';
+
   actBubble.style.transform='translateX(-50%)';
   actBubble.style.backgroundColor=tint(info.color,0.9);
   actBubble.style.display='block';
@@ -2309,8 +2322,14 @@ function hideSpeakerChip(){
 
 function placeBubble(idx1based,xShift,yOffset){
   const {x,y,info}=getViewerAvatarCenter(idx1based);
-  const dx=(info && typeof info.bubbleDx==='number'? info.bubbleDx:0)+(xShift||0);
-  const dy=(info && typeof info.bubbleDy==='number'? info.bubbleDy:0)+(yOffset||0);
+
+  // JSON offsets (με act-specific overrides, χωρίς hard clamp)
+  const baseDx = info ? num(info['bubbleDx_'+phase], num(info.bubbleDx, 0)) : 0;
+  const baseDy = info ? num(info['bubbleDy_'+phase], num(info.bubbleDy, 0)) : 0;
+
+  const dx = baseDx + (xShift||0);
+  const dy = baseDy + (yOffset||0);
+
   bubbleEl.style.left=(x+dx)+'px';
   bubbleEl.style.top =(y-dy)+'px';
 }
@@ -2395,6 +2414,7 @@ function expandDynTemplate(tpl){
   if(!tpl) return '';
   const x0 = x0Val().toFixed(2);
   const phi0deg = getPhi0Deg();
+  const phi0rad = ((phi0deg * Math.PI / 180) % (2*Math.PI) + (2*Math.PI)) % (2*Math.PI);
   const v0 = getV0();
   const vSym = getVSignSymbol(v0);
   const vWord = getVSignWord(v0);
@@ -2408,6 +2428,8 @@ function expandDynTemplate(tpl){
     .replaceAll('{omega}',omega.toFixed(3))
     .replaceAll('{x0}',x0)
     .replaceAll('{phi0}',phi0deg.toFixed(1))
+    .replaceAll('{phi0Rad}',phi0rad.toFixed(3))
+    .replaceAll('{phi0rad}',phi0rad.toFixed(3))
     .replaceAll('{vSignSymbol}', vSym)
     .replaceAll('{vSignWord}', vWord)
     .replaceAll('{tZero}', tZero.toFixed(2))
@@ -2553,9 +2575,8 @@ function ensureGhost(){
   ensureActorFloorBottom();
 
   if(!ghost){
-    const ar=actor.getBoundingClientRect();
-    const aw=ar.width || 144;
-    const ah=ar.height|| 96;
+    const aw=actor.offsetWidth || 144;
+    const ah=actor.offsetHeight|| 96;
 
     ghost=document.createElement('div');
     ghost.id='actorGhost';
@@ -3113,6 +3134,7 @@ function exportBookDataToStorage(){
   try{
     const x0 = x0Val();
     const phi0deg = getPhi0Deg();
+  const phi0rad = ((phi0deg * Math.PI / 180) % (2*Math.PI) + (2*Math.PI)) % (2*Math.PI);
     const tZero = xtZeroCrossingTime(); // ✅ ΤΩΡΑ ΥΠΑΡΧΕΙ ΠΡΑΓΜΑΤΙΚΑ
 
     const payload = {
@@ -3285,7 +3307,7 @@ function animate(now){
       const sinθ=Math.max(-1,Math.min(1,(hookX-cx)/Math.max(1,A_px)));
       const hookXg=cx+Aghost_px*sinθ;
 
-      const springBottom=getComputedStyle(springEl).bottom || 'calc(32 * var(--aat-vh) + 92px * var(--aat-scale))';
+      const springBottom=getComputedStyle(springEl).bottom || 'calc((32 * var(--aat-vh0)) + 92px)';
       const ghostRect=ghost.getBoundingClientRect();
       const ghostWidth=ghostRect.width || actorWidth || 80;
 
@@ -3347,7 +3369,7 @@ function initViewersAvatars(){
       div.style.backgroundImage='url("'+v.img+'")';
     }
     if(typeof v.heightVh==='number'){
-      div.style.height=`calc(${v.heightVh} * var(--aat-vh))`;
+      div.style.height='calc(' + v.heightVh + ' * var(--aat-vh0))';
     }else{
       div.style.height='';
     }
