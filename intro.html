@@ -88,40 +88,54 @@
     }
   
 
-/* AAT INTRO BG MATCH */
-:root{ --intro-bg-url: none; }
-#introBg{
-  position: fixed;
-  inset: 0;
-  background-image: var(--intro-bg-url);
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  transform: scale(1.08);
-  filter: blur(18px) saturate(1.12);
-  opacity: .85;
-  z-index: 0;
-  pointer-events: none;
-}
-#introBg::after{
-  content:"";
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(circle at 50% 25%, rgba(0,0,0,.15) 0%, rgba(0,0,0,.85) 70%),
-    linear-gradient(180deg, rgba(0,0,0,.25) 0%, rgba(0,0,0,.85) 100%);
-}
-body{
-  background: #000;
-}
-.wrap{
-  position: relative;
-  z-index: 2;
-}
+    /* --- BG from posterSrc (v5) --- */
+    #introBg{
+      position:fixed;
+      inset:-40px;
+      background-color:#000;
+      background-image: none;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      filter: blur(18px) saturate(1.12);
+      transform: scale(1.08);
+      opacity: .9;
+      z-index: 0;
+      pointer-events:none;
+    }
+    #introBgOverlay{
+      position:fixed;
+      inset:0;
+      background:
+        radial-gradient(circle at 50% 25%, rgba(0,0,0,.15) 0%, rgba(0,0,0,.85) 70%),
+        linear-gradient(180deg, rgba(0,0,0,.20) 0%, rgba(0,0,0,.88) 100%);
+      z-index: 1;
+      pointer-events:none;
+    }
+    #introBgBadge{
+      position:fixed;
+      right:10px;
+      bottom:10px;
+      padding:6px 10px;
+      font: 12px/1.2 system-ui, -apple-system, Segoe UI, Arial;
+      color:#fff;
+      background: rgba(0,0,0,.45);
+      border:1px solid rgba(255,255,255,.18);
+      border-radius: 999px;
+      z-index: 3;
+      pointer-events:none;
+      opacity:.85;
+    }
+    /* Keep content above overlay */
+    .wrap{ position:relative; z-index: 2; }
+    body{ margin:0; background:#000; }
+
 </style>
 </head>
 <body>
   <div id="introBg" aria-hidden="true"></div>
+  <div id="introBgOverlay" aria-hidden="true"></div>
+  <div id="introBgBadge" aria-hidden="true">BG v5</div>
   <div class="wrap" role="document" aria-label="Πρόγραμμα παράστασης Α.Α.Τ.">
     <div class="banner">
       <img id="poster" src="intro-poster.jpg" alt="Πρόγραμμα παράστασης Α.Α.Τ." />
@@ -259,7 +273,9 @@ body{
 
       const img = document.getElementById('poster');
       if (cfg.posterSrc) img.src = cfg.posterSrc;
-      if (cfg.posterSrc) document.documentElement.style.setProperty('--intro-bg-url', `url("${cfg.posterSrc}")`);
+      // BG from the same posterSrc
+      const bg = document.getElementById('introBg');
+      if (bg && cfg.posterSrc) bg.style.backgroundImage = `url("${cfg.posterSrc}")`;
       if (cfg.posterAlt) img.alt = cfg.posterAlt;
 
       const cont = document.getElementById('leafletContent');
