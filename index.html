@@ -96,54 +96,53 @@ function num(v,fallback=0){
       visibility: hidden !important;
     }
 
-#introOverlay.intro-veil{
-  position: fixed;
-  inset: 0;
-  z-index: 10000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 18px;
-  overflow: hidden;
-  isolation: isolate;
-  background: transparent; /* το φόντο το φτιάχνουν τα ::before/::after */
-}
+    #introOverlay.intro-veil{
+      position: fixed;
+      inset: 0;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+      overflow: hidden;           /* για να “κόβεται” το blur layer */
+      isolation: isolate;         /* σωστό layering των ::before/::after */
+      background: transparent;    /* το φόντο το φτιάχνουν τα pseudo-elements */
+    }
 
-/* blurred BG (από το poster) */
-#introOverlay.intro-veil::before{
-  content:'';
-  position:absolute;
-  inset:-40px;
-  background-color:#000;
-  background-image: var(--intro-bg, none);
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  filter: blur(18px) saturate(1.12);
-  transform: scale(1.08);
-  opacity: .92;
-  z-index: 0;
-  pointer-events:none;
-}
+    /* blurred BG από την ίδια την ταμπέλα (posterSrc) */
+    #introOverlay.intro-veil::before{
+      content:'';
+      position:absolute;
+      inset:-40px;
+      background-color:#000;
+      background-image: var(--intro-bg, none);
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      filter: blur(18px) saturate(1.12);
+      transform: scale(1.08);
+      opacity: .90;
+      z-index: 0;
+      pointer-events:none;
+    }
 
-/* dark overlay για να “κάτσει” το κείμενο/χαρτί */
-#introOverlay.intro-veil::after{
-  content:'';
-  position:absolute;
-  inset:0;
-  background:
-    radial-gradient(circle at 50% 25%, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.85) 70%),
-    linear-gradient(180deg, rgba(0,0,0,0.20) 0%, rgba(0,0,0,0.88) 100%);
-  z-index: 1;
-  pointer-events:none;
-}
-
-#introOverlay.hidden{ display:none; }
+    /* dark overlay για να “κάτσει” το χαρτί/κείμενο */
+    #introOverlay.intro-veil::after{
+      content:'';
+      position:absolute;
+      inset:0;
+      background:
+        radial-gradient(circle at 50% 25%, rgba(0,0,0,.15) 0%, rgba(0,0,0,.85) 70%),
+        linear-gradient(180deg, rgba(0,0,0,.20) 0%, rgba(0,0,0,.88) 100%);
+      z-index: 1;
+      pointer-events:none;
+    }
+    #introOverlay.hidden{ display:none; }
 
     #introOverlay .intro-card{
-            position: relative;
+      position: relative;
       z-index: 2;
-width: min(980px, 100%);
+      width: min(980px, 100%);
       max-height: min(92vh, 980px);
       border-radius: 18px;
       padding: 18px 18px 16px;
@@ -612,21 +611,18 @@ if(!INTRO || INTRO.enabled === false){
   }
 
   document.body.classList.add('intro-open');
-// Poster + background (χωρίς να σπάει σε GitHub Pages / repo paths)
-{
-  const rawPoster = (INTRO.posterSrc || '').toString();
-  const cleanPoster = rawPoster.replace(/^\/+/, ''); // κόβει τυχόν leading "/"
-  const posterAbs = cleanPoster ? (new URL(cleanPoster, window.location.href)).href : '';
 
-  introPoster.src = posterAbs;
-  introPoster.alt = INTRO.posterAlt || '';
-
-  if(posterAbs){
-    introOverlay.style.setProperty('--intro-bg', `url("${posterAbs}")`);
+  const _introSrcRaw = String(INTRO.posterSrc || '').trim();
+  if(_introSrcRaw){
+    const _safe = _introSrcRaw.replace(/^\/+/, '');          // κόψε leading "/" (GitHub Pages /repo θέμα)
+    const _resolved = new URL(_safe, res.url).href;          // resolve relative to intro.json
+    introPoster.src = _resolved;
+    introOverlay.style.setProperty('--intro-bg', `url("${_resolved}")`);
   }else{
+    introPoster.src = '';
     introOverlay.style.removeProperty('--intro-bg');
   }
-}
+  introPoster.alt = INTRO.posterAlt || '';
 
   introLeaflet.innerHTML = introLeafletTextToHTML(INTRO.leafletText || '');
 
