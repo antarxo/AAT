@@ -729,6 +729,8 @@
       .replaceAll('{omega}', gOmega.toFixed(3))
       .replaceAll('{x0}', gX0.toFixed(2))
       .replaceAll('{phi0}', gPhi0Deg.toFixed(1))
+      .replaceAll('{phi0rad}', (((gPhi0Rad%(2*Math.PI)) + 2*Math.PI)%(2*Math.PI)).toFixed(3))
+      .replaceAll('{phi0Rad}', (((gPhi0Rad%(2*Math.PI)) + 2*Math.PI)%(2*Math.PI)).toFixed(3))
       .replaceAll('{vSignSymbol}', gVSignSymbol)
       .replaceAll('{vSignWord}', gVSignWord)
       .replaceAll('{m1}', (isFinite(gM1) ? String(gM1.toFixed(2)) : ''))
