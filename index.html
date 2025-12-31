@@ -1894,21 +1894,21 @@ function getViewerAvatarCenter(idx1based){
   const div=viewersStrip.querySelector('.viewer-avatar[data-idx="'+idx0+'"]');
   const info=viewerInfo(idx1based);
 
-  // Στόχος: στις Πράξεις 1 & 2 οι ετικέτες/διάλογοι να ΜΗΝ "ακολουθούν" το
-  // κατακόρυφο κατέβασμα των avatars (ACTS_AVATAR_OFFSET). Άρα αγκυρώνουμε
-  // πάντα στο baseBottom (δηλ. στο ύψος του φουαγιέ).
+  // Στόχος: στις Πράξεις 1 & 2 οι ετικέτες/διάλογοι να ΜΗΝ ακολουθούν
+  // το κατακόρυφο κατέβασμα των avatars (ACTS_AVATAR_OFFSET). Άρα αγκυρώνουμε
+  // πάντα στο baseBottom (ύψος φουαγιέ), αλλά με σωστή απο-κλίμακωση όταν υπάρχει scaling.
+  const stageRect = stage.getBoundingClientRect();
+  const scaleX = (stageRect.width  && stage.offsetWidth)  ? (stageRect.width  / stage.offsetWidth)  : 1;
+  const scaleY = (stageRect.height && stage.offsetHeight) ? (stageRect.height / stage.offsetHeight) : 1;
+
   if(div){
-    const cs=getComputedStyle(div);
+    const r=div.getBoundingClientRect();
     const baseBottom=parseFloat(div.dataset.baseBottom || '0') || 0;
 
-    const left = Number.isFinite(parseFloat(cs.left)) ? parseFloat(cs.left) : 0;
-    const w = div.offsetWidth  || (Number.isFinite(parseFloat(cs.width))  ? parseFloat(cs.width)  : 0);
-    const h = div.offsetHeight || (Number.isFinite(parseFloat(cs.height)) ? parseFloat(cs.height) : 0);
+    const cx = (r.left - stageRect.left + r.width/2) / (scaleX || 1);
+    const cy = stage.offsetHeight - baseBottom - (r.height/2) / (scaleY || 1);
 
-    const cx = left + w/2;
-    const cy = stage.clientHeight - baseBottom - h/2;
-
-    return {x:cx, y:cy, info};
+    return {x:cx,y:cy,info};
   }
   return viewerAnchor(idx1based);
 }
@@ -2372,6 +2372,7 @@ function expandDynTemplate(tpl){
   if(!tpl) return '';
   const x0 = x0Val().toFixed(2);
   const phi0deg = getPhi0Deg();
+  const phi0rad = ((((phi0deg*Math.PI/180)%(2*Math.PI)) + 2*Math.PI)%(2*Math.PI));
   const v0 = getV0();
   const vSym = getVSignSymbol(v0);
   const vWord = getVSignWord(v0);
@@ -2385,6 +2386,7 @@ function expandDynTemplate(tpl){
     .replaceAll('{omega}',omega.toFixed(3))
     .replaceAll('{x0}',x0)
     .replaceAll('{phi0}',phi0deg.toFixed(1))
+    .replaceAll('{phi0rad}',phi0rad.toFixed(3))
     .replaceAll('{vSignSymbol}', vSym)
     .replaceAll('{vSignWord}', vWord)
     .replaceAll('{tZero}', tZero.toFixed(2))
