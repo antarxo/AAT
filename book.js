@@ -69,7 +69,6 @@ const BOOK_STORAGE_KEY = 'aatBookData';
       .replaceAll('{x0}', String(gX0.toFixed(2)))
       .replaceAll('{phi0}', String(gPhi0Deg.toFixed(1)))
       .replaceAll('{phi0rad}', (isFinite(gPhi0Deg) ? String(((((gPhi0Deg*Math.PI/180)%(2*Math.PI))+(2*Math.PI))%(2*Math.PI)).toFixed(3)) : ''))
-      .replaceAll('{phi0rad}', (isFinite(gPhi0Deg) ? String(((((gPhi0Deg*Math.PI/180)%(2*Math.PI))+(2*Math.PI))%(2*Math.PI)).toFixed(3)) : ''))
       .replaceAll('{vSignSymbol}', gVSignSymbol)
       .replaceAll('{vSignWord}', gVSignWord)
       .replaceAll('{tZero}', (isFinite(gPhaseZeroT) ? String(gPhaseZeroT.toFixed(2)) : ''))
