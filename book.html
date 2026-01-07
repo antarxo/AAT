@@ -679,7 +679,7 @@
   let gPhi0Rad = 0.0;
   let gV0 = 0.0;
   let gVSignSymbol = 'υ=0';
-  let gVSignWord = (lang === 'en') ? 'zero' : 'μηδενική';
+  let gVSignWord = 'μηδενική';
   let gM1 = 70.0;
   let gD1 = NaN;
   let gEmech = NaN; // Eμηχ
@@ -691,11 +691,10 @@
   const lang = (urlParams.get('lang') === 'en') ? 'en' : 'gr';
   document.documentElement.lang = (lang === 'en') ? 'en' : 'el';
 
-  // --- Static UI localization (book chrome) ---
+  // --- Static UI localization for Book page (GR/EN) ---
   const BOOK_UI = {
     gr: {
-      docTitle: 'Βιβλίο Παράστασης — Απλή Αρμονική Ταλάντωση',
-      h1: 'Βιβλίο Παράστασης — Απλή Αρμονική Ταλάντωση',
+      title: 'Βιβλίο Παράστασης — Απλή Αρμονική Ταλάντωση',
       subtitle: 'Η ίδια παράσταση, αλλά σε «λειτουργία βιβλίου». Ο πίνακας t–x, τα διαγράμματα και οι διάλογοι, σε μια σελίδα που μπορείς να διαβάσεις με το δικό σου ρυθμό.',
       lblOrient: 'Προσανατολισμός',
       lblTableMode: 'Πίνακας t–x',
@@ -704,8 +703,8 @@
       btnPdf: 'Εξαγωγή PDF',
       act1Label: 'Πράξη 1',
       act1H2: 'Η Κινηματική στα ...Αλγεβρικά! ',
-      act1IntroP1: 'Στην Πράξη 1, οι θεατές προσπαθούν να μελετήσουν την κίνηση από τις μετρήσεις t–x. Σκέφτονται, προτείνουν τρόπους ώστε να αποδείξουν τους νόμους της ΑΑΤ! Παρεμβάλλονται σχόλια, επεξηγήσεις που βοηθούν τον αναγνώστη στην καλύτερη κατανόηση αυτής της διαδικασίας, που είναι σε τελευταία ανάλυση καθαρά πειραματική!',
-      act1IntroP2: 'Ο πίνακας στα δεξιά περιέχει τα ζεύγη (t, x) από τη παράσταση που πριν παρακολουθήσατε. Κάτω από αυτόν ξεκινούν οι διάλογοι της παράστασης: αριστερά τα όσα σκέφτηκαν κατά τη διάρκειά της οι θεατές, δεξιά οι νόμοι και τα γραφήματα όπως εμφανίστηκαν σ αυτήν.',
+      act1IntroP1: null,
+      act1IntroP2: null,
       txTitle: 'Πίνακας μετρήσεων t–x',
       txSub: 'Απόσπασμα του πίνακα μετρήσεων της παράστασης.',
       act1DialogTitle: 'Διάλογοι Πράξης 1',
@@ -719,7 +718,7 @@
       lblX0: 'Αρχική θέση x₀',
       noteX0: 'x₀ = A·ημ(φ₀)',
       lblV0: 'Αρχική ταχύτητα υ₀',
-      noteV0: { prefix: 'Σημάδι:', open: '(', close: ')' },
+      noteV0Prefix: 'Σημάδι:',
       lblPhi0: 'Αρχική φάση φ₀',
       notePhi0: 'Φάση τη στιγμή t = 0',
       lblTzero: 'νέο t = 0',
@@ -730,113 +729,122 @@
       foyerLabel: 'Φουαγιέ',
       foyerH2: 'Συζήτηση στο φουαγιέ στο διάλλειμα ανάμεσα σε Δεύτερη και Τρίτη Πράξη',
       foyerMutedP: 'Και εδώ, σκέψεις θεατών αριστερά, συνοδευτικά σχόλια / τύποι στη δεξιά στήλη.',
-      diagram: {
-        xt: 'Διάγραμμα x–t',
-        xsin: 'Διάγραμμα x–ημ(ωt)',
-        v: 'Διάγραμμα υ–t',
-        a: 'Διάγραμμα a–t',
-        ax: 'Διάγραμμα a–x'
-      },
-      errBookJson: (BOOK_UI[lang] || BOOK_UI.gr).errBookJson
+      cap_xt: 'Διάγραμμα x–t',
+      cap_xsin: 'Διάγραμμα x–ημ(ωt)',
+      cap_v: 'Διάγραμμα υ–t',
+      cap_a: 'Διάγραμμα a–t',
+      cap_ax: 'Διάγραμμα a–x'
     },
     en: {
-      docTitle: 'Performance Book — Simple Harmonic Motion',
-      h1: 'Performance Book — Simple Harmonic Motion',
-      subtitle: 'The same performance, but in “book mode”. The t–x table, the plots, and the dialogues, all in one page you can read at your own pace.',
+      title: 'Performance Book — Simple Harmonic Motion',
+      subtitle: 'The same performance, but in “book mode”. The t–x table, the plots, and the dialogues — on one page, at your own pace.',
       lblOrient: 'Orientation',
       lblTableMode: 't–x table',
       optSummary: 'Summary (first 10)',
       optFull: 'Full',
       btnPdf: 'Export PDF',
       act1Label: 'Act 1',
-      act1H2: 'Kinematics, but… in Algebra! ',
-      act1IntroP1: 'In Act 1, the viewers try to study the motion from the t–x measurements. They think, they propose methods, and they attempt to prove the laws of SHM! Along the way, comments and clarifications appear to help you understand what is, in the end, a purely experimental process.',
-      act1IntroP2: 'The table on the right contains the (t, x) pairs from the performance you watched earlier. Under it begin the dialogues: on the left, what the viewers thought during the show; on the right, the laws and plots as they appeared on stage.',
+      act1H2: 'Kinematics in ...Algebra!',
+      act1IntroP1: null,
+      act1IntroP2: null,
       txTitle: 't–x measurement table',
       txSub: 'Excerpt from the performance measurement table.',
-      act1DialogTitle: 'Act 1 dialogues',
+      act1DialogTitle: 'Act 1 Dialogues',
       paramsLabel: 'Quantitative conclusions so far',
       lblA: 'Amplitude A',
-      noteA: 'Maximum displacement from equilibrium',
+      noteA: 'Maximum displacement from equilibrium.',
       lblT: 'Period T',
-      noteT: 'Time for one complete oscillation',
+      noteT: 'Time for one full oscillation',
       lblOmega: 'Angular frequency ω',
       noteOmega: 'ω = 2π/T',
       lblX0: 'Initial position x₀',
       noteX0: 'x₀ = A·sin(φ₀)',
       lblV0: 'Initial velocity v₀',
-      noteV0: { prefix: 'Sign:', open: '(', close: ')' },
+      noteV0Prefix: 'Sign:',
       lblPhi0: 'Initial phase φ₀',
       notePhi0: 'Phase at t = 0',
       lblTzero: 'new t = 0',
       noteTzero: 'time of first phase zero-crossing',
       act2Label: 'Act 2',
-      act2H2: 'Dynamics, but… in Algebra!',
-      act2DialogTitle: 'Act 2 dialogues',
+      act2H2: 'Dynamics in ...Algebra!',
+      act2DialogTitle: 'Act 2 Dialogues',
       foyerLabel: 'Foyer',
-      foyerH2: 'Foyer discussion during the intermission between Act 2 and Act 3',
-      foyerMutedP: 'Here too: viewers’ thoughts on the left, supporting comments / formulas on the right.',
-      diagram: {
-        xt: 'x–t plot',
-        xsin: 'x–sin(ωt) plot',
-        v: 'v–t plot',
-        a: 'a–t plot',
-        ax: 'a–x plot'
-      },
-      errBookJson: 'book*.json not available or invalid'
+      foyerH2: 'Foyer discussion during the break between Act 2 and Act 3',
+      foyerMutedP: 'Here too: viewers’ thoughts on the left, supporting notes / formulas on the right.',
+      cap_xt: 'x–t plot',
+      cap_xsin: 'x–sin(ωt) plot',
+      cap_v: 'v–t plot',
+      cap_a: 'a–t plot',
+      cap_ax: 'a–x plot'
     }
   };
 
-  function _setText(id, value){
-    const el = document.getElementById(id);
-    if(el && value != null) el.textContent = String(value);
-  }
-
   function applyBookStaticUI(){
     const U = BOOK_UI[lang] || BOOK_UI.gr;
-    document.title = U.docTitle;
-    _setText('bookH1', U.h1);
-    _setText('bookSubtitle', U.subtitle);
-    _setText('lblOrient', U.lblOrient);
-    _setText('lblTableMode', U.lblTableMode);
-    _setText('btnPdf', U.btnPdf);
 
-    _setText('act1Label', U.act1Label);
-    _setText('act1H2', U.act1H2);
-    _setText('act1IntroP1', U.act1IntroP1);
-    _setText('act1IntroP2', U.act1IntroP2);
-    _setText('txTitle', U.txTitle);
-    _setText('txSub', U.txSub);
-    _setText('act1DialogTitle', U.act1DialogTitle);
-    _setText('paramsLabel', U.paramsLabel);
+    document.title = U.title;
+    const h1 = document.getElementById('bookH1');
+    if(h1) h1.textContent = U.title;
 
-    _setText('lblA', U.lblA);
-    _setText('noteA', U.noteA);
-    _setText('lblT', U.lblT);
-    _setText('noteT', U.noteT);
-    _setText('lblOmega', U.lblOmega);
-    _setText('noteOmega', U.noteOmega);
-    _setText('lblX0', U.lblX0);
-    _setText('noteX0', U.noteX0);
-    _setText('lblV0', U.lblV0);
-    const noteV0El = document.getElementById('noteV0');
-    if(noteV0El){
-      noteV0El.innerHTML = `${U.noteV0.prefix} <span data-param="vSignSymbol">${noteV0El.querySelector('[data-param="vSignSymbol"]')?.textContent || 'υ=0'}</span> ${U.noteV0.open}<span data-param="vSignWord">${noteV0El.querySelector('[data-param="vSignWord"]')?.textContent || (lang==='en' ? 'zero' : 'μηδενική')}</span>${U.noteV0.close}`;
+    const sub = document.getElementById('bookSubtitle');
+    if(sub) sub.textContent = U.subtitle;
+
+    const lblOrient = document.getElementById('lblOrient');
+    if(lblOrient) lblOrient.textContent = U.lblOrient;
+
+    const lblTableMode = document.getElementById('lblTableMode');
+    if(lblTableMode) lblTableMode.textContent = U.lblTableMode;
+
+    const btnPdf = document.getElementById('btnPdf');
+    if(btnPdf) btnPdf.textContent = U.btnPdf;
+
+    const act1Label = document.getElementById('act1Label');
+    if(act1Label) act1Label.textContent = U.act1Label;
+    const act1H2 = document.getElementById('act1H2');
+    if(act1H2) act1H2.textContent = U.act1H2;
+
+    const txTitle = document.getElementById('txTitle');
+    if(txTitle) txTitle.textContent = U.txTitle;
+    const txSub = document.getElementById('txSub');
+    if(txSub) txSub.textContent = U.txSub;
+
+    const act1DialogTitle = document.getElementById('act1DialogTitle');
+    if(act1DialogTitle) act1DialogTitle.textContent = U.act1DialogTitle;
+
+    const paramsLabel = document.getElementById('paramsLabel');
+    if(paramsLabel) paramsLabel.textContent = U.paramsLabel;
+
+    const set = (id, val) => { const el = document.getElementById(id); if(el && val!=null) el.textContent = val; };
+
+    set('lblA', U.lblA); set('noteA', U.noteA);
+    set('lblT', U.lblT); set('noteT', U.noteT);
+    set('lblOmega', U.lblOmega); set('noteOmega', U.noteOmega);
+    set('lblX0', U.lblX0); set('noteX0', U.noteX0);
+    set('lblV0', U.lblV0);
+    set('lblPhi0', U.lblPhi0); set('notePhi0', U.notePhi0);
+    set('lblTzero', U.lblTzero); set('noteTzero', U.noteTzero);
+
+    // v0 sign line keeps the data-param spans, just swaps prefix and v/υ label
+    const noteV0 = document.getElementById('noteV0');
+    if(noteV0){
+      noteV0.innerHTML = `${U.noteV0Prefix} <span data-param="vSignSymbol">${(lang==='en') ? 'v=0' : 'υ=0'}</span> (<span data-param="vSignWord">${(lang==='en') ? 'zero' : 'μηδενική'}</span>)`;
     }
-    _setText('lblPhi0', U.lblPhi0);
-    _setText('notePhi0', U.notePhi0);
-    _setText('lblTzero', U.lblTzero);
-    _setText('noteTzero', U.noteTzero);
 
-    _setText('act2Label', U.act2Label);
-    _setText('act2H2', U.act2H2);
-    _setText('act2DialogTitle', U.act2DialogTitle);
+    const act2Label = document.getElementById('act2Label');
+    if(act2Label) act2Label.textContent = U.act2Label;
+    const act2H2 = document.getElementById('act2H2');
+    if(act2H2) act2H2.textContent = U.act2H2;
+    const act2DialogTitle = document.getElementById('act2DialogTitle');
+    if(act2DialogTitle) act2DialogTitle.textContent = U.act2DialogTitle;
 
-    _setText('foyerLabel', U.foyerLabel);
-    _setText('foyerH2', U.foyerH2);
-    _setText('foyerMutedP', U.foyerMutedP);
+    const foyerLabel = document.getElementById('foyerLabel');
+    if(foyerLabel) foyerLabel.textContent = U.foyerLabel;
+    const foyerH2 = document.getElementById('foyerH2');
+    if(foyerH2) foyerH2.textContent = U.foyerH2;
+    const foyerMutedP = document.getElementById('foyerMutedP');
+    if(foyerMutedP) foyerMutedP.textContent = U.foyerMutedP;
 
-    // Options in selects
+    // Options in select
     const o = document.getElementById('pdfTableMode');
     if(o){
       const optSummary = o.querySelector('option[value="summary"]');
@@ -847,6 +855,7 @@
   }
 
   applyBookStaticUI();
+
 
   const diagramJobs = [];
 
@@ -1312,7 +1321,7 @@
     if(ev.graph === 'xt' || hasXtMark){
       addDiagram(
         'xt',
-        (BOOK_UI[lang] || BOOK_UI.gr).diagram.xt,
+        (BOOK_UI[lang]||BOOK_UI.gr).cap_xt,
         {
           xtZeroMark: !!ev.xtZeroMark,
           xtMarkTail: !!ev.xtMarkTail
@@ -1321,16 +1330,16 @@
     }
 
     if(ev.plot === 'xsin'){
-      addDiagram('xsin', (BOOK_UI[lang] || BOOK_UI.gr).diagram.xsin);
+      addDiagram('xsin', (BOOK_UI[lang]||BOOK_UI.gr).cap_xsin);
     }
     if(ev.plot === 'v'){
-      addDiagram('v', (BOOK_UI[lang] || BOOK_UI.gr).diagram.v);
+      addDiagram('v', (BOOK_UI[lang]||BOOK_UI.gr).cap_v);
     }
     if(ev.plot === 'a'){
-      addDiagram('a', (BOOK_UI[lang] || BOOK_UI.gr).diagram.a);
+      addDiagram('a', (BOOK_UI[lang]||BOOK_UI.gr).cap_a);
     }
     if(ev.plot === 'ax'){
-      addDiagram('ax', (BOOK_UI[lang] || BOOK_UI.gr).diagram.ax);
+      addDiagram('ax', (BOOK_UI[lang]||BOOK_UI.gr).cap_ax);
     }
 
     // ✅ Inline πρόσθετα: και από book-*.json (inlineBlocks) ΚΑΙ απευθείας από dialogs JSON (ev.inline)
@@ -2281,7 +2290,7 @@
           BOOK_CFG = await br.json();
         }
       }catch(e2){
-        console.warn((BOOK_UI[lang] || BOOK_UI.gr).errBookJson, e2);
+        console.warn('book*.json όχι διαθέσιμο ή μη έγκυρο', e2);
         BOOK_CFG = null;
       }
 
