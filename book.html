@@ -703,8 +703,8 @@
       btnPdf: 'Εξαγωγή PDF',
       act1Label: 'Πράξη 1',
       act1H2: 'Η Κινηματική στα ...Αλγεβρικά! ',
-      act1IntroP1: null,
-      act1IntroP2: null,
+      act1IntroP1: 'In Act 1, the viewers try to read the motion straight from the t–x measurements. They think out loud, propose methods, and basically attempt to *prove* the SHM laws — using data, not vibes.',
+      act1IntroP2: 'The table on the right contains the (t, x) pairs from the performance you just watched. Under it, the dialogue starts: viewers’ thoughts on the left, and the laws/plots as they appeared on the right.',
       txTitle: 'Πίνακας μετρήσεων t–x',
       txSub: 'Απόσπασμα του πίνακα μετρήσεων της παράστασης.',
       act1DialogTitle: 'Διάλογοι Πράξης 1',
@@ -745,8 +745,8 @@
       btnPdf: 'Export PDF',
       act1Label: 'Act 1',
       act1H2: 'Kinematics in ...Algebra!',
-      act1IntroP1: null,
-      act1IntroP2: null,
+      act1IntroP1: 'In Act 1, the viewers try to read the motion straight from the t–x measurements. They think out loud, propose methods, and basically attempt to *prove* the SHM laws — using data, not vibes.',
+      act1IntroP2: 'The table on the right contains the (t, x) pairs from the performance you just watched. Under it, the dialogue starts: viewers’ thoughts on the left, and the laws/plots as they appeared on the right.',
       txTitle: 't–x measurement table',
       txSub: 'Excerpt from the performance measurement table.',
       act1DialogTitle: 'Act 1 Dialogues',
@@ -802,6 +802,11 @@
     if(act1Label) act1Label.textContent = U.act1Label;
     const act1H2 = document.getElementById('act1H2');
     if(act1H2) act1H2.textContent = U.act1H2;
+
+    const act1IntroP1 = document.getElementById('act1IntroP1');
+    if(act1IntroP1 && U.act1IntroP1!=null) act1IntroP1.textContent = U.act1IntroP1;
+    const act1IntroP2 = document.getElementById('act1IntroP2');
+    if(act1IntroP2 && U.act1IntroP2!=null) act1IntroP2.textContent = U.act1IntroP2;
 
     const txTitle = document.getElementById('txTitle');
     if(txTitle) txTitle.textContent = U.txTitle;
