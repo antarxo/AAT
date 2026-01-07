@@ -583,7 +583,10 @@ function closeIntro(){
 async function initIntro(){
   let res;
   try{
-    res = await fetch('intro.json', { cache: 'no-store' });
+    const introUrl = (currentLang==='en') ? 'intro-en.json' : 'intro.json';
+    res = await fetch(introUrl, { cache: 'no-store' });
+    // fallback to intro.json if intro-en.json missing
+    if(!res.ok && currentLang==='en') res = await fetch('intro.json', { cache: 'no-store' });
     if(!res.ok) throw new Error('intro.json load failed');
     INTRO = await res.json();
   }catch(e){
@@ -627,7 +630,13 @@ if(!INTRO || INTRO.enabled === false){
 
   introLeaflet.innerHTML = introLeafletTextToHTML(INTRO.leafletText || '');
 
-  introContinue.textContent = INTRO.buttonLabel || 'Συνέχεια';
+  // language-aware a11y label for the intro dialog
+  const introCard = introOverlay ? introOverlay.querySelector('.intro-card') : null;
+  if(introCard){
+    introCard.setAttribute('aria-label', INTRO.ariaLabel || (currentLang==='en' ? 'Show program' : 'Πρόγραμμα παράστασης'));
+  }
+
+  introContinue.textContent = INTRO.buttonLabel || (currentLang==='en' ? 'Continue' : 'Συνέχεια');
   introContinue.onclick = closeIntro;
 }
 
@@ -701,7 +710,14 @@ function setBookUnlocked(on, persist=true){
   btnBook.disabled = !bookUnlocked;
   btnBook.style.opacity = bookUnlocked ? '1' : '0.35';
   btnBook.style.filter  = bookUnlocked ? 'none' : 'grayscale(100%)';
-  btnBook.title = bookUnlocked ? 'Βιβλίο Παράστασης' : 'Διαθέσιμο μετά το τέλος της Πράξης 1';
+  const ui = UI || {};
+  const unlockedTitle = (ui.bookTitleUnlocked != null)
+    ? ui.bookTitleUnlocked
+    : (currentLang==='en' ? 'Performance Book' : 'Βιβλίο Παράστασης');
+  const lockedTitle = (ui.bookTitleLocked != null)
+    ? ui.bookTitleLocked
+    : (currentLang==='en' ? 'Available after Act 1 ends' : 'Διαθέσιμο μετά το τέλος της Πράξης 1');
+  btnBook.title = bookUnlocked ? unlockedTitle : lockedTitle;
 }
 
 setBookUnlocked(bookUnlocked, false);
@@ -936,7 +952,25 @@ function applyUITextFromUI(){
   if(foyerBreakTitle && ui.foyerBreakTitle != null) foyerBreakTitle.textContent = ui.foyerBreakTitle;
   if(foyerBreakMsg   && ui.foyerBreakMsg   != null) foyerBreakMsg.textContent   = ui.foyerBreakMsg;
   if(btnFoyerGo      && ui.btnFoyerGo      != null) btnFoyerGo.textContent      = ui.btnFoyerGo;
-  if(startBreakMsg && ui.startBtn != null) startBreakMsg.textContent = ui.startBtn;
+  // Start overlay (fix: μην γράφουμε το label του κουμπιού μέσα στο μήνυμα)
+  const startBreakTitleEl = document.getElementById('startBreakTitle');
+  const startBreakMsgEl   = document.getElementById('startBreakMsg');
+  const startBtnEl        = document.getElementById('startBtn');
+  if(startBreakTitleEl){
+    startBreakTitleEl.textContent = (ui.startBreakTitle != null)
+      ? ui.startBreakTitle
+      : (currentLang==='en' ? 'Show start' : 'Έναρξη Παράστασης');
+  }
+  if(startBreakMsgEl){
+    startBreakMsgEl.textContent = (ui.startBreakMsg != null)
+      ? ui.startBreakMsg
+      : (currentLang==='en' ? 'One viewer should click Start.' : 'Ενας θεατής ας κάνει κλικ στην Έναρξη');
+  }
+  if(startBtnEl){
+    startBtnEl.textContent = (ui.startBtn != null)
+      ? ui.startBtn
+      : (currentLang==='en' ? 'Start' : 'Έναρξη');
+  }
 
   // Τίτλοι Πράξης 3 (όπως και των άλλων): από uiTitles.act3
   const act3BreakTitleEl = document.getElementById('act3BreakTitle');
@@ -3484,6 +3518,20 @@ function setLanguage(lang){
   resetShow();
 
     loadDialogs();
+
+  // Basic bilingual placeholders
+  const foyerSpeakerNameEl = document.getElementById('foyerSpeakerName');
+  if(foyerSpeakerNameEl && (foyerSpeakerNameEl.textContent || '').trim()==='Θεατής'){
+    foyerSpeakerNameEl.textContent = (currentLang==='en' ? 'Viewer' : 'Θεατής');
+  }
+  const actBubbleEl = document.getElementById('actBubble');
+  if(actBubbleEl && (actBubbleEl.textContent || '').trim()==='ΘΕΑΤΗΣ'){
+    actBubbleEl.textContent = (currentLang==='en' ? 'VIEWER' : 'ΘΕΑΤΗΣ');
+  }
+  const foyerBubbleEl = document.getElementById('foyerBubble');
+  if(foyerBubbleEl && (foyerBubbleEl.textContent || '').trim()==='ΘΕΑΤΗΣ'){
+    foyerBubbleEl.textContent = (currentLang==='en' ? 'VIEWER' : 'ΘΕΑΤΗΣ');
+  }
 }
 
 /* ---------- Bootstrap ---------- */
