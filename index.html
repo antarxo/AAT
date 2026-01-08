@@ -212,7 +212,34 @@ function num(v,fallback=0){
       box-shadow: 0 10px 22px rgba(0,0,0,.22);
       flex: 0 0 auto;
     }
-    #introOverlay .intro-continue:hover{ filter: brightness(1.05); }
+    
+    .intro-lang{
+      display:flex;
+      gap:10px;
+      justify-content:center;
+      align-items:center;
+      margin:10px 0 6px;
+      flex-wrap:wrap;
+    }
+    .intro-lang-btn{
+      appearance:none;
+      border:1px solid rgba(255,255,255,.25);
+      background: rgba(0,0,0,.22);
+      color:#fff;
+      border-radius:999px;
+      padding:7px 12px;
+      font-size:.92rem;
+      font-weight:700;
+      cursor:pointer;
+      backdrop-filter: blur(6px);
+    }
+    .intro-lang-btn:hover{ background: rgba(0,0,0,.32); }
+    .intro-lang-btn.active{
+      background: rgba(255,255,255,.16);
+      border-color: rgba(255,255,255,.55);
+      box-shadow: 0 10px 24px rgba(0,0,0,.25);
+    }
+#introOverlay .intro-continue:hover{ filter: brightness(1.05); }
   
 
   /* --- Strobe (stop-motion) αποχώρηση στο Φουαγιέ --- */
@@ -447,6 +474,10 @@ function num(v,fallback=0){
   <div class="intro-card" role="dialog" aria-modal="true" aria-label="Πρόγραμμα παράστασης">
     <img id="introPoster" class="intro-poster" src="" alt="">
     <div id="introLeaflet" class="intro-leaflet"></div>
+    <div id="introLangSwitch" class="intro-lang" aria-label="Language">
+      <button type="button" class="intro-lang-btn" data-lang="gr">Ελληνικά</button>
+      <button type="button" class="intro-lang-btn" data-lang="en">English</button>
+    </div>
     <button id="introContinue" class="intro-continue">Συνέχεια</button>
   </div>
 </div>
@@ -465,7 +496,18 @@ let foyerTBody = null;
 let UI = {};
 let UI_TITLES = null;
 
-let currentLang = 'gr';  // 'gr' ή 'en'
+let currentLang = (()=>{
+  try{
+    const p = new URLSearchParams(location.search);
+    const q = (p.get('lang') || '').toLowerCase();
+    if(q === 'en' || q === 'gr') return q;
+  }catch(_e){}
+  try{
+    const saved = (localStorage.getItem('aatLang') || '').toLowerCase();
+    if(saved === 'en' || saved === 'gr') return saved;
+  }catch(_e){}
+  return 'gr';
+})();  // 'gr' ή 'en'
 let btnLangGR = null;
 let btnLangEN = null;
 
@@ -637,6 +679,24 @@ if(!INTRO || INTRO.enabled === false){
   }
 
   introContinue.textContent = INTRO.buttonLabel || (currentLang==='en' ? 'Continue' : 'Συνέχεια');
+
+  // Language switch inside intro overlay (no need for URL params by the user)
+  const introLangSwitch = document.getElementById('introLangSwitch');
+  if(introLangSwitch){
+    const btns = introLangSwitch.querySelectorAll('button[data-lang]');
+    btns.forEach(b=>{
+      const L = String(b.getAttribute('data-lang')||'').toLowerCase();
+      b.classList.toggle('active', L===currentLang);
+      b.onclick = ()=>{
+        const chosen = L==='en' ? 'en' : 'gr';
+        try{ localStorage.setItem('aatLang', chosen); }catch(_e){}
+        const u = new URL(window.location.href);
+        u.searchParams.set('lang', chosen);
+        window.location.href = u.toString();
+      };
+    });
+  }
+
   introContinue.onclick = closeIntro;
 }
 
