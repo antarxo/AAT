@@ -357,7 +357,12 @@
         try { candidates.push(new URL(safe, window.location.href).href); } catch(_e) {}
       };
 
-      addCandidate(cfg.posterSrc);
+      const pickPoster = (lang==='en' && cfg.posterSrcEn) ? cfg.posterSrcEn
+                      : (lang==='gr' && cfg.posterSrcGr) ? cfg.posterSrcGr
+                      : (cfg.posterSrc || '');
+      addCandidate(pickPoster);
+      addCandidate((lang==='en') ? 'assets/theatron-banner-en.png' : 'assets/theatron-banner.png');
+      addCandidate((lang==='en') ? 'theatron-banner-en.png' : 'theatron-banner.png');
       addCandidate('assets/theatron-banner.png');
       addCandidate('theatron-banner.png');
 
@@ -388,7 +393,9 @@
     }catch(e){
       // αν κάτι πάει στραβά, μένουμε απλά με την εικόνα
       const cont = document.getElementById('leafletContent');
-      cont.innerHTML = '<p class="mono">Αποτυχία φόρτωσης intro.json</p>';
+      cont.innerHTML = (document.documentElement.lang==='en')
+        ? '<p class="mono">Failed to load intro.json</p>'
+        : '<p class="mono">Αποτυχία φόρτωσης intro.json</p>';
     }
   }
 
