@@ -659,7 +659,10 @@ if(!INTRO || INTRO.enabled === false){
 
   document.body.classList.add('intro-open');
 
-  const _introSrcRaw = String(INTRO.posterSrc || '').trim();
+  const _introSrcPick = (currentLang==='en' && INTRO.posterSrcEn) ? INTRO.posterSrcEn
+                    : (currentLang==='gr' && INTRO.posterSrcGr) ? INTRO.posterSrcGr
+                    : (INTRO.posterSrc || '');
+const _introSrcRaw = String(_introSrcPick || ((currentLang==='en') ? 'assets/theatron-banner-en.png' : 'assets/theatron-banner.png') || '').trim();
   if(_introSrcRaw){
     const _safe = _introSrcRaw.replace(/^\/+/, '');          // κόψε leading "/" (GitHub Pages /repo θέμα)
     const _resolved = new URL(_safe, res.url).href;          // resolve relative to intro.json
@@ -669,7 +672,10 @@ if(!INTRO || INTRO.enabled === false){
     introPoster.src = '';
     introOverlay.style.removeProperty('--intro-bg');
   }
-  introPoster.alt = INTRO.posterAlt || '';
+  const _altPick = (currentLang==='en' && INTRO.posterAltEn) ? INTRO.posterAltEn
+              : (currentLang==='gr' && INTRO.posterAltGr) ? INTRO.posterAltGr
+              : (INTRO.posterAlt || '');
+introPoster.alt = _altPick;
 
   introLeaflet.innerHTML = introLeafletTextToHTML(INTRO.leafletText || '');
 
@@ -736,6 +742,7 @@ const actBubble    = document.getElementById('actBubble');
 
 const startBtn          = document.getElementById('startBtn');
 const startBreak        = document.getElementById('startBreak');
+const startBreakTitle   = document.getElementById('startBreakTitle');
 const startBreakMsg     = document.getElementById('startBreakMsg');
 
 const countdownOverlay  = document.getElementById('countdownOverlay');
@@ -1005,7 +1012,20 @@ function applyUITextFromUI(){
   if(foyerBreakTitle && ui.foyerBreakTitle != null) foyerBreakTitle.textContent = ui.foyerBreakTitle;
   if(foyerBreakMsg   && ui.foyerBreakMsg   != null) foyerBreakMsg.textContent   = ui.foyerBreakMsg;
   if(btnFoyerGo      && ui.btnFoyerGo      != null) btnFoyerGo.textContent      = ui.btnFoyerGo;
-  if(startBreakMsg && ui.startBtn != null) startBreakMsg.textContent = ui.startBtn;
+
+  // Start overlay (before countdown)
+  if(startBreakTitle){
+    const fb = (currentLang==='en') ? 'Performance start' : 'Έναρξη Παράστασης';
+    startBreakTitle.textContent = (ui.startBreakTitle != null) ? ui.startBreakTitle : fb;
+  }
+  if(startBreakMsg){
+    const fb = (currentLang==='en') ? 'A viewer should click Start.' : 'Ενας θεατής ας κάνει κλικ στην Έναρξη';
+    startBreakMsg.textContent = (ui.startBreakMsg != null) ? ui.startBreakMsg : fb;
+  }
+  if(startBtn){
+    const fb = (currentLang==='en') ? 'Start' : 'Έναρξη';
+    startBtn.textContent = (ui.startBtn != null) ? ui.startBtn : fb;
+  }
 
   // Τίτλοι Πράξης 3 (όπως και των άλλων): από uiTitles.act3
   const act3BreakTitleEl = document.getElementById('act3BreakTitle');
