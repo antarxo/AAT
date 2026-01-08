@@ -1093,12 +1093,14 @@ function applyUITextFromUI(){
     startBreakTitle.textContent = (ui.startBreakTitle != null) ? ui.startBreakTitle : fb;
   }
   if(startBreakMsg){
-    const fb = (currentLang==='en') ? 'A viewer should click Start.' : 'Ενας θεατής ας κάνει κλικ στην Έναρξη';
-    startBreakMsg.textContent = (ui.startBreakMsg != null) ? ui.startBreakMsg : fb;
+    // Keep it short and avoid repeating the same label twice.
+    startBreakMsg.textContent = (currentLang==='en')
+      ? 'A viewer should click Start.'
+      : 'Ενας θεατής ας κάνει κλικ στην Έναρξη';
   }
   if(startBtn){
-    const fb = (currentLang==='en') ? 'Start' : 'Έναρξη';
-    startBtn.textContent = (ui.startBtn != null) ? ui.startBtn : fb;
+    // Always use the short button label (don’t let UI override it with longer text).
+    startBtn.textContent = (currentLang==='en') ? 'Start' : 'Έναρξη';
   }
 
   // Τίτλοι Πράξης 3 (όπως και των άλλων): από uiTitles.act3
