@@ -130,6 +130,33 @@
     .wrap{ position:relative; z-index: 2; }
     body{ margin:0; background:#000; }
 
+
+    .lang-switch{
+      display:flex;
+      gap:10px;
+      justify-content:flex-end;
+      align-items:center;
+      margin:0 0 10px;
+      flex-wrap:wrap;
+    }
+    .lang-btn{
+      appearance:none;
+      border:1px solid rgba(0,0,0,.22);
+      background: rgba(255,255,255,.78);
+      color: rgba(18,18,18,.95);
+      border-radius:999px;
+      padding:7px 12px;
+      font-size:.92rem;
+      font-weight:800;
+      cursor:pointer;
+      box-shadow: 0 10px 24px rgba(0,0,0,.10);
+    }
+    .lang-btn:hover{ background: rgba(255,255,255,.92); }
+    .lang-btn.active{
+      border-color: rgba(0,0,0,.45);
+      box-shadow: 0 14px 30px rgba(0,0,0,.14);
+    }
+
 </style>
 </head>
 <body>
@@ -142,7 +169,11 @@
     </div>
 
     <div class="leaflet">
-      <div class="meta">Πρόγραμμα παράστασης</div>
+      <div id="langSwitch" class="lang-switch" aria-label="Language">
+        <button type="button" class="lang-btn" data-lang="gr">Ελληνικά</button>
+        <button type="button" class="lang-btn" data-lang="en">English</button>
+      </div>
+      <div class="meta" id="metaLabel">Πρόγραμμα παράστασης</div>
       <div class="content" id="leafletContent" aria-label="Κείμενο προγράμματος"></div>
     </div>
   </div>
@@ -268,16 +299,51 @@
   async function init(){
     try{
       const p = new URLSearchParams(window.location.search);
-      const lang = (p.get('lang') === 'en') ? 'en' : 'gr';
+      const q = (p.get('lang') || '').toLowerCase();
+      let lang = (q === 'en' || q === 'gr') ? q : '';
+      if(!lang){
+        try{
+          const saved = (localStorage.getItem('aatLang') || '').toLowerCase();
+          if(saved === 'en' || saved === 'gr') lang = saved;
+        }catch(_e){}
+      }
+      if(!lang) lang = 'gr';
       document.documentElement.lang = (lang === 'en') ? 'en' : 'el';
       document.title = (lang === 'en') ? 'Performance Program · S.H.M.' : 'Πρόγραμμα Παράστασης · Α.Α.Τ.';
       const introFile = (lang === 'en') ? 'intro-en.json' : 'intro.json';
+
+      // Static UI localization
+      const wrap = document.querySelector('.wrap');
+      const meta = document.getElementById('metaLabel');
+      const leaflet = document.getElementById('leafletContent');
+      if(wrap){ wrap.setAttribute('aria-label', (lang==='en') ? 'Performance program (S.H.M.)' : 'Πρόγραμμα παράστασης Α.Α.Τ.'); }
+      if(meta){ meta.textContent = (lang==='en') ? 'Performance program' : 'Πρόγραμμα παράστασης'; }
+      if(leaflet){ leaflet.setAttribute('aria-label', (lang==='en') ? 'Program text' : 'Κείμενο προγράμματος'); }
+
+      // Language switch
+      const sw = document.getElementById('langSwitch');
+      if(sw){
+        sw.querySelectorAll('button[data-lang]').forEach(b=>{
+          const L = String(b.getAttribute('data-lang')||'').toLowerCase();
+          b.classList.toggle('active', L===lang);
+          b.onclick = ()=>{
+            const chosen = (L==='en') ? 'en' : 'gr';
+            try{ localStorage.setItem('aatLang', chosen); }catch(_e){}
+            const u = new URL(window.location.href);
+            u.searchParams.set('lang', chosen);
+            window.location.href = u.toString();
+          };
+        });
+      }
+
       let r = await fetch(introFile, { cache: 'no-cache' });
       if(!r.ok && introFile !== 'intro.json') r = await fetch('intro.json', { cache: 'no-cache' });
       const cfg = r.ok ? await r.json() : null;
       if (!cfg) return;
 
       const img = document.getElementById('poster');
+      if(img){ img.alt = (lang==='en') ? 'Performance program (S.H.M.)' : 'Πρόγραμμα παράστασης Α.Α.Τ.'; }
+
       const bg  = document.getElementById('introBg');
 
       // Robust poster/background resolution:
