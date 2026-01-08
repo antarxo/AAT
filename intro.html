@@ -267,7 +267,13 @@
 
   async function init(){
     try{
-      const r = await fetch('intro.json', { cache: 'no-cache' });
+      const p = new URLSearchParams(window.location.search);
+      const lang = (p.get('lang') === 'en') ? 'en' : 'gr';
+      document.documentElement.lang = (lang === 'en') ? 'en' : 'el';
+      document.title = (lang === 'en') ? 'Performance Program · S.H.M.' : 'Πρόγραμμα Παράστασης · Α.Α.Τ.';
+      const introFile = (lang === 'en') ? 'intro-en.json' : 'intro.json';
+      let r = await fetch(introFile, { cache: 'no-cache' });
+      if(!r.ok && introFile !== 'intro.json') r = await fetch('intro.json', { cache: 'no-cache' });
       const cfg = r.ok ? await r.json() : null;
       if (!cfg) return;
 
