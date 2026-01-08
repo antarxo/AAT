@@ -1005,13 +1005,87 @@ function applyUITextFromUI(){
   if(countdownMain && ui.countdownMain != null) countdownMain.textContent = ui.countdownMain;
   if(countdownSub  && ui.countdownSub  != null) countdownSub.textContent  = ui.countdownSub;
 
-  if(actBreakTitle && ui.actBreakTitle != null) actBreakTitle.textContent = ui.actBreakTitle;
-  if(actBreakMsg   && ui.actBreakMsg   != null) actBreakMsg.textContent   = ui.actBreakMsg;
-  if(btnAct2       && ui.btnAct2       != null) btnAct2.textContent       = ui.btnAct2;
+  if(actBreakTitle){
+    const fb = (currentLang==='en') ? 'Act 2' : 'Πράξη 2η';
+    actBreakTitle.textContent = (ui.actBreakTitle != null) ? ui.actBreakTitle : fb;
+  }
+  if(actBreakMsg){
+    const fb = (currentLang==='en')
+      ? 'The (m₁,D₁) continues. Ready for Act 2?'
+      : 'Ο (m₁,D₁) συνεχίζει. Είστε έτοιμοι για τη Δεύτερη Πράξη;';
+    actBreakMsg.textContent = (ui.actBreakMsg != null) ? ui.actBreakMsg : fb;
+  }
+  if(btnAct2){
+    const fb = (currentLang==='en') ? 'Start Act 2' : 'Έναρξη Πράξης 2';
+    btnAct2.textContent = (ui.btnAct2 != null) ? ui.btnAct2 : fb;
+  }
 
-  if(foyerBreakTitle && ui.foyerBreakTitle != null) foyerBreakTitle.textContent = ui.foyerBreakTitle;
-  if(foyerBreakMsg   && ui.foyerBreakMsg   != null) foyerBreakMsg.textContent   = ui.foyerBreakMsg;
-  if(btnFoyerGo      && ui.btnFoyerGo      != null) btnFoyerGo.textContent      = ui.btnFoyerGo;
+  if(foyerBreakTitle){
+    const fb = (currentLang==='en') ? 'Foyer' : 'Φουαγιέ';
+    foyerBreakTitle.textContent = (ui.foyerBreakTitle != null) ? ui.foyerBreakTitle : fb;
+  }
+  if(foyerBreakMsg){
+    const fb = (currentLang==='en')
+      ? 'Free discussion in the foyer!'
+      : 'Ελεύθερη συζήτηση στο χώρο του φουαγιέ!';
+    foyerBreakMsg.textContent = (ui.foyerBreakMsg != null) ? ui.foyerBreakMsg : fb;
+  }
+  if(btnFoyerGo){
+    const fb = (currentLang==='en') ? 'Go to the Foyer' : 'Μετάβαση στο Φουαγιέ';
+    btnFoyerGo.textContent = (ui.btnFoyerGo != null) ? ui.btnFoyerGo : fb;
+  }
+
+  // Quick Navigation overlay (Γρήγορη Μετάβαση)
+  const navTitleEl  = document.getElementById('navTitle');
+  const navMsgEl    = document.getElementById('navMsg');
+  const navToAct1El = document.getElementById('navToAct1');
+  const navToAct2El = document.getElementById('navToAct2');
+  const navToFoyerEl= document.getElementById('navToFoyer');
+  const navCloseEl  = document.getElementById('navClose');
+
+  if(navTitleEl){
+    const fb = (currentLang==='en') ? 'Quick Navigation' : 'Γρήγορη Μετάβαση';
+    navTitleEl.textContent = (ui.navTitle != null) ? ui.navTitle : fb;
+  }
+  if(navMsgEl){
+    const fb = (currentLang==='en')
+      ? 'Shortcuts for repeat/check. The “Performance Book” unlocks only after Act 1 ends.'
+      : 'Συντομεύσεις για επανάληψη/έλεγχο. Το «Βιβλίο Παράστασης» ξεκλειδώνει μόνο μετά το τέλος της Πράξης 1.';
+    navMsgEl.textContent = (ui.navMsg != null) ? ui.navMsg : fb;
+  }
+  if(navToAct1El){
+    const fb = (currentLang==='en') ? 'Act 1' : 'Πράξη 1';
+    navToAct1El.textContent = (ui.navToAct1 != null) ? ui.navToAct1 : fb;
+  }
+  if(navToAct2El){
+    const fb = (currentLang==='en') ? 'Act 2' : 'Πράξη 2';
+    navToAct2El.textContent = (ui.navToAct2 != null) ? ui.navToAct2 : fb;
+  }
+  if(navToFoyerEl){
+    const fb = (currentLang==='en') ? 'Foyer' : 'Φουαγιέ';
+    navToFoyerEl.textContent = (ui.navToFoyer != null) ? ui.navToFoyer : fb;
+  }
+  if(navCloseEl){
+    const fb = (currentLang==='en') ? 'Close' : 'Κλείσιμο';
+    navCloseEl.textContent = (ui.navClose != null) ? ui.navClose : fb;
+  }
+
+  // Defaults for speaker/bubbles (placeholders)
+  const foyerSpeakerNameEl = document.getElementById('foyerSpeakerName');
+  if(foyerSpeakerNameEl){
+    const fb = (currentLang==='en') ? 'Viewer' : 'Θεατής';
+    foyerSpeakerNameEl.textContent = (ui.foyerSpeakerName != null) ? ui.foyerSpeakerName : fb;
+  }
+  const actBubbleEl = document.getElementById('actBubble');
+  if(actBubbleEl){
+    const fb = (currentLang==='en') ? 'VIEWER' : 'ΘΕΑΤΗΣ';
+    actBubbleEl.textContent = (ui.actBubble != null) ? ui.actBubble : fb;
+  }
+  const foyerBubbleEl = document.getElementById('foyerBubble');
+  if(foyerBubbleEl){
+    const fb = (currentLang==='en') ? 'VIEWER' : 'ΘΕΑΤΗΣ';
+    foyerBubbleEl.textContent = (ui.foyerBubble != null) ? ui.foyerBubble : fb;
+  }
 
   // Start overlay (before countdown)
   if(startBreakTitle){
@@ -1036,10 +1110,54 @@ function applyUITextFromUI(){
     if(act3TeaserEl) act3TeaserEl.textContent = t3;
   }
 
+  // Control tooltips (μπαλονάκια) — με fallbacks αν λείπουν από UI
+  if(btnNav){
+    const fb = (currentLang==='en') ? 'transitions' : 'μεταβάσεις';
+    btnNav.title = (ui.btnNavTitle != null) ? ui.btnNavTitle : fb;
+  }
+  if(btnPause){
+    const fb = (currentLang==='en') ? 'pause' : 'παύση';
+    btnPause.title = (ui.btnPauseTitle != null) ? ui.btnPauseTitle : fb;
+  }
+  if(btnPlay){
+    const fb = (currentLang==='en') ? 'play' : 'κανονικά';
+    btnPlay.title = (ui.btnPlayTitle != null) ? ui.btnPlayTitle : fb;
+  }
+  if(btnReset){
+    const fb = 'reset';
+    btnReset.title = (ui.btnResetTitle != null) ? ui.btnResetTitle : fb;
+  }
+  if(btnNext){
+    const fb = (currentLang==='en') ? 'next' : 'επόμενο';
+    btnNext.title = (ui.btnNextTitle != null) ? ui.btnNextTitle : fb;
+  }
+  if(btnBook){
+    const locked = btnBook.disabled || btnBook.hasAttribute('disabled');
+    const fb = locked
+      ? ((currentLang==='en') ? 'Available after Act 1 ends' : 'Διαθέσιμο μετά το τέλος της Πράξης 1')
+      : ((currentLang==='en') ? 'Performance Book' : 'Βιβλίο Παράστασης');
 
-  if(btnPause   && ui.btnPauseTitle != null) btnPause.title = ui.btnPauseTitle;
-  if(btnPlay    && ui.btnPlayTitle  != null) btnPlay.title  = ui.btnPlayTitle;
-  if(btnReset   && ui.btnResetTitle != null) btnReset.title = ui.btnResetTitle;
+    if(locked && ui.btnBookTitleLocked != null) btnBook.title = ui.btnBookTitleLocked;
+    else if(!locked && ui.btnBookTitle != null) btnBook.title = ui.btnBookTitle;
+    else if(ui.btnBookTitle != null) btnBook.title = ui.btnBookTitle;
+    else btnBook.title = fb;
+  }
+
+  // Act 3 button text/title (ιδίως όταν είναι disabled)
+  const btnAct3El = document.getElementById('btnAct3');
+  if(btnAct3El){
+    const locked = btnAct3El.disabled || btnAct3El.getAttribute('aria-disabled') === 'true';
+    const fbText  = (currentLang==='en') ? 'Start Act 3' : 'Έναρξη Πράξης 3';
+    btnAct3El.textContent = (ui.btnAct3 != null) ? ui.btnAct3 : fbText;
+
+    const fbTitle = locked
+      ? ((currentLang==='en') ? 'Not available yet!' : 'Δεν είναι προφανώς διαθέσιμη!')
+      : '';
+
+    if(ui.btnAct3Title != null) btnAct3El.title = ui.btnAct3Title;
+    else if(fbTitle) btnAct3El.title = fbTitle;
+  }
+
 
   if(btnLangGR && btnLangEN){
     btnLangGR.classList.toggle('active', currentLang === 'gr');
