@@ -290,6 +290,7 @@ function num(v,fallback=0){
   <div class="lang-toggle">
     <button id="btnLangGR" class="lang-btn active">GR</button>
     <button id="btnLangEN" class="lang-btn">EN</button>
+    <button id="btnTTS" class="lang-btn" aria-pressed="false" title="Φωνή: OFF">🔇</button>
   </div>
 
   <div class="curtain-top"></div>
@@ -510,6 +511,9 @@ let currentLang = (()=>{
 })();  // 'gr' ή 'en'
 let btnLangGR = null;
 let btnLangEN = null;
+let btnTTS    = null;
+
+const TTS_ENABLED_KEY = 'aat_tts_enabled';
 
 /* Κατάσταση παράστασης για locks κουμπιών */
 let phase = 'idle'; // idle, countdown, act1, act2, between2andFoyer, foyer
@@ -522,6 +526,112 @@ const introOverlay  = document.getElementById('introOverlay');
 const introPoster   = document.getElementById('introPoster');
 const introLeaflet  = document.getElementById('introLeaflet');
 const introContinue = document.getElementById('introContinue');
+
+/* ---------- TTS (φωνητική υποστήριξη) ---------- */
+
+const TTS = (()=>{
+  const state = {
+    enabled: false,
+    lang: 'el-GR',
+    rate: 1.0,
+    pitch: 1.0,
+    volume: 1.0,
+    voiceName: '',
+    cancelBeforeSpeak: true,
+    ready: false
+  };
+
+  const isSupported = ()=> (typeof window !== 'undefined' && 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window);
+  const getVoices = ()=> (isSupported() ? (window.speechSynthesis.getVoices() || []) : []);
+
+  const ensureVoicesLoaded = ()=>{
+    if(!isSupported()) return;
+    const voices = getVoices();
+    if(voices.length){ state.ready = true; return; }
+    window.speechSynthesis.onvoiceschanged = ()=>{ state.ready = true; };
+  };
+
+  const pickVoice = (lang, voiceName='')=>{
+    const voices = getVoices();
+    if(!voices.length) return null;
+    if(voiceName){
+      const byName = voices.find(v=>v.name===voiceName);
+      if(byName) return byName;
+    }
+    const ll = String(lang||'').toLowerCase();
+    const exact = voices.find(v=>String(v.lang||'').toLowerCase()===ll);
+    if(exact) return exact;
+    const prefix = ll.split('-')[0];
+    const byPrefix = voices.find(v=>String(v.lang||'').toLowerCase().startsWith(prefix));
+    return byPrefix || voices[0] || null;
+  };
+
+  const setEnabled = (v)=>{ state.enabled = !!v; if(!state.enabled) stop(); };
+  const setLang = (code)=>{ state.lang = code || 'el-GR'; };
+  const setVoiceName = (name)=>{ state.voiceName = name || ''; };
+  const setParams = ({rate,pitch,volume,cancelBeforeSpeak}={})=>{
+    if(typeof rate==='number')   state.rate   = Math.min(2, Math.max(0.5, rate));
+    if(typeof pitch==='number')  state.pitch  = Math.min(2, Math.max(0, pitch));
+    if(typeof volume==='number') state.volume = Math.min(1, Math.max(0, volume));
+    if(typeof cancelBeforeSpeak==='boolean') state.cancelBeforeSpeak = cancelBeforeSpeak;
+  };
+
+  const speak = (text)=>{
+    if(!isSupported()) return false;
+    if(!state.enabled) return false;
+    const clean = String(text ?? '').trim();
+    if(!clean) return false;
+    if(state.cancelBeforeSpeak) window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(clean);
+    u.lang = state.lang;
+    u.rate = state.rate;
+    u.pitch = state.pitch;
+    u.volume = state.volume;
+    const v = pickVoice(state.lang, state.voiceName);
+    if(v) u.voice = v;
+    window.speechSynthesis.speak(u);
+    return true;
+  };
+
+  const pause = ()=>{ if(isSupported()) window.speechSynthesis.pause(); };
+  const resume= ()=>{ if(isSupported()) window.speechSynthesis.resume(); };
+  const stop  = ()=>{ if(isSupported()) window.speechSynthesis.cancel(); };
+
+  ensureVoicesLoaded();
+  return { state, isSupported, getVoices, setEnabled, setLang, setVoiceName, setParams, speak, pause, resume, stop };
+})();
+
+function ttsPlainFromHTML(html){
+  const s = String(html ?? '');
+  return s
+    .replace(/<\s*br\s*\/?>/gi, '\n')
+    .replace(/<[^>]*>/g, '')
+    .replace(/\u00A0/g, ' ')
+    .replace(/[ \t]+/g, ' ')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
+function syncTTSLang(){
+  TTS.setLang(currentLang==='en' ? 'en-US' : 'el-GR');
+}
+
+function syncTTSButton(){
+  if(!btnTTS) return;
+  btnTTS.classList.toggle('active', !!TTS.state.enabled);
+  btnTTS.setAttribute('aria-pressed', TTS.state.enabled ? 'true' : 'false');
+  btnTTS.textContent = TTS.state.enabled ? '🔊' : '🔇';
+  btnTTS.title = (currentLang==='en') ? (TTS.state.enabled ? 'Voice: ON' : 'Voice: OFF') : (TTS.state.enabled ? 'Φωνή: ON' : 'Φωνή: OFF');
+}
+
+function setTTSEnabled(v, speakFeedback=false){
+  TTS.setEnabled(!!v);
+  try{ localStorage.setItem(TTS_ENABLED_KEY, TTS.state.enabled ? '1' : '0'); }catch(_e){}
+  syncTTSButton();
+  if(speakFeedback && TTS.state.enabled){
+    TTS.speak(currentLang==='en' ? 'Voice enabled.' : 'Φωνητική υποστήριξη ενεργή.');
+  }
+}
 
 function _introEsc(s){
   // Επιλογή Α: επιτρέπουμε raw HTML στο intro.json (όπως στους διαλόγους).
@@ -2622,6 +2732,7 @@ function showBubbleForEvent(ev){
     const viewer=ev.viewer || 1;
     const base=expandDynTemplate(ev.left||'');
     const html=String(base).replaceAll('\n','<br>');
+    const speakText = ttsPlainFromHTML(html);
 
     if(!html){
       hideSpeakerChip();
@@ -2643,6 +2754,8 @@ function showBubbleForEvent(ev){
 
     const typeMs =ev.typeMs  || 2500;
     const pauseMs=ev.pauseMs || 800;
+
+    if(speakText) TTS.speak(speakText);
 
     typeWriterHTML(bubbleTextEl,html,typeMs,()=>{
       TM.setTimeout(()=>{
@@ -2694,6 +2807,7 @@ function showDynBubble(ev){
     const viewer=ev.viewer || 1;
     const base = ev.left || '';
     const txt  = expandDynTemplate(base);
+    const speakText = ttsPlainFromHTML(txt);
 
     showViewerAvatar(viewer);
     showSpeakerChip(viewer);
@@ -2707,6 +2821,8 @@ function showDynBubble(ev){
 
     const typeMs =ev.typeMs  || 2500;
     const pauseMs=ev.pauseMs || 800;
+
+    if(speakText) TTS.speak(speakText);
 
     typeWriterHTML(bubbleTextEl,txt,typeMs,()=>{
       TM.setTimeout(()=>{
@@ -3086,6 +3202,11 @@ function addFoyerRow(item){
     const typeMs =item.typeMs  || 4000;
     const pauseMs=item.pauseMs || 1500;
 
+    const speakL = ttsPlainFromHTML(item.left || '');
+    const speakR = ttsPlainFromHTML(item.right || '');
+    const speakAll = speakR ? (speakL ? (speakL + ' ... ' + speakR) : speakR) : speakL;
+    if(speakAll) TTS.speak(speakAll);
+
     typeWriterBoard(lText,item.left||'',typeMs,()=>{
       if((item.right||'').trim().length>0){
         typeWriterBoard(rText,item.right||'',typeMs,()=>{
@@ -3287,6 +3408,7 @@ function bootFromQuery(){
 function resetShow(){
   // καθάρισμα όλων των προγραμματισμένων callbacks (για να μη “σκάσουν” μετά από reset)
   TM.clearAll();
+  try{ TTS.stop(); }catch(_e){}
   countdownState.active = false;
 
   // reset any exit/strobe leftovers
@@ -3692,6 +3814,9 @@ function setLanguage(lang){
 
   resetShow();
 
+  syncTTSLang();
+  syncTTSButton();
+
     loadDialogs();
 }
 
@@ -3700,12 +3825,33 @@ function setLanguage(lang){
 window.addEventListener('load',async ()=>{
   btnLangGR=document.getElementById('btnLangGR');
   btnLangEN=document.getElementById('btnLangEN');
+  btnTTS   =document.getElementById('btnTTS');
 
   if(btnLangGR){
     btnLangGR.addEventListener('click',()=>setLanguage('gr'));
   }
   if(btnLangEN){
     btnLangEN.addEventListener('click',()=>setLanguage('en'));
+  }
+
+  // TTS toggle (ξεκλειδώνει με user interaction)
+  if(btnTTS){
+    if(!TTS.isSupported()){
+      btnTTS.style.display='none';
+    }else{
+      btnTTS.addEventListener('click',()=>{
+        setTTSEnabled(!TTS.state.enabled, true);
+      });
+
+      // αρχικοποίηση από localStorage
+      let initial=false;
+      try{ initial = (localStorage.getItem(TTS_ENABLED_KEY) === '1'); }catch(_e){}
+      syncTTSLang();
+      setTTSEnabled(initial, false);
+    }
+  }else{
+    // αν δεν υπάρχει κουμπί, τουλάχιστον δένουμε σωστά τη γλώσσα
+    syncTTSLang();
   }
 
   updateRuler();
