@@ -392,6 +392,80 @@ function num(v,fallback=0){
 }
 
 
+
+/* About modal */
+.about-modal{
+  position:fixed;
+  inset:0;
+  z-index:9000;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:18px;
+  background:rgba(0,0,0,0.55);
+}
+.about-modal.hidden{ display:none; }
+
+.about-card{
+  width:min(920px, 100%);
+  max-height:min(90vh, 980px);
+  background:rgba(0,0,0,0.84);
+  border:1px solid rgba(255,255,255,.18);
+  border-radius:16px;
+  box-shadow:0 18px 60px rgba(0,0,0,.45);
+  overflow:hidden;
+  color:#fff;
+  display:flex;
+  flex-direction:column;
+}
+
+.about-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:10px 12px;
+  border-bottom:1px solid rgba(255,255,255,.14);
+}
+.about-title{
+  font-weight:900;
+  letter-spacing:.02em;
+  font:14px system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+.about-x{
+  border:none;
+  background:rgba(255,255,255,.10);
+  color:#fff;
+  border-radius:10px;
+  padding:6px 10px;
+  cursor:pointer;
+  font-weight:900;
+}
+.about-x:hover{ background:rgba(255,255,255,.16); }
+
+.about-body{
+  padding:12px 14px 14px;
+  overflow:auto;
+  font:14.5px system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  line-height:1.48;
+}
+.about-body h3{
+  margin:10px 0 6px;
+  font-size:12px;
+  text-transform:uppercase;
+  letter-spacing:.10em;
+  opacity:.85;
+}
+.about-body p{
+  margin:0 0 10px;
+  color:rgba(255,255,255,.92);
+}
+.about-body .about-sep{
+  height:1px;
+  background:rgba(255,255,255,.14);
+  margin:10px 0;
+}
+
+
 </style>
 
 </head>
@@ -406,6 +480,7 @@ function num(v,fallback=0){
     <button id="btnLangEN" class="lang-btn">EN</button>
     <button id="btnTTS" class="lang-btn" aria-pressed="false" title="Φωνή: OFF">🔇</button>
     <button id="btnTTSVoices" class="lang-btn" title="Φωνές" style="min-width:42px">🎤</button>
+    <button id="btnAbout" class="lang-btn" title="Σχετικά" style="min-width:42px">ℹ️</button>
   </div>
 
   <!-- App meta badge (version / creator / year) -->
@@ -445,6 +520,18 @@ function num(v,fallback=0){
     <div class="tts-row">
       <button id="btnTTSTest" class="tts-test" type="button">Test</button>
     </div>
+
+  <!-- About Modal -->
+  <div id="aboutModal" class="about-modal hidden" role="dialog" aria-label="About">
+    <div class="about-card" role="document">
+      <div class="about-head">
+        <div class="about-title" id="aboutTitle">Σχετικά</div>
+        <button id="btnAboutClose" class="about-x" type="button" title="Κλείσιμο">✕</button>
+      </div>
+      <div id="aboutBody" class="about-body"></div>
+    </div>
+  </div>
+
   </div>
 
   <div class="curtain-top"></div>
@@ -661,11 +748,60 @@ function updateMetaBadge(){
   const el = document.getElementById('appMetaBadge');
   if(!el) return;
   const isEN = (currentLang === 'en');
-  // English label: SHM (Simple Harmonic Motion)
-  const name = isEN ? 'SHM' : 'ΑΑΤ';
+  const name = isEN ? 'AAT' : 'ΑΑΤ';
   el.textContent = `${name} — ${APP_META.version} • © ${APP_META.author} ${APP_META.year}`;
 }
 
+
+const ABOUT_GR = {
+  title: 'Σχετικά',
+  html: `
+    <h3>Ελληνικά</h3>
+    <p>Η εφαρμογή αφορά την Απλή Αρμονική Ταλάντωση (ΑΑΤ) και εξελίσσεται θεατρικά σε πράξεις και σκηνές, ώστε ο χρήστης να παρακολουθεί την αλληλεπίδραση σκηνής και θεατών με την εξέλιξη του φυσικού φαινομένου, και όχι απλώς να διαβάζει μαθηματικούς τύπους.</p>
+    <p>Η εφαρμογή επιτρέπει επίσης την έκδοση «βιβλίου παράστασης», το οποίο περιλαμβάνει ολόκληρη τη ροή της εμπειρίας μαζί με σχόλια και ερμηνευτικές παρατηρήσεις του δημιουργού. Το βιβλίο μπορεί να μελετηθεί αργότερα, βασισμένο σε πραγματικά στοιχεία που παρατηρήθηκαν κατά τη διάρκεια της παράστασης.</p>
+  `
+};
+
+const ABOUT_EN = {
+  title: 'About',
+  html: `
+    <h3>English</h3>
+    <p>The application focuses on Simple Harmonic Motion (SHM) and is structured theatrically into acts and scenes, so the learner follows the interaction between stage and audience as the physical phenomenon unfolds—rather than merely reading formulas.</p>
+    <p>It also allows the generation of a “performance book”, containing the full narrative flow along with author commentary and interpretative notes. The book can be studied later, based on actual data and situations observed during the performance.</p>
+  `
+};
+
+let btnAbout = null;
+let aboutModal = null;
+let btnAboutClose = null;
+let aboutBody = null;
+
+function syncAboutUI(){
+  if(!aboutModal || !aboutBody) return;
+  const isEN = (currentLang === 'en');
+  const t = isEN ? ABOUT_EN.title : ABOUT_GR.title;
+  const elTitle = document.getElementById('aboutTitle');
+  if(elTitle) elTitle.textContent = t;
+
+  // Βάλε πρώτα την “τρέχουσα” γλώσσα, μετά την άλλη (για να είναι usable)
+  const first = isEN ? ABOUT_EN.html : ABOUT_GR.html;
+  const second = isEN ? ABOUT_GR.html : ABOUT_EN.html;
+
+  aboutBody.innerHTML = first + '<div class="about-sep"></div>' + second;
+}
+
+function toggleAbout(forceOpen=null){
+  if(!aboutModal) return;
+  const shouldOpen = (forceOpen===null) ? aboutModal.classList.contains('hidden') : !!forceOpen;
+
+  // μην μπλέκονται modal/panels
+  if(shouldOpen){
+    try{ toggleTTSPanel(false); }catch(_e){}
+    syncAboutUI();
+  }
+
+  aboutModal.classList.toggle('hidden', !shouldOpen);
+}
 
 let currentLang = (()=>{
   try{
@@ -1668,6 +1804,8 @@ function applyUITextFromUI(){
   }
 
 
+  if(btnAbout){ btnAbout.title = (currentLang==='en') ? 'About' : 'Σχετικά'; }
+
   if(btnLangGR && btnLangEN){
     btnLangGR.classList.toggle('active', currentLang === 'gr');
     btnLangEN.classList.toggle('active', currentLang === 'en');
@@ -1701,6 +1839,8 @@ function applySignPatch(patch){
   if(signLineD && patch.signLineD != null) signLineD.textContent = expandDynTemplate(patch.signLineD);
 
   updateMetaBadge();
+  // update About text if open
+  if(aboutModal && !aboutModal.classList.contains('hidden')) syncAboutUI();
 }
 
 function applySignboardForPhase(p=phase){
@@ -4206,6 +4346,8 @@ function setLanguage(lang){
   if(lang===currentLang) return;
   currentLang=lang;
   updateMetaBadge();
+  // update About text if open
+  if(aboutModal && !aboutModal.classList.contains('hidden')) syncAboutUI();
 
   if(btnLangGR && btnLangEN){
     btnLangGR.classList.toggle('active',currentLang==='gr');
@@ -4228,6 +4370,10 @@ window.addEventListener('load',async ()=>{
   btnLangEN=document.getElementById('btnLangEN');
   btnTTS   =document.getElementById('btnTTS');
   btnTTSVoices=document.getElementById('btnTTSVoices');
+  btnAbout=document.getElementById('btnAbout');
+  aboutModal=document.getElementById('aboutModal');
+  btnAboutClose=document.getElementById('btnAboutClose');
+  aboutBody=document.getElementById('aboutBody');
   ttsPanel=document.getElementById('ttsPanel');
   btnTTSClose=document.getElementById('btnTTSClose');
   btnTTSTest=document.getElementById('btnTTSTest');
@@ -4295,6 +4441,16 @@ window.addEventListener('load',async ()=>{
     btnTTSTest.addEventListener('click',()=>ttsTestVoices());
   }
 
+  // About modal
+  if(btnAbout){
+    btnAbout.addEventListener('click',()=>toggleAbout(true));
+    // tooltip/title sync
+    btnAbout.title = (currentLang==='en') ? 'About' : 'Σχετικά';
+  }
+  if(btnAboutClose){
+    btnAboutClose.addEventListener('click',()=>toggleAbout(false));
+  }
+
   // auto-save on change
   const ttsInputs = [selTTSMale1,selTTSMale2,selTTSMale3,selTTSFemale1,selTTSFemale2,chkTTSAuto,chkTTSCancel].filter(Boolean);
   for(const el of ttsInputs){
@@ -4309,11 +4465,27 @@ window.addEventListener('load',async ()=>{
 
   // close on ESC / outside click
   document.addEventListener('keydown',(e)=>{
-    if(e.key==='Escape') toggleTTSPanel(false);
+    if(e.key==='Escape'){
+      toggleTTSPanel(false);
+      toggleAbout(false);
+    }
   });
   document.addEventListener('pointerdown',(e)=>{
-    if(!ttsPanel || ttsPanel.classList.contains('hidden')) return;
     const t = e.target;
+
+    // About: κλείσε με click έξω
+    if(aboutModal && !aboutModal.classList.contains('hidden')){
+      const card = aboutModal.querySelector('.about-card');
+      if(card && !card.contains(t) && !(btnAbout && btnAbout.contains(t))){
+        toggleAbout(false);
+      }else{
+        // αν κάνεις click μέσα στο About, μην πειράξεις άλλα panels
+        return;
+      }
+    }
+
+    // TTS panel: κλείσε με click έξω
+    if(!ttsPanel || ttsPanel.classList.contains('hidden')) return;
     if(ttsPanel.contains(t)) return;
     if(btnTTSVoices && btnTTSVoices.contains(t)) return;
     toggleTTSPanel(false);
