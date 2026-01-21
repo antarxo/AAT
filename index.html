@@ -92,7 +92,10 @@ function num(v,fallback=0){
     body.intro-open #btnNext,
     body.intro-open #navBreak,
     body.intro-open #btnBook,
-    body.intro-open #foyerBubble{
+    body.intro-open #foyerBubble,
+        body.intro-open #appMetaBadge,
+    body.intro-open #btnAbout,
+    body.intro-open #aboutModal{
       visibility: hidden !important;
     }
 
@@ -374,24 +377,25 @@ function num(v,fallback=0){
 }
 
 
-/* App meta badge (version/creator/year) */
+/* App meta badge (footer) */
 .app-meta-badge{
   position:absolute;
-  right:10px;
+  left:50%;
   bottom:10px;
+  transform:translateX(-50%);
   z-index:2500;
-  padding:4px 8px;
-  border-radius:8px;
+  padding:6px 10px;
+  border-radius:10px;
   background:rgba(0,0,0,0.55);
   color:#fff;
-  font:11px system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  font:12px system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
   letter-spacing:.02em;
-  opacity:.85;
+  line-height:1.25;
+  text-align:center;
+  opacity:.88;
   pointer-events:none;
   user-select:none;
 }
-
-
 
 /* About modal */
 .about-modal{
@@ -480,7 +484,7 @@ function num(v,fallback=0){
     <button id="btnLangEN" class="lang-btn">EN</button>
     <button id="btnTTS" class="lang-btn" aria-pressed="false" title="Φωνή: OFF">🔇</button>
     <button id="btnTTSVoices" class="lang-btn" title="Φωνές" style="min-width:42px">🎤</button>
-    <button id="btnAbout" class="lang-btn" title="Σχετικά" style="min-width:42px">ℹ️</button>
+    <button id="btnAbout" class="lang-btn" title="Σχετικά / About" style="min-width:42px">ℹ️</button>
   </div>
 
   <!-- App meta badge (version / creator / year) -->
@@ -521,7 +525,7 @@ function num(v,fallback=0){
       <button id="btnTTSTest" class="tts-test" type="button">Test</button>
     </div>
 
-  <!-- About Modal -->
+  </div>
   <div id="aboutModal" class="about-modal hidden" role="dialog" aria-label="About">
     <div class="about-card" role="document">
       <div class="about-head">
@@ -532,7 +536,6 @@ function num(v,fallback=0){
     </div>
   </div>
 
-  </div>
 
   <div class="curtain-top"></div>
   <div class="curtain-upper"></div>
@@ -739,19 +742,24 @@ let UI = {};
 let UI_TITLES = null;
 
 let APP_META = {
-  version: 'v2025',
+  version: 'Ver.1',
   year: '2025',
   author: 'antarxo'
+};
+
+const APP_FOOTER = {
+  gr: `ΑΑΤ – Απλή Αρμονική Ταλάντωση<br>Θεατρική, διαδραστική εκπαιδευτική εφαρμογή Φυσικής<br>© antarxo 2025 Ver.1`,
+  en: `SHM – Simple Harmonic Motion<br>Theatrical, interactive educational Physics application<br>© antarxo 2025 Ver.1`
 };
 
 function updateMetaBadge(){
   const el = document.getElementById('appMetaBadge');
   if(!el) return;
   const isEN = (currentLang === 'en');
-  const name = isEN ? 'AAT' : 'ΑΑΤ';
-  el.textContent = `${name} — ${APP_META.version} • © ${APP_META.author} ${APP_META.year}`;
+  el.innerHTML = isEN ? APP_FOOTER.en : APP_FOOTER.gr;
 }
 
+/* ---------- ABOUT ---------- */
 
 const ABOUT_GR = {
   title: 'Σχετικά',
@@ -4094,6 +4102,8 @@ function initShowBase(){
   measureBox.style.display='block';
   markerEl.style.opacity='1';
   markerGhostEl.style.opacity='0';
+  updateMetaBadge();
+
   updateRuler();
 }
 
