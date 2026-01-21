@@ -497,7 +497,48 @@
     letter-spacing:.02em;
   }
 
-  </style>
+  
+  /* About (collapsed) */
+  .about-section{
+    margin-top:12px;
+  }
+  details.about-details{
+    background:#ffffff;
+    border-radius:10px;
+    border:1px solid #e5e7eb;
+    padding:10px 12px;
+    box-shadow:0 10px 30px rgba(15,23,42,0.06);
+  }
+  details.about-details > summary{
+    cursor:pointer;
+    font-weight:700;
+    color:#111827;
+    list-style:none;
+  }
+  details.about-details > summary::-webkit-details-marker{ display:none; }
+  .about-body-book{
+    margin-top:10px;
+    color:#111827;
+    line-height:1.55;
+    font-size:.95rem;
+  }
+  .about-body-book h3{
+    margin:10px 0 6px;
+    font-size:.78rem;
+    text-transform:uppercase;
+    letter-spacing:.08em;
+    color:#6b7280;
+  }
+  .about-body-book p{
+    margin:6px 0;
+  }
+  .about-body-book .about-sep{
+    height:1px;
+    background:#e5e7eb;
+    margin:10px 0;
+  }
+
+</style>
 </head>
 <body>
 <div class="page">
@@ -529,6 +570,16 @@
       <button id="btnPdf" class="btn" type="button">Εξαγωγή PDF</button>
     </div>
   </header>
+
+  <!-- ABOUT -->
+  <section class="about-section">
+    <div class="section-label" id="aboutLabel">Σχετικά</div>
+    <details class="about-details" id="aboutDetails">
+      <summary id="aboutSummary">Σχετικά με την εφαρμογή</summary>
+      <div id="aboutBodyBook" class="about-body-book"></div>
+    </details>
+  </section>
+
 
   <!-- ΜΕΡΟΣ Β: Πράξη 1 -->
   <section>
@@ -701,14 +752,49 @@
   const lang = (urlParams.get('lang') === 'en') ? 'en' : 'gr';
   document.documentElement.lang = (lang === 'en') ? 'en' : 'el';
 
+  const ABOUT_GR_BOOK = {
+    label: 'Σχετικά',
+    summary: 'Σχετικά με την εφαρμογή',
+    html: `
+      <h3>Ελληνικά</h3>
+      <p>Η εφαρμογή αφορά την Απλή Αρμονική Ταλάντωση (ΑΑΤ) και εξελίσσεται θεατρικά σε πράξεις και σκηνές, ώστε ο χρήστης να παρακολουθεί την αλληλεπίδραση σκηνής και θεατών με την εξέλιξη του φυσικού φαινομένου, και όχι απλώς να διαβάζει μαθηματικούς τύπους.</p>
+      <p>Η εφαρμογή επιτρέπει επίσης την έκδοση «βιβλίου παράστασης», το οποίο περιλαμβάνει ολόκληρη τη ροή της εμπειρίας μαζί με σχόλια και ερμηνευτικές παρατηρήσεις του δημιουργού. Το βιβλίο μπορεί να μελετηθεί αργότερα, βασισμένο σε πραγματικά στοιχεία που παρατηρήθηκαν κατά τη διάρκεια της παράστασης.</p>
+    `
+  };
+
+  const ABOUT_EN_BOOK = {
+    label: 'About',
+    summary: 'About this application',
+    html: `
+      <h3>English</h3>
+      <p>The application focuses on Simple Harmonic Motion (SHM) and is structured theatrically into acts and scenes, so the learner follows the interaction between stage and audience as the physical phenomenon unfolds—rather than merely reading formulas.</p>
+      <p>It also allows the generation of a “performance book”, containing the full narrative flow along with author commentary and interpretative notes. The book can be studied later, based on actual data and situations observed during the performance.</p>
+    `
+  };
+
+  function syncAboutBook(){
+    const labelEl = document.getElementById('aboutLabel');
+    const sumEl = document.getElementById('aboutSummary');
+    const bodyEl = document.getElementById('aboutBodyBook');
+    if(!labelEl || !sumEl || !bodyEl) return;
+
+    const isEN = (lang === 'en');
+    const first = isEN ? ABOUT_EN_BOOK.html : ABOUT_GR_BOOK.html;
+    const second = isEN ? ABOUT_GR_BOOK.html : ABOUT_EN_BOOK.html;
+
+    labelEl.textContent = isEN ? ABOUT_EN_BOOK.label : ABOUT_GR_BOOK.label;
+    sumEl.textContent = isEN ? ABOUT_EN_BOOK.summary : ABOUT_GR_BOOK.summary;
+    bodyEl.innerHTML = first + '<div class="about-sep"></div>' + second;
+  }
+
+
   // --- Static UI localization for Book page (GR/EN) ---
     const APP_META = { version: 'v2025', year: '2025', author: 'antarxo' };
 
   function applyBookMeta(){
     const el = document.getElementById('bookMeta');
     if(!el) return;
-    // English label: SHM (Simple Harmonic Motion)
-    const name = (lang === 'en') ? 'SHM' : 'ΑΑΤ';
+    const name = (lang === 'en') ? 'AAT' : 'ΑΑΤ';
     el.textContent = `${name} — ${APP_META.version} • © ${APP_META.author} ${APP_META.year}`;
   }
 
@@ -2417,6 +2503,7 @@ const BOOK_UI = {
   }
 
   setupPdfExport();
+  syncAboutBook();
 
   loadDialogsAndBuild();
 </script>
