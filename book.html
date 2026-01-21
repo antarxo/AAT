@@ -720,6 +720,7 @@
     </div>
   </section>
 
+  <div class="footer-note" id="bookFooter"></div>
 </div>
 
 <script>
@@ -789,13 +790,19 @@
 
 
   // --- Static UI localization for Book page (GR/EN) ---
-    const APP_META = { version: 'v2025', year: '2025', author: 'antarxo' };
+    const APP_META = { version: 'Ver.1', year: '2025', author: 'antarxo' };
 
   function applyBookMeta(){
-    const el = document.getElementById('bookMeta');
-    if(!el) return;
-    const name = (lang === 'en') ? 'AAT' : 'ΑΑΤ';
-    el.textContent = `${name} — ${APP_META.version} • © ${APP_META.author} ${APP_META.year}`;
+    const metaEl = document.getElementById('bookMeta');
+    if(metaEl) metaEl.textContent = '';
+
+    const footerEl = document.getElementById('bookFooter');
+    if(!footerEl) return;
+
+    const gr = `ΑΑΤ – Απλή Αρμονική Ταλάντωση<br>Θεατρική, διαδραστική εκπαιδευτική εφαρμογή Φυσικής<br>© antarxo 2025 Ver.1`;
+    const en = `SHM – Simple Harmonic Motion<br>Theatrical, interactive educational Physics application<br>© antarxo 2025 Ver.1`;
+
+    footerEl.innerHTML = (lang === 'en') ? en : gr;
   }
 
 const BOOK_UI = {
