@@ -379,25 +379,30 @@ function num(v,fallback=0){
 
 /* App meta badge (footer) */
 .app-meta-badge{
-  position:fixed;
-  right:12px;
-  bottom:10px;
-  left:auto;
-  transform:none;
+  position:absolute;
+  right:1.2%;
+  bottom:1.2%;
   z-index:2500;
-  padding:6px 10px;
-  border-radius:10px;
+  padding:8px 10px;
+  border-radius:12px;
   background:rgba(0,0,0,0.55);
   color:#fff;
   font:12px system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
   letter-spacing:.02em;
   line-height:1.25;
-  text-align:left;
+  text-align:center;
   opacity:.88;
   pointer-events:none;
   user-select:none;
-  max-width:min(520px, calc(100vw - 24px));
+
+  /* Να χωράει μέσα στη δεξιά ακίνητη κουρτίνα (18% του stage) */
+  width:16%;
+  max-width:16%;
+  box-sizing:border-box;
 }
+.app-meta-badge .meta-title{ font-weight:900; }
+.app-meta-badge .meta-desc{ white-space:normal; overflow-wrap:anywhere; }
+.app-meta-badge .meta-copy{ opacity:.92; }
 
 /* About modal */
 .about-modal{
@@ -750,10 +755,17 @@ let APP_META = {
 };
 
 const APP_FOOTER = {
-  gr: `ΑΑΤ – Απλή Αρμονική Ταλάντωση<br>Θεατρική, διαδραστική εκπαιδευτική εφαρμογή Φυσικής<br>© antarxo 2025 Ver.1`,
-  en: `SHM – Simple Harmonic Motion<br>Theatrical, interactive educational Physics application<br>© antarxo 2025 Ver.1`
+  gr: `
+    <div class="meta-title">ΑΑΤ – Απλή Αρμονική Ταλάντωση</div>
+    <div class="meta-desc">Θεατρική, διαδραστική εκπαιδευτική εφαρμογή Φυσικής</div>
+    <div class="meta-copy">© antarxo 2025 Ver.1</div>
+  `,
+  en: `
+    <div class="meta-title">SHM – Simple Harmonic Motion</div>
+    <div class="meta-desc">Theatrical, interactive educational Physics application</div>
+    <div class="meta-copy">© antarxo 2025 Ver.1</div>
+  `
 };
-
 function updateMetaBadge(){
   const el = document.getElementById('appMetaBadge');
   if(!el) return;
