@@ -790,7 +790,11 @@
 
 
   // --- Static UI localization for Book page (GR/EN) ---
-    const APP_META = { version: 'Ver.1', year: '2025', author: 'antarxo' };
+    const APP_META = { version: 'Ver. 1.1', year: '2026', author: 'antarxo' };
+
+  function bookMetaCopy(){
+    return `© ${APP_META.author} ${APP_META.year} ${APP_META.version}`;
+  }
 
   function applyBookMeta(){
     const metaEl = document.getElementById('bookMeta');
@@ -799,8 +803,8 @@
     const footerEl = document.getElementById('bookFooter');
     if(!footerEl) return;
 
-    const gr = `ΑΑΤ – Απλή Αρμονική Ταλάντωση<br>Θεατρική, διαδραστική εκπαιδευτική εφαρμογή Φυσικής<br>© antarxo 2025 Ver.1`;
-    const en = `SHM – Simple Harmonic Motion<br>Theatrical, interactive educational Physics application<br>© antarxo 2025 Ver.1`;
+    const gr = `ΑΑΤ – Απλή Αρμονική Ταλάντωση<br>Θεατρική, διαδραστική εκπαιδευτική εφαρμογή Φυσικής<br>${bookMetaCopy()}`;
+    const en = `SHM – Simple Harmonic Motion<br>Theatrical, interactive educational Physics application<br>${bookMetaCopy()}`;
 
     footerEl.innerHTML = (lang === 'en') ? en : gr;
   }

@@ -1,0 +1,826 @@
+<!doctype html>
+<html lang="el">
+<head>
+  <meta charset="utf-8">
+  <title>Dialogs JSON Editor · ΑΑΤ Θέατρο</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>
+    :root { color-scheme: dark; }
+    *{box-sizing:border-box;}
+    body{
+      margin:0;
+      font:14px/1.5 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      background:#05070a;
+      color:#f5f5f5;
+    }
+    header{
+      padding:10px 16px;
+      border-bottom:1px solid #222;
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      align-items:center;
+      justify-content:space-between;
+      background:radial-gradient(circle at top left,#121827,#05070a 55%);
+    }
+    header h1{
+      margin:0;
+      font-size:18px;
+      font-weight:600;
+    }
+    header small{
+      opacity:.7;
+      font-size:11px;
+      display:block;
+    }
+    .controls-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      align-items:center;
+    }
+    input[type="file"]{
+      font-size:12px;
+      max-width:220px;
+    }
+    select,button{
+      font:12px system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    }
+    button{
+      border-radius:6px;
+      border:1px solid #444;
+      background:#151924;
+      color:#f7f7f7;
+      padding:6px 10px;
+      cursor:pointer;
+    }
+    button.primary{
+      border-color:#4ade80;
+      background:#065f46;
+    }
+    button.danger{
+      border-color:#f97373;
+      background:#7f1d1d;
+    }
+    button:disabled{
+      opacity:.5;
+      cursor:default;
+    }
+    main{
+      display:grid;
+      grid-template-columns:minmax(180px,260px) minmax(260px,1.1fr) minmax(260px,1.1fr);
+      gap:10px;
+      padding:10px;
+      height:calc(100vh - 64px);
+    }
+    @media (max-width:960px){
+      main{
+        grid-template-columns:1fr;
+        grid-template-rows:auto auto auto;
+        height:auto;
+      }
+    }
+    .panel{
+      border-radius:10px;
+      border:1px solid #222;
+      background:radial-gradient(circle at top,#111827,#020617 60%);
+      padding:10px;
+      min-height:0;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+    .panel h2{
+      margin:0;
+      font-size:14px;
+      font-weight:600;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      border-bottom:1px solid #1f2937;
+      padding-bottom:4px;
+    }
+    .panel h2 span.badge{
+      font-size:11px;
+      padding:2px 6px;
+      border-radius:999px;
+      background:#0f172a;
+      border:1px solid #1f2937;
+      opacity:.8;
+    }
+
+    /* Λίστα διαλόγων */
+    .dialogs-list{
+      flex:1;
+      overflow:auto;
+      margin:0;
+      padding:0;
+      list-style:none;
+    }
+    .dialogs-list li{
+      margin:0;
+      padding:0;
+    }
+    .dlg-item{
+      width:100%;
+      text-align:left;
+      padding:6px 8px;
+      border-radius:6px;
+      border:1px solid transparent;
+      background:transparent;
+      color:#e5e7eb;
+      font-size:12px;
+      display:flex;
+      flex-direction:column;
+      gap:2px;
+      cursor:pointer;
+    }
+    .dlg-item strong{
+      font-size:11px;
+      color:#93c5fd;
+    }
+    .dlg-item small{
+      font-size:11px;
+      opacity:.7;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .dlg-item:hover{
+      background:rgba(148,163,184,0.08);
+      border-color:#334155;
+    }
+    .dlg-item.active{
+      background:rgba(56,189,248,0.15);
+      border-color:#38bdf8;
+    }
+
+    /* Φόρμα */
+    .form-grid{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:8px 12px;
+      font-size:12px;
+    }
+    @media (max-width:640px){
+      .form-grid{
+        grid-template-columns:1fr;
+      }
+    }
+    label{
+      display:flex;
+      flex-direction:column;
+      gap:2px;
+    }
+    label span{
+      font-size:11px;
+      color:#e5e7eb;
+    }
+    input[type="number"],
+    input[type="text"],
+    textarea{
+      width:100%;
+      border-radius:6px;
+      border:1px solid #334155;
+      background:#020617;
+      color:#f9fafb;
+      padding:4px 6px;
+      font-size:12px;
+      resize:vertical;
+      min-height:0;
+    }
+    textarea{
+      min-height:90px;
+      font-family:inherit;
+    }
+    .checkbox-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px 16px;
+      align-items:center;
+      padding-top:4px;
+    }
+    .checkbox-row label{
+      flex-direction:row;
+      align-items:center;
+      gap:4px;
+      font-size:11px;
+    }
+    .checkbox-row input[type="checkbox"]{
+      width:auto;
+    }
+    .hint{
+      font-size:11px;
+      opacity:.75;
+      margin-top:4px;
+    }
+
+    /* Preview */
+    .preview-wrapper{
+      flex:1;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      overflow:hidden;
+    }
+    .preview-stage{
+      flex:1;
+      border-radius:10px;
+      border:1px solid #1f2937;
+      background:radial-gradient(circle at top,#0b1120,#020617 70%);
+      padding:10px;
+      display:grid;
+      grid-template-columns:minmax(0,1.2fr) minmax(0,0.9fr);
+      gap:10px;
+      min-height:0;
+    }
+    @media (max-width:800px){
+      .preview-stage{
+        grid-template-columns:1fr;
+        grid-auto-rows:auto;
+      }
+    }
+    .preview-left,
+    .preview-right{
+      position:relative;
+      border-radius:10px;
+      background:#020617;
+      padding:8px;
+      overflow:auto;
+      box-shadow:0 0 0 1px #1f2937 inset;
+    }
+    .viewer-chip{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      background:rgba(59,130,246,.16);
+      border-radius:999px;
+      padding:2px 8px;
+      font-size:11px;
+      margin-bottom:6px;
+      border:1px solid rgba(59,130,246,.4);
+    }
+    .viewer-chip .dot{
+      width:8px;
+      height:8px;
+      border-radius:999px;
+      background:linear-gradient(135deg,#22c55e,#4ade80);
+    }
+    .bubble{
+      position:relative;
+      border-radius:14px;
+      padding:8px 10px;
+      font-size:12px;
+      line-height:1.5;
+      background:linear-gradient(135deg,#0f172a,#020617);
+      border:1px solid rgba(148,163,184,0.7);
+      box-shadow:0 10px 25px rgba(15,23,42,0.9);
+    }
+    .bubble::after{
+      content:"";
+      position:absolute;
+      left:26px;
+      bottom:-10px;
+      width:14px;
+      height:14px;
+      background:inherit;
+      border-left:1px solid rgba(148,163,184,0.7);
+      border-bottom:1px solid rgba(148,163,184,0.7);
+      transform:rotate(45deg);
+      clip-path:polygon(0 0,100% 0,0 100%);
+    }
+    .bubble strong{
+      color:#e5e7eb;
+    }
+    .preview-right-title{
+      font-size:11px;
+      text-transform:uppercase;
+      letter-spacing:.04em;
+      color:#9ca3af;
+      margin-bottom:4px;
+    }
+    .right-box{
+      font-family:"JetBrains Mono","Fira Code",Consolas,monospace;
+      font-size:11px;
+      white-space:pre-wrap;
+      background:#020617;
+      border-radius:8px;
+      border:1px solid #1f2937;
+      padding:6px 8px;
+    }
+    .flags-row{
+      margin-top:6px;
+      font-size:11px;
+      color:#a5b4fc;
+    }
+    .flags-row code{
+      font-family:"JetBrains Mono","Fira Code",Consolas,monospace;
+      font-size:11px;
+      background:rgba(15,23,42,.9);
+      padding:1px 4px;
+      border-radius:4px;
+      margin-right:4px;
+    }
+    .no-selection{
+      font-size:12px;
+      opacity:.7;
+      padding:10px;
+    }
+    .form-actions{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-top:6px;
+      gap:6px;
+      flex-wrap:wrap;
+    }
+  </style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>Dialogs Editor <small>ΑΑΤ Θεατρική Σκηνή · act1 / act2 / foyer</small></h1>
+  </div>
+  <div class="controls-row">
+    <input type="file" id="fileInput" accept="application/json">
+    <select id="actSelect">
+      <option value="act1">Πράξη 1</option>
+      <option value="act2">Πράξη 2</option>
+      <option value="foyer">Φουαγιέ</option>
+    </select>
+    <button id="addBtn" disabled>Νέος διάλογος</button>
+    <button id="exportBtn" class="primary" disabled>Export JSON</button>
+  </div>
+</header>
+
+<main>
+  <!-- Λίστα διαλόγων -->
+  <section class="panel">
+    <h2>Διάλογοι <span class="badge" id="countBadge">0</span></h2>
+    <ul class="dialogs-list" id="dialogsList"></ul>
+    <div class="hint">
+      1️⃣ Επίλεξε αρχείο <code>dialogs-*.json</code><br>
+      2️⃣ Διάλεξε Πράξη / Φουαγιέ<br>
+      3️⃣ Κάνε κλικ σε διάλογο για επεξεργασία
+    </div>
+  </section>
+
+  <!-- Φόρμα επεξεργασίας -->
+  <section class="panel">
+    <h2>Επεξεργασία διαλόγου</h2>
+    <div id="formContainer" class="no-selection">Κανένας διάλογος επιλεγμένος.</div>
+  </section>
+
+  <!-- Preview σαν “σκηνή” -->
+  <section class="panel">
+    <h2>Preview (μορφοποιημένο)</h2>
+    <div class="preview-wrapper" id="previewWrapper">
+      <div class="no-selection">Φόρτωσε JSON και διάλεξε διάλογο για προεπισκόπηση.</div>
+    </div>
+  </section>
+</main>
+
+<script>
+let data = null;
+let currentAct = 'act1';
+let currentIndex = -1;
+let originalFileName = null;
+
+const fileInput   = document.getElementById('fileInput');
+const actSelect   = document.getElementById('actSelect');
+const addBtn      = document.getElementById('addBtn');
+const exportBtn   = document.getElementById('exportBtn');
+const dialogsList = document.getElementById('dialogsList');
+const countBadge  = document.getElementById('countBadge');
+const formContainer   = document.getElementById('formContainer');
+const previewWrapper  = document.getElementById('previewWrapper');
+
+fileInput.addEventListener('change', handleFileChange);
+actSelect.addEventListener('change', () => {
+  currentAct = actSelect.value;
+  currentIndex = -1;
+  renderList();
+  renderForm();
+  renderPreview();
+});
+addBtn.addEventListener('click', addNewDialog);
+exportBtn.addEventListener('click', exportJSON);
+
+function handleFileChange(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  originalFileName = file.name;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try{
+      const parsed = JSON.parse(ev.target.result);
+      data = parsed || {};
+
+      if(!data.act1 && !data.act2 && !data.foyer){
+        alert('Το JSON δεν φαίνεται να έχει act1 / act2 / foyer ως arrays.\nΘα μπορείς όμως να τα δημιουργήσεις από το εργαλείο.');
+      }
+
+      ensureActsExist();
+
+      currentAct = 'act1';
+      actSelect.value = 'act1';
+      currentIndex = (data.act1 && data.act1.length>0) ? 0 : -1;
+
+      addBtn.disabled = false;
+      exportBtn.disabled = false;
+
+      renderList();
+      renderForm();
+      renderPreview();
+    }catch(err){
+      console.error(err);
+      alert('Σφάλμα κατά την ανάγνωση του JSON.');
+    }
+  };
+  reader.readAsText(file,'utf-8');
+}
+
+function ensureActsExist(){
+  if(!data) data = {};
+  if(!Array.isArray(data.act1)) data.act1 = [];
+  if(!Array.isArray(data.act2)) data.act2 = [];
+  if(!Array.isArray(data.foyer)) data.foyer = [];
+}
+
+function ensureActArray(){
+  if(!data) return [];
+  ensureActsExist();
+  if(!Array.isArray(data[currentAct])) data[currentAct] = [];
+  return data[currentAct];
+}
+
+function escapeHtml(str){
+  return String(str || '').replace(/[&<>"']/g, ch => {
+    switch(ch){
+      case '&': return '&amp;';
+      case '<': return '&lt;';
+      case '>': return '&gt;';
+      case '"': return '&quot;';
+      case "'": return '&#39;';
+      default: return ch;
+    }
+  });
+}
+
+function renderList(){
+  dialogsList.innerHTML = '';
+  if(!data){
+    countBadge.textContent = '0';
+    return;
+  }
+  const arr = ensureActArray();
+  countBadge.textContent = String(arr.length);
+
+  arr.forEach((ev,idx) => {
+    const li = document.createElement('li');
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'dlg-item' + (idx === currentIndex ? ' active' : '');
+    const viewer = ev && ev.viewer != null ? ev.viewer : 1;
+    const snippetSrc = (ev && typeof ev.left === 'string') ? ev.left : '';
+    const snippet = snippetSrc.replace(/\s+/g,' ').trim().slice(0,80);
+    btn.innerHTML =
+      '<strong>#'+(idx+1)+' · viewer '+viewer+'</strong>' +
+      '<small>'+escapeHtml(snippet)+'</small>';
+    btn.addEventListener('click', () => {
+      currentIndex = idx;
+      renderList();
+      renderForm();
+      renderPreview();
+    });
+    li.appendChild(btn);
+    dialogsList.appendChild(li);
+  });
+}
+
+function renderForm(){
+  if(!data){
+    formContainer.className = 'no-selection';
+    formContainer.textContent = 'Φόρτωσε πρώτα ένα dialogs-*.json.';
+    return;
+  }
+  const arr = ensureActArray();
+  if(arr.length === 0){
+    formContainer.className = 'no-selection';
+    formContainer.innerHTML =
+      'Δεν υπάρχουν διάλογοι για το "'+currentAct+'".<br>' +
+      'Πάτα <b>Νέος διάλογος</b> για να ξεκινήσεις.';
+    return;
+  }
+  if(currentIndex < 0 || currentIndex >= arr.length){
+    currentIndex = -1;
+    formContainer.className = 'no-selection';
+    formContainer.textContent = 'Επίλεξε έναν διάλογο από αριστερά.';
+    return;
+  }
+
+  const ev = arr[currentIndex] || {};
+  formContainer.className = '';
+  formContainer.innerHTML = `
+    <div class="form-grid">
+      <label>
+        <span>viewer (1 = πρώτος θεατής)</span>
+        <input type="number" data-field="viewer" min="1" step="1">
+      </label>
+      <label>
+        <span>xShift (μετατόπιση φούσκας στον οριζόντιο άξονα)</span>
+        <input type="number" data-field="xShift" step="1">
+      </label>
+      <label>
+        <span>yOffset (κατακόρυφη μετατόπιση φούσκας)</span>
+        <input type="number" data-field="yOffset" step="1">
+      </label>
+      <label>
+        <span>typeMs (διάρκεια "γράψιμου" κειμένου σε ms)</span>
+        <input type="number" data-field="typeMs" step="100">
+      </label>
+      <label>
+        <span>pauseMs (παύση μετά το κείμενο σε ms)</span>
+        <input type="number" data-field="pauseMs" step="100">
+      </label>
+      <label>
+        <span>graph (π.χ. <code>xt</code> για ενεργοποίηση x–t)</span>
+        <input type="text" data-field="graph">
+      </label>
+      <label>
+        <span>plot (π.χ. <code>v</code>, <code>a</code>, <code>ax</code>, <code>xsin</code>)</span>
+        <input type="text" data-field="plot">
+      </label>
+    </div>
+
+    <div class="checkbox-row">
+      <label><input type="checkbox" data-field="xtMark"> xtMark</label>
+      <label><input type="checkbox" data-field="xtMarkTail"> xtMarkTail</label>
+      <label><input type="checkbox" data-field="xtZeroMark"> xtZeroMark</label>
+      <label><input type="checkbox" data-field="param"> param</label>
+      <label><input type="checkbox" data-field="alsoParams"> alsoParams</label>
+      <label><input type="checkbox" data-field="close"> close</label>
+      <label><input type="checkbox" data-field="gStart"> gStart</label>
+      <label><input type="checkbox" data-field="gStop"> gStop</label>
+    </div>
+
+    <label style="margin-top:6px;">
+      <span>left (κείμενο φούσκας / αριστερό μέρος)</span>
+      <textarea data-field="left"></textarea>
+    </label>
+
+    <label style="margin-top:4px;">
+      <span>right (νόμοι / σχέσεις / δεξί μέρος — προαιρετικό)</span>
+      <textarea data-field="right"></textarea>
+    </label>
+
+    <div class="form-actions">
+      <div class="hint">
+        Μορφοποίηση κειμένου:<br>
+        • Enter = νέα γραμμή (αποθηκεύεται ως <code>\\n</code> στο JSON)<br>
+        • <code>...</code> για παύσεις στον λόγο<br>
+        • Επιτρέπεται απλό HTML: <code>&lt;br&gt;</code>, <code>&lt;b&gt;</code>, <code>&lt;i&gt;</code>,<br>
+        &nbsp; <code>&lt;span class="hl"&gt;...&lt;/span&gt;</code> κ.λπ. (εμφανίζονται όπως στη σκηνή)<br>
+        • Μπορείς να χρησιμοποιήσεις σύμβολα όπως φ₀, ω, ΣF απευθείας στο κείμενο
+      </div>
+      <button type="button" id="deleteBtn" class="danger">Διαγραφή διαλόγου</button>
+    </div>
+  `;
+
+  // bind fields
+  bindField('viewer','number', ev);
+  bindField('xShift','number', ev);
+  bindField('yOffset','number', ev);
+  bindField('typeMs','number', ev);
+  bindField('pauseMs','number', ev);
+  bindField('graph','text', ev);
+  bindField('plot','text', ev);
+
+  bindField('xtMark','checkbox', ev);
+  bindField('xtMarkTail','checkbox', ev);
+  bindField('xtZeroMark','checkbox', ev);
+  bindField('param','checkbox', ev);
+  bindField('alsoParams','checkbox', ev);
+  bindField('close','checkbox', ev);
+  bindField('gStart','checkbox', ev);
+  bindField('gStop','checkbox', ev);
+
+  bindField('left','textarea', ev);
+  bindField('right','textarea', ev);
+
+  const deleteBtn = document.getElementById('deleteBtn');
+  if(deleteBtn){
+    deleteBtn.addEventListener('click', deleteCurrentDialog);
+  }
+}
+
+function bindField(name, kind, ev){
+  const el = formContainer.querySelector('[data-field="'+name+'"]');
+  if(!el) return;
+  if(kind === 'number'){
+    const def = (name === 'viewer') ? 1 : 0;
+    el.value = ev[name] != null ? ev[name] : def;
+    el.addEventListener('input', () => {
+      const arr = ensureActArray();
+      const obj = arr[currentIndex] || {};
+      const v = parseFloat(el.value);
+      if(isNaN(v)){
+        delete obj[name];
+      }else{
+        obj[name] = (name === 'viewer') ? Math.max(1, Math.round(v)) : v;
+      }
+      arr[currentIndex] = obj;
+      renderList();
+      renderPreview();
+    });
+  }else if(kind === 'checkbox'){
+    el.checked = !!ev[name];
+    el.addEventListener('change', () => {
+      const arr = ensureActArray();
+      const obj = arr[currentIndex] || {};
+      obj[name] = !!el.checked;
+      arr[currentIndex] = obj;
+      renderPreview();
+    });
+  }else if(kind === 'textarea'){
+    el.value = ev[name] != null ? ev[name] : '';
+    el.addEventListener('input', () => {
+      const arr = ensureActArray();
+      const obj = arr[currentIndex] || {};
+      obj[name] = el.value;
+      arr[currentIndex] = obj;
+      renderList();
+      renderPreview();
+    });
+  }else if(kind === 'text'){
+    el.value = ev[name] != null ? ev[name] : '';
+    el.addEventListener('input', () => {
+      const arr = ensureActArray();
+      const obj = arr[currentIndex] || {};
+      const val = el.value.trim();
+      if(val){
+        obj[name] = val;
+      }else{
+        delete obj[name];
+      }
+      arr[currentIndex] = obj;
+      renderPreview();
+    });
+  }
+}
+
+function renderPreview(){
+  previewWrapper.innerHTML = '';
+  if(!data){
+    const div = document.createElement('div');
+    div.className = 'no-selection';
+    div.textContent = 'Φόρτωσε JSON για να δεις προεπισκόπηση.';
+    previewWrapper.appendChild(div);
+    return;
+  }
+  const arr = ensureActArray();
+  if(arr.length === 0 || currentIndex < 0 || currentIndex >= arr.length){
+    const div = document.createElement('div');
+    div.className = 'no-selection';
+    div.textContent = 'Δεν υπάρχει επιλεγμένος διάλογος για προεπισκόπηση.';
+    previewWrapper.appendChild(div);
+    return;
+  }
+  const ev = arr[currentIndex] || {};
+  const leftText = typeof ev.left === 'string' ? ev.left : '';
+  const rightText = typeof ev.right === 'string' ? ev.right : '';
+  const viewer = ev.viewer != null ? ev.viewer : 1;
+
+  const stage = document.createElement('div');
+  stage.className = 'preview-stage';
+
+  // LEFT
+  const leftBox = document.createElement('div');
+  leftBox.className = 'preview-left';
+
+  const chip = document.createElement('div');
+  chip.className = 'viewer-chip';
+  chip.innerHTML = '<span class="dot"></span><span>Θεατής '+viewer+' · '+currentAct+'</span>';
+  leftBox.appendChild(chip);
+
+  const bubble = document.createElement('div');
+  bubble.className = 'bubble';
+  bubble.innerHTML = (leftText || '').replace(/\n/g,'<br>');
+  leftBox.appendChild(bubble);
+
+  stage.appendChild(leftBox);
+
+  // RIGHT
+  const rightBox = document.createElement('div');
+  rightBox.className = 'preview-right';
+
+  const title = document.createElement('div');
+  title.className = 'preview-right-title';
+  title.textContent = 'Δεξί μέρος (right) / νόμοι';
+  rightBox.appendChild(title);
+
+  const lawBox = document.createElement('div');
+  lawBox.className = 'right-box';
+  lawBox.innerHTML = (rightText || '').replace(/\n/g,'<br>');
+  rightBox.appendChild(lawBox);
+
+  const flags = [];
+  if(ev.xtMark)      flags.push('xtMark');
+  if(ev.xtMarkTail)  flags.push('xtMarkTail');
+  if(ev.xtZeroMark)  flags.push('xtZeroMark');
+  if(ev.param)       flags.push('param');
+  if(ev.alsoParams)  flags.push('alsoParams');
+  if(ev.close)       flags.push('close');
+  if(ev.gStart)      flags.push('gStart');
+  if(ev.gStop)       flags.push('gStop');
+  if(ev.graph)       flags.push('graph='+ev.graph);
+  if(ev.plot)        flags.push('plot='+ev.plot);
+  if(ev.typeMs != null)  flags.push('typeMs='+ev.typeMs);
+  if(ev.pauseMs != null) flags.push('pauseMs='+ev.pauseMs);
+
+  if(flags.length){
+    const flagsRow = document.createElement('div');
+    flagsRow.className = 'flags-row';
+    flagsRow.textContent = 'Flags / ρυθμίσεις: ';
+    flags.forEach(f => {
+      const c = document.createElement('code');
+      c.textContent = f;
+      flagsRow.appendChild(c);
+    });
+    rightBox.appendChild(flagsRow);
+  }
+
+  stage.appendChild(rightBox);
+  previewWrapper.appendChild(stage);
+}
+
+function addNewDialog(){
+  if(!data) return;
+  const arr = ensureActArray();
+  const base = {
+    viewer: 1,
+    xShift: 0,
+    yOffset: 0,
+    typeMs: 2500,
+    pauseMs: 800,
+    left: '',
+    right: ''
+  };
+
+  if(arr.length === 0){
+    arr.push(base);
+    currentIndex = 0;
+  }else if(currentIndex >= 0 && currentIndex < arr.length){
+    // Νέος διάλογος ΠΑΝΩ από τον τρέχοντα
+    const insertAt = currentIndex;
+    arr.splice(insertAt, 0, base);
+    currentIndex = insertAt;
+  }else{
+    // fallback: στο τέλος
+    arr.push(base);
+    currentIndex = arr.length - 1;
+  }
+
+  renderList();
+  renderForm();
+  renderPreview();
+}
+
+function deleteCurrentDialog(){
+  if(!data) return;
+  const arr = ensureActArray();
+  if(currentIndex < 0 || currentIndex >= arr.length) return;
+  const ok = confirm('Να διαγραφεί ο επιλεγμένος διάλογος;');
+  if(!ok) return;
+  arr.splice(currentIndex, 1);
+  if(arr.length === 0){
+    currentIndex = -1;
+  }else if(currentIndex >= arr.length){
+    currentIndex = arr.length - 1;
+  }
+  renderList();
+  renderForm();
+  renderPreview();
+}
+
+function exportJSON(){
+  if(!data) return;
+  const fileName = originalFileName
+    ? originalFileName.replace(/(\.json)?$/,'-edited.json')
+    : 'dialogs-edited.json';
+
+  const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = fileName;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => {
+    URL.revokeObjectURL(url);
+    a.remove();
+  }, 0);
+}
+</script>
+</body>
+</html>
