@@ -282,101 +282,6 @@ function num(v,fallback=0){
 }
 
 
-/* ---------- TTS Voice Panel ---------- */
-.tts-panel{
-  position:absolute;
-  left: 14px;
-  top: 54px;
-  width: 360px;
-  max-width: calc(100vw - 28px);
-  background: rgba(20,22,20,.92);
-  border: 1px solid rgba(255,255,255,.18);
-  border-radius: 14px;
-  box-shadow: 0 18px 55px rgba(0,0,0,.42);
-  color: #fff;
-  z-index: 9999;
-  padding: 12px 12px 10px;
-  backdrop-filter: blur(6px);
-}
-.tts-panel.hidden{ display:none; }
-.tts-head{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:10px;
-  margin-bottom: 8px;
-}
-.tts-title{
-  font-weight: 900;
-  letter-spacing: .3px;
-}
-.tts-x{
-  border: 1px solid rgba(255,255,255,.18);
-  background: rgba(0,0,0,.25);
-  color:#fff;
-  border-radius: 10px;
-  padding: 6px 10px;
-  cursor:pointer;
-}
-.tts-row{ margin: 8px 0; }
-.tts-small{ font-size: 12.5px; opacity: .92; }
-.tts-grid{
-  display:grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-}
-.tts-col{
-  border: 1px solid rgba(255,255,255,.14);
-  border-radius: 12px;
-  padding: 8px;
-  background: rgba(0,0,0,.18);
-}
-.tts-sub{
-  font-weight: 800;
-  opacity: .95;
-  margin-bottom: 6px;
-}
-.tts-line{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  margin: 6px 0;
-  font-size: 12.5px;
-}
-.tts-line span{
-  width: 14px;
-  text-align:center;
-  opacity:.9;
-}
-.tts-line select{
-  flex:1;
-  width: 100%;
-  border-radius: 10px;
-  border: 1px solid rgba(255,255,255,.18);
-  background: rgba(255,255,255,.10);
-  color: #fff;
-  padding: 6px 8px;
-  outline: none;
-}
-.tts-line select option{ color:#000; }
-.tts-check{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  user-select:none;
-}
-.tts-test{
-  width: 100%;
-  border: 1px solid rgba(255,255,255,.18);
-  background: rgba(255,255,255,.12);
-  color:#fff;
-  border-radius: 12px;
-  padding: 10px 10px;
-  font-weight: 900;
-  cursor:pointer;
-}
-
-
 /* App meta badge (footer) */
 .app-meta-badge{
   position:absolute;
@@ -489,50 +394,11 @@ function num(v,fallback=0){
   <div class="lang-toggle">
     <button id="btnLangGR" class="lang-btn active">GR</button>
     <button id="btnLangEN" class="lang-btn">EN</button>
-    <button id="btnTTS" class="lang-btn" aria-pressed="false" title="Φωνή: OFF">🔇</button>
-    <button id="btnTTSVoices" class="lang-btn" title="Φωνές" style="min-width:42px">🎤</button>
     <button id="btnAbout" class="lang-btn" title="Σχετικά / About" style="min-width:42px">ℹ️</button>
   </div>
 
   <!-- App meta badge (version / creator / year) -->
   <div id="appMetaBadge" class="app-meta-badge" aria-label="App version"></div>
-
-  <!-- TTS Voice Panel -->
-  <div id="ttsPanel" class="tts-panel hidden" role="dialog" aria-label="TTS voices">
-    <div class="tts-head">
-      <div class="tts-title" id="ttsPanelTitle">Φωνές</div>
-      <button id="btnTTSClose" class="tts-x" type="button" title="Κλείσιμο">✕</button>
-    </div>
-
-    <div class="tts-row tts-small" id="ttsLangLabel">Γλώσσα: GR</div>
-
-    <div class="tts-grid">
-      <div class="tts-col">
-        <div class="tts-sub" id="ttsMaleTitle">Άνδρες</div>
-        <label class="tts-line"><span>1</span><select id="selTTSMale1"></select></label>
-        <label class="tts-line"><span>2</span><select id="selTTSMale2"></select></label>
-        <label class="tts-line"><span>3</span><select id="selTTSMale3"></select></label>
-      </div>
-      <div class="tts-col">
-        <div class="tts-sub" id="ttsFemaleTitle">Γυναίκες</div>
-        <label class="tts-line"><span>1</span><select id="selTTSFemale1"></select></label>
-        <label class="tts-line"><span>2</span><select id="selTTSFemale2"></select></label>
-      </div>
-    </div>
-
-    <div class="tts-row tts-small">
-      <label class="tts-check"><input type="checkbox" id="chkTTSAuto" checked> <span id="ttsAutoLabel">Αυτόματη ανάθεση ανά θεαποιο</span></label>
-    </div>
-
-    <div class="tts-row tts-small">
-      <label class="tts-check"><input type="checkbox" id="chkTTSCancel" checked> <span id="ttsCancelLabel">Κόβε το προηγούμενο (no overlap)</span></label>
-    </div>
-
-    <div class="tts-row">
-      <button id="btnTTSTest" class="tts-test" type="button">Test</button>
-    </div>
-
-  </div>
   <div id="aboutModal" class="about-modal hidden" role="dialog" aria-label="About">
     <div class="about-card" role="document">
       <div class="about-head">
@@ -749,21 +615,25 @@ let UI = {};
 let UI_TITLES = null;
 
 let APP_META = {
-  version: 'Ver.1',
-  year: '2025',
+  version: 'Ver. 1.1',
+  year: '2026',
   author: 'antarxo'
 };
+
+function appMetaCopy(){
+  return `© ${APP_META.author} ${APP_META.year} ${APP_META.version}`;
+}
 
 const APP_FOOTER = {
   gr: `
     <div class="meta-title">ΑΑΤ – Απλή Αρμονική Ταλάντωση</div>
     <div class="meta-desc">Θεατρική, διαδραστική εκπαιδευτική εφαρμογή Φυσικής</div>
-    <div class="meta-copy">© antarxo 2025 Ver.1</div>
+    <div class="meta-copy">${appMetaCopy()}</div>
   `,
   en: `
     <div class="meta-title">SHM – Simple Harmonic Motion</div>
     <div class="meta-desc">Theatrical, interactive educational Physics application</div>
-    <div class="meta-copy">© antarxo 2025 Ver.1</div>
+    <div class="meta-copy">${appMetaCopy()}</div>
   `
 };
 function updateMetaBadge(){
@@ -816,9 +686,7 @@ function toggleAbout(forceOpen=null){
   if(!aboutModal) return;
   const shouldOpen = (forceOpen===null) ? aboutModal.classList.contains('hidden') : !!forceOpen;
 
-  // μην μπλέκονται modal/panels
   if(shouldOpen){
-    try{ toggleTTSPanel(false); }catch(_e){}
     syncAboutUI();
   }
 
@@ -839,9 +707,6 @@ let currentLang = (()=>{
 })();  // 'gr' ή 'en'
 let btnLangGR = null;
 let btnLangEN = null;
-let btnTTS    = null;
-
-const TTS_ENABLED_KEY = 'aat_tts_enabled';
 
 /* Κατάσταση παράστασης για locks κουμπιών */
 let phase = 'idle'; // idle, countdown, act1, act2, between2andFoyer, foyer
@@ -854,338 +719,6 @@ const introOverlay  = document.getElementById('introOverlay');
 const introPoster   = document.getElementById('introPoster');
 const introLeaflet  = document.getElementById('introLeaflet');
 const introContinue = document.getElementById('introContinue');
-
-/* ---------- TTS (φωνητική υποστήριξη) ---------- */
-
-const TTS = (()=>{
-  const state = {
-    enabled: false,
-    lang: 'el-GR',
-    rate: 1.0,
-    pitch: 1.0,
-    volume: 1.0,
-    voiceName: '',
-    cancelBeforeSpeak: true,
-    ready: false
-  };
-
-  const isSupported = ()=> (typeof window !== 'undefined' && 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window);
-  const getVoices = ()=> (isSupported() ? (window.speechSynthesis.getVoices() || []) : []);
-
-  const ensureVoicesLoaded = ()=>{
-    if(!isSupported()) return;
-    const voices = getVoices();
-    if(voices.length){ state.ready = true; return; }
-    const prev = window.speechSynthesis.onvoiceschanged;
-    window.speechSynthesis.onvoiceschanged = ()=>{
-      state.ready = true;
-      if(typeof prev === 'function') prev();
-    };
-  };
-
-  const pickVoice = (lang, voiceName='')=>{
-    const voices = getVoices();
-    if(!voices.length) return null;
-    if(voiceName){
-      const byName = voices.find(v=>v.name===voiceName);
-      if(byName) return byName;
-    }
-    const ll = String(lang||'').toLowerCase();
-    const exact = voices.find(v=>String(v.lang||'').toLowerCase()===ll);
-    if(exact) return exact;
-    const prefix = ll.split('-')[0];
-    const byPrefix = voices.find(v=>String(v.lang||'').toLowerCase().startsWith(prefix));
-    return byPrefix || voices[0] || null;
-  };
-
-  const setEnabled = (v)=>{ state.enabled = !!v; if(!state.enabled) stop(); };
-  const setLang = (code)=>{ state.lang = code || 'el-GR'; };
-  const setVoiceName = (name)=>{ state.voiceName = name || ''; };
-  const setParams = ({rate,pitch,volume,cancelBeforeSpeak}={})=>{
-    if(typeof rate==='number')   state.rate   = Math.min(2, Math.max(0.5, rate));
-    if(typeof pitch==='number')  state.pitch  = Math.min(2, Math.max(0, pitch));
-    if(typeof volume==='number') state.volume = Math.min(1, Math.max(0, volume));
-    if(typeof cancelBeforeSpeak==='boolean') state.cancelBeforeSpeak = cancelBeforeSpeak;
-  };
-
-  const speak = (text, opts={})=>{
-    if(!isSupported()) return false;
-    const force = !!opts.force;
-    if(!state.enabled && !force) return false;
-
-    const clean = String(text ?? '').trim();
-    if(!clean) return false;
-
-    const lang = (opts.lang || state.lang);
-    const voiceName = (typeof opts.voiceName === 'string') ? opts.voiceName : state.voiceName;
-    const cancel = (typeof opts.cancelBeforeSpeak === 'boolean') ? opts.cancelBeforeSpeak : state.cancelBeforeSpeak;
-
-    if(cancel) window.speechSynthesis.cancel();
-
-    const u = new SpeechSynthesisUtterance(clean);
-    u.lang = lang;
-    u.rate = state.rate;
-    u.pitch = state.pitch;
-    u.volume = state.volume;
-
-    const v = pickVoice(lang, voiceName);
-    if(v) u.voice = v;
-
-    window.speechSynthesis.speak(u);
-    return true;
-  };
-
-  const pause = ()=>{ if(isSupported()) window.speechSynthesis.pause(); };
-  const resume= ()=>{ if(isSupported()) window.speechSynthesis.resume(); };
-  const stop  = ()=>{ if(isSupported()) window.speechSynthesis.cancel(); };
-
-  ensureVoicesLoaded();
-  return { state, isSupported, getVoices, setEnabled, setLang, setVoiceName, setParams, speak, pause, resume, stop };
-})();
-
-function ttsPlainFromHTML(html){
-  const s = String(html ?? '');
-  return s
-    .replace(/<\s*br\s*\/?>/gi, '\n')
-    .replace(/<[^>]*>/g, '')
-    .replace(/\u00A0/g, ' ')
-    .replace(/[ \t]+/g, ' ')
-    .replace(/\n{3,}/g, '\n\n')
-    .trim();
-}
-
-function syncTTSLang(){
-  TTS.setLang(currentLang==='en' ? 'en-US' : 'el-GR');
-}
-
-function syncTTSButton(){
-  if(!btnTTS) return;
-  btnTTS.classList.toggle('active', !!TTS.state.enabled);
-  btnTTS.setAttribute('aria-pressed', TTS.state.enabled ? 'true' : 'false');
-  btnTTS.textContent = TTS.state.enabled ? '🔊' : '🔇';
-  btnTTS.title = (currentLang==='en') ? (TTS.state.enabled ? 'Voice: ON' : 'Voice: OFF') : (TTS.state.enabled ? 'Φωνή: ON' : 'Φωνή: OFF');
-}
-
-function setTTSEnabled(v, speakFeedback=false){
-  TTS.setEnabled(!!v);
-  try{ localStorage.setItem(TTS_ENABLED_KEY, TTS.state.enabled ? '1' : '0'); }catch(_e){}
-  syncTTSButton();
-  if(speakFeedback && TTS.state.enabled){
-    TTS.speak(currentLang==='en' ? 'Voice enabled.' : 'Φωνητική υποστήριξη ενεργή.');
-  }
-}
-
-/* ---------- TTS: πολυφωνία (ανά “θεαποιο”/viewer) ---------- */
-
-const TTS_VOICE_CFG_KEY = 'aat_tts_voice_cfg_v1';
-
-let btnTTSVoices = null;
-let ttsPanel = null;
-let btnTTSClose = null;
-let btnTTSTest = null;
-
-let selTTSMale1 = null, selTTSMale2 = null, selTTSMale3 = null;
-let selTTSFemale1 = null, selTTSFemale2 = null;
-let chkTTSAuto = null;
-let chkTTSCancel = null;
-
-let ttsPanelTitle = null;
-let ttsLangLabel = null;
-let ttsMaleTitle = null;
-let ttsFemaleTitle = null;
-let ttsAutoLabel = null;
-let ttsCancelLabel = null;
-
-const TTSVoiceCfgDefault = ()=>({
-  autoAssign: true,
-  cancelBeforeSpeak: true,
-  perLang: {
-    gr: { male: ['','',''], female: ['',''] },
-    en: { male: ['','',''], female: ['',''] }
-  }
-});
-
-let ttsVoiceCfg = (()=>{
-  try{
-    const raw = localStorage.getItem(TTS_VOICE_CFG_KEY);
-    if(raw){
-      const obj = JSON.parse(raw);
-      if(obj && obj.perLang && obj.perLang.gr && obj.perLang.en) return obj;
-    }
-  }catch(_e){}
-  return TTSVoiceCfgDefault();
-})();
-
-function saveTTSVoiceCfg(){
-  try{ localStorage.setItem(TTS_VOICE_CFG_KEY, JSON.stringify(ttsVoiceCfg)); }catch(_e){}
-}
-
-function langKey(){ return (currentLang==='en') ? 'en' : 'gr'; }
-function ttsPrefixForCurrentLang(){ return (currentLang==='en') ? 'en' : 'el'; }
-
-function listVoicesForCurrentLang(){
-  const voices = TTS.getVoices();
-  const pref = ttsPrefixForCurrentLang();
-  let filtered = voices.filter(v => String(v.lang||'').toLowerCase().startsWith(pref));
-  if(!filtered.length) filtered = voices;
-  filtered.sort((a,b)=>String(a.name||'').localeCompare(String(b.name||'')));
-  return filtered;
-}
-
-function fillSelectWithVoices(sel, savedName){
-  if(!sel) return;
-  const voices = listVoicesForCurrentLang();
-  sel.innerHTML = '';
-  const opt0 = document.createElement('option');
-  opt0.value = '';
-  opt0.textContent = '(auto)';
-  sel.appendChild(opt0);
-
-  for(const v of voices){
-    const o = document.createElement('option');
-    o.value = v.name;
-    o.textContent = `${v.name} (${v.lang})`;
-    sel.appendChild(o);
-  }
-  sel.value = savedName || '';
-}
-
-function currentLangVoiceCfg(){
-  const k = langKey();
-  if(!ttsVoiceCfg.perLang) ttsVoiceCfg.perLang = { gr:{male:['','',''],female:['','']}, en:{male:['','',''],female:['','']} };
-  if(!ttsVoiceCfg.perLang[k]) ttsVoiceCfg.perLang[k] = { male:['','',''], female:['',''] };
-  return ttsVoiceCfg.perLang[k];
-}
-
-function syncTTSVoiceUI(){
-  if(!ttsPanel) return;
-
-  if(ttsPanelTitle) ttsPanelTitle.textContent = (currentLang==='en') ? 'Voices' : 'Φωνές';
-  if(ttsLangLabel)  ttsLangLabel.textContent  = (currentLang==='en') ? 'Language: EN' : 'Γλώσσα: GR';
-  if(ttsMaleTitle)  ttsMaleTitle.textContent  = (currentLang==='en') ? 'Male' : 'Άνδρες';
-  if(ttsFemaleTitle)ttsFemaleTitle.textContent= (currentLang==='en') ? 'Female' : 'Γυναίκες';
-  if(ttsAutoLabel)  ttsAutoLabel.textContent  = (currentLang==='en') ? 'Auto assign per viewer' : 'Αυτόματη ανάθεση ανά θεαποιο';
-  if(ttsCancelLabel)ttsCancelLabel.textContent= (currentLang==='en') ? 'Cut previous (no overlap)' : 'Κόβε το προηγούμενο (no overlap)';
-
-  const cfg = currentLangVoiceCfg();
-
-  fillSelectWithVoices(selTTSMale1, cfg.male?.[0] || '');
-  fillSelectWithVoices(selTTSMale2, cfg.male?.[1] || '');
-  fillSelectWithVoices(selTTSMale3, cfg.male?.[2] || '');
-  fillSelectWithVoices(selTTSFemale1, cfg.female?.[0] || '');
-  fillSelectWithVoices(selTTSFemale2, cfg.female?.[1] || '');
-
-  if(chkTTSAuto) chkTTSAuto.checked = !!ttsVoiceCfg.autoAssign;
-  if(chkTTSCancel) chkTTSCancel.checked = !!ttsVoiceCfg.cancelBeforeSpeak;
-}
-
-function setCfgFromUI(){
-  const cfg = currentLangVoiceCfg();
-  cfg.male = [
-    (selTTSMale1?.value || ''),
-    (selTTSMale2?.value || ''),
-    (selTTSMale3?.value || '')
-  ];
-  cfg.female = [
-    (selTTSFemale1?.value || ''),
-    (selTTSFemale2?.value || '')
-  ];
-  ttsVoiceCfg.autoAssign = !!(chkTTSAuto && chkTTSAuto.checked);
-  ttsVoiceCfg.cancelBeforeSpeak = !!(chkTTSCancel && chkTTSCancel.checked);
-
-  TTS.setParams({ cancelBeforeSpeak: ttsVoiceCfg.cancelBeforeSpeak });
-
-  saveTTSVoiceCfg();
-}
-
-function ttsPickVoiceLocal(lang, voiceName){
-  const voices = TTS.getVoices();
-  if(!voices.length) return null;
-  if(voiceName){
-    const byName = voices.find(v=>v.name===voiceName);
-    if(byName) return byName;
-  }
-  const ll = String(lang||'').toLowerCase();
-  const exact = voices.find(v=>String(v.lang||'').toLowerCase()===ll);
-  if(exact) return exact;
-  const prefix = ll.split('-')[0];
-  const byPrefix = voices.find(v=>String(v.lang||'').toLowerCase().startsWith(prefix));
-  return byPrefix || voices[0] || null;
-}
-
-function voiceNameForViewer(viewer){
-  if(!ttsVoiceCfg.autoAssign) return '';
-  const cfg = currentLangVoiceCfg();
-  const m = cfg.male || ['','',''];
-  const f = cfg.female || ['',''];
-
-  const m0 = m[0] || '';
-  const m1 = m[1] || m0;
-  const m2 = m[2] || m1 || m0;
-
-  const f0 = f[0] || '';
-  const f1 = f[1] || f0;
-
-  if(viewer === 1) return m0;
-  if(viewer === 2) return m1;
-  if(viewer === 3) return m2;
-  if(viewer === 4) return f0 || m0;
-  if(viewer === 5) return f1 || f0 || m0;
-
-  const seq = [m0,m1,m2,f0,f1].filter(Boolean);
-  if(!seq.length) return '';
-  return seq[(viewer-1) % seq.length] || '';
-}
-
-function ttsSpeakViewer(viewer, text){
-  const vn = voiceNameForViewer(viewer);
-  const opts = {};
-  if(vn) opts.voiceName = vn;
-  TTS.speak(text, opts);
-}
-
-function toggleTTSPanel(forceOpen=null){
-  if(!ttsPanel) return;
-  const shouldOpen = (forceOpen===null) ? ttsPanel.classList.contains('hidden') : !!forceOpen;
-  ttsPanel.classList.toggle('hidden', !shouldOpen);
-  if(shouldOpen){
-    syncTTSVoiceUI();
-  }
-}
-
-function ttsTestVoices(){
-  if(!TTS.isSupported()) return;
-
-  setCfgFromUI();
-
-  const cfg = currentLangVoiceCfg();
-  const lang = (currentLang==='en') ? 'en-US' : 'el-GR';
-
-  const samples = (currentLang==='en')
-    ? [
-        {voice: cfg.male?.[0] || '', text:'Male one.'},
-        {voice: cfg.male?.[1] || '', text:'Male two.'},
-        {voice: cfg.male?.[2] || '', text:'Male three.'},
-        {voice: cfg.female?.[0] || '', text:'Female one.'},
-        {voice: cfg.female?.[1] || '', text:'Female two.'},
-      ]
-    : [
-        {voice: cfg.male?.[0] || '', text:'Άνδρας ένα.'},
-        {voice: cfg.male?.[1] || '', text:'Άνδρας δύο.'},
-        {voice: cfg.male?.[2] || '', text:'Άνδρας τρία.'},
-        {voice: cfg.female?.[0] || '', text:'Γυναίκα ένα.'},
-        {voice: cfg.female?.[1] || '', text:'Γυναίκα δύο.'},
-      ];
-
-  window.speechSynthesis.cancel();
-  for(const s of samples){
-    const u = new SpeechSynthesisUtterance(s.text);
-    u.lang = lang;
-    const v = ttsPickVoiceLocal(lang, s.voice);
-    if(v) u.voice = v;
-    window.speechSynthesis.speak(u);
-  }
-}
 
 
 function _introEsc(s){
@@ -3293,7 +2826,6 @@ function showBubbleForEvent(ev){
     const viewer=ev.viewer || 1;
     const base=expandDynTemplate(ev.left||'');
     const html=String(base).replaceAll('\n','<br>');
-    const speakText = ttsPlainFromHTML(html);
 
     if(!html){
       hideSpeakerChip();
@@ -3315,8 +2847,6 @@ function showBubbleForEvent(ev){
 
     const typeMs =ev.typeMs  || 2500;
     const pauseMs=ev.pauseMs || 800;
-
-    if(speakText) ttsSpeakViewer(viewer, speakText);
 
     typeWriterHTML(bubbleTextEl,html,typeMs,()=>{
       TM.setTimeout(()=>{
@@ -3368,7 +2898,6 @@ function showDynBubble(ev){
     const viewer=ev.viewer || 1;
     const base = ev.left || '';
     const txt  = expandDynTemplate(base);
-    const speakText = ttsPlainFromHTML(txt);
 
     showViewerAvatar(viewer);
     showSpeakerChip(viewer);
@@ -3382,8 +2911,6 @@ function showDynBubble(ev){
 
     const typeMs =ev.typeMs  || 2500;
     const pauseMs=ev.pauseMs || 800;
-
-    if(speakText) ttsSpeakViewer(viewer, speakText);
 
     typeWriterHTML(bubbleTextEl,txt,typeMs,()=>{
       TM.setTimeout(()=>{
@@ -3763,11 +3290,6 @@ function addFoyerRow(item){
     const typeMs =item.typeMs  || 4000;
     const pauseMs=item.pauseMs || 1500;
 
-    const speakL = ttsPlainFromHTML(item.left || '');
-    const speakR = ttsPlainFromHTML(item.right || '');
-    const speakAll = speakR ? (speakL ? (speakL + ' ... ' + speakR) : speakR) : speakL;
-    if(speakAll) ttsSpeakViewer(viewer, speakAll);
-
     typeWriterBoard(lText,item.left||'',typeMs,()=>{
       if((item.right||'').trim().length>0){
         typeWriterBoard(rText,item.right||'',typeMs,()=>{
@@ -3843,10 +3365,62 @@ function setMode(newMode){
   }
 }
 
+const PLAYBACK_STAGE_PHASES = new Set([
+  'countdown',
+  'act1',
+  'act2',
+  'between2andFoyer',
+  'foyer',
+  'act3'
+]);
+
+function overlayIsVisible(el){
+  if(!el) return false;
+  const cs = getComputedStyle(el);
+  return cs.display !== 'none' && cs.visibility !== 'hidden';
+}
+
+function canTogglePlaybackFromStageClick(ev){
+  if(!ev || ev.button !== 0) return false;
+  if(!PLAYBACK_STAGE_PHASES.has(phase)) return false;
+  if(document.body.classList.contains('intro-open')) return false;
+  if(aboutModal && !aboutModal.classList.contains('hidden')) return false;
+  if(overlayIsVisible(startBreak) || overlayIsVisible(actBreak) || overlayIsVisible(foyerBreak) || overlayIsVisible(navBreak)) return false;
+
+  const target = (ev.target instanceof Element) ? ev.target : null;
+  const foyerBoardTarget = target ? target.closest('#boardLeft,#boardRight') : null;
+
+  if(target && target.closest('button,a,input,select,textarea,label,[role="button"],.lang-toggle,.controls,#measureBox,#paramsBox,#laws,#lawCharts,#xtChart,#xSinChart,#aboutModal,.app-meta-badge')){
+    return false;
+  }
+  if(target && target.closest('.foyer') && !foyerBoardTarget) return false;
+  if(foyerBoardTarget) return true;
+
+  const rect = stage.getBoundingClientRect();
+  if(!rect.width || !rect.height) return false;
+
+  const x = ev.clientX - rect.left;
+  const y = ev.clientY - rect.top;
+
+  const minX = rect.width  * 0.18;
+  const maxX = rect.width  * 0.82;
+  const minY = rect.height * 0.05;
+  const maxY = rect.height * 0.90;
+
+  return x >= minX && x <= maxX && y >= minY && y <= maxY;
+}
+
+function handleStagePlaybackToggleClick(ev){
+  if(!canTogglePlaybackFromStageClick(ev)) return;
+  ev.preventDefault();
+  setMode(mode === 'pause' ? 'run' : 'pause');
+}
+
 btnPause.addEventListener('click',()=>{
   setMode(mode==='pause'?'run':'pause');
 });
 btnPlay.addEventListener('click',()=>{ setMode('run'); });
+stage.addEventListener('click', handleStagePlaybackToggleClick);
 
 /* ---------- Γρήγορες μεταβάσεις (preview / rewatch) ---------- */
 
@@ -3969,7 +3543,6 @@ function bootFromQuery(){
 function resetShow(){
   // καθάρισμα όλων των προγραμματισμένων callbacks (για να μη “σκάσουν” μετά από reset)
   TM.clearAll();
-  try{ TTS.stop(); }catch(_e){}
   countdownState.active = false;
 
   // reset any exit/strobe leftovers
@@ -4379,12 +3952,7 @@ function setLanguage(lang){
   }
 
   resetShow();
-
-  syncTTSLang();
-  syncTTSButton();
-  syncTTSVoiceUI();
-
-    loadDialogs();
+  loadDialogs();
 }
 
 /* ---------- Bootstrap ---------- */
@@ -4392,77 +3960,16 @@ function setLanguage(lang){
 window.addEventListener('load',async ()=>{
   btnLangGR=document.getElementById('btnLangGR');
   btnLangEN=document.getElementById('btnLangEN');
-  btnTTS   =document.getElementById('btnTTS');
-  btnTTSVoices=document.getElementById('btnTTSVoices');
   btnAbout=document.getElementById('btnAbout');
   aboutModal=document.getElementById('aboutModal');
   btnAboutClose=document.getElementById('btnAboutClose');
   aboutBody=document.getElementById('aboutBody');
-  ttsPanel=document.getElementById('ttsPanel');
-  btnTTSClose=document.getElementById('btnTTSClose');
-  btnTTSTest=document.getElementById('btnTTSTest');
-
-  selTTSMale1=document.getElementById('selTTSMale1');
-  selTTSMale2=document.getElementById('selTTSMale2');
-  selTTSMale3=document.getElementById('selTTSMale3');
-  selTTSFemale1=document.getElementById('selTTSFemale1');
-  selTTSFemale2=document.getElementById('selTTSFemale2');
-  chkTTSAuto=document.getElementById('chkTTSAuto');
-  chkTTSCancel=document.getElementById('chkTTSCancel');
-
-  ttsPanelTitle=document.getElementById('ttsPanelTitle');
-  ttsLangLabel=document.getElementById('ttsLangLabel');
-  ttsMaleTitle=document.getElementById('ttsMaleTitle');
-  ttsFemaleTitle=document.getElementById('ttsFemaleTitle');
-  ttsAutoLabel=document.getElementById('ttsAutoLabel');
-  ttsCancelLabel=document.getElementById('ttsCancelLabel');
-
 
   if(btnLangGR){
     btnLangGR.addEventListener('click',()=>setLanguage('gr'));
   }
   if(btnLangEN){
     btnLangEN.addEventListener('click',()=>setLanguage('en'));
-  }
-
-  // TTS toggle (ξεκλειδώνει με user interaction)
-  if(btnTTS){
-    if(!TTS.isSupported()){
-      btnTTS.style.display='none';
-    }else{
-      btnTTS.addEventListener('click',()=>{
-        setTTSEnabled(!TTS.state.enabled, true);
-      });
-
-      // αρχικοποίηση από localStorage
-      let initial=false;
-      try{ initial = (localStorage.getItem(TTS_ENABLED_KEY) === '1'); }catch(_e){}
-      syncTTSLang();
-      setTTSEnabled(initial, false);
-
-      // TTS voice cfg -> engine
-      TTS.setParams({ cancelBeforeSpeak: !!ttsVoiceCfg.cancelBeforeSpeak });
-
-    }
-  }else{
-    // αν δεν υπάρχει κουμπί, τουλάχιστον δένουμε σωστά τη γλώσσα
-    syncTTSLang();
-  }
-
-  // TTS voices panel
-  if(btnTTSVoices){
-    if(!TTS.isSupported()){
-      btnTTSVoices.style.display='none';
-      if(ttsPanel) ttsPanel.classList.add('hidden');
-    }else{
-      btnTTSVoices.addEventListener('click',()=>toggleTTSPanel());
-    }
-  }
-  if(btnTTSClose){
-    btnTTSClose.addEventListener('click',()=>toggleTTSPanel(false));
-  }
-  if(btnTTSTest){
-    btnTTSTest.addEventListener('click',()=>ttsTestVoices());
   }
 
   // About modal
@@ -4475,22 +3982,9 @@ window.addEventListener('load',async ()=>{
     btnAboutClose.addEventListener('click',()=>toggleAbout(false));
   }
 
-  // auto-save on change
-  const ttsInputs = [selTTSMale1,selTTSMale2,selTTSMale3,selTTSFemale1,selTTSFemale2,chkTTSAuto,chkTTSCancel].filter(Boolean);
-  for(const el of ttsInputs){
-    el.addEventListener('change',()=>{
-      setCfgFromUI();
-    });
-  }
-
-  // αρχική sync
-  syncTTSVoiceUI();
-  setCfgFromUI();
-
   // close on ESC / outside click
   document.addEventListener('keydown',(e)=>{
     if(e.key==='Escape'){
-      toggleTTSPanel(false);
       toggleAbout(false);
     }
   });
@@ -4507,12 +4001,6 @@ window.addEventListener('load',async ()=>{
         return;
       }
     }
-
-    // TTS panel: κλείσε με click έξω
-    if(!ttsPanel || ttsPanel.classList.contains('hidden')) return;
-    if(ttsPanel.contains(t)) return;
-    if(btnTTSVoices && btnTTSVoices.contains(t)) return;
-    toggleTTSPanel(false);
   }, {passive:true});
 
   updateRuler();
