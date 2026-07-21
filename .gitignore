@@ -1,0 +1,7 @@
+# Local runtime artifacts
+.tmp-*
+*.pid
+*.log
+
+# Local archive backups
+*.zip
