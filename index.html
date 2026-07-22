@@ -91,6 +91,8 @@ function num(v,fallback=0){
         body.intro-open #btnNav,
     body.intro-open #btnNext,
     body.intro-open #navBreak,
+    body.intro-open #act3Break,
+    body.intro-open #finalCurtainBreak,
     body.intro-open #btnBook,
     body.intro-open #foyerBubble,
         body.intro-open #appMetaBadge,
@@ -561,6 +563,13 @@ function num(v,fallback=0){
     </div>
   </div>
 
+  <div class="actbreak finalbreak" id="finalCurtainBreak" style="display:none;" aria-hidden="true">
+    <div class="box">
+      <h3 id="finalCurtainTitle">Τέλος παράστασης</h3>
+      <p id="finalCurtainMsg">Ευχαριστούμε που μας παρακολουθήσατε.</p>
+    </div>
+  </div>
+
   <div class="foyer" id="foyer">
     <div class="wrap">
       <div class="foyer-titlebar" id="foyerTitlebar">
@@ -984,6 +993,10 @@ const actBreak   = document.getElementById('actBreak');
 const btnAct2    = document.getElementById('btnAct2');
 const foyerBreak = document.getElementById('foyerBreak');
 const btnFoyerGo = document.getElementById('btnFoyerGo');
+const act3Break  = document.getElementById('act3Break');
+const finalCurtainBreak = document.getElementById('finalCurtainBreak');
+const finalCurtainTitle = document.getElementById('finalCurtainTitle');
+const finalCurtainMsg   = document.getElementById('finalCurtainMsg');
 
 const foyerEl     = document.getElementById('foyer');
 const boardLeft   = document.getElementById('boardLeft');
@@ -1356,6 +1369,17 @@ function applyUITextFromUI(){
 
     if(ui.btnAct3Title != null) btnAct3El.title = ui.btnAct3Title;
     else if(fbTitle) btnAct3El.title = fbTitle;
+  }
+
+  if(finalCurtainTitle){
+    const fb = (currentLang==='en') ? 'End of Performance' : 'Τέλος παράστασης';
+    finalCurtainTitle.textContent = (ui.finalCurtainTitle != null) ? ui.finalCurtainTitle : fb;
+  }
+  if(finalCurtainMsg){
+    const fb = (currentLang==='en')
+      ? 'Thank you for watching.'
+      : 'Ευχαριστούμε που μας παρακολουθήσατε.';
+    finalCurtainMsg.textContent = (ui.finalCurtainMsg != null) ? ui.finalCurtainMsg : fb;
   }
 
 
@@ -2451,6 +2475,8 @@ async function runFoyerExitStrobe(){
 async function strobeExitWalk(){
   const curtain = document.getElementById('strobeCurtain');
   if(!curtain || !viewersStrip || !stage) return;
+  const finalAudiencePreload = new Image();
+  finalAudiencePreload.src = 'koino_final.png';
 
   // Φροντίζουμε να φαίνονται όλοι οι ομιλητές (όρθιοι)
   showAllViewerAvatars();
@@ -2513,7 +2539,8 @@ async function strobeExitWalk(){
   const holdLitMs    = 120;  // φώτα ON μετά από κάθε burst
 
   const preBlackMs   = 100;  // πρώτο σκοτάδι (ο πίνακας φεύγει μέσα στο σκοτάδι)
-  const finalBlackMs = 1000; // τελικό σκοτάδι πριν εξαφανιστούν + αλλάξει το κοινό
+  const finalBlackMs = 850;  // τελικό σκοτάδι πριν εμφανιστεί το “fake” act 3
+  const act3HoldMs   = 1900; // πόσο μένει το άκυρο πλαίσιο της 3ης πράξης
 
   // spreads (μόνο οριζόντια)
   const meetSpreadPx  = 45;   // στο κέντρο
@@ -2557,6 +2584,7 @@ async function strobeExitWalk(){
     const spread = (i-(n-1)/2) * 34;
     return stageW*0.52 + spread;
   });
+  let audienceFinalSwapped = false;
 
   // Φάσεις: meet → tighten → split → exit (μόνο ΟΡΙΖΟΝΤΙΑ)
   const buildPosesPhase = (phase, t)=>{
@@ -2607,6 +2635,11 @@ async function strobeExitWalk(){
     for(let f=0; f<frames; f++){
       // σκοτάδι: αλλάζουμε θέση
       curtain.style.opacity='1';
+      if(phase===3 && f===0 && !audienceFinalSwapped){
+        // Η άδεια αίθουσα εμφανίζεται μέσα στο blackout, πριν βγουν τελείως οι ομιλητές.
+        swapAudienceFinal();
+        audienceFinalSwapped = true;
+      }
       const t = frames<=1 ? 1 : (f/(frames-1));
       const poses = buildPosesPhase(phase, t);
       applyPose(poses);
@@ -2644,13 +2677,38 @@ async function strobeExitWalk(){
       teaser.setAttribute('aria-hidden','true');
     }
 
-    const act3Break = document.getElementById('act3Break');
     if(act3Break){
+      act3Break.style.opacity='';
+      act3Break.style.transition='';
       act3Break.style.display='flex';
     }
 
     phase='act3';
     applySignboardForPhase('act3');
+  };
+
+  const showFinalCurtainAfterAct3 = async ()=>{
+    await TM.sleep(act3HoldMs);
+
+    if(act3Break){
+      act3Break.style.transition = 'opacity 420ms ease';
+      act3Break.style.opacity = '0';
+      await TM.sleep(420);
+      act3Break.style.display = 'none';
+      act3Break.style.opacity = '';
+      act3Break.style.transition = '';
+    }
+
+    if(finalCurtainBreak){
+      finalCurtainBreak.style.opacity = '0';
+      finalCurtainBreak.style.transition = 'opacity 520ms ease';
+      finalCurtainBreak.style.display = 'flex';
+      finalCurtainBreak.setAttribute('aria-hidden','false');
+      await TM.sleep(30);
+      finalCurtainBreak.style.opacity = '1';
+      await TM.sleep(520);
+      finalCurtainBreak.style.transition = '';
+    }
   };
 
   const swapAudienceFinal = ()=>{
@@ -2689,13 +2747,16 @@ async function strobeExitWalk(){
   // μικρό buffer ώστε να «γράψει» το μαύρο πριν αλλάξουμε οτιδήποτε
   await TM.sleep(120);
 
-  // μέσα στο σκοτάδι: εξαφανίζονται + αλλάζει το κοινό + εμφανίζεται το “fake” act3
+  // μέσα στο σκοτάδι: εξαφανίζονται οι ομιλητές + εμφανίζεται το “fake” act3
   hideAllSpeakers();
   if(foyerBubble) foyerBubble.style.display='none';
   if(actBubble)   actBubble.style.display='none';
 
-  // αφήνουμε άδειο χώρο + “fake” πράξη 3
-  swapAudienceFinal();
+  // Αν για οποιονδήποτε λόγο δεν προλάβαμε το σκοτεινό strobe καρέ, κάνουμε fallback εδώ.
+  if(!audienceFinalSwapped){
+    swapAudienceFinal();
+    audienceFinalSwapped = true;
+  }
   showAct3Fake();
 
   // κρατάμε το σκοτάδι λίγο παραπάνω για να μη φαίνεται “τηλεμεταφορά”
@@ -2709,8 +2770,6 @@ async function strobeExitWalk(){
   await TM.sleep(finalFadeInMs);
   curtain.style.transition = 'opacity 0ms linear';
 
-  await TM.sleep(1100);
-
   // βγαίνουμε από strobe mode (κρατάμε την τελική εικόνα)
   document.body.classList.remove('strobe-active');
   curtain.style.display='none';
@@ -2721,6 +2780,7 @@ async function strobeExitWalk(){
 
   // δεν κάνουμε restore των avatars: η ιδέα είναι ότι “έφυγαν”.
   // (κρατάμε όμως τα orig για ασφάλεια σε reset, το οποίο ξαναχτίζει state ούτως ή άλλως)
+  await showFinalCurtainAfterAct3();
 }
 
 async function foyerBoardExitWithTeaser(){
@@ -3385,7 +3445,7 @@ function canTogglePlaybackFromStageClick(ev){
   if(!PLAYBACK_STAGE_PHASES.has(phase)) return false;
   if(document.body.classList.contains('intro-open')) return false;
   if(aboutModal && !aboutModal.classList.contains('hidden')) return false;
-  if(overlayIsVisible(startBreak) || overlayIsVisible(actBreak) || overlayIsVisible(foyerBreak) || overlayIsVisible(navBreak)) return false;
+  if(overlayIsVisible(startBreak) || overlayIsVisible(actBreak) || overlayIsVisible(foyerBreak) || overlayIsVisible(navBreak) || overlayIsVisible(act3Break) || overlayIsVisible(finalCurtainBreak)) return false;
 
   const target = (ev.target instanceof Element) ? ev.target : null;
   const foyerBoardTarget = target ? target.closest('#boardLeft,#boardRight') : null;
@@ -3501,6 +3561,12 @@ function bootFromQuery(){
   if(actBreak)   actBreak.style.display   = 'none';
   if(foyerBreak) foyerBreak.style.display = 'none';
   if(navBreak)   navBreak.style.display   = 'none';
+  if(finalCurtainBreak){
+    finalCurtainBreak.style.display = 'none';
+    finalCurtainBreak.style.opacity = '';
+    finalCurtainBreak.style.transition = '';
+    finalCurtainBreak.setAttribute('aria-hidden','true');
+  }
 
   // Μην αφήνουμε “ουρές” από timers
   TM.clearAll();
@@ -3509,7 +3575,11 @@ function bootFromQuery(){
   // reset any exit/strobe leftovers
   document.body.classList.remove('strobe-active','exit-mask-active');
   const act3BreakEl = document.getElementById('act3Break');
-  if(act3BreakEl) act3BreakEl.style.display='none';
+  if(act3BreakEl){
+    act3BreakEl.style.display='none';
+    act3BreakEl.style.opacity='';
+    act3BreakEl.style.transition='';
+  }
   const act3TeaserEl = document.getElementById('act3Teaser');
   if(act3TeaserEl){ act3TeaserEl.style.display='none'; act3TeaserEl.setAttribute('aria-hidden','true'); }
   const foyerTitlebarEl = document.getElementById('foyerTitlebar');
@@ -3548,7 +3618,17 @@ function resetShow(){
   // reset any exit/strobe leftovers
   document.body.classList.remove('strobe-active','exit-mask-active');
   const act3BreakEl = document.getElementById('act3Break');
-  if(act3BreakEl) act3BreakEl.style.display='none';
+  if(act3BreakEl){
+    act3BreakEl.style.display='none';
+    act3BreakEl.style.opacity='';
+    act3BreakEl.style.transition='';
+  }
+  if(finalCurtainBreak){
+    finalCurtainBreak.style.display='none';
+    finalCurtainBreak.style.opacity='';
+    finalCurtainBreak.style.transition='';
+    finalCurtainBreak.setAttribute('aria-hidden','true');
+  }
   const act3TeaserEl = document.getElementById('act3Teaser');
   if(act3TeaserEl){ act3TeaserEl.style.display='none'; act3TeaserEl.setAttribute('aria-hidden','true'); }
   const foyerTitlebarEl = document.getElementById('foyerTitlebar');

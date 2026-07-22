@@ -730,6 +730,28 @@ body{
   cursor:pointer;
 }
 
+#act3Break,
+.actbreak.finalbreak{
+  z-index:2300;
+}
+
+.actbreak.finalbreak .box{
+  max-width:560px;
+  padding:20px 24px;
+  background:rgba(0,0,0,.84);
+}
+
+.actbreak.finalbreak h3{
+  font-size:28px;
+  margin-bottom:10px;
+}
+
+.actbreak.finalbreak p{
+  font-size:17px;
+  line-height:1.45;
+  margin-bottom:0;
+}
+
 /* Φουαγιέ */
 
 .foyer{
