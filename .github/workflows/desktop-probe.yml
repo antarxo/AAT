@@ -1,0 +1,53 @@
+name: AAT Windows Desktop Probe
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - desktop-probe/**
+      - .github/workflows/desktop-probe.yml
+
+permissions:
+  contents: read
+
+jobs:
+  build-windows:
+    name: Build Windows installers
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: desktop-probe
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: desktop-probe/package-lock.json
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install desktop dependencies
+        run: npm ci
+
+      - name: Verify offline application package
+        run: npm run prepare && npm run check
+
+      - name: Build MSI and NSIS installers
+        run: npm run build -- --bundles msi,nsis
+
+      - name: Upload Windows installers
+        uses: actions/upload-artifact@v4
+        with:
+          name: AAT-Windows-Desktop-Probe
+          if-no-files-found: error
+          path: |
+            desktop-probe/src-tauri/target/release/bundle/msi/*.msi
+            desktop-probe/src-tauri/target/release/bundle/nsis/*-setup.exe
