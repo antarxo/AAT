@@ -1,0 +1,36 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "AAT Desktop Probe",
+  "version": "0.1.0",
+  "identifier": "gr.antarxo.aat.desktopprobe",
+  "build": {
+    "beforeDevCommand": "npm run prepare",
+    "beforeBuildCommand": "npm run prepare && npm run check",
+    "frontendDist": "../app"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "ΑΑΤ — Desktop Probe",
+        "width": 1450,
+        "height": 800,
+        "minWidth": 960,
+        "minHeight": 620,
+        "center": true,
+        "resizable": true,
+        "fullscreen": false,
+        "devtools": true
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "shortDescription": "Diagnostic-only desktop packaging probe for ΑΑΤ.",
+    "longDescription": "A diagnostic-only Windows desktop wrapper used to validate the ΑΑΤ educational application before any commercial hardening."
+  }
+}
