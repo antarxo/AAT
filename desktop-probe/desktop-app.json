@@ -1,0 +1,171 @@
+{
+  "$schema": "./desktop-app.schema.json",
+  "schemaVersion": 1,
+  "factoryVersion": "0.2.0",
+  "kind": "diagnostic-only-desktop-factory-config",
+  "source": {
+    "root": "..",
+    "entrypoint": "index.html",
+    "repository": "antarxo/AAT"
+  },
+  "app": {
+    "productName": "AAT Desktop Probe",
+    "binaryName": "aat-desktop-probe",
+    "version": "0.1.0",
+    "identifier": "gr.antarxo.aat.desktopprobe",
+    "title": "ΑΑΤ — Desktop Probe",
+    "description": "Diagnostic-only desktop wrapper for AAT",
+    "longDescription": "A diagnostic-only Windows desktop wrapper used to validate the ΑΑΤ educational application before any commercial hardening.",
+    "authors": [
+      "antarxo"
+    ],
+    "artifactName": "AAT-Windows-Desktop-Probe",
+    "iconSource": "app-icon.svg",
+    "window": {
+      "width": 1450,
+      "height": 800,
+      "minWidth": 960,
+      "minHeight": 620,
+      "center": true,
+      "resizable": true,
+      "fullscreen": false,
+      "devtools": true
+    }
+  },
+  "packaging": {
+    "files": [
+      "index.html",
+      "aat-stage.css",
+      "dialogs-gr.json",
+      "dialogs-en.json",
+      "intro.json",
+      "intro-en.json",
+      "book.html",
+      "book.json",
+      "book-gr.json",
+      "book-en.json",
+      "spring.png",
+      "skater.png",
+      "courtin.png",
+      "koino.png",
+      "koino_extra.png",
+      "koino_final.png",
+      "theatron-banner.png",
+      "viewer1.png",
+      "viewer2.png",
+      "viewer3.png",
+      "viewer4.png",
+      "viewer5.png"
+    ],
+    "directories": [
+      "assets"
+    ],
+    "vendor": [
+      {
+        "package": "uplot",
+        "copies": [
+          {
+            "from": "dist/uPlot.min.css",
+            "to": "vendor/uPlot.min.css"
+          },
+          {
+            "from": "dist/uPlot.iife.min.js",
+            "to": "vendor/uPlot.iife.min.js"
+          },
+          {
+            "from": "LICENSE",
+            "to": "vendor/uPlot-LICENSE.txt"
+          }
+        ]
+      }
+    ],
+    "replacements": [
+      {
+        "file": "index.html",
+        "from": "https://unpkg.com/uplot@1.6.30/dist/uPlot.min.css",
+        "to": "./vendor/uPlot.min.css"
+      },
+      {
+        "file": "index.html",
+        "from": "https://unpkg.com/uplot@1.6.30/dist/uPlot.iife.min.js",
+        "to": "./vendor/uPlot.iife.min.js"
+      }
+    ],
+    "metadataFile": "desktop-factory-build.json"
+  },
+  "validation": {
+    "networkPolicy": "offline",
+    "requiredFiles": [
+      "index.html",
+      "aat-stage.css",
+      "dialogs-gr.json",
+      "dialogs-en.json",
+      "intro.json",
+      "intro-en.json",
+      "spring.png",
+      "skater.png",
+      "koino.png",
+      "koino_extra.png",
+      "koino_final.png",
+      "book.html",
+      "book-gr.json",
+      "book-en.json",
+      "assets/theatron-banner.png",
+      "assets/theatron-banner-en.png",
+      "vendor/uPlot.min.css",
+      "vendor/uPlot.iife.min.js",
+      "vendor/uPlot-LICENSE.txt",
+      "desktop-factory-build.json"
+    ],
+    "forbiddenFiles": [
+      "4adapter.js",
+      "0act1-config.js",
+      "1act3.js",
+      "editor.html",
+      "bookEditor.html",
+      "aat.html",
+      "laat.html"
+    ],
+    "activeTextFiles": [
+      "index.html",
+      "aat-stage.css",
+      "dialogs-gr.json",
+      "dialogs-en.json",
+      "intro.json",
+      "intro-en.json",
+      "book.html",
+      "book.json",
+      "book-gr.json",
+      "book-en.json"
+    ],
+    "parseInlineScripts": [
+      "index.html",
+      "book.html"
+    ],
+    "requiredText": [
+      {
+        "file": "index.html",
+        "contains": "./vendor/uPlot.min.css"
+      },
+      {
+        "file": "index.html",
+        "contains": "./vendor/uPlot.iife.min.js"
+      }
+    ],
+    "forbiddenText": [
+      {
+        "file": "index.html",
+        "contains": "https://unpkg.com/uplot@1.6.30/"
+      }
+    ]
+  },
+  "exposureAudit": {
+    "markers": [
+      "dialogs-gr.json",
+      "book.html?lang=",
+      "uPlot.iife.min.js",
+      "desktop-factory-build.json",
+      "Αλληλεπιδραστική παράσταση"
+    ]
+  }
+}

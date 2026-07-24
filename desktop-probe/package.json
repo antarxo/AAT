@@ -1,0 +1,20 @@
+{
+  "name": "html-desktop-factory",
+  "private": true,
+  "version": "0.2.0",
+  "description": "Manifest-driven Tauri desktop factory with AAT as its first configuration.",
+  "type": "module",
+  "scripts": {
+    "configure": "node scripts/configure-desktop.mjs",
+    "icons": "node scripts/generate-icons.mjs",
+    "prepare": "npm run configure && node scripts/prepare-app.mjs",
+    "check": "npm run prepare && node scripts/check-app.mjs",
+    "dev": "npm run configure && npm run icons && tauri dev",
+    "build": "npm run configure && npm run icons && tauri build",
+    "audit:exposure": "node scripts/exposure-audit.mjs"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "2.11.4",
+    "uplot": "1.6.30"
+  }
+}

@@ -1,0 +1,130 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://antarxo.github.io/schemas/desktop-app.schema.json",
+  "title": "HTML Desktop Factory application manifest",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "factoryVersion",
+    "source",
+    "app",
+    "packaging",
+    "validation"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "factoryVersion": {
+      "type": "string"
+    },
+    "kind": {
+      "type": "string"
+    },
+    "source": {
+      "type": "object",
+      "required": [
+        "root",
+        "entrypoint",
+        "repository"
+      ],
+      "properties": {
+        "root": {
+          "type": "string"
+        },
+        "entrypoint": {
+          "type": "string"
+        },
+        "repository": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "app": {
+      "type": "object",
+      "required": [
+        "productName",
+        "binaryName",
+        "version",
+        "identifier",
+        "title",
+        "artifactName",
+        "iconSource",
+        "window"
+      ],
+      "properties": {
+        "productName": {
+          "type": "string"
+        },
+        "binaryName": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9-]*$"
+        },
+        "version": {
+          "type": "string"
+        },
+        "identifier": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "longDescription": {
+          "type": "string"
+        },
+        "authors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "artifactName": {
+          "type": "string"
+        },
+        "iconSource": {
+          "type": "string"
+        },
+        "window": {
+          "type": "object",
+          "required": [
+            "width",
+            "height",
+            "minWidth",
+            "minHeight"
+          ],
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": false
+    },
+    "packaging": {
+      "type": "object",
+      "required": [
+        "files",
+        "directories",
+        "vendor",
+        "replacements",
+        "metadataFile"
+      ],
+      "additionalProperties": true
+    },
+    "validation": {
+      "type": "object",
+      "required": [
+        "requiredFiles",
+        "forbiddenFiles",
+        "activeTextFiles"
+      ],
+      "additionalProperties": true
+    },
+    "exposureAudit": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}

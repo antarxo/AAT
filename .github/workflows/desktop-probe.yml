@@ -1,0 +1,67 @@
+name: HTML Desktop Factory — AAT
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - desktop-probe/**
+      - .github/workflows/desktop-probe.yml
+
+permissions:
+  contents: read
+
+jobs:
+  build-windows:
+    name: Build portable app and Windows installers
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: desktop-probe
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: desktop-probe/package-lock.json
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install desktop dependencies
+        run: npm ci
+
+      - name: Read factory configuration
+        id: factory
+        shell: pwsh
+        run: |
+          $config = Get-Content desktop-app.json -Raw | ConvertFrom-Json
+          "artifact_name=$($config.app.artifactName)" >> $env:GITHUB_OUTPUT
+          "binary_name=$($config.app.binaryName)" >> $env:GITHUB_OUTPUT
+
+      - name: Verify configured offline application
+        run: npm run check
+
+      - name: Build portable executable, MSI, and NSIS installer
+        run: npm run build -- --bundles msi,nsis
+
+      - name: Audit portable executable exposure
+        run: npm run audit:exposure -- src-tauri/target/release/${{ steps.factory.outputs.binary_name }}.exe
+
+      - name: Upload portable app, installers, and exposure report
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.factory.outputs.artifact_name }}
+          if-no-files-found: error
+          path: |
+            desktop-probe/src-tauri/target/release/${{ steps.factory.outputs.binary_name }}.exe
+            desktop-probe/src-tauri/target/release/bundle/msi/*.msi
+            desktop-probe/src-tauri/target/release/bundle/nsis/*-setup.exe
+            desktop-probe/reports/exposure-report.*
+            desktop-probe/desktop-app.json
