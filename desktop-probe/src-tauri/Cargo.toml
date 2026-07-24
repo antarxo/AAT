@@ -7,7 +7,7 @@ edition = "2021"
 rust-version = "1.77.2"
 
 [lib]
-name = "aat_desktop_probe_lib"
+name = "desktop_factory_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
