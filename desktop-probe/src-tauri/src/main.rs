@@ -1,3 +1,3 @@
 fn main() {
-    aat_desktop_probe_lib::run();
+    desktop_factory_lib::run();
 }
