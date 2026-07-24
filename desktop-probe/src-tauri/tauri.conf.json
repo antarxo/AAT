@@ -30,6 +30,13 @@
   "bundle": {
     "active": true,
     "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
     "shortDescription": "Diagnostic-only desktop packaging probe for ΑΑΤ.",
     "longDescription": "A diagnostic-only Windows desktop wrapper used to validate the ΑΑΤ educational application before any commercial hardening."
   }
