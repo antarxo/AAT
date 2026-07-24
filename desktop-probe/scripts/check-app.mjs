@@ -1,107 +1,84 @@
 import { access, readFile, readdir } from 'node:fs/promises';
-import { dirname, join, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { loadFactoryConfig, outputDir, resolveWithin } from './factory-config.mjs';
 
-const scriptDir = dirname(fileURLToPath(import.meta.url));
-const appDir = resolve(scriptDir, '..', 'app');
+const { config } = await loadFactoryConfig();
 
-const requiredFiles = [
-  'index.html',
-  'aat-stage.css',
-  'dialogs-gr.json',
-  'dialogs-en.json',
-  'intro.json',
-  'intro-en.json',
-  'spring.png',
-  'skater.png',
-  'koino.png',
-  'koino_extra.png',
-  'koino_final.png',
-  'book.html',
-  'book-gr.json',
-  'book-en.json',
-  'assets/theatron-banner.png',
-  'assets/theatron-banner-en.png',
-  'vendor/uPlot.min.css',
-  'vendor/uPlot.iife.min.js',
-  'vendor/uPlot-LICENSE.txt',
-  'desktop-probe-build.json'
-];
-
-const forbiddenPackagedFiles = [
-  '4adapter.js',
-  '0act1-config.js',
-  '1act3.js',
-  'editor.html',
-  'bookEditor.html',
-  'aat.html',
-  'laat.html'
-];
-
-for (const file of requiredFiles) {
-  await access(join(appDir, file));
-}
-
-for (const file of forbiddenPackagedFiles) {
+async function exists(path) {
   try {
-    await access(join(appDir, file));
-    throw new Error(`Legacy/non-runtime file was packaged unexpectedly: ${file}`);
+    await access(path);
+    return true;
   } catch (error) {
-    if (error?.code !== 'ENOENT') throw error;
+    if (error?.code === 'ENOENT') return false;
+    throw error;
   }
 }
 
-const activeTextFiles = [
-  'index.html',
-  'aat-stage.css',
-  'dialogs-gr.json',
-  'dialogs-en.json',
-  'intro.json',
-  'intro-en.json',
-  'book.html',
-  'book.json',
-  'book-gr.json',
-  'book-en.json'
-];
+for (const file of config.validation.requiredFiles) {
+  const path = resolveWithin(outputDir, file, `required file ${file}`);
+  if (!(await exists(path))) {
+    throw new Error(`Required runtime file is missing: ${file}`);
+  }
+}
+
+for (const file of config.validation.forbiddenFiles) {
+  const path = resolveWithin(outputDir, file, `forbidden file ${file}`);
+  if (await exists(path)) {
+    throw new Error(`Legacy/non-runtime file was packaged unexpectedly: ${file}`);
+  }
+}
 
 const textByFile = new Map();
-for (const file of activeTextFiles) {
-  textByFile.set(file, await readFile(join(appDir, file), 'utf8'));
+for (const file of config.validation.activeTextFiles) {
+  const path = resolveWithin(outputDir, file, `active text file ${file}`);
+  textByFile.set(file, await readFile(path, 'utf8'));
 }
 
-const index = textByFile.get('index.html');
-const forbiddenNetworkReferences = [
-  'https://unpkg.com/uplot@1.6.30/dist/uPlot.min.css',
-  'https://unpkg.com/uplot@1.6.30/dist/uPlot.iife.min.js'
-];
-
-for (const reference of forbiddenNetworkReferences) {
-  if (index.includes(reference)) {
-    throw new Error(`Offline packaging failed; index.html still contains ${reference}`);
+for (const rule of config.validation.requiredText ?? []) {
+  const text = textByFile.get(rule.file) ??
+    await readFile(resolveWithin(outputDir, rule.file, `required text file ${rule.file}`), 'utf8');
+  if (!text.includes(rule.contains)) {
+    throw new Error(`Required text is missing from ${rule.file}: ${rule.contains}`);
   }
 }
 
-for (const reference of ['./vendor/uPlot.min.css', './vendor/uPlot.iife.min.js']) {
-  if (!index.includes(reference)) {
-    throw new Error(`Offline packaging failed; index.html does not contain ${reference}`);
+for (const rule of config.validation.forbiddenText ?? []) {
+  const text = textByFile.get(rule.file) ??
+    await readFile(resolveWithin(outputDir, rule.file, `forbidden text file ${rule.file}`), 'utf8');
+  if (text.includes(rule.contains)) {
+    throw new Error(`Forbidden text remains in ${rule.file}: ${rule.contains}`);
   }
 }
 
-const externalUrls = [];
-for (const [file, text] of textByFile) {
-  for (const match of text.matchAll(/https?:\/\/[^\s"'<>]+/g)) {
-    externalUrls.push(`${file}: ${match[0]}`);
+if (config.validation.networkPolicy === 'offline') {
+  const externalUrls = [];
+  for (const [file, text] of textByFile) {
+    for (const match of text.matchAll(/https?:\/\/[^\s"'<>]+/g)) {
+      externalUrls.push(`${file}: ${match[0]}`);
+    }
+  }
+  if (externalUrls.length) {
+    throw new Error(
+      `Active runtime still contains external URLs:\n${externalUrls.join('\n')}`
+    );
   }
 }
 
-if (externalUrls.length) {
-  throw new Error(
-    `Active runtime still contains external URLs:\n${externalUrls.join('\n')}`
-  );
+let parsedInlineScripts = 0;
+for (const file of config.validation.parseInlineScripts ?? []) {
+  const text = textByFile.get(file) ??
+    await readFile(resolveWithin(outputDir, file, `inline script file ${file}`), 'utf8');
+  for (const match of text.matchAll(
+    /<script(?![^>]*\bsrc=)[^>]*>([\s\S]*?)<\/script>/gi
+  )) {
+    // Syntax-only parse. Browser globals are intentionally not executed here.
+    new Function(match[1]);
+    parsedInlineScripts += 1;
+  }
 }
 
-const rootEntries = await readdir(appDir);
+const rootEntries = await readdir(outputDir);
 console.log(
-  `Desktop probe static check passed ` +
-  `(${requiredFiles.length} required files, ${rootEntries.length} packaged root entries).`
+  `Desktop Factory check passed for ${config.app.productName} ` +
+  `(${config.validation.requiredFiles.length} required files, ` +
+  `${parsedInlineScripts} inline scripts, ${rootEntries.length} root entries).`
 );
