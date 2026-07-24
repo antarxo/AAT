@@ -1,15 +1,17 @@
 {
-  "name": "aat-desktop-probe",
+  "name": "html-desktop-factory",
   "private": true,
-  "version": "0.1.0",
-  "description": "Diagnostic-only Tauri desktop wrapper for the AAT educational application.",
+  "version": "0.2.0",
+  "description": "Manifest-driven Tauri desktop factory with AAT as its first configuration.",
   "type": "module",
   "scripts": {
-    "icons": "tauri icon app-icon.svg",
-    "prepare": "node scripts/prepare-app.mjs",
-    "check": "node scripts/check-app.mjs",
-    "dev": "npm run icons && npm run prepare && tauri dev",
-    "build": "npm run icons && npm run prepare && npm run check && tauri build"
+    "configure": "node scripts/configure-desktop.mjs",
+    "icons": "node scripts/generate-icons.mjs",
+    "prepare": "npm run configure && node scripts/prepare-app.mjs",
+    "check": "npm run prepare && node scripts/check-app.mjs",
+    "dev": "npm run configure && npm run icons && tauri dev",
+    "build": "npm run configure && npm run icons && tauri build",
+    "audit:exposure": "node scripts/exposure-audit.mjs"
   },
   "devDependencies": {
     "@tauri-apps/cli": "2.11.4",
