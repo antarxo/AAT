@@ -44,6 +44,12 @@
       "book.json",
       "book-gr.json",
       "book-en.json",
+      "author/index.html",
+      "author/book-core.js",
+      "author/book-core.css",
+      "author/snapshot-transport.js",
+      "book-v2/index.html",
+      "book-v2/chapter_content.json",
       "spring.png",
       "skater.png",
       "courtin.png",
@@ -110,6 +116,12 @@
       "book.html",
       "book-gr.json",
       "book-en.json",
+      "author/index.html",
+      "author/book-core.js",
+      "author/book-core.css",
+      "author/snapshot-transport.js",
+      "book-v2/index.html",
+      "book-v2/chapter_content.json",
       "assets/theatron-banner.png",
       "assets/theatron-banner-en.png",
       "vendor/uPlot.min.css",
@@ -136,11 +148,18 @@
       "book.html",
       "book.json",
       "book-gr.json",
-      "book-en.json"
+      "book-en.json",
+      "author/index.html",
+      "author/book-core.js",
+      "author/snapshot-transport.js",
+      "book-v2/index.html",
+      "book-v2/chapter_content.json"
     ],
     "parseInlineScripts": [
       "index.html",
-      "book.html"
+      "book.html",
+      "author/index.html",
+      "book-v2/index.html"
     ],
     "requiredText": [
       {
@@ -150,6 +169,14 @@
       {
         "file": "index.html",
         "contains": "./vendor/uPlot.iife.min.js"
+      },
+      {
+        "file": "author/index.html",
+        "contains": "book-author-v1"
+      },
+      {
+        "file": "book-v2/index.html",
+        "contains": "../author/index.html"
       }
     ],
     "forbiddenText": [
@@ -163,6 +190,8 @@
     "markers": [
       "dialogs-gr.json",
       "book.html?lang=",
+      "book-v2/?lang=",
+      "book-author-v1",
       "uPlot.iife.min.js",
       "desktop-factory-build.json",
       "Αλληλεπιδραστική παράσταση"

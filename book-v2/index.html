@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="el">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>ΑΑΤ — Βιβλίο v2</title>
+</head>
+<body>
+  <p>Άνοιγμα του βιβλίου ΑΑΤ με τον γενικό Συγγραφέα… <a id="manualLink" href="../author/index.html?book=../book-v2/chapter_content.json">συνέχεια</a></p>
+  <script>
+    'use strict';
+    const target=new URL('../author/index.html', window.location.href);
+    const incoming=new URLSearchParams(window.location.search);
+    for(const [key,value] of incoming){
+      if(key !== 'book') target.searchParams.append(key,value);
+    }
+    target.searchParams.set('book','../book-v2/chapter_content.json');
+    target.hash=window.location.hash;
+    document.getElementById('manualLink').href=target.toString();
+    window.location.replace(target.toString());
+  </script>
+</body>
+</html>

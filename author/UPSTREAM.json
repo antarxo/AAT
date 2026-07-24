@@ -1,0 +1,16 @@
+{
+  "name": "General Book Author",
+  "sourceRepository": "antarxo/HMK",
+  "sourceBranch": "agent/shared-author-cutover",
+  "sourcePath": "author/",
+  "release": "0.2.0-integration-candidate",
+  "date": "2026-07-24",
+  "files": {
+    "index.html": "sha256:24150c9393c3297364abd55120056ce6407c516b68eaa62b6c8f672e498cdf17",
+    "Editor.html": "sha256:44c982ac4f6a1a3623646b1147bb25933ea938c565dfcd39443f3ce658ffd76b",
+    "book-core.js": "sha256:d1bc9ef33bebdaedcb4a20f6a46c9d1ae7434114aab09d5eb86c6bd65623654c",
+    "book-core.css": "sha256:878ad6aeb2bec7a783df8e064adc7d05c9d72ddca1d58b0d3cb5631de4f5ce5a",
+    "snapshot-transport.js": "sha256:0734883f498cd8ce24ca205f61139c5e47c79a9db817a901c3d521bf35f7efb3",
+    "book-schema-v1.schema.json": "sha256:43d1a4945489aafdca1d40e64333cafd7fc6e7a483d081af1cba7d252ca667a0"
+  }
+}

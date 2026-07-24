@@ -966,6 +966,9 @@ const btnReset   = document.getElementById('btnReset');
   const navToAct2  = document.getElementById('navToAct2');
   const navToFoyer = document.getElementById('navToFoyer');
 const btnBook    = document.getElementById('btnBook');
+const BOOK_AUTHOR_MODE = new URLSearchParams(window.location.search).get('bookAuthor') === 'v2'
+  ? 'shared-v2'
+  : 'legacy';
 
 const ACT1_UNLOCK_KEY = 'aat_act1_completed';
 
@@ -3742,14 +3745,17 @@ function exportBookDataToStorage(){
   }
 }
 
-/* Book button: αποθήκευση + άνοιγμα book.html */
+/* Book button: production legacy book by default; explicit shared-author probe with ?bookAuthor=v2 */
 
 if (btnBook) {
   btnBook.addEventListener('click', () => {
     if(!bookUnlocked) return;
     const lang = (currentLang === 'en') ? 'en' : 'gr';
     exportBookDataToStorage();
-    window.open('book.html?lang=' + lang, '_blank');
+    const target = BOOK_AUTHOR_MODE === 'shared-v2'
+      ? `book-v2/?lang=${encodeURIComponent(lang)}`
+      : `book.html?lang=${encodeURIComponent(lang)}`;
+    window.open(target, '_blank');
   });
 }
 

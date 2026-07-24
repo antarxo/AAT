@@ -1,0 +1,227 @@
+{
+  "schemaVersion": "pages-v1",
+  "meta": {
+    "projectId": "aat-book-v2",
+    "fileName": "chapter_content.json",
+    "title": "Βιβλίο Παράστασης — Απλή Αρμονική Ταλάντωση",
+    "title_en": "Performance Book — Simple Harmonic Motion",
+    "subtitle": "Από την πειραματική κινηματική στη δυναμική και την ενέργεια",
+    "subtitle_en": "From experimental kinematics to dynamics and energy",
+    "appHref": "../index.html",
+    "defaultLanguage": "el",
+    "languages": [
+      "el",
+      "en"
+    ],
+    "authoringVersion": "0.1.0",
+    "migrationStatus": "static-author-consumer"
+  },
+  "layoutDefaults": {
+    "pageSize": "A4",
+    "orientation": "portrait",
+    "pageWidthPx": 794,
+    "pageHeightPx": 1123,
+    "pagePaddingTopPx": 84,
+    "pagePaddingRightPx": 72,
+    "pagePaddingBottomPx": 76,
+    "pagePaddingLeftPx": 72,
+    "bodyFontSize": 16,
+    "lineHeight": 1.58,
+    "showPageNumbers": true
+  },
+  "nav": {
+    "mode": "auto",
+    "showApp": true,
+    "showPrint": true,
+    "groups": []
+  },
+  "pages": [
+    {
+      "id": "aat-cover",
+      "header": {
+        "left": "",
+        "center": "",
+        "right": ""
+      },
+      "footer": {
+        "left": "© antarxo 2026",
+        "center": "",
+        "right": "{page}"
+      },
+      "items": [
+        {
+          "type": "hero",
+          "eyebrow": "Βιβλίο Παράστασης",
+          "eyebrow_en": "Performance Book",
+          "title": "Απλή Αρμονική Ταλάντωση",
+          "title_en": "Simple Harmonic Motion",
+          "subtitle": "Η παράσταση, σε ρυθμό ανάγνωσης",
+          "subtitle_en": "The performance, at reading pace"
+        },
+        {
+          "type": "figure",
+          "src": "../assets/theatron-banner.png",
+          "alt": "Η θεατρική σκηνή της εφαρμογής ΑΑΤ",
+          "alt_en": "The theatrical stage of the SHM application",
+          "caption": "Η διαδραστική εφαρμογή οργανώνει τη μελέτη της ΑΑΤ σε πράξεις, σκηνές και φουαγιέ.",
+          "caption_en": "The interactive application organises the study of SHM into acts, scenes and a foyer.",
+          "placement": "wide",
+          "aspectRatio": "16/5"
+        }
+      ]
+    },
+    {
+      "id": "aat-introduction",
+      "header": {
+        "left": "ΑΑΤ",
+        "center": "",
+        "right": "Εισαγωγή"
+      },
+      "footer": {
+        "left": "© antarxo 2026",
+        "center": "",
+        "right": "{page}"
+      },
+      "items": [
+        {
+          "type": "section_heading",
+          "label": "Εισαγωγή",
+          "label_en": "Introduction",
+          "title": "Από την παρατήρηση στη φυσική περιγραφή",
+          "title_en": "From observation to a physical description"
+        },
+        {
+          "type": "paragraph",
+          "html": "Η ΑΑΤ είναι μια θεατρικά δοσμένη, διαδραστική εκπαιδευτική εφαρμογή Φυσικής. Η αφήγηση ξεκινά από τις μετρήσεις θέσης–χρόνου και προχωρά σταδιακά στην πλήρη δυναμική και ενεργειακή κατανόηση της κίνησης.",
+          "html_en": "SHM is a theatrical, interactive physics application. Its narrative starts from position–time measurements and gradually advances to a full dynamical and energy-based understanding of the motion."
+        },
+        {
+          "type": "note",
+          "label": "Κεντρική αρχή",
+          "label_en": "Central principle",
+          "html": "Ο παρατηρητής δεν ξεκινά γνωρίζοντας ότι η κίνηση είναι ΑΑΤ. Πρέπει να το συμπεράνει από τα δεδομένα που θα μπορούσε πράγματι να καταγράψει.",
+          "html_en": "The observer does not start by knowing that the motion is SHM. It must be inferred from data that could actually be recorded."
+        }
+      ]
+    },
+    {
+      "id": "aat-act-1",
+      "header": {
+        "left": "ΑΑΤ",
+        "center": "",
+        "right": "Πράξη 1"
+      },
+      "footer": {
+        "left": "© antarxo 2026",
+        "center": "",
+        "right": "{page}"
+      },
+      "items": [
+        {
+          "type": "part_title",
+          "label": "Πράξη 1",
+          "label_en": "Act 1",
+          "title": "Κινηματική προσέγγιση",
+          "title_en": "Kinematical approach",
+          "subtitle": "Από τις μετρήσεις t–x στους νόμους της κίνησης",
+          "subtitle_en": "From t–x measurements to the laws of motion"
+        },
+        {
+          "type": "paragraph",
+          "html": "Οι θεατές προσπαθούν να αναγνωρίσουν το είδος της κίνησης χρησιμοποιώντας μόνο ένα προσανατολισμένο σύστημα αναφοράς και την καταγραφή θέσεων σε αντίστοιχες χρονικές στιγμές.",
+          "html_en": "The audience tries to identify the type of motion using only an oriented reference system and recorded positions at corresponding times."
+        },
+        {
+          "type": "figure",
+          "src": "../assets/skaterAct1.png",
+          "alt": "Ο ηθοποιός στην Πράξη 1",
+          "alt_en": "The performer in Act 1",
+          "caption": "Η κίνηση παρατηρείται πριν χαρακτηριστεί.",
+          "caption_en": "The motion is observed before it is classified.",
+          "placement": "right",
+          "frameWidth": 340,
+          "aspectRatio": "4/3"
+        },
+        {
+          "type": "note",
+          "label": "Ερώτημα",
+          "label_en": "Question",
+          "html": "Αρκεί μια καμπύλη που μοιάζει με ημίτονο για να αποδείξει ότι η κίνηση είναι ΑΑΤ;",
+          "html_en": "Is a curve that looks sinusoidal enough to prove that the motion is SHM?"
+        }
+      ]
+    },
+    {
+      "id": "aat-act-2",
+      "header": {
+        "left": "ΑΑΤ",
+        "center": "",
+        "right": "Πράξη 2"
+      },
+      "footer": {
+        "left": "© antarxo 2026",
+        "center": "",
+        "right": "{page}"
+      },
+      "items": [
+        {
+          "type": "part_title",
+          "label": "Πράξη 2",
+          "label_en": "Act 2",
+          "title": "Δυναμική προσέγγιση",
+          "title_en": "Dynamical approach",
+          "subtitle": "Δυνάμεις, επιτάχυνση και η σχέση a(x)=−ω²x",
+          "subtitle_en": "Forces, acceleration and the relation a(x)=−ω²x"
+        },
+        {
+          "type": "paragraph",
+          "html": "Η μορφή της επιτάχυνσης και το διάγραμμα a–x μετατρέπουν την κινηματική υπόθεση σε δυναμικό κριτήριο. Η επιτάχυνση είναι αντίθετη της απομάκρυνσης και ανάλογη προς αυτήν.",
+          "html_en": "The form of the acceleration and the a–x graph turn the kinematical hypothesis into a dynamical criterion. Acceleration is opposite and proportional to displacement."
+        },
+        {
+          "type": "interactive_callout",
+          "label": "Να παρατηρήσεις",
+          "label_en": "Observe",
+          "title": "Η ίδια κίνηση από τρεις όψεις",
+          "title_en": "The same motion from three viewpoints",
+          "html": "Σύγκρινε τα διαγράμματα x–t, υ–t και a–t και εντόπισε τις χρονικές μετατοπίσεις τους.",
+          "html_en": "Compare the x–t, v–t and a–t graphs and identify their time shifts."
+        }
+      ]
+    },
+    {
+      "id": "aat-foyer",
+      "header": {
+        "left": "ΑΑΤ",
+        "center": "",
+        "right": "Φουαγιέ"
+      },
+      "footer": {
+        "left": "© antarxo 2026",
+        "center": "",
+        "right": "{page}"
+      },
+      "items": [
+        {
+          "type": "part_title",
+          "label": "Φουαγιέ",
+          "label_en": "Foyer",
+          "title": "Συζήτηση μετά την παράσταση",
+          "title_en": "Discussion after the performance"
+        },
+        {
+          "type": "paragraph",
+          "html": "Στο φουαγιέ συνδέονται οι νόμοι της κίνησης, τα διαγράμματα και οι πειραματικές παρατηρήσεις. Μια ταλάντωση καθορίζεται από το πλάτος, την περίοδο ή την κυκλική συχνότητα και τις αρχικές συνθήκες.",
+          "html_en": "In the foyer, the laws of motion, the graphs and the experimental observations are connected. An oscillation is determined by its amplitude, period or angular frequency, and initial conditions."
+        },
+        {
+          "type": "note",
+          "label": "Κατάσταση μετάβασης",
+          "label_en": "Migration status",
+          "html": "Το παρόν είναι το πρώτο βιβλίο ΑΑΤ που καλεί τον κοινό Συγγραφέα. Οι δυναμικοί διάλογοι, οι πραγματικές μετρήσεις της παράστασης και τα πέντε canvas γραφημάτων παραμένουν στο υπάρχον βιβλίο μέχρι να μεταφερθούν ως δηλωτικός AAT adapter.",
+          "html_en": "This is the first SHM book that calls the shared Author. Dynamic dialogue, live performance measurements and the five canvas graphs remain in the existing book until they are moved into a declarative SHM adapter."
+        }
+      ]
+    }
+  ]
+}
