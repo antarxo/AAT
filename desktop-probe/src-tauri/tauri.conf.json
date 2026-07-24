@@ -4,8 +4,8 @@
   "version": "0.1.0",
   "identifier": "gr.antarxo.aat.desktopprobe",
   "build": {
-    "beforeDevCommand": "npm run prepare",
-    "beforeBuildCommand": "npm run prepare && npm run check",
+    "beforeDevCommand": "node scripts/prepare-app.mjs",
+    "beforeBuildCommand": "node scripts/prepare-app.mjs && node scripts/check-app.mjs",
     "frontendDist": "../app"
   },
   "app": {
@@ -37,7 +37,7 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
-    "shortDescription": "Diagnostic-only desktop packaging probe for ΑΑΤ.",
+    "shortDescription": "Diagnostic-only desktop wrapper for AAT",
     "longDescription": "A diagnostic-only Windows desktop wrapper used to validate the ΑΑΤ educational application before any commercial hardening."
   }
 }
