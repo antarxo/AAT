@@ -1,35 +1,67 @@
-# ΑΑΤ Desktop Probe
+# HTML Desktop Factory — ΑΑΤ
 
-Τύπος έκδοσης: **diagnostic-only / desktop probe**
+Τύπος έκδοσης: **diagnostic-only / desktop-factory probe**
 
-Αυτός ο φάκελος συσκευάζει την υπάρχουσα εφαρμογή ΑΑΤ ως Tauri desktop
-εφαρμογή. Δεν μεταφέρει την εκπαιδευτική μηχανή σε Rust, δεν προσθέτει DRM και
-δεν ισχυρίζεται ότι προστατεύει τον HTML/JavaScript κώδικα.
+Ο φάκελος αυτός είναι πλέον παραμετρική Factory για εφαρμογές
+HTML/CSS/JavaScript. Η ΑΑΤ είναι η πρώτη πραγματική διαμόρφωση και παραμένει
+το execution path αναφοράς.
 
-## Τι αλλάζει
+Η Factory δεν μεταφέρει την εκπαιδευτική μηχανή σε Rust, δεν προσθέτει DRM και
+δεν ισχυρίζεται ότι ο ενσωματωμένος frontend κώδικας είναι μη ανακτήσιμος.
 
-- Το `index.html` ανοίγει σε αυτόνομο desktop παράθυρο.
-- Τα αρχεία της εφαρμογής αντιγράφονται σε ελεγχόμενο build directory.
-- Η μοναδική CDN εξάρτηση, uPlot 1.6.30, ενσωματώνεται τοπικά για offline χρήση.
-- Η άδεια MIT του uPlot συνοδεύει το πακέτο.
-- Τα Windows icons παράγονται κατά το build από το `app-icon.svg`.
-- Το Windows workflow παράγει MSI και NSIS installer.
+## Η μοναδική διαμόρφωση
 
-## Τι δεν αλλάζει
+Το `desktop-app.json` δηλώνει:
 
-- Ο αρχικός κώδικας της ΑΑΤ στη ρίζα του repository.
+- πηγαίο directory και entrypoint,
+- ακριβή λίστα ενεργών αρχείων και directories,
+- βιβλιοθήκες που πρέπει να αντιγραφούν από `node_modules`,
+- αντικαταστάσεις CDN με τοπικά paths,
+- όνομα, έκδοση, identifier, παράθυρο και icon,
+- απαιτούμενα/απαγορευμένα runtime αρχεία,
+- offline policy και markers για exposure audit.
+
+Τα `tauri.conf.json` και τα στοιχεία του `Cargo.toml` παράγονται από αυτή τη
+διαμόρφωση. Για επόμενη παρόμοια εφαρμογή δεν χρειάζεται αλλαγή του Rust shell.
+
+## Τι παράγει
+
+- Portable Windows executable.
+- NSIS `setup.exe`.
+- MSI installer.
+- `exposure-report.json` και `exposure-report.txt`.
+- Snapshot του `desktop-app.json` μαζί με το build artifact.
+
+## Τι ελέγχει
+
+- Ότι υπάρχουν όλα τα δηλωμένα runtime αρχεία.
+- Ότι legacy/editor αρχεία δεν μπήκαν κατά λάθος.
+- Ότι οι δηλωμένες CDN αναφορές αντικαταστάθηκαν.
+- Ότι το ενεργό runtime δεν περιέχει εξωτερικά URLs όταν η policy είναι
+  `offline`.
+- Ότι τα inline scripts της ΑΑΤ είναι συντακτικά έγκυρα.
+- Ποιοι επιλεγμένοι source markers παραμένουν ορατοί ως απλό κείμενο μέσα στο
+  portable executable.
+
+Το exposure audit μετρά μόνο casual string exposure. Απουσία ενός marker δεν
+αποδεικνύει ότι ο κώδικας δεν μπορεί να εξαχθεί με εξειδικευμένα εργαλεία.
+
+## Τι δεν αλλάζει στην ΑΑΤ
+
+- Ο αρχικός κώδικας στη ρίζα του repository.
 - Η σκηνή, οι πράξεις, οι διάλογοι, το βιβλίο και τα assets.
-- Ο τρόπος υπολογισμού και παρουσίασης της ΑΑΤ.
-- Η δυνατότητα ανάκτησης των frontend αρχείων από αποφασισμένο χρήστη.
+- Ο τρόπος υπολογισμού και παρουσίασης.
+- Η δυνατότητα ανάκτησης frontend πόρων από αποφασισμένο χρήστη.
 
 Πριν από εμπορική έκδοση χρειάζεται πλήρης έλεγχος αδειών όλων των
-εξαρτήσεων και των assets. Η παρούσα έκδοση είναι μόνο τεχνικό probe.
+εξαρτήσεων/assets και απόφαση για code signing. Αυτά δεν αποτελούν μέρος του
+παρόντος probe.
 
 ## Τοπικές εντολές
 
 ```bash
 npm install
-npm run prepare
+npm run configure
 npm run check
 npm run dev
 ```
@@ -40,6 +72,12 @@ npm run dev
 npm run build
 ```
 
-Το πλήρες Windows build εκτελείται από το GitHub Actions workflow
-`AAT Windows Desktop Probe`: αυτόματα στο σχετικό pull request ή χειροκίνητα
+Μετά από Windows build:
+
+```bash
+npm run audit:exposure -- src-tauri/target/release/aat-desktop-probe.exe
+```
+
+Το πλήρες Windows execution path τρέχει από το GitHub Actions workflow
+`HTML Desktop Factory — AAT`, αυτόματα στο σχετικό pull request ή χειροκίνητα
 με `workflow_dispatch`.
